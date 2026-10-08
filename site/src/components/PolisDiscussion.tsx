@@ -19,6 +19,10 @@ type Viewer =
  * - parent_url is this page's clean URL, never the query string or fragment;
  * - document.referrer is reduced to this site's origin before embed.js reads it.
  */
+// The embed needs accounts (sign-in and residency), so it is off in the demo build:
+// loading it there would only create empty conversations on Pol.is.
+const enabled = Boolean(POLIS_SITE_ID) && hasSupabase;
+
 export default function PolisDiscussion(props: Props) {
   const [viewer, setViewer] = useState<Viewer>({ kind: 'loading' });
   const [failed, setFailed] = useState(false);
@@ -37,7 +41,7 @@ export default function PolisDiscussion(props: Props) {
   const canParticipate = open && profile !== null && resident;
 
   useEffect(() => {
-    if (!POLIS_SITE_ID || viewer.kind === 'loading' || !container.current) return;
+    if (!enabled || viewer.kind === 'loading' || !container.current) return;
     const div = document.createElement('div');
     div.className = 'polis';
     const data: Record<string, string> = {
@@ -96,8 +100,12 @@ export default function PolisDiscussion(props: Props) {
       ) : (
         notice && <p class="notice">{notice}</p>
       )}
-      {!POLIS_SITE_ID ? (
-        <p class="notice">Discussions aren’t switched on for this copy of the site yet.</p>
+      {!enabled ? (
+        <p class="notice">
+          {POLIS_SITE_ID
+            ? 'Discussions open once this site is connected to its database: taking part needs an account.'
+            : 'Discussions aren’t switched on for this copy of the site yet.'}
+        </p>
       ) : failed ? (
         <p class="notice error">Couldn’t load the discussion from pol.is. Check your connection or content blocker.</p>
       ) : (

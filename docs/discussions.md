@@ -14,7 +14,8 @@ bill or council matter page; request counts are public, requesters are not.
 1. Create a Pol.is account for the project (pol.is → Sign up) and open
    **Integrate**. Copy the site id (`polis_…`).
 2. Set the repository variable `PUBLIC_POLIS_SITE_ID` to it and rebuild the site.
-   Without it, discussion pages show a notice instead of the embed.
+   Without it, or while the site is still the demo (no Supabase connected),
+   discussion pages show a notice instead of the embed: taking part needs accounts.
 3. Make yourself a maintainer. In the Supabase SQL editor (service role):
 
    ```sql
