@@ -14,11 +14,12 @@ interface Row {
   nay_total: number;
 }
 
-/** A member's most recent roll-call votes, loaded live. */
-export default function MemberVotes({ memberId }: { memberId: string }) {
-  const [rows, setRows] = useState<VoteListItemData[] | null>(null);
+/** A member's most recent roll-call votes, loaded live (or passed in, in demo mode). */
+export default function MemberVotes({ memberId, initial }: { memberId: string; initial?: VoteListItemData[] }) {
+  const [rows, setRows] = useState<VoteListItemData[] | null>(initial ?? null);
   const [error, setError] = useState(false);
   useEffect(() => {
+    if (initial) return;
     (async () => {
       const data = await select<Row>('member_votes', {
         member_id: `eq.${memberId}`,

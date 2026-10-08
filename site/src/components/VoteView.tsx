@@ -27,8 +27,8 @@ export interface Vote {
   source_url: string | null;
 }
 
-type Position = 'yea' | 'nay' | 'present' | 'not_voting';
-interface Row {
+export type Position = 'yea' | 'nay' | 'present' | 'not_voting';
+export interface Row {
   member_id: string;
   position: Position;
   party: string | null;
@@ -42,13 +42,21 @@ export const POSITION_LABELS: Record<Position, string> = {
   not_voting: 'Not voting',
 };
 
-export default function VoteView() {
-  const [vote, setVote] = useState<Vote | null>(null);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'invalid' | 'error'>('loading');
+interface Props {
+  /** Prerendered data (demo mode); otherwise the vote is loaded from ?id=. */
+  initial?: { vote: Vote; rows: Row[] };
+}
+
+export default function VoteView({ initial }: Props) {
+  const [vote, setVote] = useState<Vote | null>(initial?.vote ?? null);
+  const [rows, setRows] = useState<Row[]>(initial?.rows ?? []);
+  const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'invalid' | 'error'>(
+    initial ? 'ready' : 'loading',
+  );
   const [stateFilter, setStateFilter] = useState('');
 
   useEffect(() => {
+    if (initial) return;
     const id = new URLSearchParams(window.location.search).get('id') ?? '';
     if (!parseVoteId(id)) return setState('invalid');
     (async () => {

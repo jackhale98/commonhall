@@ -8,3 +8,9 @@ export const SUPABASE_ANON_KEY: string = import.meta.env.PUBLIC_SUPABASE_ANON_KE
 export const SITE_NAME = import.meta.env.PUBLIC_SITE_NAME || 'Civic Tracker';
 
 export const hasSupabase = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+/**
+ * Demo mode: no Supabase project, so the site is built from the sample data in
+ * src/data/demo.json and account features are switched off.
+ */
+export const DEMO = !hasSupabase && import.meta.env.PUBLIC_DEMO === 'true';

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { hasSupabase } from '../lib/config';
 import {
   accountUrl,
   follow,
@@ -59,6 +60,8 @@ export default function FollowButton({ targetType, targetId, label }: Props) {
     }
   };
 
+  // No accounts without a Supabase project (e.g. the demo build).
+  if (!hasSupabase) return null;
   const following = state === 'following';
   return (
     <button

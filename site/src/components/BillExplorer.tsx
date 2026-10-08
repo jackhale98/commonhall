@@ -5,13 +5,35 @@ import { RestError, rpc, selectWithCount, type Params } from '../lib/rest';
 import { BILL_LIST_COLUMNS, type BillListItem as Bill } from '../lib/types';
 import BillListItem from './BillListItem';
 
+type DemoBill = Bill & { sponsor_party?: string | null; summary_text?: string | null };
+
 interface Props {
   congress: number;
-  initial: Bill[];
+  initial: DemoBill[];
   policyAreas: string[];
+  /** Demo mode: `initial` holds every bill and filtering happens in the browser. */
+  local?: boolean;
 }
 
-interface Filters {
+/** In-browser equivalent of the database filters, for the demo build. */
+export function filterLocally(bills: DemoBill[], f: Filters): DemoBill[] {
+  const words = f.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const out = bills.filter((b) => {
+    const house = b.bill_type.startsWith('h');
+    if (f.chamber === 'house' && !house) return false;
+    if (f.chamber === 'senate' && house) return false;
+    if (f.status && b.status !== f.status) return false;
+    if (f.policy && b.policy_area !== f.policy) return false;
+    if (f.party && b.sponsor_party !== f.party) return false;
+    if (f.sponsor && b.sponsor_id !== f.sponsor) return false;
+    const text = `${b.title} ${b.short_title ?? ''} ${b.summary_text ?? ''}`.toLowerCase();
+    return words.every((w) => text.includes(w));
+  });
+  if (f.sort === 'introduced') out.sort((a, b) => (b.introduced_date ?? '').localeCompare(a.introduced_date ?? ''));
+  return out;
+}
+
+export interface Filters {
   q: string;
   chamber: '' | 'house' | 'senate';
   status: string;
@@ -75,7 +97,7 @@ function restFilters(f: Filters, congress: number): Params {
   return params;
 }
 
-export default function BillExplorer({ congress, initial, policyAreas }: Props) {
+export default function BillExplorer({ congress, initial, policyAreas, local = false }: Props) {
   const [filters, setFilters] = useState<Filters>(EMPTY);
   const [bills, setBills] = useState<Bill[]>(initial);
   const [total, setTotal] = useState<number | null>(null);
@@ -93,8 +115,15 @@ export default function BillExplorer({ congress, initial, policyAreas }: Props) 
     if (!hydrated) return;
     writeFilters(filters);
     if (isDefault(filters)) {
-      setBills(initial);
+      setBills(local ? initial.slice(0, PAGE_SIZE * 2) : initial);
       setTotal(null);
+      setState('idle');
+      return;
+    }
+    if (local) {
+      const matches = filterLocally(initial, filters);
+      setBills(matches.slice((filters.page - 1) * PAGE_SIZE, filters.page * PAGE_SIZE));
+      setTotal(matches.length);
       setState('idle');
       return;
     }

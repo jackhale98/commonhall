@@ -227,3 +227,14 @@ acceptance checks against a real database. During development they passed for
 17 roll calls (1 House, 16 Senate; the House sample was limited by DEMO_KEY)
 and for 11 addresses in 10 states and DC (federal members; state legislators
 need an Open States key).
+
+## 25. Demo build without a database
+
+So the site can be tried before any keys exist, a build with no Supabase
+configuration and `PUBLIC_DEMO=true` (set automatically by the Pages workflow when
+the `PUBLIC_SUPABASE_URL` variable is empty) reads `site/src/data/demo.json`, a
+snapshot of the seed database, instead of PostgREST. Vote pages, normally
+client-rendered at `/vote/?id=…`, are prerendered at `/votes/{id}/` in this mode
+because there is no live database to query; bill search filters the sample in
+the browser; follow buttons, the feed, accounts and Find my reps are hidden.
+The snapshot is read only at build time and is not shipped to browsers.

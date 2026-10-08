@@ -1,3 +1,5 @@
+import { DEMO } from './config';
+
 /** Base-aware internal links (the site may live under /<repo>/ on GitHub Pages). */
 const BASE = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
 
@@ -18,8 +20,9 @@ export function memberHref(bioguideId: string): string {
   return href(`members/${bioguideId}/`);
 }
 
+/** Votes are client-rendered from Supabase; in demo mode they are prerendered. */
 export function voteHref(id: string): string {
-  return href(`vote/?id=${encodeURIComponent(id)}`);
+  return DEMO ? href(`votes/${id}/`) : href(`vote/?id=${encodeURIComponent(id)}`);
 }
 
 export function stateHref(state: string): string {

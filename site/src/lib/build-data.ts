@@ -6,10 +6,49 @@
  * empty and the build still succeeds.
  */
 import { congressForDate } from '@civic/congress-client/ids';
-import { select, selectAll } from './rest';
+import demoData from '../data/demo.json';
+import { DEMO } from './config';
+import { select as restSelect, selectAll as restSelectAll, type Params } from './rest';
 import { BILL_PAGE_COLUMNS, MEMBER_COLUMNS, type Bill, type BillAction, type Cosponsor, type Member } from './types';
 
 export const CURRENT_CONGRESS = congressForDate(new Date());
+
+// ---- Demo mode: answer the same queries from the bundled sample data -------
+
+const DEMO_TABLES: Record<string, Record<string, unknown>[]> = {
+  members: demoData.members,
+  bills: demoData.bills,
+  bill_actions: demoData.actions,
+  bill_cosponsors: demoData.cosponsors,
+  bill_subjects: demoData.subjects,
+  votes: demoData.votes,
+  vote_positions: demoData.positions,
+  member_vote_stats: demoData.voteStats,
+};
+
+/** A tiny PostgREST stand-in for the filters build-data uses (eq., like.prefix*, limit). Rows come pre-sorted. */
+function demoQuery<T>(table: string, params: Params): T[] {
+  let rows = DEMO_TABLES[table] ?? [];
+  for (const [key, raw] of Object.entries(params)) {
+    if (raw === undefined || ['select', 'order', 'limit', 'offset'].includes(key)) continue;
+    const value = String(raw);
+    if (value.startsWith('eq.')) rows = rows.filter((r) => String(r[key]) === value.slice(3));
+    else if (value.startsWith('like.') && value.endsWith('*')) {
+      const prefix = value.slice(5, -1);
+      rows = rows.filter((r) => String(r[key]).startsWith(prefix));
+    }
+  }
+  const limit = params.limit === undefined ? undefined : Number(params.limit);
+  return (limit === undefined ? rows : rows.slice(0, limit)) as T[];
+}
+
+function selectAll<T>(table: string, params: Params = {}): Promise<T[]> {
+  return DEMO ? Promise.resolve(demoQuery<T>(table, params)) : restSelectAll<T>(table, params);
+}
+
+function select<T>(table: string, params: Params = {}): Promise<T[]> {
+  return DEMO ? Promise.resolve(demoQuery<T>(table, params)) : restSelect<T>(table, params);
+}
 
 /** Optional cap for quick local builds (e.g. SITE_MAX_BILL_PAGES=200). */
 const MAX_BILL_PAGES = Number(process.env.SITE_MAX_BILL_PAGES ?? 0) || undefined;
@@ -193,3 +232,18 @@ export async function loadRecentStateBills(state: string): Promise<{ bills: Stat
   });
   return { bills };
 }
+
+export interface VotePositionWithMember {
+  member_id: string;
+  position: 'yea' | 'nay' | 'present' | 'not_voting';
+  party: string | null;
+}
+
+/** Demo mode only: positions are bundled so vote pages can be prerendered. */
+export const loadPositionsByVote = memo(async () =>
+  groupBy(await selectAll<VotePositionWithMember & { vote_id: string }>('vote_positions'), (p) => p.vote_id),
+);
+
+export const loadPositionsByMember = memo(async () =>
+  groupBy(await selectAll<VotePositionWithMember & { vote_id: string }>('vote_positions'), (p) => p.member_id),
+);

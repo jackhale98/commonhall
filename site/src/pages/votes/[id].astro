@@ -1,0 +1,62 @@
+---
+// Demo mode only: vote pages prerendered from the bundled sample data. With a
+// Supabase project, votes are client-rendered at /vote/?id=… instead.
+import VoteView, { type Row, type Vote } from '../../components/VoteView';
+import Base from '../../layouts/Base.astro';
+import { loadMembers, loadPositionsByVote } from '../../lib/build-data';
+import { DEMO } from '../../lib/config';
+import demoData from '../../data/demo.json';
+
+export async function getStaticPaths() {
+  if (!DEMO) return [];
+  const [members, byVote] = await Promise.all([loadMembers(), loadPositionsByVote()]);
+  return (demoData.votes as unknown as Vote[]).map((vote) => {
+    const rows: Row[] = (byVote.get(vote.id) ?? []).map((p) => {
+      const m = members.get(p.member_id);
+      return {
+        member_id: p.member_id,
+        position: p.position,
+        party: p.party,
+        member: m
+          ? {
+              bioguide_id: m.bioguide_id,
+              name: m.name,
+              party: m.party,
+              state: m.state,
+              district: m.district,
+              chamber: m.chamber,
+            }
+          : null,
+      };
+    });
+    return { params: { id: vote.id }, props: { vote, rows } };
+  });
+}
+
+interface Props {
+  vote: Vote;
+  rows: Row[];
+}
+
+const { vote, rows } = Astro.props;
+const title = `${vote.chamber === 'house' ? 'House' : 'Senate'} roll call ${vote.roll_number}`;
+---
+
+<Base title={title} description={vote.question ?? title} section="bills">
+  <VoteView client:visible initial={{ vote, rows }} />
+</Base>
+
+<style is:global>
+  .positions {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  }
+  .plain-members {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-1);
+  }
+</style>

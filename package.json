@@ -23,7 +23,8 @@
     "db:reset": "supabase db reset",
     "verify:votes": "tsx scripts/verify-votes.ts --sample 10",
     "verify:reps": "tsx scripts/verify-reps.ts",
-    "seed:make": "tsx scripts/make-seed.ts"
+    "seed:make": "tsx scripts/make-seed.ts",
+    "demo:export": "tsx scripts/export-demo.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

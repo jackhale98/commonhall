@@ -68,6 +68,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). In short: `npm install`,
 `npm run db:start`, `npm run db:reset`, copy `.env.example` to `site/.env` with the
 local anon key, then `npm run dev`.
 
+## Demo mode
+
+Until a Supabase project is configured (no `PUBLIC_SUPABASE_URL` repository
+variable), the Pages deploy builds a **demo** from `site/src/data/demo.json`: the
+seed's 539 members, 50 real bills and 6 real roll calls. Bill, member, state and
+vote pages work and bill search filters the sample in the browser; accounts,
+follows, the feed and Find my reps are switched off, and a banner says so. To try
+it on your fork, enable Pages (Settings → Pages → Source: GitHub Actions) and run
+the "Deploy site" workflow. Setting the Supabase variables switches the next
+build to the real site. Regenerate the snapshot with `npm run db:reset` then
+`npm run demo:export`.
+
 ## Deploy your own
 
 You need: a GitHub account, a free [Supabase](https://supabase.com) project, a

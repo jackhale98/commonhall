@@ -1,11 +1,19 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from './config';
+import { DEMO, SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from './config';
 
 export type OnDemandResult<T> =
   { ok: true; payload: T; cached: boolean } | { ok: false; status: number; error: string };
 
 /** Ask the fetch-on-demand Edge Function for a bill or member we have not synced. */
 export async function onDemand<T>(kind: 'bill' | 'member', id: string): Promise<OnDemandResult<T>> {
-  if (!hasSupabase) return { ok: false, status: 503, error: 'Data service not configured.' };
+  if (!hasSupabase) {
+    return {
+      ok: false,
+      status: 404,
+      error: DEMO
+        ? 'This demo includes only a small sample of bills and members, and that one isn’t among them.'
+        : 'Data service not configured.',
+    };
+  }
   const url = `${SUPABASE_URL.replace(/\/$/, '')}/functions/v1/fetch-on-demand?kind=${kind}&id=${encodeURIComponent(id)}`;
   const response = await fetch(url, { headers: { apikey: SUPABASE_ANON_KEY } });
   const body = (await response.json().catch(() => ({}))) as { payload?: T; cached?: boolean; error?: string };

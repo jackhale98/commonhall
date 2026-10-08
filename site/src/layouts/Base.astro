@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { SITE_NAME } from '../lib/config';
+import { DEMO, SITE_NAME } from '../lib/config';
 import NavStatus from '../components/NavStatus';
 import { href } from '../lib/paths';
 
@@ -33,7 +33,7 @@ const nav = [
   { key: 'states', label: 'States', path: 'states/' },
   { key: 'feed', label: 'Feed', path: 'feed/' },
   { key: 'account', label: 'Account', path: 'account/' },
-] as const;
+].filter((item) => !DEMO || !['feed', 'account'].includes(item.key));
 ---
 
 <!doctype html>
@@ -93,6 +93,14 @@ const nav = [
         </form>
       </div>
     </header>
+    {DEMO && (
+      <div class="demo-banner" role="note">
+        <div class="container">
+          <strong>Demo.</strong> This preview uses a small sample of real data (50 bills, current members, 6 roll-call
+          votes). Accounts, following, the feed and Find my reps are switched off until a database is connected.
+        </div>
+      </div>
+    )}
     <main id="main" class="container">
       <slot />
     </main>
@@ -183,6 +191,12 @@ const nav = [
   }
   main {
     padding-block: var(--space-5) var(--space-7);
+  }
+  .demo-banner {
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+    padding-block: var(--space-2);
+    font-size: var(--step--1);
   }
   .site-footer {
     border-top: 1px solid var(--border);

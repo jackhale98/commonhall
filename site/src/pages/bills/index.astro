@@ -1,11 +1,12 @@
 ---
 import BillExplorer from '../../components/BillExplorer';
 import Base from '../../layouts/Base.astro';
-import { CURRENT_CONGRESS, loadBills, loadPolicyAreas } from '../../lib/build-data';
+import { CURRENT_CONGRESS, loadBills, loadMembers, loadPolicyAreas } from '../../lib/build-data';
+import { DEMO } from '../../lib/config';
 import { congressLabel } from '../../lib/format';
 import type { BillListItem as Bill } from '../../lib/types';
 
-const [bills, policyAreas] = await Promise.all([loadBills(), loadPolicyAreas()]);
+const [bills, policyAreas, members] = await Promise.all([loadBills(), loadPolicyAreas(), loadMembers()]);
 // loadBills() is ordered by latest action, newest first.
 const initial: Bill[] = bills
   .slice(0, 50)
@@ -49,5 +50,35 @@ const initial: Bill[] = bills
   <noscript>
     <p class="notice">Search and filters need JavaScript. The most recently active bills are listed below.</p>
   </noscript>
-  <BillExplorer client:load congress={CURRENT_CONGRESS} initial={initial} policyAreas={policyAreas} />
+  {DEMO ? (
+    <BillExplorer
+      client:load
+      local
+      congress={CURRENT_CONGRESS}
+      policyAreas={policyAreas}
+      initial={bills.map((b, i) => ({
+        ...initial[i]!,
+        ...(i >= initial.length
+          ? {
+              id: b.id,
+              congress: b.congress,
+              bill_type: b.bill_type,
+              number: b.number,
+              title: b.title,
+              short_title: b.short_title,
+              introduced_date: b.introduced_date,
+              latest_action_date: b.latest_action_date,
+              latest_action_text: b.latest_action_text,
+              status: b.status,
+              sponsor_id: b.sponsor_id,
+              policy_area: b.policy_area,
+            }
+          : {}),
+        sponsor_party: b.sponsor_id ? (members.get(b.sponsor_id)?.party ?? null) : null,
+        summary_text: b.summary_text,
+      }))}
+    />
+  ) : (
+    <BillExplorer client:load congress={CURRENT_CONGRESS} initial={initial} policyAreas={policyAreas} />
+  )}
 </Base>
