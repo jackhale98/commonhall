@@ -155,28 +155,66 @@ can do the steps below in any order and the site keeps working.
    button → Session pooler. It works over IPv4, which GitHub Actions needs:
    `postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres`.
 
-### 3. GitHub secrets and variables
+### 3. GitHub settings, secrets and variables
 
-Settings → Secrets and variables → Actions.
+Every value GitHub needs, in one place. A full reference of every setting
+(GitHub, Supabase and local) is in [docs/configuration.md](docs/configuration.md).
 
-**Secrets** (private):
+**a. Turn on Actions (forks only).** GitHub disables workflows on forks. Open the
+**Actions** tab and select "I understand my workflows, go ahead and enable them".
+Scheduled workflows (the nightly rebuild) also need enabling there if GitHub
+shows a banner.
 
-| Secret | Value | Used by |
+**b. Workflow permissions.** Settings → Actions → General → Workflow permissions:
+choose **Read and write permissions**. The Backfill workflow re-dispatches itself
+when it runs out of time, which needs `actions: write`; the workflows ask only for
+the permissions they use.
+
+**c. Pages.** Settings → Pages → Build and deployment → Source: **GitHub Actions**
+(step 1). For a custom domain, set it here and tick "Enforce HTTPS"; the build
+reads the URL and base path from Pages automatically, so nothing else changes.
+The `github-pages` environment that GitHub creates allows deploys from the default
+branch only; leave it that way.
+
+**d. Secrets** (Settings → Secrets and variables → Actions → **Secrets** tab →
+New repository secret). Repository secrets, not environment secrets:
+
+| Secret | Value | Where to find it | Used by |
+| --- | --- | --- | --- |
+| `SUPABASE_ACCESS_TOKEN` | a Supabase personal access token | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) → Generate new token | Deploy Supabase |
+| `SUPABASE_PROJECT_REF` | the project ref, e.g. `abcdefghijklmnopqrst` | the dashboard URL `…/project/<ref>`, or Project Settings → General | Deploy Supabase |
+| `SUPABASE_DB_PASSWORD` | the database password | chosen when creating the project; reset under Project Settings → Database | Deploy Supabase |
+| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in | Connect (top of the dashboard) → Session pooler | Backfill |
+| `CONGRESS_API_KEY` | your Congress.gov key | the email from [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Backfill |
+
+**e. Variables** (same page → **Variables** tab → New repository variable). These
+are public by design: they are compiled into the site and visible to anyone.
+Repository variables, not environment variables (the build job does not run in
+an environment):
+
+| Variable | Value | Required? |
 | --- | --- | --- |
-| `SUPABASE_ACCESS_TOKEN` | the personal access token | "Deploy Supabase" workflow |
-| `SUPABASE_PROJECT_REF` | the project ref | "Deploy Supabase" workflow |
-| `SUPABASE_DB_PASSWORD` | the database password | "Deploy Supabase" workflow |
-| `SUPABASE_DB_URL` | the session pooler connection string | Backfill workflow |
-| `CONGRESS_API_KEY` | your Congress.gov key | Backfill workflow |
+| `PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` | Yes for the live site. Empty = demo build |
+| `PUBLIC_SUPABASE_ANON_KEY` | the publishable (anon) key from Project Settings → API Keys | Yes for the live site |
+| `PUBLIC_SITE_NAME` | the name in the header and page titles | No (default "Civic Tracker") |
+| `PUBLIC_POLIS_SITE_ID` | your Pol.is site id (`polis_…`) | No; turns on discussions |
 
-**Variables** (public by design; they end up in the browser):
+**Never put these in GitHub:** the Supabase `service_role`/secret key, the Open
+States key and `SYNC_SECRET`. They live only in Supabase function secrets (step 5).
+Nothing that starts with `PUBLIC_` may ever hold a secret.
 
-| Variable | Value |
-| --- | --- |
-| `PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` (setting this switches the site from demo to live) |
-| `PUBLIC_SUPABASE_ANON_KEY` | the publishable (anon) key |
-| `PUBLIC_SITE_NAME` | optional, defaults to "Civic Tracker" |
-| `PUBLIC_POLIS_SITE_ID` | optional, your Pol.is site id; turns on discussions (docs/discussions.md) |
+**f. What runs when**
+
+| Workflow | Runs | Needs |
+| --- | --- | --- |
+| CI | every pull request and push to `main` | nothing (uses the seed in a local Supabase) |
+| Deploy site | push to `main`, manually, and from Nightly rebuild | the variables (none = demo) |
+| Nightly rebuild | 09:17 UTC daily | same as Deploy site |
+| Deploy Supabase | push to `main` touching `supabase/` or `packages/`, and manually | the three `SUPABASE_*` deploy secrets (skips cleanly without them) |
+| Backfill | manually only | `SUPABASE_DB_URL`, `CONGRESS_API_KEY`, write permission (b) |
+
+GitHub turns off scheduled workflows in a repository with no activity for 60 days.
+If the nightly rebuild stops, re-enable it from the Actions tab.
 
 ### 4. Create the database and deploy the functions
 
