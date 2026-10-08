@@ -14,3 +14,4 @@ supabase/.env
 # Downloaded data must never be committed
 data/
 .backfill/
+supabase/functions/.env

@@ -90,6 +90,17 @@ export interface BillSubjects {
 export type BillSummary = Schemas['billSummariesArray'];
 export type TextVersion = Schemas['textVersions'];
 
+export interface BillTitle {
+  title?: string;
+  titleType?: string;
+  titleTypeCode?: number;
+  updateDate?: string;
+  billTextVersionCode?: string;
+  billTextVersionName?: string;
+  chamberCode?: string;
+  chamberName?: string;
+}
+
 export type MemberListItem = Omit<Schemas['Members'], 'terms'> & {
   district?: number;
   terms?: { item?: (Schemas['memberTerms'] & { endYear?: number })[] };

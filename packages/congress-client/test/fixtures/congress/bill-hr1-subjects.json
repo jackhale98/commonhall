@@ -1,0 +1,977 @@
+{
+    "pagination": {
+        "count": 240
+    },
+    "request": {
+        "billNumber": "1",
+        "billType": "hr",
+        "billUrl": "https://api.congress.gov/v3/bill/119/hr/1?format=json",
+        "congress": "119",
+        "contentType": "application/json",
+        "format": "json"
+    },
+    "subjects": {
+        "legislativeSubjects": [
+            {
+                "name": "Abortion",
+                "updateDate": "2025-05-29T18:08:12Z"
+            },
+            {
+                "name": "Accounting and auditing",
+                "updateDate": "2025-05-29T18:10:12Z"
+            },
+            {
+                "name": "Administrative law and regulatory procedures",
+                "updateDate": "2025-05-29T17:05:30Z"
+            },
+            {
+                "name": "Advanced technology and technological innovations",
+                "updateDate": "2025-05-29T17:44:01Z"
+            },
+            {
+                "name": "Advisory bodies",
+                "updateDate": "2025-05-29T17:12:48Z"
+            },
+            {
+                "name": "Afghanistan",
+                "updateDate": "2025-05-29T17:54:55Z"
+            },
+            {
+                "name": "Agricultural conservation and pollution",
+                "updateDate": "2025-05-29T17:09:50Z"
+            },
+            {
+                "name": "Agricultural education",
+                "updateDate": "2025-05-29T17:11:27Z"
+            },
+            {
+                "name": "Agricultural equipment and machinery",
+                "updateDate": "2025-05-29T17:11:40Z"
+            },
+            {
+                "name": "Agricultural insurance",
+                "updateDate": "2025-05-29T17:09:36Z"
+            },
+            {
+                "name": "Agricultural marketing and promotion",
+                "updateDate": "2025-05-29T17:08:02Z"
+            },
+            {
+                "name": "Agricultural practices and innovations",
+                "updateDate": "2025-05-29T17:10:46Z"
+            },
+            {
+                "name": "Agricultural prices, subsidies, credit",
+                "updateDate": "2025-05-29T17:07:50Z"
+            },
+            {
+                "name": "Agricultural research",
+                "updateDate": "2025-05-29T17:11:04Z"
+            },
+            {
+                "name": "Agricultural trade",
+                "updateDate": "2025-05-29T17:11:56Z"
+            },
+            {
+                "name": "Air quality",
+                "updateDate": "2025-05-29T18:02:33Z"
+            },
+            {
+                "name": "Alabama",
+                "updateDate": "2025-05-29T17:14:13Z"
+            },
+            {
+                "name": "Alaska",
+                "updateDate": "2025-05-29T17:04:49Z"
+            },
+            {
+                "name": "Alternative and renewable resources",
+                "updateDate": "2025-05-29T17:13:01Z"
+            },
+            {
+                "name": "Animal and plant health",
+                "updateDate": "2025-05-29T17:14:03Z"
+            },
+            {
+                "name": "Appropriations",
+                "updateDate": "2025-05-29T17:27:45Z"
+            },
+            {
+                "name": "Arctic Ocean",
+                "updateDate": "2025-05-29T17:22:43Z"
+            },
+            {
+                "name": "Arizona",
+                "updateDate": "2025-05-29T17:14:26Z"
+            },
+            {
+                "name": "Arkansas",
+                "updateDate": "2025-05-29T17:14:39Z"
+            },
+            {
+                "name": "Armed Forces Retirement Home",
+                "updateDate": "2025-07-10T10:47:45Z"
+            },
+            {
+                "name": "Asia",
+                "updateDate": "2025-05-29T17:45:22Z"
+            },
+            {
+                "name": "Aviation and airports",
+                "updateDate": "2025-05-29T17:21:59Z"
+            },
+            {
+                "name": "Bank accounts, deposits, capital",
+                "updateDate": "2025-05-29T18:12:08Z"
+            },
+            {
+                "name": "Birds",
+                "updateDate": "2025-05-29T17:08:49Z"
+            },
+            {
+                "name": "Border security and unlawful immigration",
+                "updateDate": "2025-05-29T17:45:51Z"
+            },
+            {
+                "name": "Budget deficits and national debt",
+                "updateDate": "2025-05-29T18:15:17Z"
+            },
+            {
+                "name": "Building construction",
+                "updateDate": "2025-05-29T17:40:21Z"
+            },
+            {
+                "name": "Business investment and capital",
+                "updateDate": "2025-05-29T18:13:39Z"
+            },
+            {
+                "name": "California",
+                "updateDate": "2025-05-29T17:14:50Z"
+            },
+            {
+                "name": "Canada",
+                "updateDate": "2025-07-02T20:03:25Z"
+            },
+            {
+                "name": "Charitable contributions",
+                "updateDate": "2025-05-29T18:11:56Z"
+            },
+            {
+                "name": "Child care and development",
+                "updateDate": "2025-07-09T14:57:05Z"
+            },
+            {
+                "name": "Child health",
+                "updateDate": "2025-05-29T18:05:15Z"
+            },
+            {
+                "name": "Civil actions and liability",
+                "updateDate": "2025-05-29T17:18:09Z"
+            },
+            {
+                "name": "Climate change and greenhouse gases",
+                "updateDate": "2025-05-29T18:02:50Z"
+            },
+            {
+                "name": "Coal",
+                "updateDate": "2025-07-09T15:02:10Z"
+            },
+            {
+                "name": "Coast guard",
+                "updateDate": "2025-05-29T17:22:12Z"
+            },
+            {
+                "name": "Colorado",
+                "updateDate": "2025-05-29T17:15:00Z"
+            },
+            {
+                "name": "Commemorative events and holidays",
+                "updateDate": "2025-05-29T17:21:29Z"
+            },
+            {
+                "name": "Commodity Credit Corporation",
+                "updateDate": "2025-05-29T17:10:28Z"
+            },
+            {
+                "name": "Computer security and identity theft",
+                "updateDate": "2025-05-29T18:04:30Z"
+            },
+            {
+                "name": "Computers and information technology",
+                "updateDate": "2025-05-29T17:13:40Z"
+            },
+            {
+                "name": "Congressional oversight",
+                "updateDate": "2025-05-29T17:57:03Z"
+            },
+            {
+                "name": "Consumer Financial Protection Bureau",
+                "updateDate": "2025-05-29T17:41:31Z"
+            },
+            {
+                "name": "Consumer affairs",
+                "updateDate": "2025-05-29T17:03:42Z"
+            },
+            {
+                "name": "Correctional facilities and imprisonment",
+                "updateDate": "2025-07-09T15:06:09Z"
+            },
+            {
+                "name": "Cosmetics and personal care",
+                "updateDate": "2025-05-29T18:13:05Z"
+            },
+            {
+                "name": "Criminal justice information and records",
+                "updateDate": "2025-07-02T20:04:56Z"
+            },
+            {
+                "name": "Criminal procedure and sentencing",
+                "updateDate": "2025-05-29T17:57:16Z"
+            },
+            {
+                "name": "Cuba",
+                "updateDate": "2025-05-29T17:54:21Z"
+            },
+            {
+                "name": "Data collection, sharing, protection",
+                "updateDate": "2026-04-10T17:15:13Z"
+            },
+            {
+                "name": "Department of Agriculture",
+                "updateDate": "2025-05-29T17:05:43Z"
+            },
+            {
+                "name": "Department of Commerce",
+                "updateDate": "2025-05-29T18:04:15Z"
+            },
+            {
+                "name": "Department of Defense",
+                "updateDate": "2025-07-09T19:15:20Z"
+            },
+            {
+                "name": "Department of Education",
+                "updateDate": "2025-05-29T17:55:57Z"
+            },
+            {
+                "name": "Department of Energy",
+                "updateDate": "2025-05-29T18:01:56Z"
+            },
+            {
+                "name": "Department of Health and Human Services",
+                "updateDate": "2025-05-29T18:04:57Z"
+            },
+            {
+                "name": "Department of Homeland Security",
+                "updateDate": "2025-07-09T15:04:28Z"
+            },
+            {
+                "name": "Department of Housing and Urban Development",
+                "updateDate": "2025-07-10T13:00:45Z"
+            },
+            {
+                "name": "Department of Justice",
+                "updateDate": "2025-07-09T15:06:44Z"
+            },
+            {
+                "name": "Disaster relief and insurance",
+                "updateDate": "2025-07-09T14:55:05Z"
+            },
+            {
+                "name": "District of Columbia",
+                "updateDate": "2025-05-29T17:05:01Z"
+            },
+            {
+                "name": "Drug therapy",
+                "updateDate": "2025-05-29T18:07:46Z"
+            },
+            {
+                "name": "Drug trafficking and controlled substances",
+                "updateDate": "2025-05-29T17:42:36Z"
+            },
+            {
+                "name": "Economic development",
+                "updateDate": "2025-05-29T18:12:46Z"
+            },
+            {
+                "name": "Economic performance and conditions",
+                "updateDate": "2025-05-29T17:56:08Z"
+            },
+            {
+                "name": "Education programs funding",
+                "updateDate": "2025-05-29T17:12:09Z"
+            },
+            {
+                "name": "Educational technology and distance education",
+                "updateDate": "2025-07-09T14:56:09Z"
+            },
+            {
+                "name": "Electric power generation and transmission",
+                "updateDate": "2025-05-29T17:19:16Z"
+            },
+            {
+                "name": "Elementary and secondary education",
+                "updateDate": "2025-05-29T17:12:22Z"
+            },
+            {
+                "name": "Employee benefits and pensions",
+                "updateDate": "2025-05-29T18:09:21Z"
+            },
+            {
+                "name": "Employment and training programs",
+                "updateDate": "2025-05-29T17:05:17Z"
+            },
+            {
+                "name": "Endangered and threatened species",
+                "updateDate": "2025-05-29T17:20:03Z"
+            },
+            {
+                "name": "Energy assistance for the poor and aged",
+                "updateDate": "2025-05-29T17:02:58Z"
+            },
+            {
+                "name": "Energy efficiency and conservation",
+                "updateDate": "2025-05-29T17:13:16Z"
+            },
+            {
+                "name": "Energy revenues and royalties",
+                "updateDate": "2025-05-29T17:18:37Z"
+            },
+            {
+                "name": "Environmental Protection Agency (EPA)",
+                "updateDate": "2025-05-29T18:02:12Z"
+            },
+            {
+                "name": "Environmental assessment, monitoring, research",
+                "updateDate": "2025-05-29T17:19:28Z"
+            },
+            {
+                "name": "Environmental regulatory procedures",
+                "updateDate": "2025-05-29T17:19:46Z"
+            },
+            {
+                "name": "Europe",
+                "updateDate": "2025-05-29T17:54:45Z"
+            },
+            {
+                "name": "Executive Office of the President",
+                "updateDate": "2025-07-09T15:03:33Z"
+            },
+            {
+                "name": "Executive agency funding and structure",
+                "updateDate": "2025-05-29T17:41:22Z"
+            },
+            {
+                "name": "Farmland",
+                "updateDate": "2025-05-29T17:07:21Z"
+            },
+            {
+                "name": "Federal Communications Commission (FCC)",
+                "updateDate": "2025-05-29T18:03:30Z"
+            },
+            {
+                "name": "Federal Energy Regulatory Commission (FERC)",
+                "updateDate": "2025-05-29T18:00:32Z"
+            },
+            {
+                "name": "Federal preemption",
+                "updateDate": "2025-05-29T18:03:59Z"
+            },
+            {
+                "name": "Firearms and explosives",
+                "updateDate": "2025-05-29T17:43:51Z"
+            },
+            {
+                "name": "Fishes",
+                "updateDate": "2025-05-29T17:08:38Z"
+            },
+            {
+                "name": "Florida",
+                "updateDate": "2025-05-29T17:15:10Z"
+            },
+            {
+                "name": "Food assistance and relief",
+                "updateDate": "2025-05-29T17:02:29Z"
+            },
+            {
+                "name": "Foreign and international corporations",
+                "updateDate": "2025-07-09T15:00:43Z"
+            },
+            {
+                "name": "Forests, forestry, trees",
+                "updateDate": "2025-05-29T17:09:00Z"
+            },
+            {
+                "name": "Fraud offenses and financial crimes",
+                "updateDate": "2025-05-29T18:05:48Z"
+            },
+            {
+                "name": "Fruit and vegetables",
+                "updateDate": "2025-05-29T17:07:09Z"
+            },
+            {
+                "name": "Government buildings, facilities, and property",
+                "updateDate": "2025-05-29T17:28:02Z"
+            },
+            {
+                "name": "Government employee pay, benefits, personnel management",
+                "updateDate": "2025-05-29T17:42:01Z"
+            },
+            {
+                "name": "Government information and archives",
+                "updateDate": "2025-05-29T18:06:53Z"
+            },
+            {
+                "name": "Government lending and loan guarantees",
+                "updateDate": "2025-05-29T17:54:05Z"
+            },
+            {
+                "name": "Government studies and investigations",
+                "updateDate": "2025-05-29T18:06:37Z"
+            },
+            {
+                "name": "Government trust funds",
+                "updateDate": "2025-05-29T17:28:58Z"
+            },
+            {
+                "name": "Grain",
+                "updateDate": "2025-05-29T17:06:57Z"
+            },
+            {
+                "name": "Guam",
+                "updateDate": "2025-05-29T17:04:12Z"
+            },
+            {
+                "name": "Hawaii",
+                "updateDate": "2025-05-29T17:04:39Z"
+            },
+            {
+                "name": "Hazardous wastes and toxic substances",
+                "updateDate": "2025-05-29T18:03:06Z"
+            },
+            {
+                "name": "Health care costs and insurance",
+                "updateDate": "2025-05-29T18:07:07Z"
+            },
+            {
+                "name": "Health care coverage and access",
+                "updateDate": "2025-05-29T18:09:36Z"
+            },
+            {
+                "name": "Health facilities and institutions",
+                "updateDate": "2025-07-09T15:02:34Z"
+            },
+            {
+                "name": "Health personnel",
+                "updateDate": "2025-05-29T18:05:33Z"
+            },
+            {
+                "name": "Higher education",
+                "updateDate": "2025-05-29T17:53:26Z"
+            },
+            {
+                "name": "Horticulture and plants",
+                "updateDate": "2025-05-29T17:13:28Z"
+            },
+            {
+                "name": "Hospital care",
+                "updateDate": "2025-07-09T15:02:52Z"
+            },
+            {
+                "name": "Human trafficking",
+                "updateDate": "2025-05-29T17:42:50Z"
+            },
+            {
+                "name": "Hybrid, electric, and advanced technology vehicles",
+                "updateDate": "2025-05-29T17:27:13Z"
+            },
+            {
+                "name": "Immigrant health and welfare",
+                "updateDate": "2025-05-29T18:14:37Z"
+            },
+            {
+                "name": "Immigration status and procedures",
+                "updateDate": "2025-05-29T17:43:02Z"
+            },
+            {
+                "name": "Income tax credits",
+                "updateDate": "2025-05-29T18:10:23Z"
+            },
+            {
+                "name": "Income tax deductions",
+                "updateDate": "2025-05-29T18:10:49Z"
+            },
+            {
+                "name": "Income tax rates",
+                "updateDate": "2025-05-29T18:10:37Z"
+            },
+            {
+                "name": "Indian social and development programs",
+                "updateDate": "2025-07-02T20:04:26Z"
+            },
+            {
+                "name": "Industrial facilities",
+                "updateDate": "2025-05-29T17:09:11Z"
+            },
+            {
+                "name": "Inflation and prices",
+                "updateDate": "2025-05-29T17:03:58Z"
+            },
+            {
+                "name": "Infrastructure development",
+                "updateDate": "2025-05-29T17:22:57Z"
+            },
+            {
+                "name": "Intelligence activities, surveillance, classified information",
+                "updateDate": "2025-05-29T17:45:41Z"
+            },
+            {
+                "name": "Intergovernmental relations",
+                "updateDate": "2025-05-29T17:06:21Z"
+            },
+            {
+                "name": "Internet, web applications, social media",
+                "updateDate": "2025-05-29T17:03:12Z"
+            },
+            {
+                "name": "Judicial procedure and administration",
+                "updateDate": "2025-05-29T17:57:25Z"
+            },
+            {
+                "name": "Judicial review and appeals",
+                "updateDate": "2025-07-02T20:05:09Z"
+            },
+            {
+                "name": "Juvenile crime and gang violence",
+                "updateDate": "2025-07-02T20:04:39Z"
+            },
+            {
+                "name": "Labor market",
+                "updateDate": "2025-07-02T20:05:21Z"
+            },
+            {
+                "name": "Land transfers",
+                "updateDate": "2025-05-29T17:21:42Z"
+            },
+            {
+                "name": "Land use and conservation",
+                "updateDate": "2025-05-29T17:06:47Z"
+            },
+            {
+                "name": "Latin America",
+                "updateDate": "2025-07-02T20:04:09Z"
+            },
+            {
+                "name": "Law enforcement administration and funding",
+                "updateDate": "2025-05-29T17:41:11Z"
+            },
+            {
+                "name": "Law enforcement officers",
+                "updateDate": "2025-07-09T15:04:47Z"
+            },
+            {
+                "name": "Legal fees and court costs",
+                "updateDate": "2025-05-29T17:56:24Z"
+            },
+            {
+                "name": "Licensing and registrations",
+                "updateDate": "2025-05-29T17:18:24Z"
+            },
+            {
+                "name": "Lighting, heating, cooling",
+                "updateDate": "2025-05-29T17:29:19Z"
+            },
+            {
+                "name": "Livestock",
+                "updateDate": "2025-05-29T17:07:33Z"
+            },
+            {
+                "name": "Louisiana",
+                "updateDate": "2025-05-29T17:15:22Z"
+            },
+            {
+                "name": "Mammals",
+                "updateDate": "2025-05-29T17:08:26Z"
+            },
+            {
+                "name": "Manufacturing",
+                "updateDate": "2025-05-29T18:14:20Z"
+            },
+            {
+                "name": "Marine and coastal resources, fisheries",
+                "updateDate": "2025-05-29T17:20:48Z"
+            },
+            {
+                "name": "Marine and inland water transportation",
+                "updateDate": "2025-05-29T17:22:26Z"
+            },
+            {
+                "name": "Meat",
+                "updateDate": "2025-05-29T17:08:13Z"
+            },
+            {
+                "name": "Medicaid",
+                "updateDate": "2025-05-29T18:04:45Z"
+            },
+            {
+                "name": "Medical education",
+                "updateDate": "2025-05-29T17:55:45Z"
+            },
+            {
+                "name": "Medicare",
+                "updateDate": "2025-05-29T18:08:49Z"
+            },
+            {
+                "name": "Merit Systems Protection Board",
+                "updateDate": "2025-05-29T18:09:48Z"
+            },
+            {
+                "name": "Mexico",
+                "updateDate": "2025-07-02T20:03:53Z"
+            },
+            {
+                "name": "Military facilities and property",
+                "updateDate": "2025-05-29T17:44:11Z"
+            },
+            {
+                "name": "Military operations and strategy",
+                "updateDate": "2025-05-29T17:44:20Z"
+            },
+            {
+                "name": "Military personnel and dependents",
+                "updateDate": "2025-05-29T17:44:31Z"
+            },
+            {
+                "name": "Military procurement, research, weapons development",
+                "updateDate": "2025-05-29T17:44:42Z"
+            },
+            {
+                "name": "Military readiness",
+                "updateDate": "2025-05-29T17:44:52Z"
+            },
+            {
+                "name": "Mining",
+                "updateDate": "2025-05-29T17:19:03Z"
+            },
+            {
+                "name": "Minnesota",
+                "updateDate": "2025-05-29T17:15:35Z"
+            },
+            {
+                "name": "Mississippi",
+                "updateDate": "2025-05-29T17:15:49Z"
+            },
+            {
+                "name": "Montana",
+                "updateDate": "2025-05-29T17:16:02Z"
+            },
+            {
+                "name": "Motor carriers",
+                "updateDate": "2025-05-29T17:27:02Z"
+            },
+            {
+                "name": "Motor vehicles",
+                "updateDate": "2025-05-29T17:27:29Z"
+            },
+            {
+                "name": "Museums, exhibitions, cultural centers",
+                "updateDate": "2025-05-29T17:31:03Z"
+            },
+            {
+                "name": "National Guard and reserves",
+                "updateDate": "2025-05-29T17:23:31Z"
+            },
+            {
+                "name": "Natural disasters",
+                "updateDate": "2025-07-09T14:55:23Z"
+            },
+            {
+                "name": "Navigation, waterways, harbors",
+                "updateDate": "2025-05-29T17:23:18Z"
+            },
+            {
+                "name": "Nevada",
+                "updateDate": "2025-05-29T17:16:13Z"
+            },
+            {
+                "name": "New Mexico",
+                "updateDate": "2025-05-29T17:16:23Z"
+            },
+            {
+                "name": "North America",
+                "updateDate": "2025-07-02T20:03:39Z"
+            },
+            {
+                "name": "North Dakota",
+                "updateDate": "2025-05-29T17:16:38Z"
+            },
+            {
+                "name": "Nuclear power",
+                "updateDate": "2025-05-29T18:14:08Z"
+            },
+            {
+                "name": "Nuclear weapons",
+                "updateDate": "2025-05-29T17:45:31Z"
+            },
+            {
+                "name": "Nutrition and diet",
+                "updateDate": "2025-05-29T17:03:27Z"
+            },
+            {
+                "name": "Office of Management and Budget (OMB)",
+                "updateDate": "2025-07-09T15:03:51Z"
+            },
+            {
+                "name": "Office of Personnel Management (OPM)",
+                "updateDate": "2025-05-29T18:09:59Z"
+            },
+            {
+                "name": "Oil and gas",
+                "updateDate": "2025-05-29T17:17:58Z"
+            },
+            {
+                "name": "Oklahoma",
+                "updateDate": "2025-05-29T17:16:48Z"
+            },
+            {
+                "name": "Olympic games",
+                "updateDate": "2025-05-29T17:43:15Z"
+            },
+            {
+                "name": "Oregon",
+                "updateDate": "2025-05-29T17:16:59Z"
+            },
+            {
+                "name": "Parks, recreation areas, trails",
+                "updateDate": "2025-05-29T17:21:15Z"
+            },
+            {
+                "name": "Performing arts",
+                "updateDate": "2025-05-29T17:30:50Z"
+            },
+            {
+                "name": "Pest management",
+                "updateDate": "2025-05-29T17:10:01Z"
+            },
+            {
+                "name": "Pipelines",
+                "updateDate": "2025-05-29T18:01:18Z"
+            },
+            {
+                "name": "Poverty and welfare assistance",
+                "updateDate": "2025-05-29T17:02:45Z"
+            },
+            {
+                "name": "Prescription drugs",
+                "updateDate": "2025-05-29T18:06:14Z"
+            },
+            {
+                "name": "Public contracts and procurement",
+                "updateDate": "2025-05-29T17:21:04Z"
+            },
+            {
+                "name": "Radio spectrum allocation",
+                "updateDate": "2025-05-29T17:30:28Z"
+            },
+            {
+                "name": "Radioactive wastes and releases",
+                "updateDate": "2025-07-09T15:07:05Z"
+            },
+            {
+                "name": "Refugees, asylum, displaced persons",
+                "updateDate": "2025-05-29T17:56:48Z"
+            },
+            {
+                "name": "Residential rehabilitation and home repair",
+                "updateDate": "2025-05-29T18:13:51Z"
+            },
+            {
+                "name": "Retail and wholesale trades",
+                "updateDate": "2025-05-29T18:06:02Z"
+            },
+            {
+                "name": "Rural conditions and development",
+                "updateDate": "2025-05-29T17:06:34Z"
+            },
+            {
+                "name": "Sales and excise taxes",
+                "updateDate": "2025-05-29T18:13:18Z"
+            },
+            {
+                "name": "Seashores and lakeshores",
+                "updateDate": "2025-05-29T17:23:07Z"
+            },
+            {
+                "name": "Securities",
+                "updateDate": "2025-05-29T17:40:35Z"
+            },
+            {
+                "name": "Securities and Exchange Commission (SEC)",
+                "updateDate": "2025-05-29T17:41:43Z"
+            },
+            {
+                "name": "Sex and reproductive health",
+                "updateDate": "2025-05-29T18:08:00Z"
+            },
+            {
+                "name": "Sex, gender, sexual orientation discrimination",
+                "updateDate": "2025-05-29T18:07:21Z"
+            },
+            {
+                "name": "Small business",
+                "updateDate": "2025-05-29T17:55:14Z"
+            },
+            {
+                "name": "Smuggling and trafficking",
+                "updateDate": "2025-05-29T17:42:25Z"
+            },
+            {
+                "name": "Social work, volunteer service, charitable organizations",
+                "updateDate": "2025-05-29T18:08:25Z"
+            },
+            {
+                "name": "Spacecraft and satellites",
+                "updateDate": "2025-05-29T17:43:43Z"
+            },
+            {
+                "name": "Specialized courts",
+                "updateDate": "2025-07-09T15:07:24Z"
+            },
+            {
+                "name": "Sports and recreation facilities",
+                "updateDate": "2025-05-29T17:43:33Z"
+            },
+            {
+                "name": "State and local finance",
+                "updateDate": "2025-05-29T17:05:57Z"
+            },
+            {
+                "name": "State and local government operations",
+                "updateDate": "2025-05-29T17:06:09Z"
+            },
+            {
+                "name": "State and local taxation",
+                "updateDate": "2025-05-29T17:12:35Z"
+            },
+            {
+                "name": "Strategic materials and reserves",
+                "updateDate": "2025-05-29T17:20:32Z"
+            },
+            {
+                "name": "Student aid and college costs",
+                "updateDate": "2025-05-29T17:28:36Z"
+            },
+            {
+                "name": "Supply chain",
+                "updateDate": "2026-04-10T17:14:42Z"
+            },
+            {
+                "name": "Surgery and anesthesia",
+                "updateDate": "2025-05-29T18:07:35Z"
+            },
+            {
+                "name": "Taiwan",
+                "updateDate": "2025-05-29T17:45:11Z"
+            },
+            {
+                "name": "Tariffs",
+                "updateDate": "2025-05-29T17:09:23Z"
+            },
+            {
+                "name": "Tax administration and collection, taxpayers",
+                "updateDate": "2025-05-29T18:11:03Z"
+            },
+            {
+                "name": "Tax reform and tax simplification",
+                "updateDate": "2025-05-29T18:11:16Z"
+            },
+            {
+                "name": "Tax treatment of families",
+                "updateDate": "2025-05-29T18:11:29Z"
+            },
+            {
+                "name": "Tax-exempt organizations",
+                "updateDate": "2025-05-29T18:15:02Z"
+            },
+            {
+                "name": "Taxation of foreign income",
+                "updateDate": "2025-05-29T18:12:24Z"
+            },
+            {
+                "name": "Technology transfer and commercialization",
+                "updateDate": "2025-05-29T17:46:15Z"
+            },
+            {
+                "name": "Telephone and wireless communication",
+                "updateDate": "2025-05-29T17:30:12Z"
+            },
+            {
+                "name": "Terrorism",
+                "updateDate": "2025-05-29T18:14:49Z"
+            },
+            {
+                "name": "Texas",
+                "updateDate": "2025-05-29T17:17:08Z"
+            },
+            {
+                "name": "Trade restrictions",
+                "updateDate": "2025-05-29T18:00:51Z"
+            },
+            {
+                "name": "Transfer and inheritance taxes",
+                "updateDate": "2025-05-29T18:11:44Z"
+            },
+            {
+                "name": "Transportation safety and security",
+                "updateDate": "2025-05-29T17:29:57Z"
+            },
+            {
+                "name": "U.S. and foreign investments",
+                "updateDate": "2025-07-09T15:01:06Z"
+            },
+            {
+                "name": "Ukraine",
+                "updateDate": "2025-05-29T17:54:32Z"
+            },
+            {
+                "name": "Unemployment",
+                "updateDate": "2025-05-29T17:55:32Z"
+            },
+            {
+                "name": "User charges and fees",
+                "updateDate": "2025-05-29T17:18:51Z"
+            },
+            {
+                "name": "Utah",
+                "updateDate": "2025-05-29T17:17:21Z"
+            },
+            {
+                "name": "Veterans' education, employment, rehabilitation",
+                "updateDate": "2025-05-29T17:28:20Z"
+            },
+            {
+                "name": "Veterinary medicine and animal diseases",
+                "updateDate": "2025-05-29T17:13:52Z"
+            },
+            {
+                "name": "Virgin Islands",
+                "updateDate": "2025-05-29T17:04:27Z"
+            },
+            {
+                "name": "Visas and passports",
+                "updateDate": "2025-07-09T15:04:08Z"
+            },
+            {
+                "name": "Wilderness and natural areas, wildlife refuges, wild rivers, habitats",
+                "updateDate": "2025-05-29T17:20:21Z"
+            },
+            {
+                "name": "Wyoming",
+                "updateDate": "2025-05-29T17:17:34Z"
+            }
+        ],
+        "policyArea": {
+            "name": "Economics and Public Finance",
+            "updateDate": "2025-05-21T15:28:51Z"
+        }
+    }
+}

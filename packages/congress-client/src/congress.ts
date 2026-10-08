@@ -11,6 +11,7 @@ import type {
   BillListItem,
   BillSubjects,
   BillSummary,
+  BillTitle,
   CongressInfo,
   Cosponsor,
   Envelope,
@@ -174,6 +175,10 @@ export class CongressClient {
 
   getBillSummaries(congress: number, type: string, number: string | number): Promise<BillSummary[]> {
     return this.collect<'summaries', BillSummary>(billPath(congress, type, number, 'summaries'), 'summaries');
+  }
+
+  getBillTitles(congress: number, type: string, number: string | number): Promise<BillTitle[]> {
+    return this.collect<'titles', BillTitle>(billPath(congress, type, number, 'titles'), 'titles');
   }
 
   getBillText(congress: number, type: string, number: string | number): Promise<TextVersion[]> {

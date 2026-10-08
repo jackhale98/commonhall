@@ -18,12 +18,17 @@ requests the next page itself by advancing `offset`. It also stops when
 
 **Finding:** bill list items carry `updateDate: "2026-10-08"` (no time), even though
 `fromDateTime` filters on the full timestamp.
-**Decision:** the hourly bill cursor is not "max `updateDate` seen". Each run
-works through a fixed window `[from, to)` where `to` is the run's start time. If a
-run stops early (budget or time), it stores the window and the offset reached;
-the next run resumes the same window a few items before that offset (re-reads
-are harmless upserts). When a window completes, the cursor becomes `to` minus
-five minutes of overlap.
+**Decision:** the bill cursor is not "max `updateDate` seen". Each run works
+through a fixed window `[from, to]` where `to` is the time the window opened. If a
+run stops early (budget or time), it stores the window and the IDs already
+processed; the next run lists the same window again from the start (one request
+per 250 bills) and skips those IDs. When a window completes, the cursor becomes
+`to` minus five minutes of overlap.
+
+Resuming by *offset* was tried first and rejected: when an already-processed
+bill is updated again it leaves the window, every later item shifts left, and
+the bills that shift past the stored offset are skipped for good. A test
+(`supabase/tests/sync-bills.test.ts`) covers this case.
 
 ## 3. Census geocoder: pin the district layer to the sitting Congress
 
@@ -63,3 +68,52 @@ advisory locks are not reliable. `sync_lock` holds a lease with an expiry
 **Decision:** GitHub Pages cannot serve an arbitrary path without a prerendered
 file, so the client-rendered vote page lives at `/vote/?id=house-119-2-80`
 (mirroring the `/bill/?id=…` fallback).
+
+## 8. `sync-federal` runs every 10 minutes, not hourly
+
+**Plan:** hourly Edge Function, stop at 3,500 requests.
+**Finding:** Edge Functions on the free plan stop at 150 s of wall-clock time, so
+one run can make only a few hundred requests even with a little concurrency.
+**Decision:** pg_cron calls `sync-federal` every 10 minutes. Each run stops after
+120 s (`SYNC_TIME_LIMIT_MS`) or 580 requests (`SYNC_FEDERAL_RUN_CAP`), whichever
+comes first, syncing three bills at a time; six runs an hour stay near 3,500
+requests. "Within one hour of updateDate" still holds.
+
+## 9. A 429 pauses the job instead of retrying
+
+api.data.gov answers 429 when the key's hourly quota is spent, so retrying inside
+a run only wastes the run. A 429 is retried only when `Retry-After` is 30 s or
+less; otherwise the client throws `RateLimitedError` (a kind of
+`BudgetExhaustedError`), marks the budget spent, and the job checkpoints and
+resumes on its next run. 5xx and network errors are still retried with
+exponential backoff; other 4xx are not retried.
+
+## 10. Jobs connect to Postgres directly; Actions uses the pooler URL
+
+The sync code writes with postgres.js (transactions, conditional upserts) rather
+than through PostgREST with the service-role key. Edge Functions get
+`SUPABASE_DB_URL` automatically. The backfill in GitHub Actions needs a
+`SUPABASE_DB_URL` secret, and it must be the **Supavisor session pooler** URL
+(IPv4), because Actions runners cannot reach the IPv6-only direct database host.
+`SUPABASE_SERVICE_ROLE_KEY` is not needed by any job so far.
+
+## 11. Backfill walks bill numbers instead of paging the list
+
+Bill numbers are assigned densely in order of introduction, so the backfill
+iterates `1..max` per bill type with a cursor of (type, next number). This is
+stable while the list endpoint's order is not, and gaps are simple 404s. When it
+finishes, it sets the hourly sync's cursor to the backfill's start time minus
+the overlap, so changes made during the (day-long) backfill are picked up.
+
+## 12. Scheduled functions authenticate with a shared secret
+
+Gateway JWT verification accepts any valid project JWT, including the public
+anon key, so it cannot protect the sync functions. They are deployed with
+`verify_jwt = false` and require an `x-sync-secret` header that matches the
+`SYNC_SECRET` function secret; pg_cron reads the same value from Vault.
+
+## 13. No Deno lockfile for Edge Functions
+
+Supabase's edge runtime (Deno 2.1-compatible) cannot read lockfiles written by
+newer Deno CLIs. `supabase/functions/deno.json` sets `"lock": false` and pins
+exact npm versions in its import map instead.

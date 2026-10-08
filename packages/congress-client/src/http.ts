@@ -16,6 +16,22 @@ export class BudgetExhaustedError extends Error {
   }
 }
 
+/**
+ * The upstream rate limiter said no (HTTP 429) and asked us to wait longer than
+ * is worth waiting inside one run. Jobs treat this like an exhausted budget:
+ * checkpoint and resume on the next run.
+ */
+export class RateLimitedError extends BudgetExhaustedError {
+  constructor(
+    readonly url: string,
+    readonly retryAfterMs: number | null,
+  ) {
+    super(0, 'upstream rate limit');
+    this.name = 'RateLimitedError';
+    this.message = `Rate limited by ${new URL(url).host}${retryAfterMs ? `; retry after ${Math.round(retryAfterMs / 1000)}s` : ''}`;
+  }
+}
+
 export class HttpError extends Error {
   constructor(
     readonly status: number,
@@ -33,6 +49,7 @@ export class HttpError extends Error {
  */
 export class RequestBudget {
   private usedCount = 0;
+  private forcedExhausted = false;
 
   constructor(
     readonly limit: number = Number.POSITIVE_INFINITY,
@@ -48,7 +65,12 @@ export class RequestBudget {
   }
 
   get exhausted(): boolean {
-    return this.usedCount >= this.limit;
+    return this.forcedExhausted || this.usedCount >= this.limit;
+  }
+
+  /** Mark the budget spent (e.g. the upstream said 429), so callers pause. */
+  exhaust(): void {
+    this.forcedExhausted = true;
   }
 
   /** Reserve one request or throw if the cap is reached. */
@@ -67,12 +89,26 @@ export interface HttpOptions {
   baseDelayMs?: number;
   /** Upper bound on a single backoff delay in ms. Default 60000. */
   maxDelayMs?: number;
+  /**
+   * A 429 is retried only if the server asks for a wait no longer than this
+   * (Retry-After). Otherwise RateLimitedError is thrown at once. Default 30000.
+   */
+  maxRetryAfterMs?: number;
   sleep?: (ms: number) => Promise<void>;
   headers?: Record<string, string>;
   userAgent?: string;
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** Retry-After as milliseconds (seconds or an HTTP date), or null. */
+export function parseRetryAfter(value: string | null): number | null {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? null : Math.max(0, date - Date.now());
+}
 
 export function isRetryableStatus(status: number): boolean {
   return status === 429 || status >= 500;
@@ -89,6 +125,7 @@ export class HttpClient {
   private readonly maxAttempts: number;
   private readonly baseDelayMs: number;
   private readonly maxDelayMs: number;
+  private readonly maxRetryAfterMs: number;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly headers: Record<string, string>;
 
@@ -98,6 +135,7 @@ export class HttpClient {
     this.maxAttempts = options.maxAttempts ?? 5;
     this.baseDelayMs = options.baseDelayMs ?? 1000;
     this.maxDelayMs = options.maxDelayMs ?? 60_000;
+    this.maxRetryAfterMs = options.maxRetryAfterMs ?? 30_000;
     this.sleep = options.sleep ?? defaultSleep;
     this.headers = {
       'user-agent': options.userAgent ?? 'civic-tracker (+https://github.com/jackhale98/opencongress)',
@@ -120,6 +158,17 @@ export class HttpClient {
       }
 
       if (response && response.ok) return response;
+
+      if (response?.status === 429) {
+        const retryAfterMs = parseRetryAfter(response.headers.get('retry-after'));
+        await response.body?.cancel().catch(() => undefined);
+        if (retryAfterMs === null || retryAfterMs > this.maxRetryAfterMs || attempt >= this.maxAttempts) {
+          this.budget.exhaust();
+          throw new RateLimitedError(url, retryAfterMs);
+        }
+        await this.sleep(retryAfterMs);
+        continue;
+      }
 
       const retryable = response ? isRetryableStatus(response.status) : true;
       if (!retryable || attempt >= this.maxAttempts) {
@@ -147,11 +196,8 @@ export class HttpClient {
   }
 
   private backoffDelay(attempt: number, response?: Response): number {
-    const retryAfter = response?.headers.get('retry-after');
-    if (retryAfter) {
-      const seconds = Number(retryAfter);
-      if (Number.isFinite(seconds)) return Math.min(seconds * 1000, this.maxDelayMs);
-    }
+    const retryAfter = parseRetryAfter(response?.headers.get('retry-after') ?? null);
+    if (retryAfter !== null) return Math.min(retryAfter, this.maxDelayMs);
     const exponential = this.baseDelayMs * 2 ** (attempt - 1);
     const jitter = Math.random() * this.baseDelayMs * 0.25;
     return Math.min(exponential + jitter, this.maxDelayMs);

@@ -1,0 +1,13 @@
+{
+  "lock": false,
+  "imports": {
+    "@civic/congress-client": "../../packages/congress-client/src/index.ts",
+    "@civic/sync": "../../packages/sync/src/index.ts",
+    "postgres": "npm:postgres@3.4.9",
+    "fast-xml-parser": "npm:fast-xml-parser@5.11.2"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

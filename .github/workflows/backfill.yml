@@ -1,0 +1,55 @@
+name: Backfill
+
+# One-off load of the current Congress (members, bills; votes from Phase 4).
+# About 100k Congress.gov requests: the script pauses at the hourly limit and
+# resumes from its cursor. A job may run at most 6 hours, so when time runs out
+# the workflow dispatches itself again (up to `max_chain` times).
+on:
+  workflow_dispatch:
+    inputs:
+      congress:
+        description: Congress number (blank = current)
+        required: false
+      reset:
+        description: Start over (clears the backfill cursor)
+        type: boolean
+        default: false
+      max_chain:
+        description: How many more times to re-dispatch automatically
+        default: '8'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - id: run
+        name: Backfill
+        run: npm run backfill -- ${{ inputs.congress && format('--congress {0}', inputs.congress) || '' }} ${{ inputs.reset && '--reset' || '' }}
+        env:
+          # Use the Supavisor session pooler URL (IPv4); Actions runners cannot reach the IPv6-only direct host.
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
+          BACKFILL_MAX_HOURS: '5.5'
+      - name: Continue in a new run
+        if: steps.run.outputs.done == 'false' && fromJSON(inputs.max_chain || '0') > 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh workflow run backfill.yml --ref "${{ github.ref_name }}"
+          -f congress="${{ inputs.congress }}"
+          -f max_chain="$(( ${{ inputs.max_chain }} - 1 ))"

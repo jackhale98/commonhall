@@ -1,0 +1,14 @@
+{
+  "name": "@civic/sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sync jobs shared by the Supabase Edge Functions (Deno) and the backfill script (Node).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@civic/congress-client": "*",
+    "postgres": "^3.4.7"
+  }
+}

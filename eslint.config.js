@@ -24,6 +24,10 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/test/**/*.ts', '**/tests/**/*.ts', '**/*.test.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
+  {
     files: ['supabase/functions/**/*.ts'],
     languageOptions: { globals: { Deno: 'readonly', EdgeRuntime: 'readonly' } },
   },

@@ -27,6 +27,7 @@ npm run lint          # ESLint + Prettier
 npm run typecheck     # tsc for packages/scripts, astro check for the site
 npm test -- --project unit   # API client, status logic, site helpers (fixtures only, no network)
 npm run test:db       # migrations, RLS and sync jobs against local Supabase
+                      # (truncates data tables in your local DB; `npm run db:reset` reloads the seed)
 (cd supabase/functions && deno check */index.ts)
 ```
 

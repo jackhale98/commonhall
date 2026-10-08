@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BudgetExhaustedError, HttpClient, HttpError, RequestBudget, redactUrl } from '../src/http.ts';
+import {
+  BudgetExhaustedError,
+  HttpClient,
+  HttpError,
+  RateLimitedError,
+  RequestBudget,
+  parseRetryAfter,
+  redactUrl,
+} from '../src/http.ts';
 import { json, noSleep } from './helpers.ts';
 
 function sequence(...responses: (() => Response)[]) {
@@ -15,10 +23,10 @@ function sequence(...responses: (() => Response)[]) {
 }
 
 describe('HttpClient', () => {
-  it('retries 429 and 5xx with backoff, then succeeds', async () => {
+  it('retries 5xx with backoff, then succeeds', async () => {
     const delays: number[] = [];
     const { fetch, calls } = sequence(
-      () => new Response('slow down', { status: 429 }),
+      () => new Response('oops', { status: 500 }),
       () => new Response('oops', { status: 503 }),
       () => json({ ok: true }),
     );
@@ -31,7 +39,24 @@ describe('HttpClient', () => {
     expect(client.budget.used).toBe(3);
   });
 
-  it('honours Retry-After', async () => {
+  it('fails fast on 429 without a short Retry-After (hourly quota spent)', async () => {
+    const { fetch, calls } = sequence(() => new Response('slow down', { status: 429 }));
+    const client = new HttpClient({ fetch, sleep: noSleep });
+    const error = await client.getJson('https://api.example.test/a?api_key=k').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(RateLimitedError);
+    expect(error).toBeInstanceOf(BudgetExhaustedError); // jobs pause and resume
+    expect(calls).toHaveLength(1);
+    expect(client.budget.exhausted).toBe(true);
+    await expect(client.getJson('https://api.example.test/b')).rejects.toBeInstanceOf(BudgetExhaustedError);
+    expect(calls).toHaveLength(1);
+
+    const long = sequence(() => new Response('', { status: 429, headers: { 'retry-after': '3600' } }));
+    const client2 = new HttpClient({ fetch: long.fetch, sleep: noSleep });
+    await expect(client2.getJson('https://api.example.test/a')).rejects.toBeInstanceOf(RateLimitedError);
+    expect(long.calls).toHaveLength(1);
+  });
+
+  it('honours a short Retry-After on 429', async () => {
     const delays: number[] = [];
     const { fetch } = sequence(
       () => new Response('', { status: 429, headers: { 'retry-after': '7' } }),
@@ -84,6 +109,16 @@ describe('HttpClient', () => {
     expect(budget.used).toBe(2);
     expect(budget.exhausted).toBe(true);
     await expect(client.getJson('https://example.test/2')).rejects.toBeInstanceOf(BudgetExhaustedError);
+  });
+});
+
+describe('parseRetryAfter', () => {
+  it('reads seconds and HTTP dates', () => {
+    expect(parseRetryAfter('7')).toBe(7000);
+    expect(parseRetryAfter(null)).toBeNull();
+    expect(parseRetryAfter('nonsense')).toBeNull();
+    const inAMinute = new Date(Date.now() + 60_000).toUTCString();
+    expect(parseRetryAfter(inAMinute)).toBeGreaterThan(50_000);
   });
 });
 
