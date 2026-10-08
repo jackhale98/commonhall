@@ -4,6 +4,8 @@ import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
 import MemberChip from '../../../../components/MemberChip';
 import VoteList from '../../../../components/VoteList';
+import StackedBar from '../../../../components/viz/StackedBar';
+import { partySegments } from '../../../../lib/charts';
 import Base from '../../../../layouts/Base.astro';
 import {
   loadActions,
@@ -174,12 +176,13 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
         </h2>
         {cosponsors.length > 0 ? (
           <>
-            <p class="small muted">
-              {Object.entries(partyCounts)
-                .sort((a, b) => b[1] - a[1])
+            <StackedBar
+              segments={partySegments(partyCounts)}
+              label={`Cosponsors by party: ${Object.entries(partyCounts)
                 .map(([p, n]) => `${n} ${p}`)
-                .join(' · ')}
-            </p>
+                .join(', ')}`}
+              legend
+            />
             <details class="more" open={cosponsors.length <= 10}>
               <summary>Show cosponsors</summary>
               <ul class="plain-list">

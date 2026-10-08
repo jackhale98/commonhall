@@ -1,0 +1,89 @@
+---
+import VoteList from '../../components/VoteList';
+import StackedBar from '../../components/viz/StackedBar';
+import Base from '../../layouts/Base.astro';
+import { CURRENT_CONGRESS, loadVotes } from '../../lib/build-data';
+import { congressLabel } from '../../lib/format';
+
+const votes = await loadVotes();
+const congress = congressLabel(CURRENT_CONGRESS);
+const passed = (r: string | null) => /pass|agreed|confirmed|adopted/i.test(r ?? '') && !/not/i.test(r ?? '');
+const chambers = (['house', 'senate'] as const).map((chamber) => {
+  const list = votes.filter((v) => v.chamber === chamber);
+  const yes = list.filter((v) => passed(v.result)).length;
+  return { chamber, label: chamber === 'house' ? 'House' : 'Senate', list, yes, no: list.length - yes };
+});
+// Decided votes with the smallest yea–nay margin.
+const closest = votes
+  .filter((v) => v.yea_total + v.nay_total > 0)
+  .map((v) => ({ v, margin: Math.abs(v.yea_total - v.nay_total) }))
+  .sort((a, b) => a.margin - b.margin || (b.v.date ?? '').localeCompare(a.v.date ?? ''))
+  .slice(0, 5)
+  .map((x) => x.v);
+---
+
+<Base title="Votes" description={`Every roll-call vote in the House and Senate in the ${congress}.`} section="votes">
+  <p class="kicker">{congress}</p>
+  <h1>Roll-call votes</h1>
+  <p class="muted">Every recorded vote in the House and Senate, with how each member voted.</p>
+
+  <dl class="stat-grid">
+    {chambers.map((c) => (
+      <div class="stat">
+        <dt>{c.label} roll calls</dt>
+        <dd>{c.list.length.toLocaleString()}</dd>
+        <StackedBar
+          size="sm"
+          segments={[
+            { label: 'Passed or agreed', value: c.yes, tone: 'fill-yea' },
+            { label: 'Failed or rejected', value: c.no, tone: 'fill-nay' },
+          ]}
+          legend
+        />
+      </div>
+    ))}
+  </dl>
+
+  {closest.length > 0 && (
+    <section aria-labelledby="close-h">
+      <div class="section-head">
+        <h2 id="close-h">Closest votes</h2>
+      </div>
+      <div class="panel">
+        <VoteList votes={closest} />
+      </div>
+    </section>
+  )}
+
+  <div class="vote-columns">
+    {chambers.map((c) => (
+      <section aria-labelledby={`${c.chamber}-h`}>
+        <div class="section-head">
+          <h2 id={`${c.chamber}-h`}>{c.label}</h2>
+          <span class="small muted">latest {Math.min(40, c.list.length)}</span>
+        </div>
+        <div class="panel">
+          {c.list.length === 0 ? <p class="muted">No votes loaded yet.</p> : <VoteList votes={c.list.slice(0, 40)} />}
+        </div>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .stat-grid {
+    margin-top: var(--space-5);
+  }
+  .stat .stacked {
+    margin-top: var(--space-2);
+  }
+  .vote-columns {
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .vote-columns {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

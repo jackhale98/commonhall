@@ -1,79 +1,203 @@
 ---
 import BillListItem from '../components/BillListItem';
+import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
 import FindMyReps from '../components/FindMyReps';
-import { DEMO } from '../lib/config';
-import Base from '../layouts/Base.astro';
 import VoteList from '../components/VoteList';
-import { CURRENT_CONGRESS, loadBills, loadVotes } from '../lib/build-data';
-import { congressLabel } from '../lib/format';
+import Hemicycle from '../components/viz/Hemicycle';
+import Pipeline from '../components/viz/Pipeline';
+import Base from '../layouts/Base.astro';
+import {
+  CURRENT_CONGRESS,
+  loadBills,
+  loadDiscussions,
+  loadLocalMeetings,
+  loadLocalOfficials,
+  loadMembers,
+  loadRecentLocalMatters,
+  loadStateLegislators,
+  loadVotes,
+} from '../lib/build-data';
+import { chamberGroups, pipeline } from '../lib/charts';
+import { DEMO } from '../lib/config';
+import { congressLabel, formatDate } from '../lib/format';
 import { href } from '../lib/paths';
 
-const [bills, votes] = await Promise.all([loadBills(), loadVotes()]);
-const recentVotes = votes.slice(0, 6);
-const recent = bills.slice(0, 8);
+const [bills, votes, members, discussions, officials, matters, meetings, legislators] = await Promise.all([
+  loadBills(),
+  loadVotes(),
+  loadMembers(),
+  loadDiscussions(),
+  loadLocalOfficials(),
+  loadRecentLocalMatters(),
+  loadLocalMeetings(),
+  loadStateLegislators(),
+]);
+const recentVotes = votes.slice(0, 5);
+const recent = bills.slice(0, 6);
 const laws = bills.filter((b) => b.status === 'law').length;
+const house = chamberGroups(members.values(), 'house');
+const senate = chamberGroups(members.values(), 'senate');
+const stages = pipeline(bills);
+const openDiscussions = discussions.filter((d) => d.status === 'open').slice(0, 3);
+const maLegislators = legislators.get('MA')?.length ?? 0;
+const today = new Date().toISOString().slice(0, 10);
+const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
+const congress = congressLabel(CURRENT_CONGRESS);
 ---
 
 <Base section="home">
   <section class="hero">
-    <h1>Follow what Congress and your statehouse are doing</h1>
-    <p class="lede">
-      Federal and state bills, legislators and roll-call votes, in plain view. Sign in with your email to follow bills
-      and legislators and see their activity in one feed.
-    </p>
-    <form class="hero-search" role="search" action={href('bills/')} method="get">
-      <label for="home-q" class="visually-hidden">
-        Search bills
-      </label>
-      <input id="home-q" name="q" type="search" placeholder="Search bills, e.g. “veterans housing”" />
-      <button type="submit" class="primary">
-        Search
-      </button>
-    </form>
+    <div class="hero-text">
+      <p class="kicker">Free · Nonpartisan · Open source</p>
+      <h1>See what your government is doing, from Congress to City Hall</h1>
+      <p class="lede">
+        Bills, votes and the people who represent you, in plain language. Follow anything and get one feed of what
+        changed.
+      </p>
+      <form class="hero-search" role="search" action={href('bills/')} method="get">
+        <label for="home-q" class="visually-hidden">
+          Search bills
+        </label>
+        <input id="home-q" name="q" type="search" placeholder="Search bills, e.g. “veterans housing”" />
+        <button type="submit" class="primary">
+          Search
+        </button>
+      </form>
+      {!DEMO && (
+        <p class="small">
+          <a href="#reps-h">Find your representatives by address →</a>
+        </p>
+      )}
+    </div>
+    <div class="hero-chart panel">
+      <p class="kicker">{congress}</p>
+      <div class="chambers">
+        <Hemicycle title="House" groups={house} />
+        <Hemicycle title="Senate" groups={senate} />
+      </div>
+    </div>
+  </section>
+
+  <section class="layers" aria-label="Levels of government">
+    <a class="card layer" href={href('bills/')}>
+      <span class="layer-kicker">Federal</span>
+      <strong>Congress</strong>
+      <span class="layer-stat">
+        {bills.length.toLocaleString()} bills · {laws} {laws === 1 ? 'law' : 'laws'}
+      </span>
+      <span class="small muted">{votes.length} roll-call votes this Congress</span>
+    </a>
+    <a class="card layer" href={href('states/ma/')}>
+      <span class="layer-kicker">State</span>
+      <strong>Massachusetts</strong>
+      <span class="layer-stat">{maLegislators > 0 ? `${maLegislators} legislators` : 'Legislators and bills'}</span>
+      <span class="small muted">State bills, your senator and representative</span>
+    </a>
+    <a class="card layer" href={href('boston/')}>
+      <span class="layer-kicker">City</span>
+      <strong>Boston City Council</strong>
+      <span class="layer-stat">
+        {officials.length > 0
+          ? `${officials.length} councilors · ${matters.length} recent matters`
+          : 'Councilors and matters'}
+      </span>
+      <span class="small muted">
+        {nextMeeting ? `Next meeting ${formatDate(nextMeeting.date)}` : 'Ordinances, orders and resolutions'}
+      </span>
+    </a>
+    <a class="card layer" href={href('states/')}>
+      <span class="layer-kicker">Elsewhere</span>
+      <strong>All 50 states</strong>
+      <span class="layer-stat">Delegations and legislatures</span>
+      <span class="small muted">Members of Congress and state bills by state</span>
+    </a>
   </section>
 
   <FeedView client:idle compact />
   {!DEMO && <FindMyReps client:visible />}
 
-  <section aria-labelledby="recent-h">
-    <h2 id="recent-h">Recently active bills</h2>
-    {recent.length > 0 ? (
-      <>
+  <div class="home-grid">
+    <section aria-labelledby="recent-h">
+      <div class="section-head">
+        <h2 id="recent-h">Recently active bills</h2>
+        <a class="see-all" href={href('bills/')}>
+          All bills
+        </a>
+      </div>
+      <div class="panel">
+        {recent.length > 0 ? (
+          <ul class="list">
+            {recent.map((b) => (
+              <BillListItem bill={b} />
+            ))}
+          </ul>
+        ) : (
+          <p class="muted">No bills loaded yet.</p>
+        )}
+      </div>
+    </section>
+
+    <aside>
+      <div class="section-head">
+        <h2 id="pipe-h">Where bills stand</h2>
+      </div>
+      <div class="panel">
+        <Pipeline stages={stages} label={`Bills and joint resolutions in the ${congress} by stage`} />
+        <p class="small muted pipe-note">Bills and joint resolutions. Select a stage to see them.</p>
+      </div>
+
+      {recentVotes.length > 0 && (
+        <>
+          <div class="section-head">
+            <h2 id="votes-h">Latest votes</h2>
+            <a class="see-all" href={href('votes/')}>
+              All votes
+            </a>
+          </div>
+          <div class="panel">
+            <VoteList votes={recentVotes} />
+          </div>
+        </>
+      )}
+    </aside>
+  </div>
+
+  {openDiscussions.length > 0 && (
+    <section aria-labelledby="disc-h">
+      <div class="section-head">
+        <h2 id="disc-h">Join a discussion</h2>
+        <a class="see-all" href={href('discussions/')}>
+          All discussions
+        </a>
+      </div>
+      <div class="panel">
         <ul class="list">
-          {recent.map((b) => (
-            <BillListItem bill={b} />
+          {openDiscussions.map((d) => (
+            <DiscussionCard discussion={d} />
           ))}
         </ul>
-        <p>
-          <a href={href('bills/')}>
-            All {bills.length.toLocaleString()} bills in the {congressLabel(CURRENT_CONGRESS)}
-          </a>
-          {laws > 0 && <span class="muted"> · {laws} have become law</span>}
-        </p>
-      </>
-    ) : (
-      <p class="muted">No bills loaded yet.</p>
-    )}
-  </section>
-
-  {recentVotes.length > 0 && (
-    <section aria-labelledby="votes-h">
-      <h2 id="votes-h">Recent roll-call votes</h2>
-      <VoteList votes={recentVotes} />
+      </div>
     </section>
   )}
 </Base>
 
 <style>
   .hero {
-    padding-block: var(--space-5) var(--space-6);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: var(--space-5);
+    display: grid;
+    gap: var(--space-5);
+    align-items: center;
+    padding-block: var(--space-4) var(--space-6);
+  }
+  @media (min-width: 56rem) {
+    .hero {
+      grid-template-columns: 1.15fr 1fr;
+    }
   }
   .hero h1 {
-    max-width: 22ch;
-    font-size: clamp(2rem, 1.5rem + 2.5vw, 3.2rem);
+    max-width: 20ch;
+    font-size: clamp(2rem, 1.4rem + 2.6vw, 3.3rem);
+    letter-spacing: -0.03em;
   }
   .lede {
     font-size: var(--step-1);
@@ -83,5 +207,54 @@ const laws = bills.filter((b) => b.status === 'law').length;
     display: flex;
     gap: var(--space-2);
     max-width: 36rem;
+    margin-bottom: var(--space-3);
+  }
+  .chambers {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: var(--space-4);
+    align-items: end;
+  }
+  @media (max-width: 30rem) {
+    .chambers {
+      grid-template-columns: 1fr;
+    }
+  }
+  .layers {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    margin-bottom: var(--space-6);
+  }
+  .layer {
+    display: grid;
+    gap: var(--space-1);
+    border-top: 4px solid var(--brand);
+  }
+  .layer strong {
+    font-size: var(--step-1);
+  }
+  .layer-kicker {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .layer-stat {
+    font-weight: 650;
+    color: var(--brand-strong);
+  }
+  .home-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .home-grid {
+      grid-template-columns: 1.4fr 1fr;
+    }
+  }
+  .pipe-note {
+    margin: var(--space-3) 0 0;
   }
 </style>

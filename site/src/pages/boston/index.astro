@@ -3,18 +3,42 @@ import DiscussionCard from '../../components/DiscussionCard.astro';
 import FollowButton from '../../components/FollowButton';
 import LocalMatters from '../../components/LocalMatters';
 import MemberPhoto from '../../components/MemberPhoto';
+import BarList from '../../components/viz/BarList';
+import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
-import { loadDiscussions, loadLocalMeetings, loadLocalOfficials, loadRecentLocalMatters } from '../../lib/build-data';
+import {
+  loadCouncilDistricts,
+  loadDiscussions,
+  loadLocalMeetings,
+  loadLocalOfficials,
+  loadRecentLocalMatters,
+} from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
 import { formatDate } from '../../lib/format';
 import { href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions] = await Promise.all([
+const [officials, matters, meetings, discussions, districts] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
   loadDiscussions(),
+  loadCouncilDistricts(),
 ]);
+const features = districts.map((d) => {
+  const o = officials.find((x) => x.district === d.district);
+  return {
+    district: d.district,
+    geojson: d.geojson,
+    href: o ? localOfficialHref(o.id) : undefined,
+    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+  };
+});
+const typeCounts = new Map<string, number>();
+for (const m of matters) typeCounts.set(m.type ?? 'Other', (typeCounts.get(m.type ?? 'Other') ?? 0) + 1);
+const types = [...typeCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 6)
+  .map(([label, value]) => ({ label: label.replace(/^Council /, ''), value }));
 const byDistrict = officials.filter((o) => o.district !== null).sort((a, b) => a.district! - b.district!);
 const atLarge = officials.filter((o) => o.district === null).sort((a, b) => a.name.localeCompare(b.name));
 const today = new Date().toISOString().slice(0, 10);
@@ -26,7 +50,7 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
 <Base
   title="Boston City Council"
   description="Boston City Council members, meetings, ordinances, resolutions and hearing orders."
-  section="boston"
+  section="states"
 >
   <h1>Boston City Council</h1>
   <p>
@@ -48,6 +72,15 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
   <section aria-labelledby="council-h">
     <h2 id="council-h">Councilors</h2>
     {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
+    {features.length > 0 && (
+      <div class="panel map-panel">
+        <DistrictMap features={features} label="Boston City Council districts; select one for its councilor" />
+        <p class="small muted">
+          Nine district councilors and four at-large councilors elected citywide. Select a district to meet its
+          councilor.
+        </p>
+      </div>
+    )}
     <ul class="grid people">
       {[...byDistrict, ...atLarge].map((o) => (
         <li class="card person">
@@ -117,7 +150,15 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
 
   <section aria-labelledby="matters-h">
     <h2 id="matters-h">Ordinances, resolutions and orders</h2>
-    <LocalMatters client:visible initial={matters} local={DEMO} />
+    {types.length > 0 && (
+      <div class="panel types-panel">
+        <h3 class="h-small">Recent business by type</h3>
+        <BarList items={types} label="Recent council matters by type" />
+      </div>
+    )}
+    <div class="panel">
+      <LocalMatters client:visible initial={matters} local={DEMO} />
+    </div>
   </section>
 
   <p class="small muted">
@@ -127,6 +168,13 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
 </Base>
 
 <style>
+  .map-panel {
+    margin-bottom: var(--space-4);
+    max-width: 40rem;
+  }
+  .types-panel {
+    margin-bottom: var(--space-4);
+  }
   .people {
     list-style: none;
     padding: 0;

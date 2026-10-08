@@ -1,5 +1,7 @@
 import { formatDate } from '../lib/format';
+import { voteSegments } from '../lib/charts';
 import { voteHref } from '../lib/paths';
+import StackedBar from './viz/StackedBar';
 
 export interface VoteListItemData {
   id: string;
@@ -10,6 +12,8 @@ export interface VoteListItemData {
   result: string | null;
   yea_total: number;
   nay_total: number;
+  present_total?: number;
+  not_voting_total?: number;
   /** A member's position, when listing one member's votes. */
   position?: 'yea' | 'nay' | 'present' | 'not_voting';
 }
@@ -18,7 +22,7 @@ const POSITION: Record<string, string> = { yea: 'Yea', nay: 'Nay', present: 'Pre
 
 export default function VoteList({ votes }: { votes: VoteListItemData[] }) {
   return (
-    <ul class="list">
+    <ul class="list vote-list">
       {votes.map((v) => (
         <li>
           <p class="meta">
@@ -35,6 +39,7 @@ export default function VoteList({ votes }: { votes: VoteListItemData[] }) {
               ({v.result ?? '—'}, {v.yea_total}–{v.nay_total})
             </span>
           </p>
+          <StackedBar size="sm" segments={voteSegments(v)} label={`${v.yea_total} yea, ${v.nay_total} nay`} />
         </li>
       ))}
     </ul>

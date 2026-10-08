@@ -2,9 +2,15 @@
 import FollowButton from '../../../components/FollowButton';
 import LocalMatterItem from '../../../components/LocalMatterItem';
 import MemberPhoto from '../../../components/MemberPhoto';
+import DistrictMap from '../../../components/viz/DistrictMap';
 import Base from '../../../layouts/Base.astro';
-import { loadLocalOfficials, loadPrerenderLocalMatters, loadSponsoredMatters } from '../../../lib/build-data';
-import { href, localMatterFallbackHref, localMatterHref } from '../../../lib/paths';
+import {
+  loadCouncilDistricts,
+  loadLocalOfficials,
+  loadPrerenderLocalMatters,
+  loadSponsoredMatters,
+} from '../../../lib/build-data';
+import { href, localMatterFallbackHref, localMatterHref, localOfficialHref } from '../../../lib/paths';
 import type { LocalOfficial } from '../../../lib/types';
 
 export async function getStaticPaths() {
@@ -17,7 +23,23 @@ interface Props {
 }
 
 const { official } = Astro.props;
-const [sponsored, prerendered] = await Promise.all([loadSponsoredMatters(official.id), loadPrerenderLocalMatters()]);
+const [sponsored, prerendered, districts, officials] = await Promise.all([
+  loadSponsoredMatters(official.id),
+  loadPrerenderLocalMatters(),
+  loadCouncilDistricts(),
+  loadLocalOfficials(),
+]);
+const features = districts.map((d) => {
+  const o = officials.find((x) => x.district === d.district);
+  return {
+    district: d.district,
+    geojson: d.geojson,
+    href: o ? localOfficialHref(o.id) : undefined,
+    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+  };
+});
+const typeCount = new Set(sponsored.map((m) => m.type)).size;
+const passed = sponsored.filter((m) => m.passed_date || /adopted|passed/i.test(m.status ?? '')).length;
 const withPage = new Set(prerendered.map((p) => p.matter.id));
 const seat = official.seat ?? 'Councilor';
 ---
@@ -25,9 +47,10 @@ const seat = official.seat ?? 'Councilor';
 <Base
   title={official.name}
   description={`${official.name}, Boston City Council (${seat}): sponsored ordinances, resolutions and orders.`}
-  section="boston"
+  section="states"
 >
   <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('states/')}>States</a> › <a href={href('states/ma/')}>Massachusetts</a> ›{' '}
     <a href={href('boston/')}>Boston</a> › {official.name}
   </nav>
   <header class="councilor">
@@ -46,16 +69,55 @@ const seat = official.seat ?? 'Councilor';
     </div>
   </header>
 
+  <div class="councilor-glance">
+    <dl class="stat-grid">
+      <div class="stat">
+        <dt>Matters sponsored</dt>
+        <dd>{sponsored.length}</dd>
+      </div>
+      <div class="stat">
+        <dt>Passed or adopted</dt>
+        <dd>{passed}</dd>
+      </div>
+      <div class="stat">
+        <dt>Kinds of matter</dt>
+        <dd>{typeCount}</dd>
+      </div>
+    </dl>
+    {features.length > 0 && (
+      <div class="panel">
+        <DistrictMap
+          features={features}
+          highlight={official.district}
+          width={320}
+          label={
+            official.district
+              ? `Boston council districts, District ${official.district} outlined`
+              : 'Boston council districts; at-large councilors represent the whole city'
+          }
+        />
+        <p class="small muted">
+          {official.district ? `Represents District ${official.district}.` : 'Represents the whole city (at-large).'}
+        </p>
+      </div>
+    )}
+  </div>
+
   <section aria-labelledby="sp-h">
     <h2 id="sp-h">
       Sponsored <span class="muted">({sponsored.length})</span>
     </h2>
     {sponsored.length === 0 && <p class="muted">No sponsored matters loaded.</p>}
-    <ul class="list">
-      {sponsored.map((m) => (
-        <LocalMatterItem matter={m} href={withPage.has(m.id) ? localMatterHref(m.id) : localMatterFallbackHref(m.id)} />
-      ))}
-    </ul>
+    <div class="panel">
+      <ul class="list">
+        {sponsored.map((m) => (
+          <LocalMatterItem
+            matter={m}
+            href={withPage.has(m.id) ? localMatterHref(m.id) : localMatterFallbackHref(m.id)}
+          />
+        ))}
+      </ul>
+    </div>
   </section>
   <p class="small muted">
     Boston records roll-call votes in meeting minutes rather than in Legistar, so votes are not listed here.
@@ -63,6 +125,16 @@ const seat = official.seat ?? 'Councilor';
 </Base>
 
 <style>
+  .councilor-glance {
+    display: grid;
+    gap: var(--space-4);
+    align-items: start;
+  }
+  @media (min-width: 50rem) {
+    .councilor-glance {
+      grid-template-columns: 1fr 22rem;
+    }
+  }
   .councilor {
     display: flex;
     gap: var(--space-4);

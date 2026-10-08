@@ -3,10 +3,18 @@ import FollowButton from '../../components/FollowButton';
 import MemberChip from '../../components/MemberChip';
 import MemberPhoto from '../../components/MemberPhoto';
 import StateBills from '../../components/StateBills';
+import DistrictMap from '../../components/viz/DistrictMap';
+import Hemicycle from '../../components/viz/Hemicycle';
 import Base from '../../layouts/Base.astro';
-import { loadMembers, loadRecentStateBills, loadStateLegislators } from '../../lib/build-data';
+import {
+  loadCouncilDistricts,
+  loadLocalOfficials,
+  loadMembers,
+  loadRecentStateBills,
+  loadStateLegislators,
+} from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, memberRole, stateName } from '../../lib/format';
-import { href } from '../../lib/paths';
+import { href, localOfficialHref } from '../../lib/paths';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -35,6 +43,30 @@ const chambers = [
 ]
   .map((c) => ({ ...c, people: legislators.filter((l) => l.chamber === c.key).sort(districtSort) }))
   .filter((c) => c.people.length > 0);
+const partyGroups = (people: { party: string | null }[]) => {
+  const n = { D: 0, I: 0, R: 0 };
+  for (const p of people) {
+    const k = (p.party ?? '').charAt(0);
+    n[k === 'D' || k === 'R' ? k : 'I'] += 1;
+  }
+  return [
+    { label: 'Democrats', seats: n.D, tone: 'fill-party-d' },
+    { label: 'Other', seats: n.I, tone: 'fill-party-i' },
+    { label: 'Republicans', seats: n.R, tone: 'fill-party-r' },
+  ];
+};
+// Massachusetts: the Boston City Council is covered too.
+const [districts, officials] =
+  code === 'MA' ? await Promise.all([loadCouncilDistricts(), loadLocalOfficials()]) : [[], []];
+const districtFeatures = districts.map((d) => {
+  const o = officials.find((x) => x.district === d.district);
+  return {
+    district: d.district,
+    geojson: d.geojson,
+    href: o ? localOfficialHref(o.id) : href('boston/'),
+    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+  };
+});
 ---
 
 <Base title={name} description={`${name}’s members of Congress, state legislators and state bills.`} section="states">
@@ -43,13 +75,51 @@ const chambers = [
   </nav>
   <h1>{name}</h1>
 
+  {chambers.length > 0 && (
+    <section aria-labelledby="glance-h">
+      <h2 id="glance-h" class="h-small">
+        Legislature at a glance
+      </h2>
+      <div class="panel glance">
+        {chambers.map((c) => (
+          <Hemicycle title={`${c.label} (${c.people.length})`} groups={partyGroups(c.people)} />
+        ))}
+      </div>
+    </section>
+  )}
+
+  {code === 'MA' && (
+    <section aria-labelledby="local-h">
+      <h2 id="local-h">Local government</h2>
+      <a class="card local-card" href={href('boston/')}>
+        <div>
+          <p class="kicker">City of Boston</p>
+          <strong>Boston City Council</strong>
+          <p class="small muted">
+            {officials.length > 0 ? `${officials.length} councilors` : 'Councilors'} across nine districts and four
+            at-large seats: ordinances, orders, resolutions and meetings.
+          </p>
+        </div>
+        {districtFeatures.length > 0 && (
+          <div class="local-map" aria-hidden="true">
+            <DistrictMap
+              features={districtFeatures.map((f) => ({ ...f, href: undefined }))}
+              label="Boston council districts"
+              width={240}
+            />
+          </div>
+        )}
+      </a>
+    </section>
+  )}
+
   <section aria-labelledby="fed-h">
     <h2 id="fed-h">In Congress</h2>
     {members.length === 0 && <p class="muted">No members on file.</p>}
     <ul class="grid people">
       {[...senators, ...reps].map((m) => (
         <li class="card person">
-          <MemberPhoto name={m.name} url={m.photo_url} size={56} />
+          <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={56} />
           <div>
             <MemberChip member={m} />
             <p class="small muted">{memberRole(m)}</p>
@@ -149,6 +219,26 @@ const chambers = [
 </style>
 
 <style>
+  .glance {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+  .local-card {
+    display: grid;
+    gap: var(--space-4);
+    align-items: center;
+    grid-template-columns: 1fr;
+    border-left: 5px solid var(--highlight);
+  }
+  @media (min-width: 40rem) {
+    .local-card {
+      grid-template-columns: 1fr 14rem;
+    }
+  }
+  .local-card strong {
+    font-size: var(--step-1);
+  }
   .people {
     list-style: none;
     padding: 0;

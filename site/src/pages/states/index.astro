@@ -1,33 +1,102 @@
 ---
+import StateTiles from '../../components/viz/StateTiles';
 import Base from '../../layouts/Base.astro';
+import { loadMembers } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, stateName } from '../../lib/format';
-import { stateHref } from '../../lib/paths';
+import { href, stateHref } from '../../lib/paths';
 
+const members = [...(await loadMembers()).values()].filter((m) => m.current && m.chamber === 'house');
+const seats = new Map<string, number>();
+for (const m of members) if (m.state) seats.set(m.state, (seats.get(m.state) ?? 0) + 1);
 const states = LEGISLATURE_STATES.slice().sort((a, b) => stateName(a).localeCompare(stateName(b)));
 const territories = STATE_CODES.filter((c) => !LEGISLATURE_STATES.includes(c));
+const tiles = LEGISLATURE_STATES.map((code) => ({
+  code,
+  name: stateName(code),
+  href: stateHref(code),
+  note:
+    code === 'DC'
+      ? 'delegate'
+      : seats.get(code)
+        ? `${seats.get(code)} ${seats.get(code) === 1 ? 'rep' : 'reps'}`
+        : undefined,
+  featured: code === 'MA',
+}));
 ---
 
-<Base title="States" description="Congressional delegations, legislators and bills for every state." section="states">
-  <h1>States</h1>
-  <p class="muted">Each state’s members of Congress, state legislators and recent state bills.</p>
-  <ul class="state-grid">
-    {states.map((s) => (
-      <li>
-        <a href={stateHref(s)}>{stateName(s)}</a>
-      </li>
-    ))}
-  </ul>
-  <h2 class="h-small">Territories</h2>
-  <ul class="state-grid">
-    {territories.map((s) => (
-      <li>
-        <a href={stateHref(s)}>{stateName(s)}</a>
-      </li>
-    ))}
-  </ul>
+<Base
+  title="States and local government"
+  description="Congressional delegations, legislators and bills for every state, plus the Boston City Council."
+  section="states"
+>
+  <h1>States and local government</h1>
+  <p class="muted">Pick a state for its members of Congress, state legislators and recent state bills.</p>
+
+  <div class="featured-row">
+    <a class="card feature" href={stateHref('MA')}>
+      <span class="kicker">Full coverage</span>
+      <strong>Massachusetts</strong>
+      <span class="small muted">Advancing state bills get their own pages, and they sync first every night.</span>
+    </a>
+    <a class="card feature" href={href('boston/')}>
+      <span class="kicker">Local government</span>
+      <strong>Boston City Council</strong>
+      <span class="small muted">Councilors, district map, meetings, ordinances, orders and resolutions.</span>
+    </a>
+  </div>
+
+  <section aria-labelledby="map-h">
+    <h2 id="map-h" class="h-small">
+      Map
+    </h2>
+    <div class="panel">
+      <StateTiles tiles={tiles} label="States, arranged roughly by location" />
+      <p class="small muted legend-note">
+        <span class="swatch fill-present"></span> Full coverage. Numbers are House seats.
+      </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="list-h">
+    <h2 id="list-h" class="h-small">
+      All states
+    </h2>
+    <ul class="state-grid">
+      {states.map((s) => (
+        <li>
+          <a href={stateHref(s)}>{stateName(s)}</a>
+        </li>
+      ))}
+    </ul>
+    <h2 class="h-small">Territories</h2>
+    <ul class="state-grid">
+      {territories.map((s) => (
+        <li>
+          <a href={stateHref(s)}>{stateName(s)}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
 </Base>
 
 <style>
+  .featured-row {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    margin: var(--space-4) 0 var(--space-5);
+  }
+  .feature {
+    display: grid;
+    gap: var(--space-1);
+    border-left: 5px solid var(--highlight);
+  }
+  .feature strong {
+    font-size: var(--step-1);
+  }
+  .legend-note {
+    margin: var(--space-3) 0 0;
+  }
   .state-grid {
     list-style: none;
     padding: 0;

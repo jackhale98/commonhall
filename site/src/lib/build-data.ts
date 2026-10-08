@@ -9,7 +9,7 @@ import { congressForDate } from '@civic/congress-client/ids';
 import demoData from '../data/demo.json';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
-import { inList, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
+import { inList, rpc, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
 import {
   BILL_PAGE_COLUMNS,
   LOCAL_MATTER_COLUMNS,
@@ -50,6 +50,7 @@ const DEMO_TABLES: Record<string, Record<string, unknown>[]> = {
   local_matter_sponsors: demo.localMatterSponsors ?? [],
   local_meetings: demo.localMeetings ?? [],
   discussions: demo.discussions ?? [],
+  council_districts: demo.councilDistricts ?? [],
 };
 
 /** A tiny PostgREST stand-in for the filters build-data uses (eq., like.prefix*, limit). Rows come pre-sorted. */
@@ -383,6 +384,20 @@ export async function loadSponsoredMatters(officialId: string): Promise<LocalMat
     .filter((m): m is LocalMatter => m !== null)
     .sort((a, b) => (b.latest_action_date ?? '').localeCompare(a.latest_action_date ?? ''));
 }
+
+export interface DistrictShape {
+  district: number;
+  name: string | null;
+  /** GeoJSON geometry (MultiPolygon), simplified for display. */
+  geojson: string;
+}
+
+/** Council district outlines for the Boston map. */
+export const loadCouncilDistricts = memo(async () =>
+  DEMO
+    ? (DEMO_TABLES.council_districts as unknown as DistrictShape[])
+    : rpc<DistrictShape[]>('council_district_shapes', { p_city: 'boston' }),
+);
 
 // ---- Massachusetts and other state bills -----------------------------------
 

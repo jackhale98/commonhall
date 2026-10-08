@@ -1,5 +1,8 @@
 ---
 import BillExplorer from '../../components/BillExplorer';
+import BarList from '../../components/viz/BarList';
+import Pipeline from '../../components/viz/Pipeline';
+import { pipeline, topPolicyAreas } from '../../lib/charts';
 import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadBills, loadDiscussions, loadMembers, loadPolicyAreas } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
@@ -53,6 +56,22 @@ const initial: Bill[] = bills
     {bills.length > 0 ? `${bills.length.toLocaleString()} bills and resolutions.` : ''} Search titles and summaries, or
     filter by chamber, status, policy area and the sponsor’s party.
   </p>
+  {bills.length > 0 && (
+    <div class="glance">
+      <section class="panel" aria-labelledby="stage-h">
+        <h2 id="stage-h" class="h-small">
+          Where bills stand
+        </h2>
+        <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
+      </section>
+      <section class="panel" aria-labelledby="topics-h">
+        <h2 id="topics-h" class="h-small">
+          Most active topics
+        </h2>
+        <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
+      </section>
+    </div>
+  )}
   <noscript>
     <p class="notice">Search and filters need JavaScript. The most recently active bills are listed below.</p>
   </noscript>
@@ -95,3 +114,16 @@ const initial: Bill[] = bills
     />
   )}
 </Base>
+
+<style>
+  .glance {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-4) 0 var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .glance {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

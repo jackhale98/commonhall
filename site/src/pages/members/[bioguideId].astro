@@ -3,6 +3,7 @@ import BillListItem from '../../components/BillListItem';
 import FollowButton from '../../components/FollowButton';
 import MemberPhoto from '../../components/MemberPhoto';
 import MemberVotes from '../../components/MemberVotes';
+import Ring from '../../components/viz/Ring';
 import Base from '../../layouts/Base.astro';
 import {
   CURRENT_CONGRESS,
@@ -48,7 +49,6 @@ const partyRate =
   stats && stats.party_line_votes > 0 && ['D', 'R'].includes((member.party ?? '').charAt(0))
     ? Math.round((stats.with_party / stats.party_line_votes) * 100)
     : null;
-const missedRate = stats && stats.total_votes > 0 ? Math.round((stats.missed / stats.total_votes) * 1000) / 10 : null;
 const sponsored = sponsoredBy.get(member.bioguide_id) ?? [];
 const cosponsored = cosponsorCounts.get(member.bioguide_id) ?? 0;
 const role = memberRole(member);
@@ -74,7 +74,7 @@ const SOCIAL_LABELS: Record<string, string> = {
   </nav>
 
   <header class="member-header">
-    <MemberPhoto name={member.name} url={member.photo_url} size={120} />
+    <MemberPhoto name={member.name} url={member.photo_url} bioguideId={member.bioguide_id} size={120} />
     <div>
       <h1>{member.name}</h1>
       <p class="role">
@@ -106,19 +106,18 @@ const SOCIAL_LABELS: Record<string, string> = {
             <dt>Bills cosponsored</dt>
             <dd>{cosponsored}</dd>
           </div>
-          {partyRate !== null && (
-            <div>
-              <dt>Votes with party</dt>
-              <dd>{partyRate}%</dd>
-            </div>
-          )}
-          {missedRate !== null && (
-            <div>
-              <dt>Votes missed</dt>
-              <dd>{missedRate}%</dd>
-            </div>
-          )}
         </dl>
+        {stats && stats.total_votes > 0 && (
+          <div class="rings">
+            <Ring
+              value={Math.round((stats.votes_cast / stats.total_votes) * 1000) / 10}
+              label={`Roll calls voted in (${stats.votes_cast} of ${stats.total_votes})`}
+            />
+            {partyRate !== null && (
+              <Ring value={partyRate} label="Votes with own party’s majority" tone="stroke-highlight" />
+            )}
+          </div>
+        )}
         <p class="small muted">{congressLabel(CURRENT_CONGRESS)}.</p>
       </section>
 
@@ -226,9 +225,17 @@ const SOCIAL_LABELS: Record<string, string> = {
     margin: 0;
   }
   .stats div {
+    background: var(--bg-raised);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     padding: var(--space-3);
+    box-shadow: var(--shadow);
+  }
+  .rings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin-top: var(--space-4);
   }
   .stats dt {
     font-size: var(--step--1);
@@ -236,9 +243,8 @@ const SOCIAL_LABELS: Record<string, string> = {
   }
   .stats dd {
     margin: 0;
-    font-family: var(--font-serif);
     font-size: var(--step-2);
-    font-weight: 700;
+    font-weight: 800;
   }
   .contact {
     align-self: start;

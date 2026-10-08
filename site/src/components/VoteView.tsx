@@ -4,7 +4,9 @@ import { billNumberLabel, formatDateTime, partyLabel, stateName } from '../lib/f
 import { billHref } from '../lib/paths';
 import { select } from '../lib/rest';
 import type { Member } from '../lib/types';
+import { voteSegments } from '../lib/charts';
 import MemberChip from './MemberChip';
+import StackedBar from './viz/StackedBar';
 
 export interface Vote {
   id: string;
@@ -128,41 +130,64 @@ export default function VoteView({ initial }: Props) {
           <strong>{vote.result ?? 'Unknown'}</strong> · {vote.yea_total} yea, {vote.nay_total} nay
           {vote.present_total > 0 && `, ${vote.present_total} present`}, {vote.not_voting_total} not voting
         </p>
+        <StackedBar segments={voteSegments(vote)} legend />
       </div>
 
       <h2>By party</h2>
-      <div class="table-wrap">
-        <table>
-          <caption class="visually-hidden">Votes by party</caption>
-          <thead>
-            <tr>
-              <th scope="col">Party</th>
-              <th scope="col">Yea</th>
-              <th scope="col">Nay</th>
-              <th scope="col">Present</th>
-              <th scope="col">Not voting</th>
-            </tr>
-          </thead>
-          <tbody>
-            {byParty.map(([party, t]) => (
-              <tr>
-                <th scope="row">{partyLabel(party)}</th>
-                <td>{t.yea}</td>
-                <td>{t.nay}</td>
-                <td>{t.present}</td>
-                <td>{t.not_voting}</td>
-              </tr>
-            ))}
-            <tr>
-              <th scope="row">Total</th>
-              <td>{vote.yea_total}</td>
-              <td>{vote.nay_total}</td>
-              <td>{vote.present_total}</td>
-              <td>{vote.not_voting_total}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="party-bars">
+        {byParty.map(([party, t]) => (
+          <div class="party-bar">
+            <span class={`party party-${party.toLowerCase()}`}>{partyLabel(party)}</span>
+            <StackedBar
+              segments={voteSegments({
+                yea_total: t.yea,
+                nay_total: t.nay,
+                present_total: t.present,
+                not_voting_total: t.not_voting,
+              })}
+              label={`${partyLabel(party)}: ${t.yea} yea, ${t.nay} nay, ${t.present} present, ${t.not_voting} not voting`}
+            />
+            <span class="small muted">
+              {t.yea}–{t.nay}
+            </span>
+          </div>
+        ))}
       </div>
+      <details class="more">
+        <summary>Show as a table</summary>
+        <div class="table-wrap">
+          <table>
+            <caption class="visually-hidden">Votes by party</caption>
+            <thead>
+              <tr>
+                <th scope="col">Party</th>
+                <th scope="col">Yea</th>
+                <th scope="col">Nay</th>
+                <th scope="col">Present</th>
+                <th scope="col">Not voting</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byParty.map(([party, t]) => (
+                <tr>
+                  <th scope="row">{partyLabel(party)}</th>
+                  <td>{t.yea}</td>
+                  <td>{t.nay}</td>
+                  <td>{t.present}</td>
+                  <td>{t.not_voting}</td>
+                </tr>
+              ))}
+              <tr>
+                <th scope="row">Total</th>
+                <td>{vote.yea_total}</td>
+                <td>{vote.nay_total}</td>
+                <td>{vote.present_total}</td>
+                <td>{vote.not_voting_total}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
 
       <h2>How each member voted</h2>
       <div class="toolbar">

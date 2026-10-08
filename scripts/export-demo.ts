@@ -38,7 +38,7 @@ const voteStats = await sql`
   select member_id, congress, total_votes, votes_cast, missed, with_party, party_line_votes from public.member_vote_stats`;
 
 const stateLegislators = await sql`
-  select id, name, party, state, chamber, district, title, photo_url, openstates_url
+  select id, name, party, state, chamber, district, title, photo_url, openstates_url, current
     from public.state_legislators where current order by state, chamber, id`;
 const stateBills = await sql`
   select id, state, session, identifier, title, chamber, to_char(latest_action_date, 'YYYY-MM-DD') as latest_action_date,
@@ -58,12 +58,14 @@ const localMatterActions = await sql`
 const localMatterSponsors =
   await sql`select matter_id, official_id, name, sequence from public.local_matter_sponsors order by matter_id, sequence`;
 const localMeetings = await sql`
-  select id, event_id, body, starts_at, to_char(date, 'YYYY-MM-DD') as date, time, location, agenda_url, minutes_url, legistar_url
+  select id, city, event_id, body, starts_at, to_char(date, 'YYYY-MM-DD') as date, time, location, agenda_url, minutes_url, legistar_url
     from public.local_meetings order by date desc`;
 const discussions = await sql`
   select id, title, prompt, jurisdiction, district, target_type, target_id, status, residency_required, opens_at, closes_at,
          created_at
     from public.discussions where status <> 'draft' order by created_at desc`;
+
+const councilDistricts = await sql`select * from public.council_district_shapes('boston')`;
 
 const data = {
   generatedFrom: 'supabase/seed.sql',
@@ -83,6 +85,7 @@ const data = {
   localMatterSponsors,
   localMeetings,
   discussions,
+  councilDistricts,
 };
 writeFileSync('site/src/data/demo.json', JSON.stringify(data));
 console.log(

@@ -1,5 +1,8 @@
 ---
 import MemberChip from '../../components/MemberChip';
+import MemberPhoto from '../../components/MemberPhoto';
+import Hemicycle from '../../components/viz/Hemicycle';
+import { chamberGroups } from '../../lib/charts';
 import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadMembers } from '../../lib/build-data';
 import { congressLabel, stateName } from '../../lib/format';
@@ -13,6 +16,8 @@ const counts = {
   senate: members.filter((m) => m.chamber === 'senate').length,
   house: members.filter((m) => m.chamber === 'house').length,
 };
+const house = chamberGroups((await loadMembers()).values(), 'house');
+const senate = chamberGroups((await loadMembers()).values(), 'senate');
 const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
 ---
 
@@ -25,6 +30,11 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
   <p class="muted">
     {counts.senate} senators and {counts.house} representatives and delegates.
   </p>
+
+  <div class="panel chambers">
+    <Hemicycle title="House" groups={house} />
+    <Hemicycle title="Senate" groups={senate} />
+  </div>
 
   <form class="toolbar" id="member-filter" aria-label="Filter members">
     <div class="field">
@@ -64,6 +74,7 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
           <ul class="plain-members">
             {[...senators, ...reps].map((m) => (
               <li data-party={(m.party ?? '').charAt(0)} data-chamber={m.chamber} data-name={m.name.toLowerCase()}>
+                <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={36} />
                 <MemberChip member={m} />
               </li>
             ))}
@@ -119,6 +130,21 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: var(--space-1);
+    gap: var(--space-2);
+  }
+  .plain-members li[hidden] {
+    display: none;
+  }
+  .plain-members li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+  .chambers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--space-5);
+    max-width: 44rem;
+    margin: var(--space-4) 0 var(--space-5);
   }
 </style>
