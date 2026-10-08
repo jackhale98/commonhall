@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { accountUrl, hasStoredSession, polisProfile, type PolisProfile } from '../lib/auth';
-import { POLIS_EMBED_URL, POLIS_SITE_ID, hasSupabase } from '../lib/config';
+import { DEMO, POLIS_EMBED_URL, POLIS_SITE_ID, hasSupabase } from '../lib/config';
 import { isAcceptingInput, jurisdictionLabel, meetsResidency } from '../lib/discussions';
 import { href } from '../lib/paths';
 import type { Discussion } from '../lib/types';
@@ -19,9 +19,10 @@ type Viewer =
  * - parent_url is this page's clean URL, never the query string or fragment;
  * - document.referrer is reduced to this site's origin before embed.js reads it.
  */
-// The embed needs accounts (sign-in and residency), so it is off in the demo build:
-// loading it there would only create empty conversations on Pol.is.
-const enabled = Boolean(POLIS_SITE_ID) && hasSupabase;
+const enabled = Boolean(POLIS_SITE_ID);
+// The demo build has no accounts, so its example discussions are an open preview:
+// anyone may vote and write, and no user identifier exists to send.
+const preview = DEMO;
 
 export default function PolisDiscussion(props: Props) {
   const [viewer, setViewer] = useState<Viewer>({ kind: 'loading' });
@@ -38,7 +39,7 @@ export default function PolisDiscussion(props: Props) {
   const open = isAcceptingInput(props);
   const profile = viewer.kind === 'signed-in' ? viewer.profile : null;
   const resident = meetsResidency(props, profile);
-  const canParticipate = open && profile !== null && resident;
+  const canParticipate = open && (preview || (profile !== null && resident));
 
   useEffect(() => {
     if (!enabled || viewer.kind === 'loading' || !container.current) return;
@@ -78,6 +79,7 @@ export default function PolisDiscussion(props: Props) {
       return props.status === 'closed'
         ? 'This discussion is closed. You can still read the results.'
         : 'This discussion hasn’t opened yet.';
+    if (preview) return 'preview';
     if (viewer.kind === 'loading') return null;
     if (viewer.kind === 'error') return 'Couldn’t check your account. You can read along; reload to take part.';
     if (!profile) return hasSupabase ? 'signed-out' : null;
@@ -87,7 +89,13 @@ export default function PolisDiscussion(props: Props) {
 
   return (
     <div class="discussion-embed">
-      {notice === 'signed-out' ? (
+      {notice === 'preview' ? (
+        <p class="notice">
+          <strong>Demo preview.</strong> Anyone can vote and add statements here. On the live site, taking part needs
+          sign-in
+          {props.residency_required && `, and this discussion is limited to residents of ${jurisdictionLabel(props)}`}.
+        </p>
+      ) : notice === 'signed-out' ? (
         <p class="notice">
           <a href={accountUrl(window.location.pathname)}>Sign in</a> to vote and add statements.
           {props.residency_required && ` Open to residents of ${jurisdictionLabel(props)}.`}
@@ -101,11 +109,7 @@ export default function PolisDiscussion(props: Props) {
         notice && <p class="notice">{notice}</p>
       )}
       {!enabled ? (
-        <p class="notice">
-          {POLIS_SITE_ID
-            ? 'Discussions open once this site is connected to its database: taking part needs an account.'
-            : 'Discussions aren’t switched on for this copy of the site yet.'}
-        </p>
+        <p class="notice">Discussions aren’t switched on for this copy of the site yet.</p>
       ) : failed ? (
         <p class="notice error">Couldn’t load the discussion from pol.is. Check your connection or content blocker.</p>
       ) : (

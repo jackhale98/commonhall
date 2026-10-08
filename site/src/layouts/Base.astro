@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { DEMO, SITE_NAME } from '../lib/config';
+import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
 import NavStatus from '../components/NavStatus';
 import { href } from '../lib/paths';
 
@@ -148,7 +148,8 @@ const nav = [
         <div class="container">
           <strong>Demo.</strong> This preview uses a small sample of real data (50 bills, current members, 6 roll-call
           votes, recent Boston City Council matters and Massachusetts legislators) and two example discussions.
-          Accounts, following, the feed, Find my reps and discussions are switched off until a database is connected.
+          Accounts, following, the feed and Find my reps are switched off until a database is connected
+          {POLIS_SITE_ID ? '; the example discussions are an open preview.' : '.'}
         </div>
       </div>
     )}
