@@ -2,10 +2,18 @@ import { useEffect, useState } from 'preact/hooks';
 import { parseBillId } from '@civic/congress-client/ids';
 import { accountUrl, getClient, hasStoredSession, unfollow } from '../lib/auth';
 import { billDisplayTitle, billNumberLabel } from '../lib/format';
-import { billHref, href, memberHref } from '../lib/paths';
+import {
+  billHref,
+  discussionHref,
+  href,
+  localMatterHref,
+  localOfficialHref,
+  memberHref,
+  stateBillFallbackHref,
+} from '../lib/paths';
 
 interface Follow {
-  target_type: 'bill' | 'member' | 'state_bill' | 'state_legislator';
+  target_type: 'bill' | 'member' | 'state_bill' | 'state_legislator' | 'local_matter' | 'local_official' | 'discussion';
   target_id: string;
   created_at: string;
 }
@@ -49,6 +57,9 @@ const GROUPS: { type: Follow['target_type']; title: string }[] = [
   { type: 'member', title: 'Members of Congress' },
   { type: 'state_bill', title: 'State bills' },
   { type: 'state_legislator', title: 'State legislators' },
+  { type: 'local_matter', title: 'Boston council matters' },
+  { type: 'local_official', title: 'Boston councilors' },
+  { type: 'discussion', title: 'Discussions' },
 ];
 
 export default function FollowingList() {
@@ -69,6 +80,22 @@ export default function FollowingList() {
       const follows = (data ?? []) as Follow[];
       const ids = (type: Follow['target_type']) =>
         follows.filter((f) => f.target_type === type).map((f) => f.target_id);
+      const named = async (table: string, columns: string, type: Follow['target_type']) =>
+        ids(type).length
+          ? new Map(
+              (
+                ((await client.from(table).select(columns).in('id', ids(type))).data ?? []) as unknown as {
+                  id: string;
+                  [k: string]: unknown;
+                }[]
+              ).map((r) => [r.id, r]),
+            )
+          : new Map<string, { id: string; [k: string]: unknown }>();
+      const [matters, officials, discussions] = await Promise.all([
+        named('local_matters', 'id,file_number,title', 'local_matter'),
+        named('local_officials', 'id,name,seat', 'local_official'),
+        named('discussions', 'id,title,status', 'discussion'),
+      ]);
       const [bills, members, stateBills, legislators] = await Promise.all([
         ids('bill').length
           ? client.from('bills').select('id,congress,bill_type,number,title,short_title').in('id', ids('bill'))
@@ -112,7 +139,33 @@ export default function FollowingList() {
             return {
               ...f,
               label: b ? `${b.state} ${b.identifier}: ${b.title}` : f.target_id,
-              link: b?.openstates_url ?? undefined,
+              link: stateBillFallbackHref(f.target_id),
+            };
+          }
+          if (f.target_type === 'local_matter') {
+            const m = matters.get(f.target_id);
+            return {
+              ...f,
+              label: m ? `${m.file_number ? `Docket #${m.file_number}: ` : ''}${String(m.title)}` : f.target_id,
+              link: localMatterHref(f.target_id),
+            };
+          }
+          if (f.target_type === 'local_official') {
+            const o = officials.get(f.target_id);
+            return {
+              ...f,
+              label: o ? String(o.name) : f.target_id,
+              detail: o?.seat ? String(o.seat) : undefined,
+              link: localOfficialHref(f.target_id),
+            };
+          }
+          if (f.target_type === 'discussion') {
+            const d = discussions.get(f.target_id);
+            return {
+              ...f,
+              label: d ? String(d.title) : f.target_id,
+              detail: d ? String(d.status) : undefined,
+              link: discussionHref(f.target_id),
             };
           }
           const l = legislatorMap.get(f.target_id);

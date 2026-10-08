@@ -1,0 +1,9 @@
+---
+import AdminDiscussions from '../../../components/AdminDiscussions';
+import Base from '../../../layouts/Base.astro';
+---
+
+<Base title="Manage discussions" section="discussions" noindex>
+  <h1>Manage discussions</h1>
+  <AdminDiscussions client:only="preact" />
+</Base>

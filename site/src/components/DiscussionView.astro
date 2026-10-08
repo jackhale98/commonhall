@@ -1,0 +1,59 @@
+---
+import { formatDate, paragraphs } from '../lib/format';
+import { jurisdictionLabel, targetHref, targetLabel } from '../lib/discussions';
+import { href } from '../lib/paths';
+import type { Discussion } from '../lib/types';
+import FollowButton from './FollowButton';
+import PolisDiscussion from './PolisDiscussion';
+
+interface Props {
+  discussion: Discussion;
+}
+
+const { discussion: d } = Astro.props;
+const link = targetHref(d.target_type, d.target_id);
+const linkLabel = targetLabel(d.target_type, d.target_id);
+---
+
+<article>
+  <p class="eyebrow">
+    Discussion · {jurisdictionLabel(d)} · {d.status === 'open' ? 'Open' : 'Closed'}
+  </p>
+  <h1>{d.title}</h1>
+  {paragraphs(d.prompt).map((p) => (
+    <p>{p}</p>
+  ))}
+  <p class="meta cluster small">
+    {link && (
+      <span>
+        About <a href={link}>{linkLabel}</a>
+      </span>
+    )}
+    {d.opens_at && <span>Opened {formatDate(d.opens_at)}</span>}
+    {d.closes_at && (
+      <span>
+        {d.status === 'closed' ? 'Closed' : 'Closes'} {formatDate(d.closes_at)}
+      </span>
+    )}
+    {d.residency_required && <span>Open to residents of {jurisdictionLabel(d)}</span>}
+  </p>
+  <div class="cluster" style="margin: 1rem 0">
+    <FollowButton client:load targetType="discussion" targetId={d.id} label={d.title} />
+  </div>
+  <PolisDiscussion
+    client:only="preact"
+    id={d.id}
+    title={d.title}
+    status={d.status}
+    jurisdiction={d.jurisdiction}
+    district={d.district}
+    residency_required={d.residency_required}
+    opens_at={d.opens_at}
+    closes_at={d.closes_at}
+  />
+  <p class="small muted">
+    Vote agree, disagree or pass on short statements and add your own. Statements are moderated under the{' '}
+    <a href={href('moderation/')}>discussion rules</a>. Pol.is receives only a random id for you, never your name, email
+    or address: see <a href={href('privacy/')}>privacy</a>.
+  </p>
+</article>

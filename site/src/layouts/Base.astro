@@ -8,7 +8,7 @@ interface Props {
   title?: string;
   description?: string;
   /** Path of the current section, used to mark the active nav item. */
-  section?: 'home' | 'bills' | 'members' | 'states' | 'feed' | 'following' | 'account';
+  section?: 'home' | 'bills' | 'members' | 'states' | 'boston' | 'discussions' | 'feed' | 'following' | 'account';
   noindex?: boolean;
 }
 
@@ -25,12 +25,15 @@ const sources = [
   { name: 'senate.gov', url: 'https://www.senate.gov/legislative/votes.htm' },
   { name: 'congress-legislators', url: 'https://github.com/unitedstates/congress-legislators' },
   { name: 'Open States', url: 'https://openstates.org/' },
+  { name: 'Boston Legistar', url: 'https://boston.legistar.com/' },
   { name: 'the Census Geocoder', url: 'https://geocoding.geo.census.gov/' },
 ];
 const nav = [
   { key: 'bills', label: 'Bills', path: 'bills/' },
   { key: 'members', label: 'Members', path: 'members/' },
   { key: 'states', label: 'States', path: 'states/' },
+  { key: 'boston', label: 'Boston', path: 'boston/' },
+  { key: 'discussions', label: 'Discuss', path: 'discussions/' },
   { key: 'feed', label: 'Feed', path: 'feed/' },
   { key: 'account', label: 'Account', path: 'account/' },
 ].filter((item) => !DEMO || !['feed', 'account'].includes(item.key));
@@ -97,7 +100,8 @@ const nav = [
       <div class="demo-banner" role="note">
         <div class="container">
           <strong>Demo.</strong> This preview uses a small sample of real data (50 bills, current members, 6 roll-call
-          votes). Accounts, following, the feed and Find my reps are switched off until a database is connected.
+          votes, recent Boston City Council matters and Massachusetts legislators) and two example discussions.
+          Accounts, following, the feed, Find my reps and discussions are switched off until a database is connected.
         </div>
       </div>
     )}
@@ -116,6 +120,8 @@ const nav = [
           ))}
         </span>
         <span>Free and open source. No ads, no tracking.</span>
+        <a href={href('privacy/')}>Privacy</a>
+        <a href={href('moderation/')}>Discussion rules</a>
         <button type="button" class="link-button" id="theme-toggle" aria-pressed="false">
           Toggle dark mode
         </button>

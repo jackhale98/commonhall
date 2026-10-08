@@ -219,6 +219,8 @@ then lists their representatives from our own tables without calling any API.
 
 State bills and legislators have no page of their own on the site (the plan
 calls for trimmed state data); they link to Open States and can be followed.
+(Superseded for state bills by #27: notable and followed state bills now have
+pages.)
 
 ## 24. Acceptance checks as scripts
 
@@ -238,3 +240,110 @@ client-rendered at `/vote/?id=…`, are prerendered at `/votes/{id}/` in this mo
 because there is no live database to query; bill search filters the sample in
 the browser; follow buttons, the feed, accounts and Find my reps are hidden.
 The snapshot is read only at build time and is not shipped to browsers.
+
+## 26. Build guide rev2: one pull request, existing package names
+
+Rev2 of the build guide (Massachusetts, Boston, discussions, hybrid rendering)
+asks for one pull request per phase. This work was developed on a single
+designated branch, so it lands as one pull request with a section and acceptance
+evidence per phase. The Legistar client lives in `packages/congress-client` next to
+the other typed clients rather than in a renamed `packages/clients`, to avoid
+churn in every import.
+
+## 27. Hybrid rendering: only notable items are prerendered
+
+Prerendering every bill of a Congress (15,000+) and every state bill would push
+the site past the 300 MB budget. The database decides what is notable, in three
+id-only views that the build reads with the anon key:
+
+- `bills_prerender`: current-Congress bills past introduction and committee
+  (status, or an action text showing a committee report or calendar placement),
+  plus any bill with a published discussion or at least one follower.
+- `state_bills_prerender`: Massachusetts bills that were reported, passed or
+  enacted, plus any state bill that is discussed or followed. Other states get
+  pages only when discussed or followed (state bills had no pages before; they
+  linked to Open States).
+- `local_matters_prerender`: council matters that are discussed or followed.
+  Council business is mostly resolutions adopted the day they are filed, so
+  "reported by committee" does not apply.
+
+The views are not `security_invoker`: they count follows across users but expose
+ids only. Everything else is served by client-rendered fallbacks
+(`/bill/?id=`, `/state-bill/?…`, `/boston/matter/?id=`, `/discussion/?id=`).
+The 404 page forwards clean URLs to them, and each fallback reads
+`/prerendered.json` and goes back to the clean URL if the item has a page (for
+example after a rebuild), so shared links settle on the URL with the better
+preview. The deploy workflow fails above 300 MB. With the seed data the real
+build has 632 pages (14 MB); the demo prerenders everything in its snapshot.
+
+## 28. Boston: Legistar has no council seats
+
+Legistar's office records say who is on the City Council but not which seat they
+hold. Seats come from `supabase/data/boston-council-seats.json` (Legistar person
+id → district or at-large), checked against boston.gov in October 2026 (District
+7 is Miniard Culpepper since January 2026; the Analyze Boston district layer still
+names his predecessor). `sync-boston` logs any sitting councilor missing from the
+map so the file is updated after elections and vacancies.
+
+## 29. Boston: no roll-call votes in Legistar
+
+Boston records roll calls in meeting minutes (PDF), not as Legistar votes: no
+event item has `EventItemRollCallFlag` set and `/votes` is empty for the council.
+`local_votes` and the vote ingest exist and are tested, so votes appear if the
+Clerk starts recording them, but the guide's "five Boston votes" acceptance check
+cannot be met from Legistar. Matter pages say so and link to Legistar. Parsing
+minutes PDFs would be a new data source and is left for the owner to decide.
+
+## 30. Boston: only legislative matter types
+
+The council's Legistar body also holds agendas, minutes, reports, communications
+and appointments. `sync-boston` keeps ordinances, resolutions, orders, hearing
+orders, home rule petitions and similar (`LEGISLATIVE_TYPES`) and skips the rest
+without fetching their histories, which keeps the nightly run small.
+
+## 31. Feed: `new_item` alongside `new_bill`
+
+The guide renames the new-legislation event to `new_item`. Existing rows and code
+use `new_bill`, so both kinds are allowed: federal and state syncs keep writing
+`new_bill`, Boston writes `new_item`, and the feed shows both as new legislation.
+
+## 32. Council districts from Analyze Boston, loaded by script
+
+`npm run load-districts` loads the 2023-2032 council districts from Analyze
+Boston into PostGIS (`council_districts`); `council_district_at()` answers
+point-in-polygon lookups for Find my reps. Tests and the seed use a copy
+simplified to about 20 m (20 KB), which can misplace addresses within a few
+metres of a boundary; production loads the full file. Reload after redistricting.
+
+## 33. Find my reps: the Census match is not always the typed address
+
+The Census geocoder returns the address it matched, which can differ from what
+was typed (for example "24 Beacon St 02133" matched an address in Hyde Park).
+Districts are computed for the matched address, and the result shows it so
+users can tell. The Boston acceptance script uses addresses that match exactly.
+
+## 34. Pol.is embed privacy
+
+By default `embed.js` sends `window.location` (query string and fragment
+included) as `parent_url` and `document.referrer`. The island sets
+`data-parent_url` to the clean URL, reduces `document.referrer` to the site
+origin before loading the script, and sets `data-xid` (a random per-user UUID)
+only for users who may take part; others get the embed with `ucv`/`ucw` off.
+`npm run check:polis` verifies this in a real browser (docs/discussions.md).
+
+## 35. Seed: Massachusetts legislators, no Massachusetts bills
+
+`supabase/seed-local.sql` (generated by `scripts/make-local-seed.ts`) holds real
+Boston data from a Legistar sync, the simplified districts, current
+Massachusetts legislators from the public-domain openstates/people repository
+(the data behind Open States) and two clearly labelled example discussions.
+Massachusetts bills need an Open States key, which was not available while
+building this, so the seed and demo have none and MA bill pages were checked with
+test rows only. They fill in on the first nightly `sync-state` run, which now
+handles Massachusetts first.
+
+## 36. Clearing a saved address keeps the profile row
+
+Find my reps used to delete the profile when a user removed their address. The
+profile now also holds the user's Pol.is id, so removing the address nulls the
+address and district fields instead; deleting the account still removes the row.

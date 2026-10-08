@@ -9,10 +9,12 @@ export function connect() {
   return postgres(DATABASE_URL, { max: 4, onnotice: () => undefined });
 }
 
-/** Empty every data table in public and load supabase/seed.sql. */
+/** Empty every data table in public and load supabase/seed.sql and seed-local.sql. */
 export async function reloadSeed(sql: postgres.Sql) {
   const tables = await sql<{ name: string }[]>`
     select format('%I.%I', schemaname, tablename) as name from pg_tables where schemaname = 'public'`;
   if (tables.length > 0) await sql.unsafe(`truncate ${tables.map((t) => t.name).join(', ')} cascade`);
-  await sql.unsafe(readFileSync(fileURLToPath(new URL('../seed.sql', import.meta.url)), 'utf8'));
+  for (const file of ['../seed.sql', '../seed-local.sql']) {
+    await sql.unsafe(readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8'));
+  }
 }

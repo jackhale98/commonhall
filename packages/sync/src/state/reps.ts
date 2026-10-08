@@ -43,8 +43,22 @@ export interface StateRep {
   openstates_url: string | null;
 }
 
+export interface LocalRep {
+  id: string;
+  name: string;
+  seat: string | null;
+  district: number | null;
+  email: string | null;
+  photo_url: string | null;
+}
+
 export interface RepsResult {
   matchedAddress: string;
+  /** City with local data (e.g. "boston") when the address is inside it. */
+  city: string | null;
+  councilDistrict: number | null;
+  /** District councilor first, then at-large councilors. */
+  localOfficials: LocalRep[];
   state: string | null;
   congress: number;
   congressionalDistrict: number | null;
@@ -134,6 +148,14 @@ async function stateRepsFromOpenStates(
   }
 }
 
+/** The district councilor, then the at-large councilors. */
+export async function localReps(sql: Sql, city: string, district: number): Promise<LocalRep[]> {
+  return sql<LocalRep[]>`
+    select id, name, seat, district, email, photo_url from public.local_officials
+     where city = ${city} and current and (district = ${district} or seat = 'At-Large')
+     order by (district is null), name`;
+}
+
 export interface FindRepsDeps {
   census: CensusGeocoder;
   /** Builds an Open States client with the given request budget; omit to use the database only. */
@@ -168,8 +190,26 @@ export async function findReps(
     if (stateLegislators.length > 0) stateSource = 'database';
   }
 
+  // Boston: point-in-polygon against the council district map.
+  let city: string | null = null;
+  let councilDistrict: number | null = null;
+  let localOfficials: LocalRep[] = [];
+  if (geo.state === 'MA') {
+    const [row] = await sql<
+      { d: number | null }[]
+    >`select public.council_district_at('boston', ${geo.lat}, ${geo.lng}) as d`;
+    if (row?.d) {
+      city = 'boston';
+      councilDistrict = row.d;
+      localOfficials = await localReps(sql, city, councilDistrict);
+    }
+  }
+
   return {
     matchedAddress: geo.matchedAddress,
+    city,
+    councilDistrict,
+    localOfficials,
     state: geo.state,
     congress,
     congressionalDistrict: geo.congressionalDistrict,

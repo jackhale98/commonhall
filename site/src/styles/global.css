@@ -692,3 +692,38 @@ button.danger {
     justify-self: start;
   }
 }
+
+/* Council matters, state bills and discussions */
+.matter-title {
+  font-family: var(--font-serif);
+  font-size: var(--step-3, 1.75rem);
+  line-height: 1.2;
+}
+.plain-inline {
+  list-style: none;
+  padding: 0;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+.discussion-callout a {
+  font-weight: 600;
+}
+.discussion-request {
+  margin: var(--space-2) 0;
+}
+.discussion-embed {
+  margin: var(--space-4) 0;
+  min-height: 200px;
+}
+.admin-form textarea,
+.admin-form input:not([type='checkbox']),
+.admin-form select {
+  width: 100%;
+}
+.admin-row {
+  justify-content: space-between;
+}

@@ -1,4 +1,5 @@
 ---
+import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
 import MemberChip from '../../../../components/MemberChip';
@@ -6,7 +7,8 @@ import VoteList from '../../../../components/VoteList';
 import Base from '../../../../layouts/Base.astro';
 import {
   loadActions,
-  loadBills,
+  loadDiscussionsByTarget,
+  loadPrerenderBills,
   loadCosponsors,
   loadMembers,
   loadSubjects,
@@ -17,7 +19,7 @@ import { href } from '../../../../lib/paths';
 import type { Bill } from '../../../../lib/types';
 
 export async function getStaticPaths() {
-  const bills = await loadBills();
+  const bills = await loadPrerenderBills();
   return bills.map((bill) => ({
     params: { congress: String(bill.congress), type: bill.bill_type, number: String(bill.number) },
     props: { bill },
@@ -37,6 +39,7 @@ const [members, actionsByBill, cosponsorsByBill, subjectsByBill, votesByBill] = 
   loadVotesByBill(),
 ]);
 const votes = votesByBill.get(bill.id) ?? [];
+const discussion = (await loadDiscussionsByTarget()).get(`bill:${bill.id}`);
 const actions = actionsByBill.get(bill.id) ?? [];
 const cosponsors = (cosponsorsByBill.get(bill.id) ?? [])
   .filter((c) => !c.withdrawn_date)
@@ -69,6 +72,7 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
     <a href={href('bills/')}>Bills</a> › {congressLabel(bill.congress)} › {label}
   </nav>
 
+  <DiscussionLink discussion={discussion} targetType="bill" targetId={bill.id} />
   <header class="bill-header">
     <p class="eyebrow">
       {label} · {congressLabel(bill.congress)}

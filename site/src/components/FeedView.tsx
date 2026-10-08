@@ -3,14 +3,23 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { parseBillId } from '@civic/congress-client/ids';
 import { accountUrl, getClient, hasStoredSession } from '../lib/auth';
 import { formatDate } from '../lib/format';
-import { billHref, href, memberHref, voteHref } from '../lib/paths';
+import {
+  billHref,
+  discussionHref,
+  href,
+  localMatterHref,
+  localOfficialHref,
+  memberHref,
+  stateBillFallbackHref,
+  voteHref,
+} from '../lib/paths';
 import type { Member } from '../lib/types';
 
 export interface FeedItem {
   id: number;
-  target_type: 'bill' | 'member' | 'state_bill' | 'state_legislator';
+  target_type: 'bill' | 'member' | 'state_bill' | 'state_legislator' | 'local_matter' | 'local_official' | 'discussion';
   target_id: string;
-  kind: 'action' | 'vote' | 'cosponsor' | 'new_bill';
+  kind: 'action' | 'vote' | 'cosponsor' | 'new_bill' | 'new_item' | 'discussion_opened';
   member_type: string | null;
   member_id: string | null;
   occurred_at: string;
@@ -25,18 +34,24 @@ const KIND_LABELS: Record<FeedItem['kind'], string> = {
   vote: 'Vote',
   cosponsor: 'Cosponsor',
   new_bill: 'New bill',
+  new_item: 'New item',
+  discussion_opened: 'Discussion',
 };
 
 const PAGE = 30;
 
 export function targetLink(item: Pick<FeedItem, 'target_type' | 'target_id' | 'payload'>): string | null {
+  if (typeof item.payload.discussion_id === 'string') return discussionHref(item.payload.discussion_id);
   if (item.target_type === 'bill') {
     const ref = parseBillId(item.target_id);
     return ref ? billHref(ref.congress, ref.type, ref.number) : null;
   }
   if (item.target_type === 'member') return memberHref(item.target_id);
-  if (item.target_type === 'state_bill') return (item.payload.openstates_url as string | undefined) ?? null;
+  if (item.target_type === 'state_bill') return stateBillFallbackHref(item.target_id);
   if (item.target_type === 'state_legislator') return (item.payload.openstates_url as string | undefined) ?? null;
+  if (item.target_type === 'local_matter') return localMatterHref(item.target_id);
+  if (item.target_type === 'local_official') return localOfficialHref(item.target_id);
+  if (item.target_type === 'discussion') return discussionHref(item.target_id);
   return null;
 }
 
@@ -49,7 +64,7 @@ export default function FeedView({ compact = false }: Props) {
   const [state, setState] = useState<'loading' | 'signed-out' | 'ready' | 'error'>('loading');
   const [items, setItems] = useState<FeedItem[]>([]);
   const [members, setMembers] = useState<Map<string, Pick<Member, 'bioguide_id' | 'name'>>>(new Map());
-  const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state'>('');
+  const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state' | 'boston'>('');
   const [more, setMore] = useState(false);
   const [follows, setFollows] = useState<number | null>(null);
 
@@ -63,6 +78,7 @@ export default function FeedView({ compact = false }: Props) {
     if (filter === 'bill') query = query.eq('target_type', 'bill');
     if (filter === 'member') query = query.or('target_type.eq.member,reason.eq.legislator');
     if (filter === 'state') query = query.in('target_type', ['state_bill', 'state_legislator']);
+    if (filter === 'boston') query = query.in('target_type', ['local_matter', 'local_official']);
     const { data, error } = await query;
     if (error) throw error;
     const rows = (data ?? []) as FeedItem[];
@@ -148,6 +164,7 @@ export default function FeedView({ compact = false }: Props) {
               ['bill', 'Bills'],
               ['member', 'Legislators'],
               ['state', 'State'],
+              ['boston', 'Boston'],
             ] as const
           ).map(([value, label]) => (
             <button

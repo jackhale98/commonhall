@@ -28,3 +28,46 @@ export function voteHref(id: string): string {
 export function stateHref(state: string): string {
   return href(`states/${state.toLowerCase()}/`);
 }
+
+/** Boston council matters use the Legistar MatterId in their URL. */
+export function localMatterHref(id: string): string {
+  const matterId = id.replace(/^boston-/, '');
+  return href(`boston/matters/${matterId}/`);
+}
+
+export function localMatterFallbackHref(id: string): string {
+  return href(`boston/matter/?id=${encodeURIComponent(id.replace(/^boston-/, ''))}`);
+}
+
+export function localOfficialHref(id: string): string {
+  return href(`boston/councilors/${id.replace(/^boston-p/, '')}/`);
+}
+
+/** "H 1234" → "h-1234"; "194th" → "194th". */
+export function slug(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Clean URL for a state bill: /states/ma/bills/194th/h-1234/. */
+export function stateBillHref(state: string, session: string, identifier: string): string {
+  return href(`states/${state.toLowerCase()}/bills/${slug(session)}/${slug(identifier)}/`);
+}
+
+export function stateBillFallbackHref(id: string): string {
+  return href(`state-bill/?id=${encodeURIComponent(id)}`);
+}
+
+export function discussionHref(id: string): string {
+  return href(`discussions/${id}/`);
+}
+
+/** Official page for a Massachusetts bill, e.g. https://malegislature.gov/Bills/194/H1234. */
+export function maLegislatureUrl(session: string, identifier: string): string | null {
+  const court = /^(\d+)/.exec(session)?.[1];
+  const bill = identifier.replace(/\s+/g, '').toUpperCase();
+  if (!court || !/^[HS]D?\d+$/.test(bill)) return null;
+  return `https://malegislature.gov/Bills/${court}/${bill}`;
+}

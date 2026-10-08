@@ -1,0 +1,46 @@
+---
+import DiscussionCard from '../../components/DiscussionCard.astro';
+import Base from '../../layouts/Base.astro';
+import { loadDiscussions } from '../../lib/build-data';
+import { href } from '../../lib/paths';
+
+const discussions = await loadDiscussions();
+const open = discussions.filter((d) => d.status === 'open');
+const closed = discussions.filter((d) => d.status === 'closed');
+---
+
+<Base
+  title="Discussions"
+  description="Structured public discussions on bills and Boston City Council matters, powered by Pol.is."
+  section="discussions"
+>
+  <h1>Discussions</h1>
+  <p>
+    Each discussion asks one question about a bill or council matter. You vote agree, disagree or pass on short
+    statements from other people and can add your own. The results show where people agree and where opinion splits, not
+    who shouted loudest. Maintainers choose topics; you can ask for one on any bill or council matter page.
+  </p>
+  <p class="small">
+    <a href={href('moderation/')}>Discussion rules</a> · <a href={href('privacy/')}>Privacy</a>
+  </p>
+
+  <section aria-labelledby="open-h">
+    <h2 id="open-h">Open</h2>
+    {open.length === 0 && <p class="muted">No open discussions right now.</p>}
+    <ul class="list">
+      {open.map((d) => (
+        <DiscussionCard discussion={d} />
+      ))}
+    </ul>
+  </section>
+  {closed.length > 0 && (
+    <section aria-labelledby="closed-h">
+      <h2 id="closed-h">Closed</h2>
+      <ul class="list">
+        {closed.map((d) => (
+          <DiscussionCard discussion={d} />
+        ))}
+      </ul>
+    </section>
+  )}
+</Base>

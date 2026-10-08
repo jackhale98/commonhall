@@ -14,3 +14,7 @@ export const hasSupabase = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
  * src/data/demo.json and account features are switched off.
  */
 export const DEMO = !hasSupabase && import.meta.env.PUBLIC_DEMO === 'true';
+
+/** Pol.is site id (public; from the Pol.is admin "integrate" page). Discussions show a notice without it. */
+export const POLIS_SITE_ID: string = import.meta.env.PUBLIC_POLIS_SITE_ID ?? '';
+export const POLIS_EMBED_URL = 'https://pol.is/embed.js';

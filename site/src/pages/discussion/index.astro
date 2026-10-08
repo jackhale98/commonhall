@@ -1,0 +1,15 @@
+---
+import DiscussionFallback from '../../components/DiscussionFallback';
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="Discussion" section="discussions" noindex>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('discussions/')}>Discussions</a>
+  </nav>
+  <noscript>
+    <p class="notice">Discussions need JavaScript.</p>
+  </noscript>
+  <DiscussionFallback client:only="preact" />
+</Base>

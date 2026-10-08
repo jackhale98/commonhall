@@ -26,6 +26,51 @@ export const ADDRESSES: { address: string; house: string }[] = [
   { address: '400 S Monroe St, Tallahassee, FL 32399', house: 'Dunn' },
 ];
 
+/** Boston public buildings with their City Council district (2023–2032 map). */
+export const BOSTON: { address: string; council: number }[] = [
+  { address: '86 White St, East Boston, MA 02128', council: 1 },
+  { address: '43 Monument Sq, Charlestown, MA 02129', council: 1 },
+  { address: '1663 Columbia Rd, Boston, MA 02127', council: 2 },
+  { address: '690 Washington St, Dorchester, MA 02124', council: 4 },
+  { address: '1179 River St, Hyde Park, MA 02136', council: 5 },
+  { address: '1961 Centre St, West Roxbury, MA 02132', council: 6 },
+  { address: '65 Warren St, Roxbury, MA 02119', council: 7 },
+  { address: '700 Boylston St, Boston, MA 02116', council: 8 },
+  { address: '1520 Dorchester Ave, Dorchester, MA 02122', council: 3 },
+  { address: '20 Chestnut Hill Ave, Brighton, MA 02135', council: 9 },
+];
+
+async function verifyBoston(sql: Sql, deps: Parameters<typeof findReps>[1], congress: number): Promise<number> {
+  let failures = 0;
+  const districts = new Set<number>();
+  for (const { address, council } of BOSTON) {
+    const r = await findReps(sql, deps, address, congress);
+    const house = r?.federal.find((m) => m.chamber === 'house');
+    const senators = r?.federal.filter((m) => m.chamber === 'senate') ?? [];
+    const districtCouncilor = r?.localOfficials.find((o) => o.district === council);
+    const atLarge = r?.localOfficials.filter((o) => o.seat === 'At-Large') ?? [];
+    const ok =
+      r !== null &&
+      r.city === 'boston' &&
+      r.councilDistrict === council &&
+      Boolean(districtCouncilor) &&
+      atLarge.length === 4 &&
+      senators.length === 2 &&
+      /Pressley|Lynch/.test(house?.name ?? '');
+    if (!ok) failures += 1;
+    if (r?.councilDistrict) districts.add(r.councilDistrict);
+    console.log(
+      `${ok ? 'OK  ' : 'FAIL'} ${address} → council ${r?.councilDistrict ?? '—'} ${districtCouncilor?.name ?? '(none)'}` +
+        ` + ${atLarge.length} at-large | MA-${r?.congressionalDistrict ?? '?'} ${house?.name ?? '—'}` +
+        ` | state: ${r?.stateLegislators.map((l) => l.name).join(', ') || `(none; ${r?.stateSource})`}`,
+    );
+  }
+  console.log(
+    `Boston: ${BOSTON.length - failures}/${BOSTON.length} correct across ${districts.size} council districts.`,
+  );
+  return failures;
+}
+
 async function main() {
   const url = process.env.SUPABASE_DB_URL;
   if (!url) throw new Error('Set SUPABASE_DB_URL');
@@ -61,8 +106,16 @@ async function main() {
         (result.stateLegislators.map((l) => l.name).join(', ') || `(none; source ${result.stateSource})`),
     );
   }
-  await sql.end();
   console.log(`${ADDRESSES.length - failures}/${ADDRESSES.length} addresses correct across ${states.size} states/DC.`);
+  failures += await verifyBoston(
+    sql,
+    {
+      census: new CensusGeocoder(),
+      openstates: key ? (budget) => new OpenStatesClient({ apiKey: key, budget, minIntervalMs: 1100 }) : undefined,
+    },
+    congress,
+  );
+  await sql.end();
   if (failures > 0) process.exit(1);
 }
 

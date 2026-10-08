@@ -10,3 +10,4 @@ export * from './federal/events.ts';
 export * from './federal/votes.ts';
 export * from './state/sync-state.ts';
 export * from './state/reps.ts';
+export * from './local/boston.ts';

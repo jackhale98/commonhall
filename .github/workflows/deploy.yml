@@ -38,8 +38,20 @@ jobs:
           PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
           PUBLIC_SITE_NAME: ${{ vars.PUBLIC_SITE_NAME }}
+          # Pol.is site id for discussions (public; from the Pol.is admin integrate page).
+          PUBLIC_POLIS_SITE_ID: ${{ vars.PUBLIC_POLIS_SITE_ID }}
           # No Supabase project configured yet: build the demo from site/src/data/demo.json.
           PUBLIC_DEMO: ${{ vars.PUBLIC_SUPABASE_URL == '' && 'true' || 'false' }}
+      - name: Check site size
+        # GitHub Pages allows 1 GB; only notable items are prerendered to stay well under 300 MB.
+        run: |
+          size=$(du -sm site/dist | cut -f1)
+          pages=$(find site/dist -name index.html | wc -l)
+          echo "Built site: ${size} MB, ${pages} pages" | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ "$size" -gt 300 ]; then
+            echo "::error::site/dist is ${size} MB, over the 300 MB budget. Tighten the prerender views (docs/decisions.md)."
+            exit 1
+          fi
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist

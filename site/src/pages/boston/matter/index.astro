@@ -1,0 +1,17 @@
+---
+import LocalMatterFallback from '../../../components/LocalMatterFallback';
+import Base from '../../../layouts/Base.astro';
+import { href } from '../../../lib/paths';
+---
+
+<Base title="Council matter" section="boston" noindex>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('boston/')}>Boston</a>
+  </nav>
+  <noscript>
+    <p class="notice">
+      This page needs JavaScript. Try the <a href={href('boston/')}>Boston page</a>.
+    </p>
+  </noscript>
+  <LocalMatterFallback client:load />
+</Base>

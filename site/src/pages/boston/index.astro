@@ -1,0 +1,151 @@
+---
+import DiscussionCard from '../../components/DiscussionCard.astro';
+import FollowButton from '../../components/FollowButton';
+import LocalMatters from '../../components/LocalMatters';
+import MemberPhoto from '../../components/MemberPhoto';
+import Base from '../../layouts/Base.astro';
+import { loadDiscussions, loadLocalMeetings, loadLocalOfficials, loadRecentLocalMatters } from '../../lib/build-data';
+import { DEMO } from '../../lib/config';
+import { formatDate } from '../../lib/format';
+import { href, localOfficialHref } from '../../lib/paths';
+
+const [officials, matters, meetings, discussions] = await Promise.all([
+  loadLocalOfficials(),
+  loadRecentLocalMatters(),
+  loadLocalMeetings(),
+  loadDiscussions(),
+]);
+const byDistrict = officials.filter((o) => o.district !== null).sort((a, b) => a.district! - b.district!);
+const atLarge = officials.filter((o) => o.district === null).sort((a, b) => a.name.localeCompare(b.name));
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = meetings.filter((m) => m.date >= today).reverse();
+const recent = meetings.filter((m) => m.date < today).slice(0, 6);
+const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' && d.status === 'open');
+---
+
+<Base
+  title="Boston City Council"
+  description="Boston City Council members, meetings, ordinances, resolutions and hearing orders."
+  section="boston"
+>
+  <h1>Boston City Council</h1>
+  <p>
+    Thirteen councilors: one for each of the nine districts and four elected citywide (at-large).{' '}
+    {!DEMO && <a href={href('#reps-h')}>Find your district councilor</a>}
+  </p>
+
+  {bostonDiscussions.length > 0 && (
+    <section aria-labelledby="disc-h">
+      <h2 id="disc-h">Open discussions</h2>
+      <ul class="list">
+        {bostonDiscussions.map((d) => (
+          <DiscussionCard discussion={d} />
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section aria-labelledby="council-h">
+    <h2 id="council-h">Councilors</h2>
+    {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
+    <ul class="grid people">
+      {[...byDistrict, ...atLarge].map((o) => (
+        <li class="card person">
+          <MemberPhoto name={o.name} url={o.photo_url} size={56} />
+          <div>
+            <a href={localOfficialHref(o.id)}>{o.name}</a>
+            <p class="small muted">{o.seat ?? 'Councilor'}</p>
+          </div>
+          <FollowButton client:visible targetType="local_official" targetId={o.id} label={o.name} />
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section aria-labelledby="meet-h">
+    <h2 id="meet-h">Meetings</h2>
+    {upcoming.length > 0 && (
+      <>
+        <h3 class="h-small">Coming up</h3>
+        <ul class="list">
+          {upcoming.map((m) => (
+            <li class="meeting">
+              <span>
+                <strong>{formatDate(m.date)}</strong>
+                {m.time && ` · ${m.time}`} · {m.body ?? 'City Council'}
+                {m.location && <span class="small muted"> · {m.location}</span>}
+              </span>
+              {(m.agenda_url ?? m.legistar_url) && (
+                <a href={m.agenda_url ?? m.legistar_url!} rel="noopener">
+                  Agenda
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+    <h3 class="h-small">Recent</h3>
+    {recent.length === 0 && <p class="muted">None loaded yet.</p>}
+    <ul class="list">
+      {recent.map((m) => (
+        <li class="meeting">
+          <span>
+            <strong>{formatDate(m.date)}</strong> · {m.body ?? 'City Council'}
+          </span>
+          <span class="cluster small">
+            {m.agenda_url && (
+              <a href={m.agenda_url} rel="noopener">
+                Agenda
+              </a>
+            )}
+            {m.minutes_url && (
+              <a href={m.minutes_url} rel="noopener">
+                Minutes
+              </a>
+            )}
+            {!m.agenda_url && !m.minutes_url && m.legistar_url && (
+              <a href={m.legistar_url} rel="noopener">
+                Legistar
+              </a>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section aria-labelledby="matters-h">
+    <h2 id="matters-h">Ordinances, resolutions and orders</h2>
+    <LocalMatters client:visible initial={matters} local={DEMO} />
+  </section>
+
+  <p class="small muted">
+    Council data from the City of Boston’s <a href="https://boston.legistar.com/">Legistar</a> and
+    <a href="https://data.boston.gov/">Analyze Boston</a>, refreshed nightly.
+  </p>
+</Base>
+
+<style>
+  .people {
+    list-style: none;
+    padding: 0;
+  }
+  .person {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+  .person > div {
+    flex: 1;
+  }
+  .person p {
+    margin: 0;
+  }
+  .meeting {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+</style>

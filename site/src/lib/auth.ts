@@ -139,3 +139,71 @@ function followSet(): Promise<Set<string>> {
 export async function isFollowing(targetType: string, targetId: string): Promise<boolean> {
   return (await followSet()).has(key(targetType, targetId));
 }
+
+export interface PolisProfile {
+  /** Random per-user id; the only identifier ever sent to Pol.is. */
+  xid: string;
+  state: string | null;
+  city: string | null;
+  councilDistrict: number | null;
+}
+
+/** The signed-in user's Pol.is id and saved residency (creating an empty profile if needed). */
+export async function polisProfile(): Promise<PolisProfile | null> {
+  if (!hasStoredSession()) return null;
+  const client = await getClient();
+  const { data } = await client.auth.getSession();
+  if (!data.session) return null;
+  const read = () =>
+    client
+      .from('profiles')
+      .select('polis_xid,state,city,council_district')
+      .eq('user_id', data.session!.user.id)
+      .maybeSingle();
+  let { data: row, error } = await read();
+  if (error) throw error;
+  if (!row) {
+    const inserted = await client
+      .from('profiles')
+      .upsert({ user_id: data.session.user.id }, { ignoreDuplicates: true });
+    if (inserted.error) throw inserted.error;
+    ({ data: row, error } = await read());
+    if (error || !row) throw error ?? new Error('Profile not found');
+  }
+  return { xid: row.polis_xid, state: row.state, city: row.city, councilDistrict: row.council_district };
+}
+
+/** Has the signed-in user asked for a discussion on this item? */
+export async function hasRequestedDiscussion(targetType: string, targetId: string): Promise<boolean> {
+  const client = await getClient();
+  const { data, error } = await client
+    .from('discussion_requests')
+    .select('target_id')
+    .match({ target_type: targetType, target_id: targetId })
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function setDiscussionRequest(targetType: string, targetId: string, on: boolean): Promise<void> {
+  const client = await getClient();
+  const { data } = await client.auth.getSession();
+  if (!data.session) throw new Error('Not signed in');
+  const { error } = on
+    ? await client
+        .from('discussion_requests')
+        .upsert(
+          { user_id: data.session.user.id, target_type: targetType, target_id: targetId },
+          { ignoreDuplicates: true },
+        )
+    : await client.from('discussion_requests').delete().match({ target_type: targetType, target_id: targetId });
+  if (error) throw error;
+}
+
+/** Is the signed-in user a maintainer who can manage discussions? */
+export async function isAdmin(): Promise<boolean> {
+  const client = await getClient();
+  const { data, error } = await client.rpc('is_admin');
+  if (error) throw error;
+  return data === true;
+}

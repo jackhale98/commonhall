@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="Discussion rules" description="How discussions are chosen and moderated.">
+  <h1>Discussion rules</h1>
+
+  <h2>How a discussion works</h2>
+  <p>
+    Each discussion asks one neutral question. You vote agree, disagree or pass on short statements, and you can add a
+    statement of your own. Pol.is groups people by how they vote, so the results show both where opinion divides and
+    what most people agree on.
+  </p>
+
+  <h2>What a statement must be</h2>
+  <ul>
+    <li>One idea, in a sentence or two, that others can agree or disagree with.</li>
+    <li>About the question, not about another participant.</li>
+    <li>
+      Free of personal attacks, slurs, threats, private information about anyone, advertising and links to campaigns.
+    </li>
+    <li>Not a duplicate of a statement that is already there.</li>
+  </ul>
+  <p>
+    Moderators approve statements before others see them. We reject statements that break these rules, whatever view
+    they express. We never edit a statement. Rejection decisions do not depend on politics or party.
+  </p>
+
+  <h2>Who chooses topics</h2>
+  <p>
+    The site’s maintainers open discussions, starting with a short pilot list. Anyone signed in can ask for a discussion
+    on a bill or council matter; the number of requests is shown publicly and helps us choose. We do not open
+    discussions on candidates or elections.
+  </p>
+
+  <h2>Who can take part</h2>
+  <p>
+    Anyone can read. To vote or write you must be signed in, and some discussions are limited to residents of a state,
+    the city or a council district, based on the address you saved. This is an honor system, not identity verification,
+    so results describe the people who took part, not a scientific sample.
+  </p>
+
+  <p class="small">
+    <a href={href('privacy/')}>Privacy</a> · <a href={href('discussions/')}>All discussions</a>
+  </p>
+</Base>
