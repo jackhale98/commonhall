@@ -8,6 +8,7 @@ on:
     paths:
       - 'supabase/**'
       - 'packages/**'
+      - '.github/workflows/supabase-deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -24,6 +25,8 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      # Session pooler connection string (IPv4). Runners cannot reach the IPv6-only direct host.
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - name: Check configuration
         id: config
@@ -42,7 +45,13 @@ jobs:
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
       - if: steps.config.outputs.skip != 'true'
         name: Apply migrations
-        run: supabase db push
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            supabase db push --db-url "$SUPABASE_DB_URL"
+          else
+            # Needs a token that can read the pooler config (Connection Pooling: Read) to reach IPv4.
+            supabase db push
+          fi
       - if: steps.config.outputs.skip != 'true'
         name: Deploy functions
         run: supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"

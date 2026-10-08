@@ -75,8 +75,10 @@ the Supabase variables switches the next build to the live site.
    | API Key Secrets | Read | `supabase link` |
    | Edge Functions | Read-write | `supabase functions deploy` |
 
-   Applying migrations (`supabase db push`) connects to Postgres with the
-   database password (`SUPABASE_DB_PASSWORD`), so it needs no token permission.
+   Applying migrations (`supabase db push`) connects straight to Postgres through
+   the session pooler (`SUPABASE_DB_URL`, step 3), so it needs no token
+   permission. GitHub's runners have no IPv6, so the pooler's IPv4 address is
+   required.
    The workflow never sets function secrets; if you also want to run
    `supabase secrets set` from your own machine with this token, add **Edge
    Function Secrets: Read-write**. A classic (legacy) token also works, but it can
@@ -116,7 +118,7 @@ New repository secret). Repository secrets, not environment secrets:
 | `SUPABASE_ACCESS_TOKEN` | a Supabase **scoped** access token for this project (permissions in step 2.3) | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) → Generate new token | Deploy Supabase |
 | `SUPABASE_PROJECT_REF` | the project ref, e.g. `abcdefghijklmnopqrst` | the dashboard URL `…/project/<ref>`, or Project Settings → General | Deploy Supabase |
 | `SUPABASE_DB_PASSWORD` | the database password | chosen when creating the project; reset under Project Settings → Database | Deploy Supabase |
-| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in | Connect (top of the dashboard) → Session pooler | Backfill |
+| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in (URL-encode any special characters in the password) | Connect (top of the dashboard) → Session pooler | Deploy Supabase (migrations), Backfill |
 | `CONGRESS_API_KEY` | your Congress.gov key | the email from [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Backfill |
 
 **e. Variables** (same page → **Variables** tab → New repository variable). These
@@ -142,7 +144,7 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | CI | every pull request and push to `main` | nothing (uses the seed in a local Supabase) |
 | Deploy site | push to `main`, manually, and from Nightly rebuild | the variables (none = demo) |
 | Nightly rebuild | 09:17 UTC daily | same as Deploy site |
-| Deploy Supabase | push to `main` touching `supabase/` or `packages/`, and manually | the three `SUPABASE_*` deploy secrets (skips cleanly without them) |
+| Deploy Supabase | push to `main` touching `supabase/` or `packages/`, and manually | the three `SUPABASE_*` deploy secrets (skips cleanly without them), plus `SUPABASE_DB_URL` for migrations |
 | Backfill | manually only | `SUPABASE_DB_URL`, `CONGRESS_API_KEY`, write permission (b) |
 
 GitHub turns off scheduled workflows in a repository with no activity for 60 days.
@@ -279,6 +281,7 @@ select id, 'admin' from auth.users where email = 'you@example.org';
 | The site still shows the demo banner | `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY` are not set as **variables** (not secrets), or "Deploy site" has not run since |
 | "Deploy Supabase" says it skipped | One of its three secrets is missing |
 | `supabase db push` fails to connect | Wrong `SUPABASE_DB_PASSWORD`; reset it under Project Settings → Database |
+| "IPv6 is not supported on your current network" in Deploy Supabase | `SUPABASE_DB_URL` is missing or is the direct (IPv6) string; set it to the session pooler string |
 | Backfill cannot connect | `SUPABASE_DB_URL` is the direct (IPv6) string; use the session pooler string |
 | Nothing syncs | Vault secrets missing or `SYNC_SECRET` mismatch (step 6 queries) |
 | Sign-in link opens the wrong page or errors | The `/account/` URL is not in Redirect URLs |
