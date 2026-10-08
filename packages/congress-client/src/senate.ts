@@ -65,7 +65,10 @@ export interface SenateVote {
   majorityRequirement: string | null;
   document: SenateDocumentRef | null;
   amendmentNumber: string | null;
+  /** Tallied from the member list. */
   totals: { yea: number; nay: number; present: number; notVoting: number };
+  /** As stated in the file's <count> block (the official tally). */
+  stated: { yea: number; nay: number; present: number; notVoting: number };
   members: SenateMemberVote[];
   /** True when the per-member tally equals the file's `<count>` block. */
   totalsMatchCount: boolean;
@@ -251,6 +254,7 @@ export function parseSenateVote(xml: string): SenateVote {
     document,
     amendmentNumber: text(amendment.amendment_number),
     totals,
+    stated,
     members,
     totalsMatchCount,
   };

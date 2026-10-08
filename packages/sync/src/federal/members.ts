@@ -7,6 +7,7 @@
  * Rows are only rewritten when a value changed.
  */
 import {
+  congressStartYear,
   summarizeLegislator,
   type CongressClient,
   type LegislatorSocial,
@@ -64,6 +65,8 @@ export function buildMemberRows(
   currentIds: Set<string>,
   legislators: ReturnType<typeof summarizeLegislator>[],
   social: LegislatorSocial[],
+  /** LIS ids of senators who left during the Congress (from legislators-historical). */
+  formerLis: Map<string, string> = new Map(),
 ): MemberRow[] {
   const legById = new Map(legislators.filter(Boolean).map((l) => [l!.bioguideId, l!]));
   const socialById = new Map(social.map((s) => [s.id.bioguide, s]));
@@ -89,7 +92,7 @@ export function buildMemberRows(
       chamber,
       current: currentIds.has(id),
       photo_url: item.depiction?.imageUrl ?? null,
-      lis_id: leg?.lisId ?? null,
+      lis_id: leg?.lisId ?? formerLis.get(id) ?? null,
       website: leg?.website ?? null,
       phone: leg?.phone ?? null,
       office: leg?.office ?? null,
@@ -105,6 +108,12 @@ export interface SyncMembersOptions {
   congress: number;
   client: CongressClient;
   legislators: LegislatorsClient;
+  /**
+   * Also read legislators-historical (13 MB) to get exact LIS ids for senators
+   * who left during the Congress. The backfill sets this; the daily Edge
+   * Function relies on the last-name + state fallback in the Senate vote sync.
+   */
+  includeHistorical?: boolean;
 }
 
 export async function syncMembers(
@@ -123,7 +132,15 @@ export async function syncMembers(
 
   const [legislators, social] = await Promise.all([options.legislators.current(), options.legislators.social()]);
   const summaries = legislators.map(summarizeLegislator);
-  const rows = buildMemberRows(all, currentIds, summaries, social);
+  const formerLis = new Map<string, string>();
+  if (options.includeHistorical) {
+    const since = `${congressStartYear(congress)}-01-03`;
+    for (const l of await options.legislators.historical()) {
+      const last = l.terms[l.terms.length - 1];
+      if (l.id.lis && last && last.end >= since) formerLis.set(l.id.bioguide, l.id.lis);
+    }
+  }
+  const rows = buildMemberRows(all, currentIds, summaries, social, formerLis);
   let written = 0;
   await sql.begin(async (tx) => {
     // LIS IDs are unique; clear any that moved to a different member first.

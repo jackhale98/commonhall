@@ -10,6 +10,34 @@ interface Follow {
   created_at: string;
 }
 
+interface BillRef {
+  id: string;
+  congress: number;
+  bill_type: string;
+  number: number;
+  title: string;
+  short_title: string | null;
+}
+interface MemberRef {
+  bioguide_id: string;
+  name: string;
+  party: string | null;
+  state: string | null;
+}
+interface StateBillRef {
+  id: string;
+  state: string;
+  identifier: string;
+  title: string;
+  openstates_url: string | null;
+}
+interface LegislatorRef {
+  id: string;
+  name: string;
+  state: string;
+  party: string | null;
+}
+
 interface Row extends Follow {
   label: string;
   detail?: string;
@@ -55,10 +83,10 @@ export default function FollowingList() {
           ? client.from('state_legislators').select('id,name,state,party').in('id', ids('state_legislator'))
           : { data: [] },
       ]);
-      const billMap = new Map((bills.data ?? []).map((b: any) => [b.id, b]));
-      const memberMap = new Map((members.data ?? []).map((m: any) => [m.bioguide_id, m]));
-      const stateBillMap = new Map((stateBills.data ?? []).map((b: any) => [b.id, b]));
-      const legislatorMap = new Map((legislators.data ?? []).map((l: any) => [l.id, l]));
+      const billMap = new Map(((bills.data ?? []) as BillRef[]).map((b) => [b.id, b]));
+      const memberMap = new Map(((members.data ?? []) as MemberRef[]).map((m) => [m.bioguide_id, m]));
+      const stateBillMap = new Map(((stateBills.data ?? []) as StateBillRef[]).map((b) => [b.id, b]));
+      const legislatorMap = new Map(((legislators.data ?? []) as LegislatorRef[]).map((l) => [l.id, l]));
       setRows(
         follows.map((f) => {
           if (f.target_type === 'bill') {
@@ -81,7 +109,11 @@ export default function FollowingList() {
           }
           if (f.target_type === 'state_bill') {
             const b = stateBillMap.get(f.target_id);
-            return { ...f, label: b ? `${b.state} ${b.identifier}: ${b.title}` : f.target_id, link: b?.openstates_url };
+            return {
+              ...f,
+              label: b ? `${b.state} ${b.identifier}: ${b.title}` : f.target_id,
+              link: b?.openstates_url ?? undefined,
+            };
           }
           const l = legislatorMap.get(f.target_id);
           return { ...f, label: l?.name ?? f.target_id, detail: l ? `${l.party ?? ''} · ${l.state}` : undefined };

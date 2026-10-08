@@ -2,8 +2,9 @@
 import BillListItem from '../../components/BillListItem';
 import FollowButton from '../../components/FollowButton';
 import MemberPhoto from '../../components/MemberPhoto';
+import MemberVotes from '../../components/MemberVotes';
 import Base from '../../layouts/Base.astro';
-import { CURRENT_CONGRESS, loadCosponsorCounts, loadMembers, loadSponsored } from '../../lib/build-data';
+import { CURRENT_CONGRESS, loadCosponsorCounts, loadMembers, loadSponsored, loadVoteStats } from '../../lib/build-data';
 import { congressLabel, memberRole, partyClass, partyLabel } from '../../lib/format';
 import { href } from '../../lib/paths';
 import type { Member } from '../../lib/types';
@@ -18,7 +19,17 @@ interface Props {
 }
 
 const { member } = Astro.props;
-const [sponsoredBy, cosponsorCounts] = await Promise.all([loadSponsored(), loadCosponsorCounts()]);
+const [sponsoredBy, cosponsorCounts, voteStats] = await Promise.all([
+  loadSponsored(),
+  loadCosponsorCounts(),
+  loadVoteStats(),
+]);
+const stats = voteStats.get(member.bioguide_id);
+const partyRate =
+  stats && stats.party_line_votes > 0 && ['D', 'R'].includes((member.party ?? '').charAt(0))
+    ? Math.round((stats.with_party / stats.party_line_votes) * 100)
+    : null;
+const missedRate = stats && stats.total_votes > 0 ? Math.round((stats.missed / stats.total_votes) * 1000) / 10 : null;
 const sponsored = sponsoredBy.get(member.bioguide_id) ?? [];
 const cosponsored = cosponsorCounts.get(member.bioguide_id) ?? 0;
 const role = memberRole(member);
@@ -76,10 +87,18 @@ const SOCIAL_LABELS: Record<string, string> = {
             <dt>Bills cosponsored</dt>
             <dd>{cosponsored}</dd>
           </div>
-          <div data-party-rate hidden>
-            <dt>Votes with party</dt>
-            <dd>–</dd>
-          </div>
+          {partyRate !== null && (
+            <div>
+              <dt>Votes with party</dt>
+              <dd>{partyRate}%</dd>
+            </div>
+          )}
+          {missedRate !== null && (
+            <div>
+              <dt>Votes missed</dt>
+              <dd>{missedRate}%</dd>
+            </div>
+          )}
         </dl>
         <p class="small muted">{congressLabel(CURRENT_CONGRESS)}.</p>
       </section>
@@ -104,8 +123,15 @@ const SOCIAL_LABELS: Record<string, string> = {
         )}
       </section>
 
-      <section aria-labelledby="votes-h" data-member-votes={member.bioguide_id} hidden>
+      <section aria-labelledby="votes-h">
         <h2 id="votes-h">Recent votes</h2>
+        {partyRate !== null && (
+          <p class="small muted">
+            Voted with the majority of their party on {stats!.with_party} of {stats!.party_line_votes} roll calls where
+            they voted yea or nay.
+          </p>
+        )}
+        <MemberVotes client:visible memberId={member.bioguide_id} />
       </section>
     </div>
 

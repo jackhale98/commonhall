@@ -99,3 +99,48 @@ export const loadCosponsorCounts = memo(async () => {
   }
   return counts;
 });
+
+export interface VoteSummary {
+  id: string;
+  chamber: 'house' | 'senate';
+  roll_number: number;
+  date: string | null;
+  question: string | null;
+  result: string | null;
+  bill_id: string | null;
+  yea_total: number;
+  nay_total: number;
+  present_total: number;
+  not_voting_total: number;
+}
+
+/** Every roll call this Congress, newest first. */
+export const loadVotes = memo(async () =>
+  selectAll<VoteSummary>('votes', {
+    select: 'id,chamber,roll_number,date,question,result,bill_id,yea_total,nay_total,present_total,not_voting_total',
+    congress: `eq.${CURRENT_CONGRESS}`,
+    order: 'date.desc.nullslast,id.desc',
+  }),
+);
+
+export const loadVotesByBill = memo(async () => {
+  const votes = await loadVotes();
+  return groupBy(
+    votes.filter((v) => v.bill_id),
+    (v) => v.bill_id!,
+  );
+});
+
+export interface VoteStats {
+  member_id: string;
+  total_votes: number;
+  votes_cast: number;
+  missed: number;
+  with_party: number;
+  party_line_votes: number;
+}
+
+export const loadVoteStats = memo(async () => {
+  const rows = await selectAll<VoteStats>('member_vote_stats', { congress: `eq.${CURRENT_CONGRESS}` });
+  return new Map(rows.map((r) => [r.member_id, r]));
+});

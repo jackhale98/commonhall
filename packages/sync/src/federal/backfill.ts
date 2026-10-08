@@ -65,7 +65,12 @@ export async function runBackfill(run: JobRun<BackfillCursor>, options: Backfill
 
   try {
     if (cursor.step === 'members') {
-      const result = await syncMembers(run.sql, { congress, client, legislators: options.legislators });
+      const result = await syncMembers(run.sql, {
+        congress,
+        client,
+        legislators: options.legislators,
+        includeHistorical: true,
+      });
       run.rowsWritten += result.rowsWritten;
       run.log('members synced', result);
       cursor = { ...cursor, step: 'bills', typeIndex: 0, nextNumber: 1, maxNumbers: {} };

@@ -2,8 +2,16 @@
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
 import MemberChip from '../../../../components/MemberChip';
+import VoteList from '../../../../components/VoteList';
 import Base from '../../../../layouts/Base.astro';
-import { loadActions, loadBills, loadCosponsors, loadMembers, loadSubjects } from '../../../../lib/build-data';
+import {
+  loadActions,
+  loadBills,
+  loadCosponsors,
+  loadMembers,
+  loadSubjects,
+  loadVotesByBill,
+} from '../../../../lib/build-data';
 import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraphs } from '../../../../lib/format';
 import { href } from '../../../../lib/paths';
 import type { Bill } from '../../../../lib/types';
@@ -21,12 +29,14 @@ interface Props {
 }
 
 const { bill } = Astro.props;
-const [members, actionsByBill, cosponsorsByBill, subjectsByBill] = await Promise.all([
+const [members, actionsByBill, cosponsorsByBill, subjectsByBill, votesByBill] = await Promise.all([
   loadMembers(),
   loadActions(),
   loadCosponsors(),
   loadSubjects(),
+  loadVotesByBill(),
 ]);
+const votes = votesByBill.get(bill.id) ?? [];
 const actions = actionsByBill.get(bill.id) ?? [];
 const cosponsors = (cosponsorsByBill.get(bill.id) ?? [])
   .filter((c) => !c.withdrawn_date)
@@ -140,9 +150,12 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
         />
       </section>
 
-      <section aria-labelledby="votes-h" data-bill-votes={bill.id} hidden>
-        <h2 id="votes-h">Roll-call votes</h2>
-      </section>
+      {votes.length > 0 && (
+        <section aria-labelledby="votes-h">
+          <h2 id="votes-h">Roll-call votes</h2>
+          <VoteList votes={votes} />
+        </section>
+      )}
     </div>
 
     <aside class="bill-side">

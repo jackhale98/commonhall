@@ -159,3 +159,29 @@ CASCADE`.
 Public pages read Supabase with a ~1 KB PostgREST helper. Islands check for a
 stored session (`localStorage['civic-auth']`) before importing supabase-js, so
 anonymous visitors never download it. A user can follow at most 500 items.
+
+## 19. House votes: Congress.gov coverage, positions-based totals
+
+The Congress.gov House roll-call endpoints cover votes tied to legislation; the
+Clerk's other roll calls (Speaker elections, quorum calls, some procedural
+votes) are not in the API, so they are not in v1. Adding them would mean reading
+`clerk.house.gov` XML, a new data source, so it is left for the owner to decide.
+House totals are computed from the member positions; `scripts/verify-votes.ts`
+compares stored totals with the Clerk's XML (and Senate totals with senate.gov's
+XML and vote menu). Senate totals are taken from each file's `<count>` block.
+
+## 20. Senators who leave mid-Congress
+
+Senate XML identifies senators by LIS ID, and congress-legislators' *current*
+file drops senators as soon as they leave (two did in 2026). The backfill
+also reads `legislators-historical.json` (13 MB) to store exact LIS IDs for
+anyone who served this Congress; the daily Edge Function skips that file and
+the vote sync falls back to last name + state among senators in `members`.
+
+## 21. Followed members' votes are computed, not stored per member
+
+As the plan specifies, the `feed` view joins `vote_positions` for followed
+members, so there are no per-member vote events. Each vote on a bill writes one
+`feed_events` row for that bill. Vote-with-party rates come from the
+`member_vote_stats` view (majority of the member's own party among yea/nay
+votes; not shown for independents).

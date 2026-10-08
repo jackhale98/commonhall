@@ -7,3 +7,4 @@ export * from './federal/members.ts';
 export * from './federal/backfill.ts';
 export * from './federal/on-demand.ts';
 export * from './federal/events.ts';
+export * from './federal/votes.ts';

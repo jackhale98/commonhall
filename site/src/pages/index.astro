@@ -2,11 +2,13 @@
 import BillListItem from '../components/BillListItem';
 import FeedView from '../components/FeedView';
 import Base from '../layouts/Base.astro';
-import { CURRENT_CONGRESS, loadBills } from '../lib/build-data';
+import VoteList from '../components/VoteList';
+import { CURRENT_CONGRESS, loadBills, loadVotes } from '../lib/build-data';
 import { congressLabel } from '../lib/format';
 import { href } from '../lib/paths';
 
-const bills = await loadBills();
+const [bills, votes] = await Promise.all([loadBills(), loadVotes()]);
+const recentVotes = votes.slice(0, 6);
 const recent = bills.slice(0, 8);
 const laws = bills.filter((b) => b.status === 'law').length;
 ---
@@ -53,7 +55,12 @@ const laws = bills.filter((b) => b.status === 'law').length;
     )}
   </section>
 
-  <div data-recent-votes></div>
+  {recentVotes.length > 0 && (
+    <section aria-labelledby="votes-h">
+      <h2 id="votes-h">Recent roll-call votes</h2>
+      <VoteList votes={recentVotes} />
+    </section>
+  )}
 </Base>
 
 <style>

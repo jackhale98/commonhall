@@ -294,7 +294,11 @@ describe('runBackfill', () => {
     const legislators = new LegislatorsClient({
       fetch: async (url) =>
         new Response(
-          JSON.stringify(String(url).includes('social') ? [] : fixtureJson('legislators/legislators-current.json')),
+          JSON.stringify(
+            String(url).includes('social') || String(url).includes('historical')
+              ? []
+              : fixtureJson('legislators/legislators-current.json'),
+          ),
         ),
     });
 
