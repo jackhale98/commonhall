@@ -1,6 +1,6 @@
 /**
  * The DB tests share the local Supabase database with development. Afterwards,
- * reload supabase/seed.sql so `npm run test:db` leaves a usable dev database.
+ * reload the seed files so `npm run test:db` leaves a usable dev database.
  */
 import { connect, reloadSeed } from './db.ts';
 

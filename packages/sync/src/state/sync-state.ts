@@ -247,7 +247,10 @@ async function syncLegislators(sql: Sql, client: OpenStatesClient, state: string
   return written;
 }
 
-/** States people follow or saved in their profile come first, then least recently synced. */
+/** First-class states: synced first every night and given prerendered bill pages (see docs/decisions.md). */
+export const FIRST_CLASS_STATES = ['MA'];
+
+/** First-class states, then states people follow or saved in their profile, then least recently synced. */
 async function stateOrder(sql: Sql, cursor: StateCursor, only?: string[]): Promise<string[]> {
   const wanted = await sql<{ state: string; n: number }[]>`
     select state, count(*)::int as n from (
@@ -260,6 +263,8 @@ async function stateOrder(sql: Sql, cursor: StateCursor, only?: string[]): Promi
   const demand = new Map(wanted.map((w) => [w.state, w.n]));
   const pool = only ?? STATES;
   return [...pool].sort((a, b) => {
+    const first = Number(FIRST_CLASS_STATES.includes(b)) - Number(FIRST_CLASS_STATES.includes(a));
+    if (first !== 0) return first;
     const unfilledA = cursor.bills?.[a]?.filled ? 1 : 0;
     const unfilledB = cursor.bills?.[b]?.filled ? 1 : 0;
     const d = (demand.get(b) ?? 0) - (demand.get(a) ?? 0);
