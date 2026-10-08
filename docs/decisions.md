@@ -347,3 +347,33 @@ handles Massachusetts first.
 Find my reps used to delete the profile when a user removed their address. The
 profile now also holds the user's Pol.is id, so removing the address nulls the
 address and district fields instead; deleting the account still removes the row.
+
+## 37. Member photos are hotlinked, not stored
+
+Photos load in the visitor's browser straight from their source; none are
+downloaded, committed or copied into the build. Members of Congress use the
+Congress.gov image URL from the members sync, falling back to the public-domain
+[unitedstates/images](https://github.com/unitedstates/images) portrait for the
+bioguide id (the project behind congress-legislators, which we already use), then
+to initials. A small handler in the page head swaps in the fallback when an image
+fails, so it also works on prerendered pages without hydration. State legislators
+use the Open States image. Boston councilors have no photo source in Legistar;
+using boston.gov photos would be a new data source and needs the owner's approval.
+
+## 38. Navigation: Boston lives under "States & local"
+
+A top-level "Boston" tab made a single city look like a peer of Congress. The
+navigation is now Bills, Members, Votes, States & local, Discuss. Boston pages sit
+under States › Massachusetts › Boston, the Massachusetts page has a "Local
+government" card, the states index features Massachusetts and Boston, and the home
+page shows the levels side by side (Congress, Massachusetts, Boston, all states).
+More cities can be added the same way.
+
+## 39. Charts are static SVG rendered at build time
+
+Charts (chamber seats, bill pipeline, vote and party splits, policy areas, the
+state tile map, the Boston district map, member and councilor stats) are small
+Preact components that render to plain SVG or HTML with no chart library and no
+client JavaScript; the same components work inside islands. Party colours appear
+only as data marks; the site's brand colour is a neutral teal. Every chart has a
+text equivalent (aria-label, legend or a table behind "Show as a table").

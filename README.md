@@ -78,9 +78,27 @@ redistricting trap, and so on).
 
 ## Local development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). In short: `npm install`,
-`npm run db:start`, `npm run db:reset`, copy `.env.example` to `site/.env` with the
-local anon key, then `npm run dev`.
+Needs Node 22 and Docker. See [CONTRIBUTING.md](CONTRIBUTING.md) for more.
+
+```sh
+npm install
+npm run db:start            # local Supabase in Docker (Postgres, Auth, REST, mail catcher)
+npm run db:reset            # apply migrations and load supabase/seed.sql + seed-local.sql
+npx supabase status         # prints the local API URL, anon key and service_role key
+cp .env.example site/.env   # then set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY from `status`
+npm run dev                 # http://localhost:4321
+```
+
+Sign-in emails go to the local mail catcher at http://127.0.0.1:54324. No API
+keys are needed: the seed holds real sample data. To run a sync job against the
+local database:
+
+```sh
+export SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+npm run load-districts                     # Boston council districts (full detail)
+npm run job -- boston --since 2026-07-01   # Boston City Council, no key needed
+OPENSTATES_API_KEY=… npm run job -- state  # state bills and legislators
+```
 
 ## Demo mode
 
@@ -98,69 +116,205 @@ build to the real site. Regenerate the snapshot with `npm run db:reset` then
 
 ## Deploy your own
 
-You need: a GitHub account, a free [Supabase](https://supabase.com) project, a
-[Congress.gov API key](https://api.congress.gov/sign-up/), an
-[Open States API key](https://open.pluralpolicy.com/accounts/profile/), and
-(recommended) a free SMTP provider such as Resend for sign-in emails.
+Everything runs on free tiers. You need:
 
-1. **Fork** this repository.
-2. **Create a Supabase project.** Note its project ref, database password, and
-   API keys (Project Settings → API).
-3. **Repository secrets** (Settings → Secrets and variables → Actions → Secrets):
+- a GitHub account (the site is served by GitHub Pages);
+- a free [Supabase](https://supabase.com) project (database, sign-in, scheduled jobs);
+- a free [Congress.gov API key](https://api.congress.gov/sign-up/) and a free
+  [Open States API key](https://open.pluralpolicy.com/accounts/profile/);
+- recommended: a free SMTP provider (for example Resend or Brevo) for sign-in emails;
+- optional: a [Pol.is](https://pol.is) account for discussions.
 
-   | Secret | Used by |
-   | --- | --- |
-   | `SUPABASE_ACCESS_TOKEN` | Supabase deploy workflow ([create one](https://supabase.com/dashboard/account/tokens)) |
-   | `SUPABASE_PROJECT_REF` | Supabase deploy workflow |
-   | `SUPABASE_DB_PASSWORD` | Supabase deploy workflow |
-   | `SUPABASE_DB_URL` | Backfill. Use the **session pooler** connection string (IPv4) from Connect → Session pooler |
-   | `CONGRESS_API_KEY` | Backfill |
+Until Supabase is connected, the Pages deploy builds the demo (see above), so you
+can do the steps below in any order and the site keeps working.
 
-4. **Repository variables** (same page → Variables). These are public by design;
-   the anon key is safe in the browser only because RLS is on for every table.
+### 1. Fork and turn on Pages
 
-   | Variable | Value |
-   | --- | --- |
-   | `PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` |
-   | `PUBLIC_SUPABASE_ANON_KEY` | the publishable (anon) key |
-   | `PUBLIC_SITE_NAME` | optional, defaults to "Civic Tracker" |
-   | `PUBLIC_POLIS_SITE_ID` | optional, your Pol.is site id; turns on discussions (docs/discussions.md) |
+1. Fork this repository.
+2. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+3. Actions → "Deploy site" → Run workflow. You now have the demo at
+   `https://<user>.github.io/<repo>/`.
 
-5. **Deploy the database and functions:** run the "Deploy Supabase" workflow (or
-   push to `main`). It applies `supabase/migrations` and deploys every function.
-6. **Function secrets** (Supabase dashboard → Edge Functions → Secrets, or
-   `supabase secrets set`): `CONGRESS_API_KEY`, `OPENSTATES_API_KEY`,
-   `SYNC_SECRET` (any long random string), and `SITE_ORIGINS`
-   (e.g. `https://<user>.github.io`) to restrict CORS. Optional tuning:
-   `SYNC_FEDERAL_RUN_CAP`, `SYNC_TIME_LIMIT_MS`, `OPENSTATES_DAILY_BUDGET`,
-   `OPENSTATES_MIN_INTERVAL_MS`.
-7. **Turn on the schedules** by storing two values in Vault (SQL editor):
+### 2. Create the Supabase project
 
-   ```sql
-   select vault.create_secret('https://<ref>.supabase.co', 'project_url');
-   select vault.create_secret('<the same SYNC_SECRET>', 'sync_secret');
-   ```
+1. In the [Supabase dashboard](https://supabase.com/dashboard), **New project**.
+   Pick the region closest to most of your visitors and save the **database
+   password** in a password manager; you need it below.
+2. When the project is ready, collect four values:
 
-   Until both exist, the cron jobs do nothing.
-8. **Auth settings** (Authentication → URL Configuration): set the Site URL to
-   your Pages URL and add `https://<user>.github.io/<repo>/account/` to the
-   redirect URLs. Under Emails, configure custom SMTP (the built-in sender is
-   heavily rate-limited) and paste `supabase/templates/magic_link.html` into the
-   magic-link template.
-9. **GitHub Pages** (Settings → Pages): source "GitHub Actions". For a custom
-   domain, configure it there; the build picks up the base path automatically.
-10. **Backfill:** run the "Backfill" workflow. It loads members, every bill and
-    every roll call of the current Congress, pausing at the hourly API limit and
-    re-dispatching itself until done (roughly a day). When it finishes, the
-    10-minute sync takes over. State data fills in over the following nights.
-11. **Boston council districts:** load them once (and after redistricting) with
-    `SUPABASE_DB_URL=… npm run load-districts`, which downloads the Analyze Boston
-    layer into PostGIS. Council data then arrives with the nightly `sync-boston`.
-12. **Discussions (optional):** follow docs/discussions.md to set up Pol.is and
-    make yourself a maintainer.
-13. **Rebuild the site** ("Deploy site" workflow, or wait for the nightly
-    rebuild) so bill and member pages are prerendered. The deploy fails if the
-    built site exceeds 300 MB.
+   | Value | Where | Secret? |
+   | --- | --- | --- |
+   | Project ref | the `<ref>` in `https://supabase.com/dashboard/project/<ref>` | no |
+   | Project URL | Project Settings → API (Data API) → URL, `https://<ref>.supabase.co` | no |
+   | Publishable (anon) key | Project Settings → API Keys → `anon` / publishable | no: it is shipped to browsers, and row-level security protects the data |
+   | Secret (service_role) key | Project Settings → API Keys → `service_role` / secret | **yes**: never put it in the site, a `PUBLIC_` variable or a commit |
+
+3. Create a personal access token for the deploy workflow at
+   [Account → Access Tokens](https://supabase.com/dashboard/account/tokens).
+4. Copy the **session pooler** connection string from the project's **Connect**
+   button → Session pooler. It works over IPv4, which GitHub Actions needs:
+   `postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres`.
+
+### 3. GitHub secrets and variables
+
+Settings → Secrets and variables → Actions.
+
+**Secrets** (private):
+
+| Secret | Value | Used by |
+| --- | --- | --- |
+| `SUPABASE_ACCESS_TOKEN` | the personal access token | "Deploy Supabase" workflow |
+| `SUPABASE_PROJECT_REF` | the project ref | "Deploy Supabase" workflow |
+| `SUPABASE_DB_PASSWORD` | the database password | "Deploy Supabase" workflow |
+| `SUPABASE_DB_URL` | the session pooler connection string | Backfill workflow |
+| `CONGRESS_API_KEY` | your Congress.gov key | Backfill workflow |
+
+**Variables** (public by design; they end up in the browser):
+
+| Variable | Value |
+| --- | --- |
+| `PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` (setting this switches the site from demo to live) |
+| `PUBLIC_SUPABASE_ANON_KEY` | the publishable (anon) key |
+| `PUBLIC_SITE_NAME` | optional, defaults to "Civic Tracker" |
+| `PUBLIC_POLIS_SITE_ID` | optional, your Pol.is site id; turns on discussions (docs/discussions.md) |
+
+### 4. Create the database and deploy the functions
+
+Run Actions → **"Deploy Supabase"** → Run workflow (it also runs on every push to
+`main` that touches `supabase/` or `packages/`). It links the project, applies
+every file in `supabase/migrations` (`supabase db push`) and deploys every Edge
+Function. The migrations enable the extensions they need (`pg_cron`, `pg_net`,
+`postgis`), create all tables with row-level security, and register the
+schedules. They do **not** load the sample seed data.
+
+To do the same from your machine instead:
+
+```sh
+npx supabase login
+npx supabase link --project-ref <ref>      # asks for the database password
+npx supabase db push                       # apply migrations
+npx supabase functions deploy              # deploy every function
+```
+
+Check it worked: Dashboard → Table Editor lists `bills`, `members`,
+`local_matters`, `discussions` and the rest; Edge Functions lists `sync-federal`,
+`sync-members`, `sync-state`, `sync-boston`, `fetch-on-demand`, `geocode` and
+`delete-account`.
+
+### 5. Function secrets
+
+Edge Functions read their keys from Supabase secrets, never from the site.
+Dashboard → Edge Functions → Secrets, or:
+
+```sh
+npx supabase secrets set \
+  CONGRESS_API_KEY=... \
+  OPENSTATES_API_KEY=... \
+  SYNC_SECRET="$(openssl rand -hex 32)" \
+  SITE_ORIGINS=https://<user>.github.io
+```
+
+- `SYNC_SECRET`: any long random string. Scheduled jobs send it in the
+  `x-sync-secret` header, so nobody else can trigger a sync. Keep a copy for step 6.
+- `SITE_ORIGINS`: comma-separated origins allowed to call the public functions
+  (CORS). Add your custom domain if you use one.
+- Optional tuning: `SYNC_FEDERAL_RUN_CAP`, `SYNC_TIME_LIMIT_MS`,
+  `OPENSTATES_DAILY_BUDGET`, `OPENSTATES_MIN_INTERVAL_MS`.
+
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_DB_URL` are provided to
+functions automatically; do not set them.
+
+### 6. Turn on the schedules
+
+`pg_cron` calls the sync functions through `pg_net`, reading the project URL and
+the shared secret from Vault. In the SQL editor:
+
+```sql
+select vault.create_secret('https://<ref>.supabase.co', 'project_url');
+select vault.create_secret('<the same SYNC_SECRET>', 'sync_secret');
+```
+
+Until both exist the cron jobs run but do nothing. Check them:
+
+```sql
+select jobname, schedule from cron.job order by jobname;                 -- the schedules
+select status, return_message, start_time from cron.job_run_details
+ order by start_time desc limit 10;                                      -- recent runs
+select id, status_code, left(content, 200) from net._http_response
+ order by id desc limit 10;                                              -- function responses
+select job, last_success_at, last_error, cursor from public.sync_state;  -- each job's progress
+```
+
+A `401` in `net._http_response` means the Vault `sync_secret` and the function
+`SYNC_SECRET` differ. To change one, run
+`select vault.update_secret((select id from vault.secrets where name = 'sync_secret'), '<new>');`.
+
+### 7. Sign-in (Auth)
+
+1. Authentication → URL Configuration: set **Site URL** to
+   `https://<user>.github.io/<repo>/` and add
+   `https://<user>.github.io/<repo>/account/` to **Redirect URLs** (plus your custom
+   domain's `/account/` if you have one).
+2. Authentication → Emails → SMTP Settings: enable custom SMTP with your provider.
+   Supabase's built-in sender allows only a few emails an hour and is meant for
+   testing.
+3. Authentication → Emails → Templates → Magic Link: paste
+   `supabase/templates/magic_link.html`.
+4. Authentication → Sign In / Providers: keep **Email** on; password sign-in and
+   other providers are not used.
+
+### 8. Load data
+
+1. **Federal backfill:** Actions → "Backfill" → Run workflow. It loads members,
+   every bill and every roll call of the current Congress, pausing at the hourly
+   API limit and re-dispatching itself until done (roughly a day). The 10-minute
+   `sync-federal` job then keeps it current.
+2. **Boston council districts** (once, and again after redistricting):
+   `SUPABASE_DB_URL='<session pooler string>' npm run load-districts`. Council
+   data then arrives with the nightly `sync-boston` (no key needed).
+3. **State data** fills in over the following nights through `sync-state`,
+   Massachusetts first.
+
+### 9. Rebuild the site
+
+Actions → "Deploy site" → Run workflow (it also runs nightly). With
+`PUBLIC_SUPABASE_URL` set, the build reads the database instead of the demo
+snapshot and prerenders members and notable bills. The deploy fails if the site
+exceeds 300 MB.
+
+### 10. Optional: discussions and maintainers
+
+Follow [docs/discussions.md](docs/discussions.md) to connect Pol.is, then make
+yourself a maintainer in the SQL editor:
+
+```sql
+insert into public.admins (user_id, role)
+select id, 'admin' from auth.users where email = 'you@example.org';
+```
+
+### Free-tier notes
+
+- The free database allows 500 MB. A weekly job records the size in `sync_state`
+  and fails loudly above 400 MB.
+- Supabase pauses free projects after about a week without activity. The nightly
+  site build and the sync jobs normally keep it active; if it is paused, restore it
+  from the dashboard and rerun "Deploy site".
+- Edge Functions on the free plan allow 500,000 invocations a month; the
+  schedules use well under 10,000.
+
+### Troubleshooting
+
+| Symptom | Likely cause |
+| --- | --- |
+| The site still shows the demo banner | `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_ANON_KEY` are not set as **variables** (not secrets), or "Deploy site" has not run since |
+| "Deploy Supabase" says it skipped | One of its three secrets is missing |
+| `supabase db push` fails to connect | Wrong `SUPABASE_DB_PASSWORD`; reset it under Project Settings → Database |
+| Backfill cannot connect | `SUPABASE_DB_URL` is the direct (IPv6) string; use the session pooler string |
+| Nothing syncs | Vault secrets missing or `SYNC_SECRET` mismatch (step 6 queries) |
+| Sign-in link opens the wrong page or errors | The `/account/` URL is not in Redirect URLs |
+| Sign-in emails never arrive | Built-in email rate limit; configure SMTP |
+| Find my reps fails with a CORS error | `SITE_ORIGINS` does not include the site's origin |
+| Bill pages are missing for most bills | Expected: only notable bills are prerendered; others load at `/bill/?id=…` |
 
 ### Checking a deployment
 
