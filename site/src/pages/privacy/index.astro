@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="Privacy" description="What this site stores, what it shares with Pol.is, and what it never collects.">
+  <h1>Privacy</h1>
+  <p>This is a free, open-source, nonpartisan site. It has no ads and no analytics or tracking scripts.</p>
+
+  <h2>Reading the site</h2>
+  <p>
+    You can read everything without an account. Pages are static files served by GitHub Pages, which, like any web host,
+    sees your IP address when your browser asks for a page. Some pages fetch fresh data from our database (Supabase) as
+    you read.
+  </p>
+
+  <h2>If you sign in</h2>
+  <ul>
+    <li>We store your email address so we can send sign-in links. We never send you anything else.</li>
+    <li>We store what you follow and when you last read your feed.</li>
+    <li>
+      If you save an address under Find my reps, we keep only the result: the address as matched (shown back to you),
+      your state, congressional district, state legislative districts and, in Boston, your council district. The address
+      goes to the U.S. Census Geocoder to find your districts; we cache districts by location rounded to about 100
+      metres, never by address.
+    </li>
+    <li>You can delete your saved address at any time, and deleting your account removes everything tied to it.</li>
+  </ul>
+
+  <h2>Discussions and Pol.is</h2>
+  <p>
+    <a href={href('discussions/')}>Discussions</a> are hosted by <a href="https://pol.is/">Pol.is</a>, a nonprofit
+    open-source tool, and shown inside our pages. When you open a discussion page your browser loads Pol.is directly, so
+    Pol.is sees your IP address and sets its own cookies under the
+    <a href="https://pol.is/privacy">Pol.is privacy policy</a>.
+  </p>
+  <p>What we send to Pol.is:</p>
+  <ul>
+    <li>the discussion id and title, and the page’s address without any query string or fragment;</li>
+    <li>
+      if you are signed in and may take part, a random identifier created for you alone, which is not your account id,
+      email or address and is used only so your votes stay together across visits.
+    </li>
+  </ul>
+  <p>
+    We never send Pol.is your email, account id, address or districts. Your residency is checked on this site, and
+    Pol.is is told only whether you can vote and write.
+  </p>
+  <p>
+    What you write in a discussion is public and anonymous. Pol.is publishes the votes and statements of every
+    conversation as open data for research, without names.
+  </p>
+
+  <h2>Questions</h2>
+  <p>The code is public: you can check every claim on this page in the repository.</p>
+</Base>

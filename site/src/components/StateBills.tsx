@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type { StateBill } from '../lib/build-data';
+import { STATE_BILL_COLUMNS, type StateBill } from '../lib/types';
+import { stateBillHref } from '../lib/paths';
 import { formatDate } from '../lib/format';
 import { selectWithCount } from '../lib/rest';
 import FollowButton from './FollowButton';
 
-const COLUMNS =
-  'id,state,session,identifier,title,chamber,latest_action_date,latest_action_text,primary_sponsor_id,primary_sponsor_name,openstates_url';
 const PAGE = 20;
 
 /** Recent state bills (prerendered), with live search and paging. */
@@ -25,7 +24,7 @@ export default function StateBills({ state, initial }: { state: string; initial:
     setLoading(true);
     const term = q.trim().replace(/[*,()]/g, ' ');
     selectWithCount<StateBill>('state_bills', {
-      select: COLUMNS,
+      select: STATE_BILL_COLUMNS,
       state: `eq.${state}`,
       ...(term ? { or: `(title.ilike.*${term}*,identifier.ilike.*${term}*)` } : {}),
       order: 'latest_action_date.desc.nullslast,id.asc',
@@ -69,13 +68,7 @@ export default function StateBills({ state, initial }: { state: string; initial:
                   {b.primary_sponsor_name && <> · {b.primary_sponsor_name}</>}
                 </p>
                 <p class="bill-title-sm">
-                  {b.openstates_url ? (
-                    <a href={b.openstates_url} rel="noopener">
-                      {b.title}
-                    </a>
-                  ) : (
-                    b.title
-                  )}
+                  <a href={stateBillHref(b.state, b.session, b.identifier)}>{b.title}</a>
                 </p>
                 {b.latest_action_text && (
                   <p class="meta">

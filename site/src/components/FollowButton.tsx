@@ -11,7 +11,7 @@ import {
 } from '../lib/auth';
 
 interface Props {
-  targetType: 'bill' | 'member' | 'state_bill' | 'state_legislator';
+  targetType: 'bill' | 'member' | 'state_bill' | 'state_legislator' | 'local_matter' | 'local_official' | 'discussion';
   targetId: string;
   /** Used in the accessible name, e.g. "H.R. 1". */
   label: string;

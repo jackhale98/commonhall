@@ -1,0 +1,15 @@
+---
+import StateBillFallback from '../../components/StateBillFallback';
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="State bill" section="states" noindex>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('states/')}>States</a>
+  </nav>
+  <noscript>
+    <p class="notice">This page needs JavaScript.</p>
+  </noscript>
+  <StateBillFallback client:only="preact" />
+</Base>

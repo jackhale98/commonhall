@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { BILL_STATUSES, STATUS_LABELS } from '@civic/congress-client/status';
 import { memberHref } from '../lib/paths';
-import { RestError, rpc, selectWithCount, type Params } from '../lib/rest';
+import { RestError, inList, rpc, selectWithCount, type Params } from '../lib/rest';
 import { BILL_LIST_COLUMNS, type BillListItem as Bill } from '../lib/types';
 import BillListItem from './BillListItem';
 
@@ -13,10 +13,12 @@ interface Props {
   policyAreas: string[];
   /** Demo mode: `initial` holds every bill and filtering happens in the browser. */
   local?: boolean;
+  /** Ids of bills with a published discussion (for the "Has a discussion" filter). */
+  discussed?: string[];
 }
 
 /** In-browser equivalent of the database filters, for the demo build. */
-export function filterLocally(bills: DemoBill[], f: Filters): DemoBill[] {
+export function filterLocally(bills: DemoBill[], f: Filters, discussed: string[] = []): DemoBill[] {
   const words = f.q.toLowerCase().split(/\s+/).filter(Boolean);
   const out = bills.filter((b) => {
     const house = b.bill_type.startsWith('h');
@@ -26,6 +28,7 @@ export function filterLocally(bills: DemoBill[], f: Filters): DemoBill[] {
     if (f.policy && b.policy_area !== f.policy) return false;
     if (f.party && b.sponsor_party !== f.party) return false;
     if (f.sponsor && b.sponsor_id !== f.sponsor) return false;
+    if (f.discussed && !discussed.includes(b.id)) return false;
     const text = `${b.title} ${b.short_title ?? ''} ${b.summary_text ?? ''}`.toLowerCase();
     return words.every((w) => text.includes(w));
   });
@@ -42,11 +45,23 @@ export interface Filters {
   /** Bioguide id: bills this member sponsored. */
   sponsor: string;
   sort: 'latest' | 'introduced';
+  /** Only bills with a published discussion. */
+  discussed: boolean;
   page: number;
 }
 
 const PAGE_SIZE = 25;
-const EMPTY: Filters = { q: '', chamber: '', status: '', policy: '', party: '', sponsor: '', sort: 'latest', page: 1 };
+const EMPTY: Filters = {
+  q: '',
+  chamber: '',
+  status: '',
+  policy: '',
+  party: '',
+  sponsor: '',
+  sort: 'latest',
+  discussed: false,
+  page: 1,
+};
 
 function readFilters(): Filters {
   if (typeof window === 'undefined') return EMPTY;
@@ -59,6 +74,7 @@ function readFilters(): Filters {
     party: (p.get('party') as Filters['party']) ?? '',
     sponsor: /^[A-Z]\d{6}$/.test(p.get('sponsor') ?? '') ? p.get('sponsor')! : '',
     sort: p.get('sort') === 'introduced' ? 'introduced' : 'latest',
+    discussed: p.get('discussed') === '1',
     page: Math.max(1, Number(p.get('page') ?? 1) || 1),
   };
 }
@@ -72,17 +88,28 @@ function writeFilters(f: Filters) {
   if (f.party) p.set('party', f.party);
   if (f.sponsor) p.set('sponsor', f.sponsor);
   if (f.sort !== 'latest') p.set('sort', f.sort);
+  if (f.discussed) p.set('discussed', '1');
   if (f.page > 1) p.set('page', String(f.page));
   const qs = p.toString();
   window.history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
 }
 
 const isDefault = (f: Filters) =>
-  !f.q && !f.chamber && !f.status && !f.policy && !f.party && !f.sponsor && f.sort === 'latest' && f.page === 1;
+  !f.q &&
+  !f.chamber &&
+  !f.status &&
+  !f.policy &&
+  !f.party &&
+  !f.sponsor &&
+  !f.discussed &&
+  f.sort === 'latest' &&
+  f.page === 1;
 
 /** Build PostgREST filters shared by the table query and the search RPC. */
-function restFilters(f: Filters, congress: number): Params {
+function restFilters(f: Filters, congress: number, discussed: string[]): Params {
   const params: Params = { congress: `eq.${congress}` };
+  // No discussed bills: match nothing.
+  if (f.discussed) params.id = discussed.length ? inList(discussed) : 'is.null';
   let select = BILL_LIST_COLUMNS;
   if (f.chamber === 'house') params.bill_type = 'in.(hr,hjres,hconres,hres)';
   if (f.chamber === 'senate') params.bill_type = 'in.(s,sjres,sconres,sres)';
@@ -97,7 +124,7 @@ function restFilters(f: Filters, congress: number): Params {
   return params;
 }
 
-export default function BillExplorer({ congress, initial, policyAreas, local = false }: Props) {
+export default function BillExplorer({ congress, initial, policyAreas, local = false, discussed = [] }: Props) {
   const [filters, setFilters] = useState<Filters>(EMPTY);
   const [bills, setBills] = useState<Bill[]>(initial);
   const [total, setTotal] = useState<number | null>(null);
@@ -121,7 +148,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
       return;
     }
     if (local) {
-      const matches = filterLocally(initial, filters);
+      const matches = filterLocally(initial, filters, discussed);
       setBills(matches.slice((filters.page - 1) * PAGE_SIZE, filters.page * PAGE_SIZE));
       setTotal(matches.length);
       setState('idle');
@@ -131,7 +158,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
     setState('loading');
     (async () => {
       try {
-        const params = restFilters(filters, congress);
+        const params = restFilters(filters, congress, discussed);
         let rows: Bill[];
         let count: number;
         if (filters.q.trim()) {
@@ -240,6 +267,16 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
               <option value="introduced">Newest introduced</option>
             </select>
           </div>
+        )}
+        {discussed.length > 0 && (
+          <label class="check">
+            <input
+              type="checkbox"
+              checked={filters.discussed}
+              onChange={(e) => update({ discussed: e.currentTarget.checked })}
+            />{' '}
+            Has a discussion
+          </label>
         )}
         <button type="submit" class="primary">
           Search

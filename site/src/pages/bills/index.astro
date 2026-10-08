@@ -1,12 +1,18 @@
 ---
 import BillExplorer from '../../components/BillExplorer';
 import Base from '../../layouts/Base.astro';
-import { CURRENT_CONGRESS, loadBills, loadMembers, loadPolicyAreas } from '../../lib/build-data';
+import { CURRENT_CONGRESS, loadBills, loadDiscussions, loadMembers, loadPolicyAreas } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
 import { congressLabel } from '../../lib/format';
 import type { BillListItem as Bill } from '../../lib/types';
 
-const [bills, policyAreas, members] = await Promise.all([loadBills(), loadPolicyAreas(), loadMembers()]);
+const [bills, policyAreas, members, discussions] = await Promise.all([
+  loadBills(),
+  loadPolicyAreas(),
+  loadMembers(),
+  loadDiscussions(),
+]);
+const discussed = discussions.filter((d) => d.target_type === 'bill' && d.target_id).map((d) => d.target_id!);
 // loadBills() is ordered by latest action, newest first.
 const initial: Bill[] = bills
   .slice(0, 50)
@@ -55,6 +61,7 @@ const initial: Bill[] = bills
       client:load
       local
       congress={CURRENT_CONGRESS}
+      discussed={discussed}
       policyAreas={policyAreas}
       initial={bills.map((b, i) => ({
         ...initial[i]!,
@@ -79,6 +86,12 @@ const initial: Bill[] = bills
       }))}
     />
   ) : (
-    <BillExplorer client:load congress={CURRENT_CONGRESS} initial={initial} policyAreas={policyAreas} />
+    <BillExplorer
+      client:load
+      congress={CURRENT_CONGRESS}
+      initial={initial}
+      policyAreas={policyAreas}
+      discussed={discussed}
+    />
   )}
 </Base>

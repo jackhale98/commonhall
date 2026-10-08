@@ -1,0 +1,75 @@
+---
+import FollowButton from '../../../components/FollowButton';
+import LocalMatterItem from '../../../components/LocalMatterItem';
+import MemberPhoto from '../../../components/MemberPhoto';
+import Base from '../../../layouts/Base.astro';
+import { loadLocalOfficials, loadPrerenderLocalMatters, loadSponsoredMatters } from '../../../lib/build-data';
+import { href, localMatterFallbackHref, localMatterHref } from '../../../lib/paths';
+import type { LocalOfficial } from '../../../lib/types';
+
+export async function getStaticPaths() {
+  const officials = await loadLocalOfficials();
+  return officials.map((official) => ({ params: { id: String(official.person_id) }, props: { official } }));
+}
+
+interface Props {
+  official: LocalOfficial;
+}
+
+const { official } = Astro.props;
+const [sponsored, prerendered] = await Promise.all([loadSponsoredMatters(official.id), loadPrerenderLocalMatters()]);
+const withPage = new Set(prerendered.map((p) => p.matter.id));
+const seat = official.seat ?? 'Councilor';
+---
+
+<Base
+  title={official.name}
+  description={`${official.name}, Boston City Council (${seat}): sponsored ordinances, resolutions and orders.`}
+  section="boston"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('boston/')}>Boston</a> › {official.name}
+  </nav>
+  <header class="councilor">
+    <MemberPhoto name={official.name} url={official.photo_url} size={96} />
+    <div>
+      <h1>{official.name}</h1>
+      <p class="muted">Boston City Council · {seat}</p>
+      <div class="cluster">
+        <FollowButton client:load targetType="local_official" targetId={official.id} label={official.name} />
+        {official.email && (
+          <a class="button" href={`mailto:${official.email}`}>
+            Email
+          </a>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <section aria-labelledby="sp-h">
+    <h2 id="sp-h">
+      Sponsored <span class="muted">({sponsored.length})</span>
+    </h2>
+    {sponsored.length === 0 && <p class="muted">No sponsored matters loaded.</p>}
+    <ul class="list">
+      {sponsored.map((m) => (
+        <LocalMatterItem matter={m} href={withPage.has(m.id) ? localMatterHref(m.id) : localMatterFallbackHref(m.id)} />
+      ))}
+    </ul>
+  </section>
+  <p class="small muted">
+    Boston records roll-call votes in meeting minutes rather than in Legistar, so votes are not listed here.
+  </p>
+</Base>
+
+<style>
+  .councilor {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    margin-bottom: var(--space-5);
+  }
+  .councilor h1 {
+    margin: 0;
+  }
+</style>

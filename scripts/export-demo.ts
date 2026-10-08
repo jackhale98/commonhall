@@ -37,6 +37,34 @@ const positions =
 const voteStats = await sql`
   select member_id, congress, total_votes, votes_cast, missed, with_party, party_line_votes from public.member_vote_stats`;
 
+const stateLegislators = await sql`
+  select id, name, party, state, chamber, district, title, photo_url, openstates_url
+    from public.state_legislators where current order by state, chamber, id`;
+const stateBills = await sql`
+  select id, state, session, identifier, title, chamber, to_char(latest_action_date, 'YYYY-MM-DD') as latest_action_date,
+         latest_action_text, primary_sponsor_id, primary_sponsor_name, openstates_url
+    from public.state_bills order by latest_action_date desc nulls last, id`;
+const localOfficials = await sql`
+  select id, city, person_id, name, seat, district, title, email, photo_url, current
+    from public.local_officials where current order by id`;
+const localMatters = await sql`
+  select id, city, matter_id, file_number, title, type, status, body, to_char(intro_date, 'YYYY-MM-DD') as intro_date,
+         to_char(passed_date, 'YYYY-MM-DD') as passed_date, legistar_url,
+         to_char(latest_action_date, 'YYYY-MM-DD') as latest_action_date, latest_action_text
+    from public.local_matters order by latest_action_date desc nulls last, last_modified desc`;
+const localMatterActions = await sql`
+  select matter_id, seq, to_char(action_date, 'YYYY-MM-DD') as action_date, action_name, action_text, body, passed
+    from public.local_matter_actions order by matter_id, seq`;
+const localMatterSponsors =
+  await sql`select matter_id, official_id, name, sequence from public.local_matter_sponsors order by matter_id, sequence`;
+const localMeetings = await sql`
+  select id, event_id, body, starts_at, to_char(date, 'YYYY-MM-DD') as date, time, location, agenda_url, minutes_url, legistar_url
+    from public.local_meetings order by date desc`;
+const discussions = await sql`
+  select id, title, prompt, jurisdiction, district, target_type, target_id, status, residency_required, opens_at, closes_at,
+         created_at
+    from public.discussions where status <> 'draft' order by created_at desc`;
+
 const data = {
   generatedFrom: 'supabase/seed.sql',
   members,
@@ -47,6 +75,14 @@ const data = {
   votes,
   positions,
   voteStats,
+  stateLegislators,
+  stateBills,
+  localOfficials,
+  localMatters,
+  localMatterActions,
+  localMatterSponsors,
+  localMeetings,
+  discussions,
 };
 writeFileSync('site/src/data/demo.json', JSON.stringify(data));
 console.log(

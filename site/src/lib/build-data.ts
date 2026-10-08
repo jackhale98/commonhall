@@ -8,22 +8,48 @@
 import { congressForDate } from '@civic/congress-client/ids';
 import demoData from '../data/demo.json';
 import { DEMO } from './config';
-import { select as restSelect, selectAll as restSelectAll, type Params } from './rest';
-import { BILL_PAGE_COLUMNS, MEMBER_COLUMNS, type Bill, type BillAction, type Cosponsor, type Member } from './types';
+import { DISCUSSION_COLUMNS } from './discussions';
+import { inList, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
+import {
+  BILL_PAGE_COLUMNS,
+  LOCAL_MATTER_COLUMNS,
+  LOCAL_OFFICIAL_COLUMNS,
+  MEMBER_COLUMNS,
+  type Bill,
+  type BillAction,
+  type Cosponsor,
+  type Discussion,
+  type LocalMatter,
+  type LocalMatterAction,
+  type LocalMeeting,
+  type LocalOfficial,
+  type Member,
+  STATE_BILL_COLUMNS,
+  type StateBill,
+} from './types';
 
 export const CURRENT_CONGRESS = congressForDate(new Date());
 
 // ---- Demo mode: answer the same queries from the bundled sample data -------
 
+const demo = demoData as unknown as Record<string, Record<string, unknown>[] | undefined>;
 const DEMO_TABLES: Record<string, Record<string, unknown>[]> = {
-  members: demoData.members,
-  bills: demoData.bills,
-  bill_actions: demoData.actions,
-  bill_cosponsors: demoData.cosponsors,
-  bill_subjects: demoData.subjects,
-  votes: demoData.votes,
-  vote_positions: demoData.positions,
-  member_vote_stats: demoData.voteStats,
+  members: demo.members ?? [],
+  bills: demo.bills ?? [],
+  bill_actions: demo.actions ?? [],
+  bill_cosponsors: demo.cosponsors ?? [],
+  bill_subjects: demo.subjects ?? [],
+  votes: demo.votes ?? [],
+  vote_positions: demo.positions ?? [],
+  member_vote_stats: demo.voteStats ?? [],
+  state_legislators: demo.stateLegislators ?? [],
+  state_bills: demo.stateBills ?? [],
+  local_officials: demo.localOfficials ?? [],
+  local_matters: demo.localMatters ?? [],
+  local_matter_actions: demo.localMatterActions ?? [],
+  local_matter_sponsors: demo.localMatterSponsors ?? [],
+  local_meetings: demo.localMeetings ?? [],
+  discussions: demo.discussions ?? [],
 };
 
 /** A tiny PostgREST stand-in for the filters build-data uses (eq., like.prefix*, limit). Rows come pre-sorted. */
@@ -33,7 +59,17 @@ function demoQuery<T>(table: string, params: Params): T[] {
     if (raw === undefined || ['select', 'order', 'limit', 'offset'].includes(key)) continue;
     const value = String(raw);
     if (value.startsWith('eq.')) rows = rows.filter((r) => String(r[key]) === value.slice(3));
-    else if (value.startsWith('like.') && value.endsWith('*')) {
+    else if (value.startsWith('neq.')) rows = rows.filter((r) => String(r[key]) !== value.slice(4));
+    else if (value === 'is.null') rows = rows.filter((r) => r[key] === null || r[key] === undefined);
+    else if (value.startsWith('in.(')) {
+      const wanted = new Set(
+        value
+          .slice(4, -1)
+          .split(',')
+          .map((v) => v.replace(/^"|"$/g, '')),
+      );
+      rows = rows.filter((r) => wanted.has(String(r[key])));
+    } else if (value.startsWith('like.') && value.endsWith('*')) {
       const prefix = value.slice(5, -1);
       rows = rows.filter((r) => String(r[key]).startsWith(prefix));
     }
@@ -83,35 +119,81 @@ export const loadBills = memo(async () => {
   return MAX_BILL_PAGES ? rows.slice(0, MAX_BILL_PAGES) : rows;
 });
 
-const billPrefix = `like.${CURRENT_CONGRESS}-*`;
+// ---- Hybrid rendering: only notable items get prerendered pages -----------
+
+/** Ids with a prerendered page. In demo mode every item in the snapshot is prerendered. */
+export const loadPrerenderedBillIds = memo(async () => {
+  if (DEMO) return new Set((await loadBills()).map((b) => b.id));
+  const rows = await selectAll<{ id: string }>('bills_prerender', {
+    select: 'id',
+    congress: `eq.${CURRENT_CONGRESS}`,
+    order: 'id.asc',
+  });
+  return new Set(rows.map((r) => r.id));
+});
+
+export const loadPrerenderBills = memo(async () => {
+  const ids = await loadPrerenderedBillIds();
+  return (await loadBills()).filter((b) => ids.has(b.id));
+});
+
+/** Fetch rows for many ids with `in.(…)` filters, 150 ids per request. */
+async function selectByIds<T>(table: string, column: string, ids: string[], params: Params): Promise<T[]> {
+  const out: T[] = [];
+  for (let i = 0; i < ids.length; i += 150) {
+    out.push(...(await selectAll<T>(table, { ...params, [column]: inList(ids.slice(i, i + 150)) })));
+  }
+  return out;
+}
+
+const prerenderIds = async () => [...(await loadPrerenderedBillIds())];
 
 export const loadActions = memo(async () => {
-  const rows = await selectAll<BillAction>('bill_actions', {
+  const rows = await selectByIds<BillAction>('bill_actions', 'bill_id', await prerenderIds(), {
     select: 'bill_id,seq,action_date,text,chamber,source_system',
-    bill_id: billPrefix,
     order: 'bill_id.asc,seq.asc',
   });
   return groupBy(rows, (r) => r.bill_id);
 });
 
 export const loadCosponsors = memo(async () => {
-  const rows = await selectAll<Cosponsor>('bill_cosponsors', {
+  const rows = await selectByIds<Cosponsor>('bill_cosponsors', 'bill_id', await prerenderIds(), {
     select: 'bill_id,member_id,sponsored_date,withdrawn_date,is_original',
-    bill_id: billPrefix,
     order: 'bill_id.asc,member_id.asc',
   });
   return groupBy(rows, (r) => r.bill_id);
 });
 
 export const loadSubjects = memo(async () => {
-  const rows = await selectAll<{ bill_id: string; subject: string }>('bill_subjects', {
-    select: 'bill_id,subject',
-    bill_id: billPrefix,
-    order: 'bill_id.asc,subject.asc',
-  });
+  const rows = await selectByIds<{ bill_id: string; subject: string }>(
+    'bill_subjects',
+    'bill_id',
+    await prerenderIds(),
+    {
+      select: 'bill_id,subject',
+      order: 'bill_id.asc,subject.asc',
+    },
+  );
   const map = new Map<string, string[]>();
   for (const r of rows) map.set(r.bill_id, [...(map.get(r.bill_id) ?? []), r.subject]);
   return map;
+});
+
+/** Active cosponsorships per member this Congress. */
+export const loadCosponsorCounts = memo(async () => {
+  if (DEMO) {
+    const counts = new Map<string, number>();
+    for (const r of DEMO_TABLES.bill_cosponsors as unknown as Cosponsor[]) {
+      if (!r.withdrawn_date) counts.set(r.member_id, (counts.get(r.member_id) ?? 0) + 1);
+    }
+    return counts;
+  }
+  const rows = await selectAll<{ member_id: string; cosponsored: number }>('member_cosponsor_counts', {
+    select: 'member_id,cosponsored',
+    congress: `eq.${CURRENT_CONGRESS}`,
+    order: 'member_id.asc',
+  });
+  return new Map(rows.map((r) => [r.member_id, r.cosponsored]));
 });
 
 /** Bills each member sponsored this Congress, newest activity first. */
@@ -127,16 +209,6 @@ export const loadSponsored = memo(async () => {
 export const loadPolicyAreas = memo(async () => {
   const bills = await loadBills();
   return [...new Set(bills.map((b) => b.policy_area).filter((p): p is string => Boolean(p)))].sort();
-});
-
-/** Active (not withdrawn) cosponsorships per member this Congress. */
-export const loadCosponsorCounts = memo(async () => {
-  const byBill = await loadCosponsors();
-  const counts = new Map<string, number>();
-  for (const rows of byBill.values()) {
-    for (const r of rows) if (!r.withdrawn_date) counts.set(r.member_id, (counts.get(r.member_id) ?? 0) + 1);
-  }
-  return counts;
 });
 
 export interface VoteSummary {
@@ -196,22 +268,7 @@ export interface StateLegislator {
   openstates_url: string | null;
 }
 
-export interface StateBill {
-  id: string;
-  state: string;
-  session: string;
-  identifier: string;
-  title: string;
-  chamber: string | null;
-  latest_action_date: string | null;
-  latest_action_text: string | null;
-  primary_sponsor_id: string | null;
-  primary_sponsor_name: string | null;
-  openstates_url: string | null;
-}
-
-export const STATE_BILL_COLUMNS =
-  'id,state,session,identifier,title,chamber,latest_action_date,latest_action_text,primary_sponsor_id,primary_sponsor_name,openstates_url';
+export { STATE_BILL_COLUMNS, type StateBill } from './types';
 
 export const loadStateLegislators = memo(async () => {
   const rows = await selectAll<StateLegislator>('state_legislators', {
@@ -247,3 +304,111 @@ export const loadPositionsByVote = memo(async () =>
 export const loadPositionsByMember = memo(async () =>
   groupBy(await selectAll<VotePositionWithMember & { vote_id: string }>('vote_positions'), (p) => p.member_id),
 );
+
+// ---- Boston -----------------------------------------------------------------
+
+export const loadLocalOfficials = memo(async () =>
+  selectAll<LocalOfficial>('local_officials', {
+    select: LOCAL_OFFICIAL_COLUMNS,
+    city: 'eq.boston',
+    current: 'eq.true',
+    order: 'id.asc',
+  }),
+);
+
+/** Most recently active council matters (for the Boston page). */
+export const loadRecentLocalMatters = memo(async () =>
+  select<LocalMatter>('local_matters', {
+    select: LOCAL_MATTER_COLUMNS,
+    city: 'eq.boston',
+    order: 'latest_action_date.desc.nullslast,last_modified.desc',
+    limit: 25,
+  }),
+);
+
+export const loadLocalMeetings = memo(async () =>
+  select<LocalMeeting>('local_meetings', {
+    select: 'id,event_id,body,starts_at,date,time,location,agenda_url,minutes_url,legistar_url',
+    city: 'eq.boston',
+    order: 'date.desc',
+    limit: 40,
+  }),
+);
+
+export interface LocalSponsorship {
+  matter_id: string;
+  official_id: string;
+  name: string | null;
+  sequence: number | null;
+}
+
+/** Council matters with a prerendered page (all of them in demo mode). */
+export const loadPrerenderLocalMatters = memo(async () => {
+  const ids = DEMO
+    ? (DEMO_TABLES.local_matters as unknown as LocalMatter[]).map((m) => m.id)
+    : (await selectAll<{ id: string }>('local_matters_prerender', { select: 'id', order: 'id.asc' })).map((r) => r.id);
+  const [matters, actions, sponsors] = await Promise.all([
+    selectByIds<LocalMatter>('local_matters', 'id', ids, { select: LOCAL_MATTER_COLUMNS, order: 'id.asc' }),
+    selectByIds<LocalMatterAction>('local_matter_actions', 'matter_id', ids, { order: 'matter_id.asc,seq.asc' }),
+    selectByIds<LocalSponsorship>('local_matter_sponsors', 'matter_id', ids, {
+      select: 'matter_id,official_id,name,sequence',
+      order: 'matter_id.asc,sequence.asc',
+    }),
+  ]);
+  const actionsBy = groupBy(actions, (a) => a.matter_id);
+  const sponsorsBy = groupBy(sponsors, (s) => s.matter_id);
+  return matters.map((matter) => ({
+    matter,
+    actions: actionsBy.get(matter.id) ?? [],
+    sponsors: sponsorsBy.get(matter.id) ?? [],
+  }));
+});
+
+/** Matters each councilor sponsored, newest first (councilor pages). */
+export async function loadSponsoredMatters(officialId: string): Promise<LocalMatter[]> {
+  if (DEMO) {
+    const ids = new Set(
+      (DEMO_TABLES.local_matter_sponsors as unknown as LocalSponsorship[])
+        .filter((s) => s.official_id === officialId)
+        .map((s) => s.matter_id),
+    );
+    return (DEMO_TABLES.local_matters as unknown as LocalMatter[]).filter((m) => ids.has(m.id));
+  }
+  const rows = await selectAll<{ matter: LocalMatter | null }>('local_matter_sponsors', {
+    select: `matter:local_matters(${LOCAL_MATTER_COLUMNS})`,
+    official_id: `eq.${officialId}`,
+  });
+  return rows
+    .map((r) => r.matter)
+    .filter((m): m is LocalMatter => m !== null)
+    .sort((a, b) => (b.latest_action_date ?? '').localeCompare(a.latest_action_date ?? ''));
+}
+
+// ---- Massachusetts and other state bills -----------------------------------
+
+/** State bills with a prerendered page (see the state_bills_prerender view). */
+export const loadPrerenderStateBills = memo(async () => {
+  const ids = DEMO
+    ? (DEMO_TABLES.state_bills as unknown as StateBill[]).map((b) => b.id)
+    : (await selectAll<{ id: string }>('state_bills_prerender', { select: 'id', order: 'id.asc' })).map((r) => r.id);
+  return selectByIds<StateBill>('state_bills', 'id', ids, { select: STATE_BILL_COLUMNS, order: 'id.asc' });
+});
+
+// ---- Discussions --------------------------------------------------------------
+
+/** Published discussions (open and closed). Drafts are never public. */
+export const loadDiscussions = memo(async () =>
+  selectAll<Discussion>('discussions', {
+    select: DISCUSSION_COLUMNS,
+    status: 'neq.draft',
+    order: 'created_at.desc',
+  }),
+);
+
+/** target "type:id" → discussion, for linking bills and matters to their discussion. */
+export const loadDiscussionsByTarget = memo(async () => {
+  const map = new Map<string, Discussion>();
+  for (const d of await loadDiscussions())
+    if (d.target_type && d.target_id) map.set(`${d.target_type}:${d.target_id}`, d);
+  return map;
+});

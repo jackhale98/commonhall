@@ -2,6 +2,8 @@ import { useEffect, useState } from 'preact/hooks';
 import { parseBillId } from '@civic/congress-client/ids';
 import { onDemand } from '../lib/functions';
 import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraphs } from '../lib/format';
+import { billHref } from '../lib/paths';
+import { redirectIfPrerendered } from '../lib/prerendered';
 import { select } from '../lib/rest';
 import { BILL_PAGE_COLUMNS, type Bill, type BillAction, type Member } from '../lib/types';
 import ActionTimeline from './ActionTimeline';
@@ -66,6 +68,8 @@ export default function BillFallback() {
     const id = `${ref.congress}-${ref.type}-${ref.number}`;
     (async () => {
       try {
+        const clean = billHref(ref.congress, ref.type, ref.number);
+        if (await redirectIfPrerendered((i) => (i.bills.includes(id) ? clean : null))) return;
         const fromDb = await loadFromDatabase(id);
         if (fromDb) {
           setView(fromDb);

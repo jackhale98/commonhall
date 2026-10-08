@@ -85,3 +85,93 @@ export type BillListItem = Pick<
   | 'sponsor_id'
   | 'policy_area'
 >;
+
+export interface LocalOfficial {
+  id: string;
+  city: string;
+  person_id: number;
+  name: string;
+  seat: string | null;
+  district: number | null;
+  title: string | null;
+  email: string | null;
+  photo_url: string | null;
+  current: boolean;
+}
+
+export interface LocalMatter {
+  id: string;
+  city: string;
+  matter_id: number;
+  file_number: string | null;
+  title: string;
+  type: string | null;
+  status: string | null;
+  body: string | null;
+  intro_date: string | null;
+  passed_date: string | null;
+  legistar_url: string | null;
+  latest_action_date: string | null;
+  latest_action_text: string | null;
+}
+
+export interface LocalMatterAction {
+  matter_id: string;
+  seq: number;
+  action_date: string | null;
+  action_name: string | null;
+  action_text: string | null;
+  body: string | null;
+  passed: string | null;
+}
+
+export interface LocalMeeting {
+  id: string;
+  event_id: number;
+  body: string | null;
+  starts_at: string | null;
+  date: string;
+  time: string | null;
+  location: string | null;
+  agenda_url: string | null;
+  minutes_url: string | null;
+  legistar_url: string | null;
+}
+
+export const LOCAL_MATTER_COLUMNS =
+  'id,city,matter_id,file_number,title,type,status,body,intro_date,passed_date,legistar_url,latest_action_date,latest_action_text';
+export const LOCAL_OFFICIAL_COLUMNS = 'id,city,person_id,name,seat,district,title,email,photo_url,current';
+
+export type DiscussionTargetType = 'bill' | 'state_bill' | 'local_matter';
+
+export interface Discussion {
+  id: string;
+  title: string;
+  prompt: string;
+  jurisdiction: 'federal' | 'ma' | 'boston';
+  district: number | null;
+  target_type: DiscussionTargetType | null;
+  target_id: string | null;
+  status: 'draft' | 'open' | 'closed';
+  residency_required: boolean;
+  opens_at: string | null;
+  closes_at: string | null;
+  created_at: string;
+}
+
+export interface StateBill {
+  id: string;
+  state: string;
+  session: string;
+  identifier: string;
+  title: string;
+  chamber: string | null;
+  latest_action_date: string | null;
+  latest_action_text: string | null;
+  primary_sponsor_id: string | null;
+  primary_sponsor_name: string | null;
+  openstates_url: string | null;
+}
+
+export const STATE_BILL_COLUMNS =
+  'id,state,session,identifier,title,chamber,latest_action_date,latest_action_text,primary_sponsor_id,primary_sponsor_name,openstates_url';

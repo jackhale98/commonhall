@@ -1,0 +1,22 @@
+---
+import { discussionHref } from '../lib/paths';
+import type { Discussion, DiscussionTargetType } from '../lib/types';
+import DiscussionRequest from './DiscussionRequest';
+
+interface Props {
+  discussion: Discussion | undefined;
+  targetType: DiscussionTargetType;
+  targetId: string;
+}
+
+const { discussion, targetType, targetId } = Astro.props;
+---
+
+{discussion ? (
+  <p class="notice discussion-callout">
+    <strong>{discussion.status === 'open' ? 'Discussion open:' : 'Discussion (closed):'}</strong>{' '}
+    <a href={discussionHref(discussion.id)}>{discussion.title}</a>
+  </p>
+) : (
+  <DiscussionRequest client:visible targetType={targetType} targetId={targetId} />
+)}

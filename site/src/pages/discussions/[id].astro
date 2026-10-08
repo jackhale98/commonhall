@@ -1,0 +1,24 @@
+---
+import DiscussionView from '../../components/DiscussionView.astro';
+import Base from '../../layouts/Base.astro';
+import { loadDiscussions } from '../../lib/build-data';
+import { href } from '../../lib/paths';
+import type { Discussion } from '../../lib/types';
+
+export async function getStaticPaths() {
+  return (await loadDiscussions()).map((discussion) => ({ params: { id: discussion.id }, props: { discussion } }));
+}
+
+interface Props {
+  discussion: Discussion;
+}
+
+const { discussion } = Astro.props;
+---
+
+<Base title={discussion.title} description={discussion.prompt.slice(0, 300)} section="discussions">
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('discussions/')}>Discussions</a>
+  </nav>
+  <DiscussionView discussion={discussion} />
+</Base>
