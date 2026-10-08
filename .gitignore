@@ -12,6 +12,6 @@ supabase/.branches
 supabase/.temp
 supabase/.env
 # Downloaded data must never be committed
-data/
+/data/
 .backfill/
 supabase/functions/.env
