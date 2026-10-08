@@ -1,7 +1,7 @@
 # Configuration reference
 
-Every setting the project reads, grouped by where it is set. The README's
-"Deploy your own" section walks through them in order.
+Every setting the project reads, grouped by where it is set. The
+[deployment guide](deployment.md) walks through them in order.
 
 ## GitHub repository secrets
 

@@ -11,14 +11,32 @@ type-check Edge Functions.
 ```sh
 npm install
 npm run db:start      # supabase start: Postgres, Auth, REST and functions in Docker
-npm run db:reset      # apply migrations and load supabase/seed.sql
+npm run db:reset      # apply migrations and load supabase/seed.sql and seed-local.sql
 cp .env.example site/.env   # then paste the local anon key printed by `supabase status`
 npm run dev           # site on http://localhost:4321
 # Quicker builds while working on templates: SITE_MAX_BILL_PAGES=200 npm run build
 ```
 
-No API key is needed to work on the UI: `seed.sql` loads all current members and
-50 real bills. Regenerate it with `scripts/make-seed.ts` (see the header of that file).
+No API key is needed to work on the UI. `seed.sql` loads all current members and
+50 real bills; `seed-local.sql` adds Boston City Council data, the council
+districts, Massachusetts legislators and two example discussions. Regenerate them
+with `scripts/make-seed.ts` and `scripts/make-local-seed.ts` (see the header of
+each file). Sign-in emails go to the local mail catcher at http://127.0.0.1:54324.
+
+### Running sync jobs locally
+
+```sh
+export SUPABASE_DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+npm run load-districts                     # Boston council districts (full detail)
+npm run job -- boston --since 2026-07-01   # Boston City Council, no key needed
+OPENSTATES_API_KEY=… npm run job -- state  # state bills and legislators
+```
+
+### Demo snapshot
+
+The demo build (no Supabase configured, `PUBLIC_DEMO=true`) reads
+`site/src/data/demo.json`. Regenerate it from the sample data with
+`npm run db:reset && npm run demo:export`.
 
 ## Checks
 
