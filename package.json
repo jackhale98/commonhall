@@ -24,7 +24,10 @@
     "verify:votes": "tsx scripts/verify-votes.ts --sample 10",
     "verify:reps": "tsx scripts/verify-reps.ts",
     "seed:make": "tsx scripts/make-seed.ts",
-    "demo:export": "tsx scripts/export-demo.ts"
+    "demo:export": "tsx scripts/export-demo.ts",
+    "load-districts": "tsx scripts/load-districts.ts",
+    "job": "tsx scripts/run-job.ts",
+    "check:polis": "tsx scripts/check-polis-privacy.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -34,6 +37,7 @@
     "fast-xml-parser": "^5.11.2",
     "globals": "^17.13.0",
     "openapi-typescript": "^7.13.0",
+    "playwright": "^1.56.1",
     "postgres": "^3.4.9",
     "prettier": "^3.9.9",
     "prettier-plugin-astro": "^1.1.0",
@@ -41,6 +45,7 @@
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.71.1",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "yaml": "^2.9.1"
   }
 }

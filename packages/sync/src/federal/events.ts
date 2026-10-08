@@ -35,7 +35,7 @@ function actionInstant(a: Pick<ActionRow, 'action_date' | 'action_time'>): strin
 export interface FeedEventRow extends Record<string, unknown> {
   target_type: string;
   target_id: string;
-  kind: 'action' | 'vote' | 'cosponsor' | 'new_bill';
+  kind: 'action' | 'vote' | 'cosponsor' | 'new_bill' | 'new_item' | 'discussion_opened';
   member_type: string | null;
   member_id: string | null;
   occurred_at: string;

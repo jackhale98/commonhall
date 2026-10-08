@@ -1,0 +1,20 @@
+{
+  "city": "boston",
+  "note": "Legistar has no seat data. Seats by Legistar PersonId, checked 2026-10-08 against Legistar office records (body 138) and the Analyze Boston 'City Council Districts - 2023-2032' layer (District 7 changed in January 2026). sync-boston logs any current councilor missing from this list. Update after elections or vacancies.",
+  "verified": "2026-10-08",
+  "seats": [
+    { "personId": 204, "name": "Gabriela Coletta Zapata", "seat": "District 1", "district": 1 },
+    { "personId": 223, "name": "Ed Flynn", "seat": "District 2", "district": 2 },
+    { "personId": 322, "name": "John FitzGerald", "seat": "District 3", "district": 3 },
+    { "personId": 256, "name": "Brian Worrell", "seat": "District 4", "district": 4 },
+    { "personId": 323, "name": "Enrique Pepén", "seat": "District 5", "district": 5 },
+    { "personId": 324, "name": "Benjamin Jacob Weber", "seat": "District 6", "district": 6 },
+    { "personId": 369, "name": "Miniard Culpepper", "seat": "District 7", "district": 7 },
+    { "personId": 310, "name": "Sharon Durkan", "seat": "District 8", "district": 8 },
+    { "personId": 229, "name": "Liz Breadon", "seat": "District 9", "district": 9 },
+    { "personId": 252, "name": "Ruthzee Louijeune", "seat": "At-Large", "district": null },
+    { "personId": 220, "name": "Julia Mejia", "seat": "At-Large", "district": null },
+    { "personId": 249, "name": "Erin Murphy", "seat": "At-Large", "district": null },
+    { "personId": 321, "name": "Henry Santana", "seat": "At-Large", "district": null }
+  ]
+}
