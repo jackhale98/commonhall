@@ -377,3 +377,13 @@ Preact components that render to plain SVG or HTML with no chart library and no
 client JavaScript; the same components work inside islands. Party colours appear
 only as data marks; the site's brand colour is a neutral teal. Every chart has a
 text equivalent (aria-label, legend or a table behind "Show as a table").
+
+## 40. Dark mode for the Pol.is embed
+
+Pol.is has no theme option (`embed.js` reads no colour or theme attribute) and its
+pages ignore `prefers-color-scheme`. The frame is cross-origin, so its styles
+cannot be changed. In dark mode the site inverts the frame with
+`filter: invert(0.92) hue-rotate(180deg)`, following both the system setting and
+the site's own theme toggle. Text, buttons and the agree/disagree icons keep their
+meaning; any photos inside the embed would look inverted, but conversations here
+use Pol.is's generic avatars. If Pol.is adds a dark theme, switch to it.

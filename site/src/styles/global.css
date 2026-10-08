@@ -1216,3 +1216,16 @@ button.danger {
 [hidden] {
   display: none !important;
 }
+
+/*
+ * Pol.is has no dark theme and its frame is cross-origin, so in dark mode the
+ * embed is inverted (hue-rotate keeps its blues, greens and reds recognisable).
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .discussion-embed iframe {
+    filter: invert(0.92) hue-rotate(180deg);
+  }
+}
+:root[data-theme='dark'] .discussion-embed iframe {
+  filter: invert(0.92) hue-rotate(180deg);
+}
