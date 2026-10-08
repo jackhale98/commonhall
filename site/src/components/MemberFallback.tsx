@@ -60,7 +60,7 @@ export default function MemberFallback() {
   return (
     <article>
       <header style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', margin: '1rem 0 1.5rem' }}>
-        <MemberPhoto name={member.name} url={member.photo_url} size={120} />
+        <MemberPhoto name={member.name} url={member.photo_url} bioguideId={member.bioguide_id} size={120} />
         <div>
           <h1>{member.name}</h1>
           <p>

@@ -305,7 +305,7 @@ export default function FindMyReps({ saved = false }: Props) {
           <ul class="reps-list">
             {result.federal.map((m) => (
               <li>
-                <MemberPhoto name={m.name} url={m.photo_url} size={48} />
+                <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={48} />
                 <div>
                   <a href={memberHref(m.bioguide_id)}>{m.name}</a>{' '}
                   <span class={`party ${partyClass(m.party)}`}>{partyLabel(m.party)}</span>
