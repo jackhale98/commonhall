@@ -149,8 +149,26 @@ can do the steps below in any order and the site keeps working.
    | Publishable (anon) key | Project Settings → API Keys → `anon` / publishable | no: it is shipped to browsers, and row-level security protects the data |
    | Secret (service_role) key | Project Settings → API Keys → `service_role` / secret | **yes**: never put it in the site, a `PUBLIC_` variable or a commit |
 
-3. Create a personal access token for the deploy workflow at
+3. Create an access token for the deploy workflow at
    [Account → Access Tokens](https://supabase.com/dashboard/account/tokens).
+   Use a **scoped token** limited to this one project, with only these
+   permissions:
+
+   | Permission | Access | Why |
+   | --- | --- | --- |
+   | Project Settings | Read | `supabase link` reads the project's details |
+   | API Keys | Read | `supabase link` |
+   | API Key Secrets | Read | `supabase link` |
+   | Edge Functions | Read-write | `supabase functions deploy` |
+
+   Applying migrations (`supabase db push`) connects to Postgres with the
+   database password (`SUPABASE_DB_PASSWORD`), so it needs no token permission.
+   The workflow never sets function secrets; if you also want to run
+   `supabase secrets set` from your own machine with this token, add **Edge
+   Function Secrets: Read-write**. A classic (legacy) token also works, but it can
+   act on every project and organization in your account, so avoid it for CI. If
+   a step fails with a 403, the error names the missing permission. Store the
+   token only as the `SUPABASE_ACCESS_TOKEN` GitHub secret.
 4. Copy the **session pooler** connection string from the project's **Connect**
    button → Session pooler. It works over IPv4, which GitHub Actions needs:
    `postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres`.
@@ -181,7 +199,7 @@ New repository secret). Repository secrets, not environment secrets:
 
 | Secret | Value | Where to find it | Used by |
 | --- | --- | --- | --- |
-| `SUPABASE_ACCESS_TOKEN` | a Supabase personal access token | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) → Generate new token | Deploy Supabase |
+| `SUPABASE_ACCESS_TOKEN` | a Supabase **scoped** access token for this project (permissions in step 2.3) | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) → Generate new token | Deploy Supabase |
 | `SUPABASE_PROJECT_REF` | the project ref, e.g. `abcdefghijklmnopqrst` | the dashboard URL `…/project/<ref>`, or Project Settings → General | Deploy Supabase |
 | `SUPABASE_DB_PASSWORD` | the database password | chosen when creating the project; reset under Project Settings → Database | Deploy Supabase |
 | `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in | Connect (top of the dashboard) → Session pooler | Backfill |
