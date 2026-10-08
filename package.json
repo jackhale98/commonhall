@@ -21,7 +21,9 @@
     "gen:types": "openapi-typescript packages/congress-client/openapi/openapi.json -o packages/congress-client/src/generated/openapi.ts",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
-    "verify:votes": "tsx scripts/verify-votes.ts --sample 10"
+    "verify:votes": "tsx scripts/verify-votes.ts --sample 10",
+    "verify:reps": "tsx scripts/verify-reps.ts",
+    "seed:make": "tsx scripts/make-seed.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

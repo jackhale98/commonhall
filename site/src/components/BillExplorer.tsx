@@ -225,6 +225,7 @@ export default function BillExplorer({ congress, initial, policyAreas }: Props) 
           </button>
         </p>
       )}
+      <h2 class="visually-hidden">Results</h2>
       <p class="small muted" aria-live="polite">
         {state === 'loading'
           ? 'Loading…'

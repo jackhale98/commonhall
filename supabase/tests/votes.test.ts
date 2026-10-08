@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { SenateClient } from '@civic/congress-client';
 import { sessionsToSync, syncVotes, type Sql, type VotesCursor } from '@civic/sync';
 import { asUser, createUser } from './auth.ts';
-import { connect } from './db.ts';
+import { connect, reloadSeed } from './db.ts';
 import { FakeCongress, fixtureJson } from './fake-congress.ts';
 
 const sql = connect() as unknown as Sql;
@@ -14,10 +14,8 @@ const fixtureText = (path: string) =>
   readFileSync(fileURLToPath(new URL(`../../packages/congress-client/test/fixtures/${path}`, import.meta.url)), 'utf8');
 
 beforeAll(async () => {
-  // Real members (with LIS ids) from the seed, so Senate positions can be mapped.
-  await sql`truncate public.votes, public.vote_positions, public.feed_events, public.follows cascade`;
-  await sql`truncate public.bill_actions, public.bill_cosponsors, public.bill_subjects, public.bills, public.members cascade`;
-  await sql.unsafe(readFileSync(fileURLToPath(new URL('../seed.sql', import.meta.url)), 'utf8'));
+  // Real members from the seed (federal reps, Senate LIS ids).
+  await reloadSeed(sql as never);
 });
 
 beforeEach(async () => {

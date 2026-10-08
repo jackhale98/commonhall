@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Session } from '@supabase/supabase-js';
-import { follow, getClient, safeNext, takePendingFollow } from '../lib/auth';
+import { followMany, getClient, safeNext, takePendingFollow } from '../lib/auth';
 import { SUPABASE_URL, hasSupabase } from '../lib/config';
 import { href } from '../lib/paths';
+import FindMyReps from './FindMyReps';
 
 type Phase = 'loading' | 'signed-out' | 'sent' | 'signed-in' | 'deleted' | 'unconfigured';
 
@@ -49,9 +50,9 @@ export default function AccountPanel() {
     const next = safeNext(new URLSearchParams(window.location.search).get('next'));
     if (pending) {
       try {
-        await follow(pending.targetType, pending.targetId);
+        await followMany(pending.targets);
       } catch {
-        setNotice('You are signed in, but we could not complete that follow. Try the Follow button again.');
+        setNotice('You are signed in, but we could not complete those follows. Try the Follow button again.');
       }
       const destination = safeNext(pending.returnTo) ?? next;
       if (destination) {
@@ -191,7 +192,7 @@ export default function AccountPanel() {
           </button>
         </p>
       </div>
-      <div data-account-address></div>
+      <FindMyReps saved />
       <div class="card stack">
         <h2 class="h-small">Delete account</h2>
         <p class="muted">Removes your account, follows, saved address and feed history immediately.</p>

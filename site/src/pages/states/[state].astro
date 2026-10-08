@@ -1,8 +1,10 @@
 ---
+import FollowButton from '../../components/FollowButton';
 import MemberChip from '../../components/MemberChip';
 import MemberPhoto from '../../components/MemberPhoto';
+import StateBills from '../../components/StateBills';
 import Base from '../../layouts/Base.astro';
-import { loadMembers } from '../../lib/build-data';
+import { loadMembers, loadRecentStateBills, loadStateLegislators } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, memberRole, stateName } from '../../lib/format';
 import { href } from '../../lib/paths';
 
@@ -20,6 +22,19 @@ const members = [...(await loadMembers()).values()].filter((m) => m.current && m
 const senators = members.filter((m) => m.chamber === 'senate').sort((a, b) => a.name.localeCompare(b.name));
 const reps = members.filter((m) => m.chamber === 'house').sort((a, b) => (a.district ?? 0) - (b.district ?? 0));
 const hasLegislature = LEGISLATURE_STATES.includes(code);
+const legislators = hasLegislature ? ((await loadStateLegislators()).get(code) ?? []) : [];
+const { bills: stateBills } = hasLegislature ? await loadRecentStateBills(code) : { bills: [] };
+const districtSort = (a: { district: string | null; name: string }, b: { district: string | null; name: string }) =>
+  (Number(a.district) || 0) - (Number(b.district) || 0) ||
+  (a.district ?? '').localeCompare(b.district ?? '') ||
+  a.name.localeCompare(b.name);
+const chambers = [
+  { key: 'upper', label: code === 'NE' ? 'Legislature' : code === 'DC' ? 'Council' : 'Senate' },
+  { key: 'lower', label: 'House' },
+  { key: 'legislature', label: code === 'DC' ? 'Council' : 'Legislature' },
+]
+  .map((c) => ({ ...c, people: legislators.filter((l) => l.chamber === c.key).sort(districtSort) }))
+  .filter((c) => c.people.length > 0);
 ---
 
 <Base title={name} description={`${name}’s members of Congress, state legislators and state bills.`} section="states">
@@ -45,12 +60,93 @@ const hasLegislature = LEGISLATURE_STATES.includes(code);
   </section>
 
   {hasLegislature && (
-    <section aria-labelledby="leg-h" data-state-legislature={code}>
-      <h2 id="leg-h">State legislature</h2>
-      <p class="muted">State legislators and bills are coming soon.</p>
-    </section>
+    <>
+      <section aria-labelledby="bills-h">
+        <h2 id="bills-h">Recent state bills</h2>
+        <StateBills client:visible state={code} initial={stateBills} />
+      </section>
+      <section aria-labelledby="leg-h">
+        <h2 id="leg-h">State legislators</h2>
+        {legislators.length === 0 && <p class="muted">Not loaded yet.</p>}
+        {chambers.map((c) => (
+          <details class="chamber" open={chambers.length === 1}>
+            <summary>
+              <h3 class="h-small">
+                {c.label} <span class="muted">({c.people.length})</span>
+              </h3>
+            </summary>
+            <ul class="list">
+              {c.people.map((l) => (
+                <li class="legislator">
+                  <span>
+                    {l.openstates_url ? (
+                      <a href={l.openstates_url} rel="noopener">
+                        {l.name}
+                      </a>
+                    ) : (
+                      l.name
+                    )}
+                    <span class="small muted">
+                      {' '}
+                      · {l.party ?? 'Party unknown'}
+                      {l.district && ` · District ${l.district}`}
+                    </span>
+                  </span>
+                  <FollowButton client:visible targetType="state_legislator" targetId={l.id} label={l.name} />
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))}
+        <p class="small muted">
+          State data from <a href="https://openstates.org/">Open States</a>, refreshed nightly.
+        </p>
+      </section>
+    </>
   )}
 </Base>
+
+<style is:global>
+  .legislator,
+  .state-bill {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    align-items: center;
+  }
+  .state-bill p {
+    margin: 0;
+  }
+  .bill-title-sm {
+    font-family: var(--font-serif);
+    font-size: var(--step-1);
+  }
+  .bill-title-sm a {
+    color: var(--text);
+  }
+  details.chamber summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  details.chamber summary::before {
+    content: '▸';
+  }
+  details.chamber[open] summary::before {
+    content: '▾';
+  }
+  details.chamber summary::-webkit-details-marker {
+    display: none;
+  }
+  details.chamber summary {
+    list-style: none;
+  }
+  details.chamber summary h3 {
+    display: inline;
+  }
+</style>
 
 <style>
   .people {

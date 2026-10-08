@@ -55,19 +55,27 @@ export function accountUrl(next?: string): string {
   return next ? `${href('account/')}?next=${encodeURIComponent(next)}` : href('account/');
 }
 
-export interface PendingFollow {
+export interface PendingTarget {
   targetType: string;
   targetId: string;
+}
+
+export interface PendingFollow {
+  targets: PendingTarget[];
   returnTo: string;
   at: number;
 }
 
 /**
- * Remember a follow the user asked for while signed out. localStorage rather than
+ * Remember follows the user asked for while signed out. localStorage rather than
  * sessionStorage: the magic link usually opens in a new tab. Expires after an hour.
  */
+export function savePendingFollows(targets: PendingTarget[], returnTo: string) {
+  safeStorage()?.setItem(PENDING_KEY, JSON.stringify({ targets, returnTo, at: Date.now() }));
+}
+
 export function savePendingFollow(targetType: string, targetId: string, returnTo: string) {
-  safeStorage()?.setItem(PENDING_KEY, JSON.stringify({ targetType, targetId, returnTo, at: Date.now() }));
+  savePendingFollows([{ targetType, targetId }], returnTo);
 }
 
 export function takePendingFollow(): PendingFollow | null {
@@ -77,7 +85,7 @@ export function takePendingFollow(): PendingFollow | null {
   if (!raw) return null;
   try {
     const value = JSON.parse(raw) as PendingFollow;
-    return Date.now() - value.at < 3_600_000 ? value : null;
+    return Date.now() - value.at < 3_600_000 && Array.isArray(value.targets) ? value : null;
   } catch {
     return null;
   }
@@ -89,32 +97,45 @@ export function safeNext(next: string | null): string | null {
   return next;
 }
 
-export async function follow(targetType: string, targetId: string): Promise<void> {
+export async function followMany(targets: PendingTarget[]): Promise<void> {
+  if (targets.length === 0) return;
   const client = await getClient();
   const { data } = await client.auth.getSession();
-  if (!data.session) throw new Error('Not signed in');
-  const { error } = await client
-    .from('follows')
-    .upsert(
-      { user_id: data.session.user.id, target_type: targetType, target_id: targetId },
-      { ignoreDuplicates: true },
-    );
+  const session = data.session;
+  if (!session) throw new Error('Not signed in');
+  const { error } = await client.from('follows').upsert(
+    targets.map((t) => ({ user_id: session.user.id, target_type: t.targetType, target_id: t.targetId })),
+    { ignoreDuplicates: true },
+  );
   if (error) throw error;
+  for (const t of targets) void followCache?.then((set) => set.add(key(t.targetType, t.targetId)));
+}
+
+export function follow(targetType: string, targetId: string): Promise<void> {
+  return followMany([{ targetType, targetId }]);
 }
 
 export async function unfollow(targetType: string, targetId: string): Promise<void> {
   const client = await getClient();
   const { error } = await client.from('follows').delete().match({ target_type: targetType, target_id: targetId });
   if (error) throw error;
+  void followCache?.then((set) => set.delete(key(targetType, targetId)));
+}
+
+const key = (type: string, id: string) => `${type}:${id}`;
+let followCache: Promise<Set<string>> | undefined;
+
+/** All of the user's follows, loaded once per page and shared by every Follow button. */
+function followSet(): Promise<Set<string>> {
+  followCache ??= (async () => {
+    const client = await getClient();
+    const { data, error } = await client.from('follows').select('target_type,target_id').limit(1000);
+    if (error) throw error;
+    return new Set((data ?? []).map((f) => key(f.target_type, f.target_id)));
+  })();
+  return followCache;
 }
 
 export async function isFollowing(targetType: string, targetId: string): Promise<boolean> {
-  const client = await getClient();
-  const { data, error } = await client
-    .from('follows')
-    .select('target_id')
-    .match({ target_type: targetType, target_id: targetId })
-    .limit(1);
-  if (error) throw error;
-  return (data ?? []).length > 0;
+  return (await followSet()).has(key(targetType, targetId));
 }

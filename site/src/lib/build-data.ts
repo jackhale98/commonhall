@@ -6,7 +6,7 @@
  * empty and the build still succeeds.
  */
 import { congressForDate } from '@civic/congress-client/ids';
-import { selectAll } from './rest';
+import { select, selectAll } from './rest';
 import { BILL_PAGE_COLUMNS, MEMBER_COLUMNS, type Bill, type BillAction, type Cosponsor, type Member } from './types';
 
 export const CURRENT_CONGRESS = congressForDate(new Date());
@@ -144,3 +144,52 @@ export const loadVoteStats = memo(async () => {
   const rows = await selectAll<VoteStats>('member_vote_stats', { congress: `eq.${CURRENT_CONGRESS}` });
   return new Map(rows.map((r) => [r.member_id, r]));
 });
+
+export interface StateLegislator {
+  id: string;
+  name: string;
+  party: string | null;
+  state: string;
+  chamber: 'upper' | 'lower' | 'legislature' | null;
+  district: string | null;
+  title: string | null;
+  photo_url: string | null;
+  openstates_url: string | null;
+}
+
+export interface StateBill {
+  id: string;
+  state: string;
+  session: string;
+  identifier: string;
+  title: string;
+  chamber: string | null;
+  latest_action_date: string | null;
+  latest_action_text: string | null;
+  primary_sponsor_id: string | null;
+  primary_sponsor_name: string | null;
+  openstates_url: string | null;
+}
+
+export const STATE_BILL_COLUMNS =
+  'id,state,session,identifier,title,chamber,latest_action_date,latest_action_text,primary_sponsor_id,primary_sponsor_name,openstates_url';
+
+export const loadStateLegislators = memo(async () => {
+  const rows = await selectAll<StateLegislator>('state_legislators', {
+    select: 'id,name,party,state,chamber,district,title,photo_url,openstates_url',
+    current: 'eq.true',
+    order: 'state.asc,chamber.asc,id.asc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
+/** The 20 most recently active bills for a state (one request per state page). */
+export async function loadRecentStateBills(state: string): Promise<{ bills: StateBill[] }> {
+  const bills = await select<StateBill>('state_bills', {
+    select: STATE_BILL_COLUMNS,
+    state: `eq.${state}`,
+    order: 'latest_action_date.desc.nullslast,id.asc',
+    limit: 20,
+  });
+  return { bills };
+}

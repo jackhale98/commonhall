@@ -185,3 +185,45 @@ members, so there are no per-member vote events. Each vote on a bill writes one
 `feed_events` row for that bill. Vote-with-party rates come from the
 `member_vote_stats` view (majority of the member's own party among yea/nay
 votes; not shown for independents).
+
+## 22. Open States: daily budget, rotation, and no page offsets
+
+Open States does not publish its free-tier limits, and they are low. `sync-state`
+runs several short times each night (pg_cron, 1–6 a.m. Eastern), spends at most
+`OPENSTATES_DAILY_BUDGET` requests per UTC day (default 450, shared through
+`api_usage`), spaces requests `OPENSTATES_MIN_INTERVAL_MS` apart (default
+1.1 s), and caps pages per state per run. States that users follow or saved in
+their profile go first, then the least recently synced. The first full load of
+all 51 legislatures therefore takes several nights; after that, each night is
+incremental.
+
+Bills are requested oldest-update first with `updated_since` set to the last
+`updated_at` seen, always page 1, so bills that change mid-run cannot be skipped.
+A page full of identical timestamps steps through pages at that timestamp. When
+a state starts a new session, its previous session's bills are deleted (the plan
+keeps only the current session). New-bill feed events are written only after a
+state's first full load, so the initial import does not create tens of thousands
+of events.
+
+## 23. Find my reps
+
+Census Geocoder → districts for the sitting Congress (see §3) → senators and
+House member from our `members` table → state legislators from Open States
+`people.geo` by coordinates, falling back to matching the Census state-district
+numbers in `state_legislators`. Legislators returned by `people.geo` are upserted
+so they can be followed. Addresses are never stored or logged server-side;
+`people.geo` results are cached by coordinates rounded to about 100 m for 30
+days, and uncached Open States lookups are capped at 120 per hour. A signed-in
+user can save the matched address and districts to `profiles`; the account page
+then lists their representatives from our own tables without calling any API.
+
+State bills and legislators have no page of their own on the site (the plan
+calls for trimmed state data); they link to Open States and can be followed.
+
+## 24. Acceptance checks as scripts
+
+`npm run verify:votes` (Phase 4) and `npm run verify:reps` (Phase 5) run the
+acceptance checks against a real database. During development they passed for
+17 roll calls (1 House, 16 Senate; the House sample was limited by DEMO_KEY)
+and for 11 addresses in 10 states and DC (federal members; state legislators
+need an Open States key).

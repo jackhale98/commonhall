@@ -443,3 +443,14 @@ import_map = "./functions/deno.json"
 enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
+
+[functions.sync-state]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+
+# Public: Find my reps. Upstream calls are capped per hour; addresses are not stored.
+[functions.geocode]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"

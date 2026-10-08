@@ -658,3 +658,37 @@ button.danger {
 .home-feed {
   margin-bottom: var(--space-6);
 }
+
+/* Find my reps */
+.find-reps {
+  margin-bottom: var(--space-6);
+}
+.reps-row {
+  display: flex;
+  gap: var(--space-2);
+}
+.reps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+}
+.reps-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+.reps-list p {
+  margin: 0;
+}
+@media (max-width: 30rem) {
+  .reps-list li {
+    grid-template-columns: auto 1fr;
+  }
+  .reps-list li > button {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

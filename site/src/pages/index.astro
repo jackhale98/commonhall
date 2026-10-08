@@ -1,6 +1,7 @@
 ---
 import BillListItem from '../components/BillListItem';
 import FeedView from '../components/FeedView';
+import FindMyReps from '../components/FindMyReps';
 import Base from '../layouts/Base.astro';
 import VoteList from '../components/VoteList';
 import { CURRENT_CONGRESS, loadBills, loadVotes } from '../lib/build-data';
@@ -32,7 +33,7 @@ const laws = bills.filter((b) => b.status === 'law').length;
   </section>
 
   <FeedView client:idle compact />
-  <div data-find-reps></div>
+  <FindMyReps client:visible />
 
   <section aria-labelledby="recent-h">
     <h2 id="recent-h">Recently active bills</h2>

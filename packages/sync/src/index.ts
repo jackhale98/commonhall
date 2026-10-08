@@ -8,3 +8,5 @@ export * from './federal/backfill.ts';
 export * from './federal/on-demand.ts';
 export * from './federal/events.ts';
 export * from './federal/votes.ts';
+export * from './state/sync-state.ts';
+export * from './state/reps.ts';
