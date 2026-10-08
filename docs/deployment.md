@@ -213,9 +213,12 @@ select vault.create_secret('https://<ref>.supabase.co', 'project_url');
 select vault.create_secret('<the same SYNC_SECRET>', 'sync_secret');
 ```
 
-Until both exist the cron jobs run but do nothing. Check them:
+Both secrets need these exact **names**: `vault.create_secret(value, name)` takes
+the value first and the name second. Until both exist, every scheduled run fails
+with "Vault secrets named project_url and sync_secret are missing". Check them:
 
 ```sql
+select name from vault.decrypted_secrets;                                -- must list project_url and sync_secret
 select jobname, schedule from cron.job order by jobname;                 -- the schedules
 select status, return_message, start_time from cron.job_run_details
  order by start_time desc limit 10;                                      -- recent runs
@@ -299,7 +302,7 @@ select id, 'admin' from auth.users where email = 'you@example.org';
 | `supabase db push` fails to connect | Wrong `SUPABASE_DB_PASSWORD`; reset it under Project Settings → Database |
 | "IPv6 is not supported on your current network" in Deploy Supabase | `SUPABASE_DB_URL` is missing or is the direct (IPv6) string; set it to the session pooler string |
 | Backfill cannot connect | `SUPABASE_DB_URL` is the direct (IPv6) string; use the session pooler string |
-| Nothing syncs | Vault secrets missing or `SYNC_SECRET` mismatch (step 6 queries) |
+| Nothing syncs | Vault secrets missing or unnamed (the `name` column is empty), or `SYNC_SECRET` mismatch (step 6 queries) |
 | Sign-in link opens the wrong page or errors | The `/account/` URL is not in Redirect URLs |
 | Sign-in emails never arrive | Built-in email rate limit; configure SMTP |
 | Find my reps fails with a CORS error | `SITE_ORIGINS` does not include the site's origin |
