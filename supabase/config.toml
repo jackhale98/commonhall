@@ -244,6 +244,11 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Magic-link email (also set this in the hosted project's Auth > Email Templates).
+[auth.email.template.magic_link]
+subject = "Your Civic Tracker sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
@@ -429,6 +434,12 @@ import_map = "./functions/deno.json"
 
 # Public: called from the site's fallback pages; guarded by an hourly request cap.
 [functions.fetch-on-demand]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+
+# Called by signed-in users; the function checks the caller's token itself.
+[functions.delete-account]
 enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"

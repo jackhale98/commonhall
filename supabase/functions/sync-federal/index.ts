@@ -1,11 +1,19 @@
 /**
- * Every 10 minutes (pg_cron): bills changed since the last cursor. Each run is
- * time-boxed and capped so six runs stay within ~3,500 Congress.gov requests an
- * hour, leaving headroom for on-demand fetches. Feed events and votes are added
- * by later phases.
+ * Every 10 minutes (pg_cron): bills changed since the last cursor, writing a
+ * feed event for each new action, cosponsor and bill. Each run is time-boxed and
+ * capped so six runs stay within ~3,500 Congress.gov requests an hour, leaving
+ * headroom for on-demand fetches.
  */
 import { CongressClient, congressForDate } from '@civic/congress-client';
-import { BILLS_JOB, hourlyBudget, runJob, syncBillsIncremental, type BillsCursor } from '@civic/sync';
+import {
+  BILLS_JOB,
+  billEvents,
+  hourlyBudget,
+  runJob,
+  syncBillsIncremental,
+  writeFeedEvents,
+  type BillsCursor,
+} from '@civic/sync';
 import { env, envNumber, serveJob, timeLimitMs } from '../_shared/runtime.ts';
 
 serveJob('sync-federal', async ({ sql, log }) => {
@@ -21,7 +29,14 @@ serveJob('sync-federal', async ({ sql, log }) => {
     budgets: { congress: budget },
     log,
     run: async (ctx) =>
-      (await syncBillsIncremental(ctx, { congress, client, concurrency: envNumber('SYNC_CONCURRENCY', 3) })).cursor,
+      (
+        await syncBillsIncremental(ctx, {
+          congress,
+          client,
+          concurrency: envNumber('SYNC_CONCURRENCY', 3),
+          onChange: (change) => writeFeedEvents(sql, billEvents(change)),
+        })
+      ).cursor,
   });
 
   return { congress, bills };

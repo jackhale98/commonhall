@@ -1,5 +1,6 @@
 ---
 import BillListItem from '../components/BillListItem';
+import FeedView from '../components/FeedView';
 import Base from '../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadBills } from '../lib/build-data';
 import { congressLabel } from '../lib/format';
@@ -28,7 +29,7 @@ const laws = bills.filter((b) => b.status === 'law').length;
     </form>
   </section>
 
-  <div data-home-feed></div>
+  <FeedView client:idle compact />
   <div data-find-reps></div>
 
   <section aria-labelledby="recent-h">

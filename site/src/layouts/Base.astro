@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { SITE_NAME } from '../lib/config';
+import NavStatus from '../components/NavStatus';
 import { href } from '../lib/paths';
 
 interface Props {
@@ -30,6 +31,8 @@ const nav = [
   { key: 'bills', label: 'Bills', path: 'bills/' },
   { key: 'members', label: 'Members', path: 'members/' },
   { key: 'states', label: 'States', path: 'states/' },
+  { key: 'feed', label: 'Feed', path: 'feed/' },
+  { key: 'account', label: 'Account', path: 'account/' },
 ] as const;
 ---
 
@@ -75,6 +78,7 @@ const nav = [
               <li>
                 <a href={href(item.path)} aria-current={section === item.key ? 'page' : undefined}>
                   {item.label}
+                  {item.key === 'feed' && <NavStatus client:idle />}
                 </a>
               </li>
             ))}

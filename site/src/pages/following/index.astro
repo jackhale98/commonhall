@@ -1,0 +1,12 @@
+---
+import FollowingList from '../../components/FollowingList';
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Following" section="following" noindex>
+  <h1>Following</h1>
+  <noscript>
+    <p class="notice">This page needs JavaScript.</p>
+  </noscript>
+  <FollowingList client:load />
+</Base>

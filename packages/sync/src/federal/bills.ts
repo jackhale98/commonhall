@@ -54,6 +54,13 @@ export interface CosponsorRow {
 
 export interface BillChange {
   id: string;
+  congress: number;
+  billType: string;
+  number: number;
+  /** Short title if known, else the official title. */
+  title: string;
+  sponsorId: string | null;
+  introducedDate: string | null;
   isNew: boolean;
   billChanged: boolean;
   /** Actions present now but not before (by date + code + text). Empty for new bills' history. */
@@ -184,9 +191,9 @@ export async function syncBill(
   const detail = await client.getBill(congress, type, number);
   const counts = detailCounts(detail);
 
-  const [stored] = await sql<(StoredCounts & { status: string })[]>`
+  const [stored] = await sql<(StoredCounts & { status: string; short_title: string | null })[]>`
     select actions_count, cosponsors_count, summaries_count, subjects_count, text_versions_count,
-           titles_count, policy_area, status
+           titles_count, policy_area, status, short_title
       from public.bills where id = ${id}`;
   const isNew = !stored;
   const changed = (key: keyof typeof counts) => options.force || isNew || stored![key] !== counts[key];
@@ -246,6 +253,12 @@ export async function syncBill(
 
   const change: BillChange = {
     id,
+    congress,
+    billType: t,
+    number: Number(number),
+    title: (row.short_title as string | null | undefined) ?? stored?.short_title ?? (row.title as string),
+    sponsorId: (row.sponsor_id as string | null) ?? null,
+    introducedDate: (row.introduced_date as string | null) ?? null,
     isNew,
     billChanged: false,
     newActions: [],

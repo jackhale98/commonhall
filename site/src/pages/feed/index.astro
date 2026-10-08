@@ -1,0 +1,16 @@
+---
+import FeedView from '../../components/FeedView';
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="Your feed" section="feed" noindex>
+  <h1>Your feed</h1>
+  <p class="muted">
+    Actions, votes and new cosponsors on what you follow, newest first. <a href={href('following/')}>Manage follows</a>.
+  </p>
+  <noscript>
+    <p class="notice">Your feed needs JavaScript.</p>
+  </noscript>
+  <FeedView client:load />
+</Base>

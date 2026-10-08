@@ -5,6 +5,7 @@ import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraph
 import { select } from '../lib/rest';
 import { BILL_PAGE_COLUMNS, type Bill, type BillAction, type Member } from '../lib/types';
 import ActionTimeline from './ActionTimeline';
+import FollowButton from './FollowButton';
 import MemberChip from './MemberChip';
 import StatusTracker from './StatusTracker';
 
@@ -119,13 +120,8 @@ export default function BillFallback() {
           {bill.policy_area && <span>Policy area: {bill.policy_area}</span>}
           {bill.law_number && <span>Public Law {bill.law_number}</span>}
         </p>
-        <div
-          class="cluster"
-          data-follow-slot
-          data-target-type="bill"
-          data-target-id={bill.id}
-          style={{ marginTop: '1rem' }}
-        >
+        <div class="cluster" style={{ marginTop: '1rem' }}>
+          <FollowButton targetType="bill" targetId={bill.id} label={billNumberLabel(bill)} />
           {bill.text_url && (
             <a class="button" href={bill.text_url} rel="noopener">
               Read the text

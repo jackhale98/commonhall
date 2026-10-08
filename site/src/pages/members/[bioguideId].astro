@@ -1,5 +1,6 @@
 ---
 import BillListItem from '../../components/BillListItem';
+import FollowButton from '../../components/FollowButton';
 import MemberPhoto from '../../components/MemberPhoto';
 import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadCosponsorCounts, loadMembers, loadSponsored } from '../../lib/build-data';
@@ -50,7 +51,9 @@ const SOCIAL_LABELS: Record<string, string> = {
         <span class={`party ${partyClass(member.party)}`}>{partyLabel(member.party)}</span> · {role}
       </p>
       {!member.current && <p class="small muted">Not currently serving.</p>}
-      <div class="cluster" data-follow-slot data-target-type="member" data-target-id={member.bioguide_id}></div>
+      <div class="cluster">
+        <FollowButton client:idle targetType="member" targetId={member.bioguide_id} label={member.name} />
+      </div>
     </div>
   </header>
 

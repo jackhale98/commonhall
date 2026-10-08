@@ -617,3 +617,44 @@ details.more > summary {
   color: var(--text-muted);
   font-style: italic;
 }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  padding: 0 0.4em;
+  margin-left: 0.35em;
+  border-radius: 999px;
+  background: var(--unread);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.feed-list li.unread {
+  border-left: 4px solid var(--unread);
+  padding-left: var(--space-3);
+}
+.feed-summary {
+  margin: var(--space-1) 0 0;
+}
+.following-row {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  align-items: center;
+}
+.follow-button.following {
+  border-color: var(--text);
+}
+button.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.signin {
+  max-width: 32rem;
+}
+.home-feed {
+  margin-bottom: var(--space-6);
+}

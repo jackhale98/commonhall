@@ -117,3 +117,45 @@ anon key, so it cannot protect the sync functions. They are deployed with
 Supabase's edge runtime (Deno 2.1-compatible) cannot read lockfiles written by
 newer Deno CLIs. `supabase/functions/deno.json` sets `"lock": false` and pins
 exact npm versions in its import map instead.
+
+## 14. "Unread" compares when we recorded an event, not when it happened
+
+**Plan:** unread = `occurred_at > feed_reads.last_seen_at`.
+**Finding:** `occurred_at` is the upstream date (actions only carry a calendar
+date). An action dated today but synced at 3 pm would already look "read" to
+someone who checked the feed at noon.
+**Decision:** `feed_events` has both `occurred_at` (display and ordering) and
+`created_at` (when the sync recorded it); unread is
+`created_at > last_seen_at`.
+
+## 15. Feed events can name a legislator
+
+`feed_events.member_type` / `member_id` record the legislator an event is about
+(the sponsor of a new bill, a new cosponsor). The `feed` view unions events on
+followed targets with events about followed legislators, so following a member
+shows their new bills and cosponsorships without per-follower rows. The
+Library of Congress's copy of a chamber action ("Passed/agreed to in House: …")
+shares a dedupe key with the chamber's own entry, so followers see one event.
+
+## 16. Pending follows live in localStorage; magic links use the implicit flow
+
+**Plan:** remember the intended follow in `sessionStorage`.
+**Finding:** magic links usually open in a new tab (or another device), where
+`sessionStorage` is empty.
+**Decision:** the pending follow is kept in `localStorage` for at most an hour
+and cleared once used. Auth uses supabase-js's implicit flow so a link opened
+in a different browser or device still signs in (PKCE requires the same
+browser that requested the link).
+
+## 17. Account deletion goes through an Edge Function
+
+Deleting a row in `auth.users` needs the service role, so `delete-account`
+identifies the caller from their access token and deletes them with the Auth
+admin API. Follows, profile and read marker go with them via `ON DELETE
+CASCADE`.
+
+## 18. supabase-js loads only for signed-in users
+
+Public pages read Supabase with a ~1 KB PostgREST helper. Islands check for a
+stored session (`localStorage['civic-auth']`) before importing supabase-js, so
+anonymous visitors never download it. A user can follow at most 500 items.

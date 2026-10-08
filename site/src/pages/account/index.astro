@@ -1,0 +1,20 @@
+---
+import AccountPanel from '../../components/AccountPanel';
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Account" section="account" noindex>
+  <h1>Your account</h1>
+  <noscript>
+    <p class="notice">Signing in needs JavaScript.</p>
+  </noscript>
+  <div class="narrow">
+    <AccountPanel client:load />
+  </div>
+</Base>
+
+<style>
+  .narrow {
+    max-width: 36rem;
+  }
+</style>

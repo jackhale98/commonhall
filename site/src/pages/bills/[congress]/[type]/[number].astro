@@ -1,5 +1,6 @@
 ---
 import BillLive from '../../../../components/BillLive';
+import FollowButton from '../../../../components/FollowButton';
 import MemberChip from '../../../../components/MemberChip';
 import Base from '../../../../layouts/Base.astro';
 import { loadActions, loadBills, loadCosponsors, loadMembers, loadSubjects } from '../../../../lib/build-data';
@@ -69,7 +70,8 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
       {bill.policy_area && <span>Policy area: {bill.policy_area}</span>}
       {bill.law_number && <span>Public Law {bill.law_number}</span>}
     </p>
-    <div class="cluster bill-actions-row" data-follow-slot data-target-type="bill" data-target-id={bill.id}>
+    <div class="cluster bill-actions-row">
+      <FollowButton client:idle targetType="bill" targetId={bill.id} label={label} />
       {bill.text_url && (
         <a class="button" href={bill.text_url} rel="noopener">
           Read the text

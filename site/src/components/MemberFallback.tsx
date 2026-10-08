@@ -4,6 +4,7 @@ import { memberRole, partyClass, partyLabel } from '../lib/format';
 import { select } from '../lib/rest';
 import { BILL_LIST_COLUMNS, MEMBER_COLUMNS, type BillListItem as Bill, type Member } from '../lib/types';
 import BillListItem from './BillListItem';
+import FollowButton from './FollowButton';
 import MemberPhoto from './MemberPhoto';
 
 interface View {
@@ -64,6 +65,9 @@ export default function MemberFallback() {
           <h1>{member.name}</h1>
           <p>
             <span class={`party ${partyClass(member.party)}`}>{partyLabel(member.party)}</span> · {memberRole(member)}
+          </p>
+          <p>
+            <FollowButton targetType="member" targetId={member.bioguide_id} label={member.name} />
           </p>
           {member.website && (
             <p>
