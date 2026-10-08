@@ -7,6 +7,12 @@ steps work for anyone running their own copy.
 
 Every setting is also listed in one table in [configuration.md](configuration.md).
 
+> **Order matters.** The website stays on the demo until the two
+> `PUBLIC_SUPABASE_*` variables exist, so visitors are unaffected while you work
+> through steps 1–8. Add those variables **last** (step 9), after data has
+> loaded: set them earlier and the next build reads an empty database, so the site
+> shows no bills or members until the backfill finishes.
+
 ## Contents
 
 1. [Turn on Pages](#1-turn-on-pages)
@@ -17,7 +23,7 @@ Every setting is also listed in one table in [configuration.md](configuration.md
 6. [Turn on the schedules](#6-turn-on-the-schedules)
 7. [Sign-in (Auth)](#7-sign-in-auth)
 8. [Load data](#8-load-data)
-9. [Rebuild the site](#9-rebuild-the-site)
+9. [Switch the site to live data](#9-switch-the-site-to-live-data)
 10. [Optional: discussions and maintainers](#10-optional-discussions-and-maintainers)
 - [Free-tier notes](#free-tier-notes)
 - [Troubleshooting](#troubleshooting)
@@ -124,7 +130,8 @@ New repository secret). Repository secrets, not environment secrets:
 **e. Variables** (same page → **Variables** tab → New repository variable). These
 are public by design: they are compiled into the site and visible to anyone.
 Repository variables, not environment variables (the build job does not run in
-an environment):
+an environment). **Add the two `PUBLIC_SUPABASE_*` variables in step 9, not
+now**; the others can be set any time:
 
 | Variable | Value | Required? |
 | --- | --- | --- |
@@ -247,12 +254,21 @@ A `401` in `net._http_response` means the Vault `sync_secret` and the function
 3. **State data** fills in over the following nights through `sync-state`,
    Massachusetts first.
 
-## 9. Rebuild the site
+## 9. Switch the site to live data
 
-Actions → "Deploy site" → Run workflow (it also runs nightly). With
-`PUBLIC_SUPABASE_URL` set, the build reads the database instead of the demo
-snapshot and prerenders members and notable bills. The deploy fails if the site
-exceeds 300 MB.
+Wait until the data is in: members load in the backfill's first hour, every bill
+within about a day, and Boston council data after the first nightly `sync-boston`.
+Check with `select count(*) from bills;` and `select count(*) from members;` in the
+SQL editor. Sign-in (step 7) should be set up too.
+
+1. Add the repository variables `PUBLIC_SUPABASE_URL` (`https://<ref>.supabase.co`)
+   and `PUBLIC_SUPABASE_ANON_KEY` (the publishable key), as described in step 3e.
+2. Actions → "Deploy site" → Run workflow (it also runs nightly).
+
+The build now reads the database instead of the demo snapshot and prerenders
+members and notable bills; accounts, following, the feed and Find my reps switch
+on. The deploy fails if the site exceeds 300 MB. To go back to the demo, delete
+the two variables and redeploy.
 
 ## 10. Optional: discussions and maintainers
 
