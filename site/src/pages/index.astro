@@ -6,6 +6,7 @@ import FindMyReps from '../components/FindMyReps';
 import VoteList from '../components/VoteList';
 import Hemicycle from '../components/viz/Hemicycle';
 import Pipeline from '../components/viz/Pipeline';
+import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
   CURRENT_CONGRESS,
@@ -18,10 +19,10 @@ import {
   loadStateLegislators,
   loadVotes,
 } from '../lib/build-data';
-import { chamberGroups, pipeline } from '../lib/charts';
+import { chamberGroups, pipeline, topPolicyAreas, voteSegments } from '../lib/charts';
 import { DEMO } from '../lib/config';
 import { congressLabel, formatDate } from '../lib/format';
-import { href } from '../lib/paths';
+import { billHref, href, voteHref } from '../lib/paths';
 
 const [bills, votes, members, discussions, officials, matters, meetings, legislators] = await Promise.all([
   loadBills(),
@@ -33,181 +34,494 @@ const [bills, votes, members, discussions, officials, matters, meetings, legisla
   loadLocalMeetings(),
   loadStateLegislators(),
 ]);
-const recentVotes = votes.slice(0, 5);
 const recent = bills.slice(0, 6);
-const laws = bills.filter((b) => b.status === 'law').length;
+const laws = bills.filter((b) => b.status === 'law');
+const latestLaw = [...laws].sort((a, b) => (b.latest_action_date ?? '').localeCompare(a.latest_action_date ?? ''))[0];
+const latestVote = votes[0];
 const house = chamberGroups(members.values(), 'house');
 const senate = chamberGroups(members.values(), 'senate');
 const stages = pipeline(bills);
-const openDiscussions = discussions.filter((d) => d.status === 'open').slice(0, 3);
+const topics = topPolicyAreas(bills, 12);
+const openDiscussions = discussions.filter((d) => d.status === 'open');
 const maLegislators = legislators.get('MA')?.length ?? 0;
 const today = new Date().toISOString().slice(0, 10);
 const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
 const congress = congressLabel(CURRENT_CONGRESS);
+const stats = [
+  { value: bills.length, label: 'bills and resolutions', href: href('bills/') },
+  { value: votes.length, label: 'roll-call votes', href: href('votes/') },
+  { value: laws.length, label: laws.length === 1 ? 'new law' : 'new laws', href: href('bills/?status=law') },
+  { value: openDiscussions.length, label: 'open discussions', href: href('discussions/') },
+];
 ---
 
 <Base section="home">
-  <section class="hero">
+  <section class="hero wash">
     <div class="hero-text">
       <p class="kicker">Free · Nonpartisan · Open source</p>
-      <h1>See what your government is doing, from Congress to City Hall</h1>
+      <h1>
+        Your government, <span class="gradient-text">in plain view.</span>
+      </h1>
       <p class="lede">
-        Bills, votes and the people who represent you, in plain language. Follow anything and get one feed of what
-        changed.
+        Follow the bills, votes and people shaping your life, from Congress to City Hall. Then add your voice.
       </p>
       <form class="hero-search" role="search" action={href('bills/')} method="get">
         <label for="home-q" class="visually-hidden">
           Search bills
         </label>
-        <input id="home-q" name="q" type="search" placeholder="Search bills, e.g. “veterans housing”" />
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+          <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>
+        <input id="home-q" name="q" type="search" placeholder="Try “housing”, “veterans” or “H.R. 1”" />
         <button type="submit" class="primary">
           Search
         </button>
       </form>
-      {!DEMO && (
-        <p class="small">
-          <a href="#reps-h">Find your representatives by address →</a>
-        </p>
-      )}
-    </div>
-    <div class="hero-chart panel">
-      <p class="kicker">{congress}</p>
-      <div class="chambers">
-        <Hemicycle title="House" groups={house} />
-        <Hemicycle title="Senate" groups={senate} />
+      <div class="hero-ctas">
+        {DEMO ? (
+          <a class="button gradient large" href={href('states/ma/')}>
+            Explore Massachusetts
+          </a>
+        ) : (
+          <a class="button gradient large" href="#reps-h">
+            Find your representatives
+          </a>
+        )}
+        <a class="button large ghost" href={href('discussions/')}>
+          Join a discussion →
+        </a>
       </div>
+    </div>
+
+    <div class="this-week" aria-label="Latest">
+      <p class="kicker">Latest</p>
+      {latestVote && (
+        <a class="pulse-card" href={voteHref(latestVote.id)}>
+          <span class="pulse-label">
+            <span class="dot dot-live" aria-hidden="true" />
+            {latestVote.chamber === 'house' ? 'House' : 'Senate'} vote · {formatDate(latestVote.date)}
+          </span>
+          <strong>{latestVote.question ?? 'Roll-call vote'}</strong>
+          <span class="pulse-meta">
+            {latestVote.result} · {latestVote.yea_total}–{latestVote.nay_total}
+          </span>
+          <StackedBar size="sm" segments={voteSegments(latestVote)} />
+        </a>
+      )}
+      {latestLaw && (
+        <a class="pulse-card" href={billHref(latestLaw.congress, latestLaw.bill_type, latestLaw.number)}>
+          <span class="pulse-label">
+            <span class="dot dot-law" aria-hidden="true" />
+            Became law · {formatDate(latestLaw.latest_action_date)}
+          </span>
+          <strong>{latestLaw.short_title ?? latestLaw.title}</strong>
+        </a>
+      )}
+      {openDiscussions[0] && (
+        <a class="pulse-card pulse-discuss" href={href(`discussions/${openDiscussions[0].id}/`)}>
+          <span class="pulse-label">
+            <span class="dot dot-discuss" aria-hidden="true" />
+            Open discussion
+          </span>
+          <strong>{openDiscussions[0].title}</strong>
+          <span class="pulse-meta">Add your voice →</span>
+        </a>
+      )}
+      {nextMeeting && (
+        <a class="pulse-card" href={href('boston/')}>
+          <span class="pulse-label">
+            <span class="dot dot-city" aria-hidden="true" />
+            Boston City Council · {formatDate(nextMeeting.date)}
+          </span>
+          <strong>Next council meeting{nextMeeting.time ? ` at ${nextMeeting.time}` : ''}</strong>
+        </a>
+      )}
     </div>
   </section>
 
-  <section class="layers" aria-label="Levels of government">
-    <a class="card layer" href={href('bills/')}>
-      <span class="layer-kicker">Federal</span>
-      <strong>Congress</strong>
-      <span class="layer-stat">
-        {bills.length.toLocaleString()} bills · {laws} {laws === 1 ? 'law' : 'laws'}
-      </span>
-      <span class="small muted">{votes.length} roll-call votes this Congress</span>
-    </a>
-    <a class="card layer" href={href('states/ma/')}>
-      <span class="layer-kicker">State</span>
-      <strong>Massachusetts</strong>
-      <span class="layer-stat">{maLegislators > 0 ? `${maLegislators} legislators` : 'Legislators and bills'}</span>
-      <span class="small muted">State bills, your senator and representative</span>
-    </a>
-    <a class="card layer" href={href('boston/')}>
-      <span class="layer-kicker">City</span>
-      <strong>Boston City Council</strong>
-      <span class="layer-stat">
-        {officials.length > 0
-          ? `${officials.length} councilors · ${matters.length} recent matters`
-          : 'Councilors and matters'}
-      </span>
-      <span class="small muted">
-        {nextMeeting ? `Next meeting ${formatDate(nextMeeting.date)}` : 'Ordinances, orders and resolutions'}
-      </span>
-    </a>
-    <a class="card layer" href={href('states/')}>
-      <span class="layer-kicker">Elsewhere</span>
-      <strong>All 50 states</strong>
-      <span class="layer-stat">Delegations and legislatures</span>
-      <span class="small muted">Members of Congress and state bills by state</span>
-    </a>
-  </section>
+  <ul class="stat-strip" aria-label={`${congress} so far`}>
+    {stats.map((s) => (
+      <li>
+        <a href={s.href}>
+          <span class="stat-value">{s.value.toLocaleString()}</span>
+          <span class="stat-label">{s.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
 
   <FeedView client:idle compact />
   {!DEMO && <FindMyReps client:visible />}
 
-  <div class="home-grid">
-    <section aria-labelledby="recent-h">
+  {topics.length > 0 && (
+    <section aria-labelledby="topics-h">
       <div class="section-head">
-        <h2 id="recent-h">Recently active bills</h2>
-        <a class="see-all" href={href('bills/')}>
-          All bills
+        <h2 id="topics-h">Explore by topic</h2>
+      </div>
+      <ul class="topic-chips">
+        {topics.map((t) => (
+          <li>
+            <a href={t.href}>
+              {t.label} <span class="count">{t.value}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section aria-labelledby="recent-h">
+    <div class="section-head">
+      <h2 id="recent-h">Moving in Congress</h2>
+      <a class="see-all" href={href('bills/')}>
+        All bills
+      </a>
+    </div>
+    {recent.length > 0 ? (
+      <ul class="card-grid list">
+        {recent.map((b) => (
+          <BillListItem bill={b} />
+        ))}
+      </ul>
+    ) : (
+      <p class="muted">No bills loaded yet.</p>
+    )}
+  </section>
+
+  <section class="discuss-band" aria-labelledby="disc-h">
+    <div class="discuss-intro">
+      <p class="kicker">Discussions</p>
+      <h2 id="disc-h">Have your say, and see where people agree</h2>
+      <ol class="steps">
+        <li>
+          <strong>Vote</strong> agree or disagree on short statements.
+        </li>
+        <li>
+          <strong>Add</strong> your own point of view in a sentence.
+        </li>
+        <li>
+          <strong>See</strong> where opinion divides and where it comes together.
+        </li>
+      </ol>
+      <a class="button large discuss-cta" href={href('discussions/')}>
+        Browse discussions →
+      </a>
+    </div>
+    {openDiscussions.length > 0 && (
+      <ul class="list discuss-list">
+        {openDiscussions.slice(0, 3).map((d) => (
+          <DiscussionCard discussion={d} />
+        ))}
+      </ul>
+    )}
+  </section>
+
+  <div class="home-grid">
+    <section aria-labelledby="glance-h">
+      <div class="section-head">
+        <h2 id="glance-h">Congress at a glance</h2>
+        <a class="see-all" href={href('members/')}>
+          All members
         </a>
       </div>
-      <div class="panel">
-        {recent.length > 0 ? (
-          <ul class="list">
-            {recent.map((b) => (
-              <BillListItem bill={b} />
-            ))}
-          </ul>
-        ) : (
-          <p class="muted">No bills loaded yet.</p>
-        )}
+      <div class="panel chambers">
+        <Hemicycle title="House" groups={house} />
+        <Hemicycle title="Senate" groups={senate} />
       </div>
     </section>
-
-    <aside>
+    <section aria-labelledby="pipe-h">
       <div class="section-head">
         <h2 id="pipe-h">Where bills stand</h2>
       </div>
       <div class="panel">
         <Pipeline stages={stages} label={`Bills and joint resolutions in the ${congress} by stage`} />
-        <p class="small muted pipe-note">Bills and joint resolutions. Select a stage to see them.</p>
-      </div>
-
-      {recentVotes.length > 0 && (
-        <>
-          <div class="section-head">
-            <h2 id="votes-h">Latest votes</h2>
-            <a class="see-all" href={href('votes/')}>
-              All votes
-            </a>
-          </div>
-          <div class="panel">
-            <VoteList votes={recentVotes} />
-          </div>
-        </>
-      )}
-    </aside>
-  </div>
-
-  {openDiscussions.length > 0 && (
-    <section aria-labelledby="disc-h">
-      <div class="section-head">
-        <h2 id="disc-h">Join a discussion</h2>
-        <a class="see-all" href={href('discussions/')}>
-          All discussions
-        </a>
-      </div>
-      <div class="panel">
-        <ul class="list">
-          {openDiscussions.map((d) => (
-            <DiscussionCard discussion={d} />
-          ))}
-        </ul>
       </div>
     </section>
+  </div>
+
+  {votes.length > 0 && (
+    <section aria-labelledby="votes-h">
+      <div class="section-head">
+        <h2 id="votes-h">Latest votes</h2>
+        <a class="see-all" href={href('votes/')}>
+          All votes
+        </a>
+      </div>
+      <VoteList votes={votes.slice(0, 4)} />
+    </section>
   )}
+
+  <section aria-labelledby="levels-h">
+    <div class="section-head">
+      <h2 id="levels-h">Every level of government</h2>
+    </div>
+    <div class="layers">
+      <a class="card layer layer-federal" href={href('bills/')}>
+        <span class="layer-kicker">Federal</span>
+        <strong>Congress</strong>
+        <span class="small muted">
+          {bills.length.toLocaleString()} bills, {votes.length} votes, every member
+        </span>
+      </a>
+      <a class="card layer layer-state" href={href('states/ma/')}>
+        <span class="layer-kicker">State</span>
+        <strong>Massachusetts</strong>
+        <span class="small muted">
+          {maLegislators > 0 ? `${maLegislators} legislators and state bills` : 'Legislators and state bills'}
+        </span>
+      </a>
+      <a class="card layer layer-city" href={href('boston/')}>
+        <span class="layer-kicker">City</span>
+        <strong>Boston City Council</strong>
+        <span class="small muted">
+          {officials.length > 0
+            ? `${officials.length} councilors, ${matters.length} recent matters`
+            : 'Councilors and matters'}
+        </span>
+      </a>
+      <a class="card layer layer-all" href={href('states/')}>
+        <span class="layer-kicker">Nationwide</span>
+        <strong>All 50 states</strong>
+        <span class="small muted">Delegations, legislatures and bills</span>
+      </a>
+    </div>
+  </section>
 </Base>
 
 <style>
   .hero {
     display: grid;
-    gap: var(--space-5);
+    gap: var(--space-6);
     align-items: center;
-    padding-block: var(--space-4) var(--space-6);
+    padding-block: var(--space-5) var(--space-6);
   }
-  @media (min-width: 56rem) {
+  @media (min-width: 60rem) {
     .hero {
-      grid-template-columns: 1.15fr 1fr;
+      grid-template-columns: 1.25fr 1fr;
+      padding-block: var(--space-7) var(--space-7);
     }
   }
   .hero h1 {
-    max-width: 20ch;
-    font-size: clamp(2rem, 1.4rem + 2.6vw, 3.3rem);
-    letter-spacing: -0.03em;
+    font-size: clamp(2.5rem, 1.6rem + 4vw, 4.4rem);
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+    max-width: 13ch;
+    margin-bottom: var(--space-4);
   }
   .lede {
-    font-size: var(--step-1);
+    font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
     color: var(--text-muted);
+    max-width: 34rem;
   }
   .hero-search {
     display: flex;
+    align-items: center;
     gap: var(--space-2);
     max-width: 36rem;
-    margin-bottom: var(--space-3);
+    margin: var(--space-5) 0 var(--space-4);
+    padding: 6px 6px 6px var(--space-4);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: var(--shadow-hover);
+    color: var(--text-muted);
+  }
+  .hero-search:focus-within {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px var(--brand-soft);
+  }
+  .hero-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    min-height: 48px;
+    font-size: var(--step-1);
+    padding: 0;
+  }
+  .hero-search input:focus-visible {
+    box-shadow: none;
+  }
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .this-week {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .this-week .kicker {
+    margin: 0;
+  }
+  .pulse-card {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    text-decoration: none;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .pulse-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .pulse-card strong {
+    font-family: var(--font-heading);
+    font-size: 1.08rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .pulse-label,
+  .pulse-meta {
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .pulse-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+  }
+  .pulse-discuss {
+    background: var(--grad);
+    border: 0;
+    color: #fff;
+  }
+  .pulse-discuss .pulse-label,
+  .pulse-discuss .pulse-meta {
+    color: rgb(255 255 255 / 85%);
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-strong);
+  }
+  .dot-live {
+    background: var(--ok);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent);
+  }
+  .dot-law {
+    background: var(--highlight);
+  }
+  .dot-discuss {
+    background: #fff;
+  }
+  .dot-city {
+    background: var(--sky);
+  }
+  .stat-strip {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-6);
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  }
+  .stat-strip a {
+    display: grid;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+  }
+  .stat-strip a:hover {
+    border-color: var(--brand);
+  }
+  .stat-value {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-label {
+    color: var(--text-muted);
+    font-size: var(--step--1);
+  }
+  .discuss-band {
+    display: grid;
+    gap: var(--space-5);
+    align-items: start;
+    margin: var(--space-7) calc(-1 * var(--space-4));
+    padding: var(--space-6) var(--space-5);
+    border-radius: 28px;
+    background:
+      radial-gradient(70% 90% at 0% 0%, rgb(123 92 255 / 55%), transparent 70%),
+      radial-gradient(60% 80% at 100% 100%, rgb(31 181 211 / 45%), transparent 70%), #14123a;
+    color: #f3f2ff;
+  }
+  @media (min-width: 60rem) {
+    .discuss-band {
+      grid-template-columns: 1fr 1.3fr;
+      margin-inline: 0;
+      padding: var(--space-7);
+    }
+  }
+  .discuss-band h2 {
+    font-size: clamp(1.8rem, 1.3rem + 2vw, 2.6rem);
+    margin-top: 0;
+    color: #fff;
+  }
+  .discuss-band .kicker {
+    color: #c9c3ff;
+  }
+  .steps {
+    padding-left: 1.2rem;
+    display: grid;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    color: #dcd9ff;
+  }
+  .steps strong {
+    color: #fff;
+  }
+  .discuss-cta {
+    background: #fff;
+    color: #2b2380;
+    border: 0;
+  }
+  .discuss-cta:hover {
+    background: #ecebff;
+  }
+  .discuss-list :global(li) {
+    background: rgb(255 255 255 / 8%);
+    border-color: rgb(255 255 255 / 14%);
+    box-shadow: none;
+    color: #f3f2ff;
+  }
+  .discuss-list :global(.bill-title a),
+  .discuss-list :global(.meta) {
+    color: #fff;
+  }
+  .discuss-list :global(.join) {
+    color: #c9c3ff;
+  }
+  .discuss-list :global(.status-chip) {
+    background: rgb(255 255 255 / 16%);
+    color: #fff;
+  }
+  .home-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .home-grid {
+      grid-template-columns: 1.2fr 1fr;
+    }
   }
   .chambers {
     display: grid;
@@ -224,15 +538,37 @@ const congress = congressLabel(CURRENT_CONGRESS);
     display: grid;
     gap: var(--space-3);
     grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-    margin-bottom: var(--space-6);
   }
   .layer {
     display: grid;
     gap: var(--space-1);
-    border-top: 4px solid var(--brand);
+    padding: var(--space-5);
+    position: relative;
+    overflow: hidden;
+  }
+  .layer::after {
+    content: '';
+    position: absolute;
+    inset: auto -20% -60% auto;
+    width: 9rem;
+    height: 9rem;
+    border-radius: 50%;
+    opacity: 0.18;
+    background: var(--brand);
+  }
+  .layer-state::after {
+    background: var(--sky);
+  }
+  .layer-city::after {
+    background: var(--highlight);
+  }
+  .layer-all::after {
+    background: var(--ok);
   }
   .layer strong {
-    font-size: var(--step-1);
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
   }
   .layer-kicker {
     font-size: 0.72rem;
@@ -240,21 +576,5 @@ const congress = congressLabel(CURRENT_CONGRESS);
     letter-spacing: 0.08em;
     font-weight: 700;
     color: var(--text-muted);
-  }
-  .layer-stat {
-    font-weight: 650;
-    color: var(--brand-strong);
-  }
-  .home-grid {
-    display: grid;
-    gap: var(--space-5);
-  }
-  @media (min-width: 60rem) {
-    .home-grid {
-      grid-template-columns: 1.4fr 1fr;
-    }
-  }
-  .pipe-note {
-    margin: var(--space-3) 0 0;
   }
 </style>

@@ -14,20 +14,43 @@ const closed = discussions.filter((d) => d.status === 'closed');
   description="Structured public discussions on bills and Boston City Council matters, powered by Pol.is."
   section="discussions"
 >
-  <h1>Discussions</h1>
-  <p>
-    Each discussion asks one question about a bill or council matter. You vote agree, disagree or pass on short
-    statements from other people and can add your own. The results show where people agree and where opinion splits, not
-    who shouted loudest. Maintainers choose topics; you can ask for one on any bill or council matter page.
-  </p>
-  <p class="small">
-    <a href={href('moderation/')}>Discussion rules</a> · <a href={href('privacy/')}>Privacy</a>
-  </p>
+  <header class="page-head wash">
+    <p class="kicker">Discussions</p>
+    <h1>Have your say</h1>
+    <p class="lede">
+      Each discussion asks one question about a bill or council matter. It takes a minute: vote on short statements, add
+      your own, and see where people agree and where opinion splits.
+    </p>
+    <ol class="how">
+      <li>
+        <span>1</span>
+        <p>
+          <strong>Vote</strong> agree, disagree or pass on statements from other people.
+        </p>
+      </li>
+      <li>
+        <span>2</span>
+        <p>
+          <strong>Add</strong> your own point in a sentence or two.
+        </p>
+      </li>
+      <li>
+        <span>3</span>
+        <p>
+          <strong>See</strong> the groups of opinion form, and what nearly everyone agrees on.
+        </p>
+      </li>
+    </ol>
+    <p class="small muted">
+      Maintainers choose topics; you can ask for one on any bill or council matter page.{' '}
+      <a href={href('moderation/')}>Discussion rules</a> · <a href={href('privacy/')}>Privacy</a>
+    </p>
+  </header>
 
   <section aria-labelledby="open-h">
     <h2 id="open-h">Open</h2>
     {open.length === 0 && <p class="muted">No open discussions right now.</p>}
-    <ul class="list">
+    <ul class="list card-grid">
       {open.map((d) => (
         <DiscussionCard discussion={d} />
       ))}
@@ -36,7 +59,7 @@ const closed = discussions.filter((d) => d.status === 'closed');
   {closed.length > 0 && (
     <section aria-labelledby="closed-h">
       <h2 id="closed-h">Closed</h2>
-      <ul class="list">
+      <ul class="list card-grid">
         {closed.map((d) => (
           <DiscussionCard discussion={d} />
         ))}
@@ -44,3 +67,41 @@ const closed = discussions.filter((d) => d.status === 'closed');
     </section>
   )}
 </Base>
+
+<style>
+  .how {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-5) 0 var(--space-4);
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+  .how li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--space-3);
+    align-items: start;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .how p {
+    margin: 0;
+  }
+  .how span {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--grad);
+    color: #fff;
+    font-weight: 700;
+  }
+  .how strong {
+    color: var(--text);
+  }
+</style>

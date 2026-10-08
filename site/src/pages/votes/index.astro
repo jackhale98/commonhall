@@ -23,9 +23,11 @@ const closest = votes
 ---
 
 <Base title="Votes" description={`Every roll-call vote in the House and Senate in the ${congress}.`} section="votes">
-  <p class="kicker">{congress}</p>
-  <h1>Roll-call votes</h1>
-  <p class="muted">Every recorded vote in the House and Senate, with how each member voted.</p>
+  <header class="page-head wash">
+    <p class="kicker">{congress}</p>
+    <h1>Roll-call votes</h1>
+    <p class="lede">Every recorded vote in the House and Senate, and exactly how each member voted.</p>
+  </header>
 
   <dl class="stat-grid">
     {chambers.map((c) => (

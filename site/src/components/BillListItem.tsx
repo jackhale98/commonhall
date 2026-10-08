@@ -13,7 +13,8 @@ export default function BillListItem({ bill, href }: Props) {
   return (
     <li class="bill-item">
       <p class="meta">
-        <strong>{billNumberLabel(bill)}</strong> · <span class="status-chip">{statusLabel(bill.status)}</span>
+        <strong>{billNumberLabel(bill)}</strong> ·{' '}
+        <span class={`status-chip status-${bill.status}`}>{statusLabel(bill.status)}</span>
         {bill.policy_area && <> · {bill.policy_area}</>}
       </p>
       <h3 class="bill-title">

@@ -200,7 +200,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
   return (
     <div>
       <form
-        class="toolbar"
+        class="explorer-search"
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
@@ -208,79 +208,112 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
           update({ q: String(q ?? '') });
         }}
       >
-        <div class="field" style={{ flexBasis: '18rem' }}>
-          <label for="bills-q">Search</label>
-          <input id="bills-q" name="q" type="search" value={filters.q} placeholder="Words in the title or summary" />
+        <div class="explorer-query">
+          <label for="bills-q" class="visually-hidden">
+            Search bills
+          </label>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <input
+            id="bills-q"
+            name="q"
+            type="search"
+            value={filters.q}
+            placeholder="Search bills by keyword, e.g. “child care” or “H.R. 1”"
+          />
+          <button type="submit" class="primary">
+            Search
+          </button>
         </div>
-        <div class="field">
-          <label for="bills-chamber">Chamber</label>
+        <div class="explorer-filters" role="group" aria-label="Filters">
+          <label for="bills-chamber" class="visually-hidden">
+            Chamber
+          </label>
           <select
             id="bills-chamber"
             value={filters.chamber}
+            class={filters.chamber ? 'is-set' : ''}
             onChange={(e) => update({ chamber: e.currentTarget.value as Filters['chamber'] })}
           >
-            <option value="">Both</option>
+            <option value="">Both chambers</option>
             <option value="house">House</option>
             <option value="senate">Senate</option>
           </select>
-        </div>
-        <div class="field">
-          <label for="bills-status">Status</label>
-          <select id="bills-status" value={filters.status} onChange={(e) => update({ status: e.currentTarget.value })}>
-            <option value="">Any</option>
+          <label for="bills-status" class="visually-hidden">
+            Status
+          </label>
+          <select
+            id="bills-status"
+            value={filters.status}
+            class={filters.status ? 'is-set' : ''}
+            onChange={(e) => update({ status: e.currentTarget.value })}
+          >
+            <option value="">Any status</option>
             {BILL_STATUSES.map((s) => (
               <option value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>
-        </div>
-        <div class="field">
-          <label for="bills-policy">Policy area</label>
-          <select id="bills-policy" value={filters.policy} onChange={(e) => update({ policy: e.currentTarget.value })}>
-            <option value="">Any</option>
+          <label for="bills-policy" class="visually-hidden">
+            Topic
+          </label>
+          <select
+            id="bills-policy"
+            value={filters.policy}
+            class={filters.policy ? 'is-set' : ''}
+            onChange={(e) => update({ policy: e.currentTarget.value })}
+          >
+            <option value="">All topics</option>
             {policyAreas.map((p) => (
               <option value={p}>{p}</option>
             ))}
           </select>
-        </div>
-        <div class="field">
-          <label for="bills-party">Sponsor’s party</label>
+          <label for="bills-party" class="visually-hidden">
+            Sponsor’s party
+          </label>
           <select
             id="bills-party"
             value={filters.party}
+            class={filters.party ? 'is-set' : ''}
             onChange={(e) => update({ party: e.currentTarget.value as Filters['party'] })}
           >
-            <option value="">Any</option>
-            <option value="D">Democrat</option>
-            <option value="R">Republican</option>
-            <option value="I">Independent</option>
+            <option value="">Any sponsor party</option>
+            <option value="D">Democratic sponsor</option>
+            <option value="R">Republican sponsor</option>
+            <option value="I">Independent sponsor</option>
           </select>
-        </div>
-        {!filters.q && (
-          <div class="field">
-            <label for="bills-sort">Sort by</label>
-            <select
-              id="bills-sort"
-              value={filters.sort}
-              onChange={(e) => update({ sort: e.currentTarget.value as Filters['sort'] })}
+          {!filters.q && (
+            <>
+              <label for="bills-sort" class="visually-hidden">
+                Sort by
+              </label>
+              <select
+                id="bills-sort"
+                value={filters.sort}
+                onChange={(e) => update({ sort: e.currentTarget.value as Filters['sort'] })}
+              >
+                <option value="latest">Sort: latest action</option>
+                <option value="introduced">Sort: newest introduced</option>
+              </select>
+            </>
+          )}
+          {discussed.length > 0 && (
+            <button
+              type="button"
+              class="filter-toggle"
+              aria-pressed={filters.discussed}
+              onClick={() => update({ discussed: !filters.discussed })}
             >
-              <option value="latest">Latest action</option>
-              <option value="introduced">Newest introduced</option>
-            </select>
-          </div>
-        )}
-        {discussed.length > 0 && (
-          <label class="check">
-            <input
-              type="checkbox"
-              checked={filters.discussed}
-              onChange={(e) => update({ discussed: e.currentTarget.checked })}
-            />{' '}
-            Has a discussion
-          </label>
-        )}
-        <button type="submit" class="primary">
-          Search
-        </button>
+              Has a discussion
+            </button>
+          )}
+          {!isDefault({ ...filters, page: 1 }) && (
+            <button type="button" class="link-button clear-filters" onClick={() => setFilters(EMPTY)}>
+              Clear all
+            </button>
+          )}
+        </div>
       </form>
 
       {filters.sponsor && (

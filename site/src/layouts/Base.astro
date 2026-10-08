@@ -1,5 +1,10 @@
 ---
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/bricolage-grotesque/wght.css';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
 import '../styles/global.css';
+import SearchPalette from '../components/SearchPalette';
 import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
 import NavStatus from '../components/NavStatus';
 import { href } from '../lib/paths';
@@ -28,6 +33,15 @@ const sources = [
   { name: 'Boston Legistar', url: 'https://boston.legistar.com/' },
   { name: 'the Census Geocoder', url: 'https://geocoding.geo.census.gov/' },
 ];
+const explore = [
+  { label: 'Bills', path: 'bills/' },
+  { label: 'Members of Congress', path: 'members/' },
+  { label: 'Votes', path: 'votes/' },
+  { label: 'States', path: 'states/' },
+  { label: 'Massachusetts', path: 'states/ma/' },
+  { label: 'Boston City Council', path: 'boston/' },
+  { label: 'Discussions', path: 'discussions/' },
+];
 const nav = [
   { key: 'bills', label: 'Bills', path: 'bills/' },
   { key: 'members', label: 'Members', path: 'members/' },
@@ -49,12 +63,14 @@ const nav = [
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f6fb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0c14" media="(prefers-color-scheme: dark)" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={bricolageLatin} as="font" type="font/woff2" crossorigin />
     <script is:inline>
       // Mark that scripts run, so the collapsible menu starts closed (it stays open without JS).
       document.documentElement.classList.add('js');
@@ -98,28 +114,29 @@ const nav = [
       <div class="container header-inner">
         <a class="brand" href={href()}>
           <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-            <path d="M16 3 4 10h24L16 3Z" fill="currentColor" />
-            <rect x="6" y="12" width="3" height="11" rx="1" fill="currentColor" />
-            <rect x="12" y="12" width="3" height="11" rx="1" fill="currentColor" />
-            <rect x="17" y="12" width="3" height="11" rx="1" fill="currentColor" />
-            <rect x="23" y="12" width="3" height="11" rx="1" fill="currentColor" />
-            <rect x="4" y="25" width="24" height="3" rx="1" fill="currentColor" />
+            <defs>
+              <linearGradient id="brand-g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#5b4cf0" />
+                <stop offset=".55" stop-color="#7b5cff" />
+                <stop offset="1" stop-color="#1fb5d3" />
+              </linearGradient>
+            </defs>
+            <rect width="32" height="32" rx="9" fill="url(#brand-g)" />
+            <path
+              d="M9 8.5h14a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3h-6.5L11 26v-4H9a3 3 0 0 1-3-3v-7.5a3 3 0 0 1 3-3z"
+              fill="#fff"
+            />
+            <path
+              d="M11.8 15.2l2.9 2.9 5.6-5.6"
+              stroke="#5b4cf0"
+              stroke-width="2.4"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
-          {SITE_NAME}
+          <span>{SITE_NAME}</span>
         </a>
-        <button
-          type="button"
-          class="menu-toggle"
-          id="menu-toggle"
-          aria-expanded="false"
-          aria-controls="site-menu"
-          aria-label="Menu"
-        >
-          <span class="menu-icon" aria-hidden="true">
-            <span></span>
-          </span>
-          <span class="menu-label">Menu</span>
-        </button>
         <div class="site-menu" id="site-menu">
           <nav aria-label="Main">
             <ul class="nav-list">
@@ -133,23 +150,46 @@ const nav = [
               ))}
             </ul>
           </nav>
-          <form class="header-search" role="search" action={href('bills/')} method="get">
-            <label for="site-search" class="visually-hidden">
+        </div>
+        <div class="header-actions">
+          <SearchPalette client:idle />
+          <noscript>
+            <a class="search-trigger" href={href('bills/')}>
               Search bills
-            </label>
-            <input id="site-search" name="q" type="search" placeholder="Search bills" autocomplete="off" />
-            <button type="submit">Search</button>
-          </form>
+            </a>
+          </noscript>
+          <button
+            type="button"
+            class="menu-toggle"
+            id="menu-toggle"
+            aria-expanded="false"
+            aria-controls="site-menu"
+            aria-label="Menu"
+          >
+            <span class="menu-icon" aria-hidden="true">
+              <span></span>
+            </span>
+          </button>
         </div>
       </div>
     </header>
     {DEMO && (
       <div class="demo-banner" role="note">
         <div class="container">
-          <strong>Demo.</strong> This preview uses a small sample of real data (50 bills, current members, 6 roll-call
-          votes, recent Boston City Council matters and Massachusetts legislators) and two example discussions.
-          Accounts, following, the feed and Find my reps are switched off until a database is connected
-          {POLIS_SITE_ID ? '; the example discussions are an open preview.' : '.'}
+          <details>
+            <summary>
+              <span class="demo-pill">Preview</span>
+              <span class="demo-text">You’re viewing a demo built from a sample of real data.</span>
+              <span class="demo-text-short">Demo with sample data.</span>
+              <span class="demo-more">Details</span>
+            </summary>
+            <p>
+              It includes 50 bills, all current members, 6 roll-call votes, recent Boston City Council matters,
+              Massachusetts legislators and two example discussions. Accounts, following, the feed and Find my reps
+              switch on once the database is connected
+              {POLIS_SITE_ID ? '; the example discussions are an open preview anyone can try.' : '.'}
+            </p>
+          </details>
         </div>
       </div>
     )}
@@ -157,22 +197,69 @@ const nav = [
       <slot />
     </main>
     <footer class="site-footer">
-      <div class="container cluster small muted">
-        <span>
-          Data from{' '}
-          {sources.map((source, i) => (
-            <>
-              <a href={source.url}>{source.name}</a>
-              {i < sources.length - 2 ? ', ' : i === sources.length - 2 ? ' and ' : '.'}
-            </>
-          ))}
-        </span>
-        <span>Free and open source. No ads, no tracking.</span>
-        <a href={href('privacy/')}>Privacy</a>
-        <a href={href('moderation/')}>Discussion rules</a>
-        <button type="button" class="link-button" id="theme-toggle" aria-pressed="false">
-          Toggle dark mode
-        </button>
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href={href()}>
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+              <rect width="32" height="32" rx="9" fill="url(#brand-g)" />
+              <path
+                d="M9 8.5h14a3 3 0 0 1 3 3v7.5a3 3 0 0 1-3 3h-6.5L11 26v-4H9a3 3 0 0 1-3-3v-7.5a3 3 0 0 1 3-3z"
+                fill="#fff"
+              />
+              <path
+                d="M11.8 15.2l2.9 2.9 5.6-5.6"
+                stroke="#5b4cf0"
+                stroke-width="2.4"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span>{SITE_NAME}</span>
+          </a>
+          <p>
+            Free, nonpartisan and open source. No ads, no tracking. Built so anyone can follow their government and have
+            a say.
+          </p>
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
+            <span class="theme-icon" aria-hidden="true"></span>
+            <span>Dark mode</span>
+          </button>
+        </div>
+        <nav class="footer-col" aria-label="Explore">
+          <h2>Explore</h2>
+          <ul>
+            {explore.map((item) => (
+              <li>
+                <a href={href(item.path)}>{item.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <nav class="footer-col" aria-label="About">
+          <h2>About</h2>
+          <ul>
+            <li>
+              <a href={href('privacy/')}>Privacy</a>
+            </li>
+            <li>
+              <a href={href('moderation/')}>Discussion rules</a>
+            </li>
+            <li>
+              <a href="https://github.com/jackhale98/opencongress">Source code</a>
+            </li>
+          </ul>
+        </nav>
+        <div class="footer-col">
+          <h2>Data from</h2>
+          <ul>
+            {sources.map((source) => (
+              <li>
+                <a href={source.url}>{source.name}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </footer>
     <script>
@@ -226,61 +313,87 @@ const nav = [
 
 <style>
   .site-header {
-    background: var(--header-bg);
-    color: var(--header-text);
-    box-shadow: 0 1px 0 rgb(0 0 0 / 20%);
-  }
-  .site-header {
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: 20;
+    background: var(--header-bg);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--border);
   }
   .header-inner {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2) var(--space-5);
-    padding-block: var(--space-3);
+    gap: var(--space-4);
+    min-height: 64px;
+    position: relative;
   }
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    font-size: var(--step-1);
-    color: var(--header-text);
+    gap: 0.6rem;
+    font-family: var(--font-heading);
+    font-weight: 750;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
     text-decoration: none;
+    flex: none;
   }
   .brand-mark {
-    width: 1.6rem;
-    height: 1.6rem;
-    color: var(--highlight);
+    width: 2rem;
+    height: 2rem;
+    filter: drop-shadow(0 4px 10px rgb(91 76 240 / 30%));
   }
   .site-menu {
-    display: contents;
+    flex: 1;
+  }
+  .nav-list {
+    display: flex;
+    gap: var(--space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-weight: 560;
+    text-decoration: none;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+  .nav-list a:hover {
+    color: var(--text);
+    background: var(--bg-subtle);
+  }
+  .nav-list a[aria-current='page'] {
+    color: var(--brand-strong);
+    background: var(--brand-soft);
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
   }
   .menu-toggle {
     display: none;
   }
-  @media (max-width: 59.99rem) {
-    .header-inner {
-      flex-wrap: nowrap;
-      justify-content: space-between;
-      position: relative;
-    }
+  @media (max-width: 63.99rem) {
     .menu-toggle {
       display: inline-flex;
-      gap: var(--space-2);
-      background: transparent;
-      color: var(--header-text);
-      border-color: rgb(255 255 255 / 30%);
-      font-weight: 650;
+      width: 44px;
+      padding: 0;
+      border-radius: 12px;
+      background: var(--bg-raised);
+      border-color: var(--border);
     }
-    .menu-toggle:hover {
-      border-color: var(--header-text);
-    }
-    /* Three bars that turn into a cross when open. */
     .menu-icon,
     .menu-icon::before,
     .menu-icon::after,
@@ -320,100 +433,141 @@ const nav = [
       transform: translateY(-6px) rotate(-45deg);
     }
     .site-menu {
-      display: block;
       position: absolute;
       top: 100%;
       left: 0;
       right: 0;
-      z-index: 20;
-      background: var(--header-bg);
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
       padding: var(--space-2) var(--space-4) var(--space-4);
-      box-shadow: 0 12px 24px rgb(0 0 0 / 25%);
+      box-shadow: 0 18px 30px rgb(18 19 31 / 12%);
     }
     :global(html.js) .site-menu:not([data-open]) {
       display: none;
     }
-    .site-menu .nav-list {
+    .nav-list {
       flex-direction: column;
-      gap: 0;
     }
-    .site-menu .nav-list a {
-      display: flex;
+    .nav-list a {
       width: 100%;
-      padding: var(--space-2) var(--space-1);
-      border-bottom: 1px solid rgb(255 255 255 / 10%);
+      min-height: 48px;
       font-size: var(--step-1);
-    }
-    .site-menu .nav-list a[aria-current='page'] {
-      box-shadow: inset 4px 0 0 var(--highlight);
-      padding-left: var(--space-3);
-    }
-    .site-menu .header-search {
-      margin: var(--space-3) 0 0;
-      max-width: none;
+      border-radius: 12px;
     }
   }
-  .nav-list {
+  main {
+    padding-block: var(--space-6) var(--space-7);
+  }
+  .demo-banner {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-raised);
+    font-size: var(--step--1);
+  }
+  .demo-banner summary {
     display: flex;
+    align-items: center;
+    gap: var(--space-2);
     flex-wrap: wrap;
-    gap: 0 var(--space-4);
+    min-height: 40px;
+    cursor: pointer;
+    list-style: none;
+    color: var(--text-muted);
+  }
+  .demo-banner summary::-webkit-details-marker {
+    display: none;
+  }
+  .demo-pill {
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    color: var(--highlight-strong);
+    background: var(--highlight-soft);
+  }
+  .demo-text-short {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .demo-banner summary {
+      flex-wrap: nowrap;
+    }
+    .demo-text {
+      display: none;
+    }
+    .demo-text-short {
+      display: inline;
+    }
+  }
+  .demo-more {
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  details[open] .demo-more {
+    display: none;
+  }
+  .demo-banner p {
+    margin: 0 0 var(--space-3);
+    color: var(--text-muted);
+  }
+  .site-footer {
+    margin-top: var(--space-7);
+    border-top: 1px solid var(--border);
+    background: var(--bg-raised);
+    padding-block: var(--space-7) var(--space-6);
+    font-size: var(--step--1);
+  }
+  .footer-grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  }
+  @media (min-width: 60rem) {
+    .footer-grid {
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+  }
+  .footer-brand p {
+    color: var(--text-muted);
+    margin: var(--space-3) 0;
+    max-width: 30ch;
+  }
+  .footer-col h2 {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 var(--space-3);
+  }
+  .footer-col ul {
     list-style: none;
     margin: 0;
     padding: 0;
-  }
-  .nav-list a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding-inline: var(--space-1);
-    color: var(--header-muted);
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: inset 0 -3px 0 transparent;
-  }
-  .nav-list a:hover {
-    color: var(--header-text);
-  }
-  .nav-list a[aria-current='page'] {
-    color: var(--header-text);
-    box-shadow: inset 0 -3px 0 var(--highlight);
-  }
-  .header-search input {
-    background: rgb(255 255 255 / 10%);
-    border-color: rgb(255 255 255 / 25%);
-    color: var(--header-text);
-  }
-  .header-search input::placeholder {
-    color: var(--header-muted);
-  }
-  .header-search button {
-    background: var(--highlight);
-    border-color: var(--highlight);
-    color: #1d1300;
-    font-weight: 700;
-  }
-  .site-header :focus-visible {
-    outline-color: var(--highlight);
-  }
-  .header-search {
-    display: flex;
+    display: grid;
     gap: var(--space-2);
-    margin-left: auto;
-    flex: 1 1 16rem;
-    max-width: 24rem;
   }
-  main {
-    padding-block: var(--space-5) var(--space-7);
+  .footer-col a {
+    color: var(--text);
+    text-decoration: none;
   }
-  .demo-banner {
-    background: var(--highlight-soft);
-    border-bottom: 1px solid var(--border);
-    padding-block: var(--space-2);
+  .footer-col a:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .theme-toggle {
+    min-height: 40px;
+    border-radius: 999px;
     font-size: var(--step--1);
+    gap: var(--space-2);
   }
-  .site-footer {
-    border-top: 1px solid var(--border);
-    background: var(--bg-raised);
-    padding-block: var(--space-5);
+  .theme-icon {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: linear-gradient(90deg, var(--text) 50%, transparent 50%);
+    border: 2px solid var(--text);
   }
 </style>

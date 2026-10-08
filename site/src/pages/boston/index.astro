@@ -52,11 +52,14 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
   description="Boston City Council members, meetings, ordinances, resolutions and hearing orders."
   section="states"
 >
-  <h1>Boston City Council</h1>
-  <p>
-    Thirteen councilors: one for each of the nine districts and four elected citywide (at-large).{' '}
-    {!DEMO && <a href={href('#reps-h')}>Find your district councilor</a>}
-  </p>
+  <header class="page-head wash">
+    <p class="kicker">City of Boston</p>
+    <h1>Boston City Council</h1>
+    <p class="lede">
+      Thirteen councilors: one for each of the nine districts and four elected citywide (at-large).{' '}
+      {!DEMO && <a href={href('#reps-h')}>Find your district councilor</a>}
+    </p>
+  </header>
 
   {bostonDiscussions.length > 0 && (
     <section aria-labelledby="disc-h">
