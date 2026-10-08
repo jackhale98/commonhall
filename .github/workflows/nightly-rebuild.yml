@@ -1,0 +1,17 @@
+name: Nightly rebuild
+
+# Regenerates static pages so bills introduced since the last build get their own
+# prerendered page. Live fields update in the browser without a rebuild.
+on:
+  schedule:
+    - cron: '17 9 * * *' # 09:17 UTC, after the nightly state sync
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  rebuild:
+    uses: ./.github/workflows/deploy.yml

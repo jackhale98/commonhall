@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# Supabase local state
+supabase/.branches
+supabase/.temp
+supabase/.env
+# Downloaded data must never be committed
+data/
+.backfill/

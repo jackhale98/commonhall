@@ -1,0 +1,183 @@
+---
+import '../styles/global.css';
+import { SITE_NAME } from '../lib/config';
+import { href } from '../lib/paths';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path of the current section, used to mark the active nav item. */
+  section?: 'home' | 'bills' | 'members' | 'states' | 'feed' | 'following' | 'account';
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = 'Follow federal and state bills, legislators and votes.',
+  section,
+  noindex = false,
+} = Astro.props;
+const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const nav = [
+  { key: 'bills', label: 'Bills', path: 'bills/' },
+  { key: 'members', label: 'Members', path: 'members/' },
+  { key: 'states', label: 'States', path: 'states/' },
+  { key: 'feed', label: 'Feed', path: 'feed/' },
+] as const;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+    <script is:inline>
+      // Apply a saved theme before first paint. Storage may be unavailable; ignore errors.
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+      } catch {
+        // Storage unavailable; fall back to the system theme.
+      }
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href={href()}>
+          {SITE_NAME}
+        </a>
+        <nav aria-label="Main">
+          <ul class="nav-list">
+            {nav.map((item) => (
+              <li>
+                <a href={href(item.path)} aria-current={section === item.key ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={href('account/')} aria-current={section === 'account' ? 'page' : undefined}>
+                Account
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <form class="header-search" role="search" action={href('bills/')} method="get">
+          <label for="site-search" class="visually-hidden">
+            Search bills
+          </label>
+          <input id="site-search" name="q" type="search" placeholder="Search bills" autocomplete="off" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
+    </header>
+    <main id="main" class="container">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container cluster small muted">
+        <span>
+          Data from <a href="https://api.congress.gov/">Congress.gov</a>,
+          <a href="https://www.senate.gov/legislative/votes.htm">senate.gov</a>,
+          <a href="https://github.com/unitedstates/congress-legislators">congress-legislators</a>,
+          <a href="https://openstates.org/">Open States</a> and the
+          <a href="https://geocoding.geo.census.gov/">Census Geocoder</a>.
+        </span>
+        <span>Free and open source. No ads, no tracking.</span>
+        <button type="button" class="link-button" id="theme-toggle" aria-pressed="false">
+          Toggle dark mode
+        </button>
+      </div>
+    </footer>
+    <script>
+      const button = document.getElementById('theme-toggle');
+      const root = document.documentElement;
+      const isDark = () =>
+        root.dataset.theme === 'dark' ||
+        (!root.dataset.theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const sync = () => button?.setAttribute('aria-pressed', String(isDark()));
+      sync();
+      button?.addEventListener('click', () => {
+        const next = isDark() ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('theme', next);
+        } catch {
+          // Storage unavailable (private mode); the choice lasts for this page only.
+        }
+        sync();
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-5);
+    padding-block: var(--space-3);
+  }
+  .brand {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: var(--step-1);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav-list a {
+    display: inline-block;
+    padding-block: var(--space-2);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-list a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+  }
+  .header-search {
+    display: flex;
+    gap: var(--space-2);
+    margin-left: auto;
+    flex: 1 1 16rem;
+    max-width: 24rem;
+  }
+  main {
+    padding-block: var(--space-5) var(--space-7);
+  }
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding-block: var(--space-5);
+  }
+</style>

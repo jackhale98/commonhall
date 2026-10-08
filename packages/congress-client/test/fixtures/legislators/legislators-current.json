@@ -1,0 +1,277 @@
+[
+ {
+  "id": {
+   "bioguide": "C000127",
+   "thomas": "00172",
+   "lis": "S275",
+   "govtrack": 300018,
+   "opensecrets": "N00007836",
+   "votesmart": 27122,
+   "fec": [
+    "S8WA00194",
+    "H2WA01054"
+   ],
+   "cspan": 26137,
+   "wikipedia": "Maria Cantwell",
+   "house_history": 10608,
+   "ballotpedia": "Maria Cantwell",
+   "maplight": 544,
+   "icpsr": 39310,
+   "wikidata": "Q22250",
+   "google_entity_id": "kg:/m/01x68t",
+   "pictorial": 13398
+  },
+  "name": {
+   "first": "Maria",
+   "last": "Cantwell",
+   "official_full": "Maria Cantwell"
+  },
+  "bio": {
+   "birthday": "1958-10-13",
+   "gender": "F"
+  },
+  "terms": [
+   {
+    "type": "sen",
+    "start": "2019-01-03",
+    "end": "2025-01-03",
+    "state": "WA",
+    "class": 1,
+    "party": "Democrat",
+    "state_rank": "junior",
+    "url": "https://www.cantwell.senate.gov",
+    "rss_url": "http://www.cantwell.senate.gov/public/index.cfm/rss/feed",
+    "contact_form": "https://www.cantwell.senate.gov/public/index.cfm/email-maria",
+    "address": "511 Hart Senate Office Building Washington DC 20510",
+    "office": "511 Hart Senate Office Building",
+    "phone": "202-224-3441"
+   },
+   {
+    "type": "sen",
+    "start": "2025-01-03",
+    "end": "2031-01-03",
+    "state": "WA",
+    "class": 1,
+    "state_rank": "junior",
+    "party": "Democrat",
+    "url": "https://www.cantwell.senate.gov",
+    "rss_url": "http://www.cantwell.senate.gov/public/index.cfm/rss/feed",
+    "contact_form": "https://www.cantwell.senate.gov/public/index.cfm/email-maria",
+    "address": "511 Hart Senate Office Building Washington DC 20510",
+    "office": "511 Hart Senate Office Building",
+    "phone": "202-224-3441"
+   }
+  ]
+ },
+ {
+  "id": {
+   "bioguide": "K000367",
+   "thomas": "01826",
+   "lis": "S311",
+   "govtrack": 412242,
+   "opensecrets": "N00027500",
+   "votesmart": 65092,
+   "fec": [
+    "S6MN00267"
+   ],
+   "cspan": 83701,
+   "wikipedia": "Amy Klobuchar",
+   "house_history": 16558,
+   "ballotpedia": "Amy Klobuchar",
+   "maplight": 724,
+   "icpsr": 40700,
+   "wikidata": "Q22237",
+   "google_entity_id": "kg:/m/05fbpt",
+   "pictorial": 13431
+  },
+  "name": {
+   "first": "Amy",
+   "middle": "Jean",
+   "last": "Klobuchar",
+   "official_full": "Amy Klobuchar"
+  },
+  "bio": {
+   "birthday": "1960-05-25",
+   "gender": "F"
+  },
+  "leadership_roles": [
+   {
+    "title": "Senate Democratic Steering Committee Chair",
+    "chamber": "senate",
+    "start": "2019-01-03",
+    "end": "2021-01-03"
+   },
+   {
+    "title": "Senate Democratic Steering Committee Chair",
+    "chamber": "senate",
+    "start": "2021-01-03",
+    "end": "2023-01-03"
+   },
+   {
+    "title": "Senate Democratic Steering Committee Chair",
+    "chamber": "senate",
+    "start": "2023-01-03",
+    "end": "2025-01-03"
+   },
+   {
+    "title": "Senate Democratic Steering Committee Chair",
+    "chamber": "senate",
+    "start": "2025-01-03"
+   }
+  ],
+  "terms": [
+   {
+    "type": "sen",
+    "start": "2019-01-03",
+    "end": "2025-01-03",
+    "state": "MN",
+    "class": 1,
+    "party": "Democrat",
+    "state_rank": "senior",
+    "url": "https://www.klobuchar.senate.gov",
+    "contact_form": "https://www.klobuchar.senate.gov/public/index.cfm/contact",
+    "address": "425 Dirksen Senate Office Building Washington DC 20510",
+    "office": "425 Dirksen Senate Office Building",
+    "phone": "202-224-3244"
+   },
+   {
+    "type": "sen",
+    "start": "2025-01-03",
+    "end": "2031-01-03",
+    "state": "MN",
+    "class": 1,
+    "state_rank": "senior",
+    "party": "Democrat",
+    "url": "https://www.klobuchar.senate.gov",
+    "contact_form": "https://www.klobuchar.senate.gov/public/index.cfm/contact",
+    "address": "425 Dirksen Senate Office Building Washington DC 20510",
+    "office": "425 Dirksen Senate Office Building",
+    "phone": "202-224-3244"
+   }
+  ]
+ },
+ {
+  "id": {
+   "bioguide": "A000055",
+   "thomas": "01460",
+   "govtrack": 400004,
+   "opensecrets": "N00003028",
+   "votesmart": 441,
+   "fec": [
+    "H6AL04098"
+   ],
+   "cspan": 45516,
+   "wikipedia": "Robert Aderholt",
+   "house_history": 8333,
+   "ballotpedia": "Robert B. Aderholt",
+   "maplight": 127,
+   "icpsr": 29701,
+   "wikidata": "Q672671",
+   "google_entity_id": "kg:/m/024p03",
+   "pictorial": 12897
+  },
+  "name": {
+   "first": "Robert",
+   "last": "Aderholt",
+   "official_full": "Robert B. Aderholt",
+   "middle": "B."
+  },
+  "bio": {
+   "birthday": "1965-07-22",
+   "gender": "M"
+  },
+  "terms": [
+   {
+    "type": "rep",
+    "start": "2023-01-03",
+    "end": "2025-01-03",
+    "state": "AL",
+    "district": 4,
+    "party": "Republican",
+    "url": "https://aderholt.house.gov",
+    "rss_url": "http://aderholt.house.gov/common/rss//index.cfm?rss=20",
+    "address": "266 Cannon House Office Building Washington DC 20515-0104",
+    "office": "266 Cannon House Office Building",
+    "phone": "202-225-4876"
+   },
+   {
+    "type": "rep",
+    "start": "2025-01-03",
+    "end": "2027-01-03",
+    "state": "AL",
+    "district": 4,
+    "party": "Republican",
+    "url": "https://aderholt.house.gov",
+    "rss_url": "http://aderholt.house.gov/common/rss//index.cfm?rss=20",
+    "address": "272 Cannon House Office Building Washington DC 20515-0104",
+    "office": "272 Cannon House Office Building",
+    "phone": "202-225-4876"
+   }
+  ]
+ },
+ {
+  "id": {
+   "bioguide": "B001257",
+   "thomas": "01838",
+   "govtrack": 412250,
+   "opensecrets": "N00027462",
+   "votesmart": 17318,
+   "fec": [
+    "H6FL09070"
+   ],
+   "cspan": 1022873,
+   "wikipedia": "Gus Bilirakis",
+   "house_history": 10413,
+   "ballotpedia": "Gus M. Bilirakis",
+   "maplight": 731,
+   "icpsr": 20758,
+   "wikidata": "Q1555314",
+   "google_entity_id": "kg:/m/0dy3z1",
+   "pictorial": 12993
+  },
+  "name": {
+   "first": "Gus",
+   "last": "Bilirakis",
+   "official_full": "Gus M. Bilirakis",
+   "middle": "M."
+  },
+  "bio": {
+   "birthday": "1963-02-08",
+   "gender": "M"
+  },
+  "terms": [
+   {
+    "type": "rep",
+    "start": "2023-01-03",
+    "end": "2025-01-03",
+    "state": "FL",
+    "district": 12,
+    "party": "Republican",
+    "url": "https://bilirakis.house.gov",
+    "rss_url": "http://bilirakis.house.gov/index.php?format=feed&amp;type=rss",
+    "address": "2306 Rayburn House Office Building Washington DC 20515-0912",
+    "office": "2306 Rayburn House Office Building",
+    "phone": "202-225-5755"
+   },
+   {
+    "type": "rep",
+    "start": "2025-01-03",
+    "end": "2027-01-03",
+    "state": "FL",
+    "district": 12,
+    "party": "Republican",
+    "url": "https://bilirakis.house.gov",
+    "rss_url": "http://bilirakis.house.gov/index.php?format=feed&amp;type=rss",
+    "address": "2306 Rayburn House Office Building Washington DC 20515-0912",
+    "office": "2306 Rayburn House Office Building",
+    "phone": "202-225-5755"
+   }
+  ],
+  "family": [
+   {
+    "name": "Michael Bilirakis",
+    "relation": "son"
+   }
+  ]
+ }
+]

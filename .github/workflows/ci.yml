@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --project unit
+      # Builds with no Supabase env: proves a fresh fork builds before it is configured.
+      - run: npm run build
+
+  functions:
+    name: Edge Functions (Deno)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check functions
+        working-directory: supabase/functions
+        run: |
+          shopt -s nullglob
+          files=(*/index.ts)
+          if [ ${#files[@]} -gt 0 ]; then deno check "${files[@]}"; fi
+
+  db:
+    name: Database (migrations, RLS, sync jobs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v3
+        with:
+          version: latest
+      - name: Start local Supabase
+        run: supabase start -x studio,imgproxy,storage-api,realtime,logflare,vector,supavisor,edge-runtime,mailpit,postgres-meta
+      - run: npm run test:db

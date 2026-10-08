@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/paths';
+---
+
+<Base section="home">
+  <h1>Follow what Congress and your statehouse are doing</h1>
+  <p class="muted">
+    Browse federal and state bills, legislators and roll-call votes. Sign in with your email to follow bills and
+    legislators and see their activity in one feed.
+  </p>
+  <p>
+    <a class="button primary" href={href('bills/')}>
+      Browse bills
+    </a>
+  </p>
+</Base>
