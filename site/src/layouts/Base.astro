@@ -56,6 +56,8 @@ const nav = [
     <meta property="og:type" content="website" />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
     <script is:inline>
+      // Mark that scripts run, so the collapsible menu starts closed (it stays open without JS).
+      document.documentElement.classList.add('js');
       // Apply a saved theme before first paint. Storage may be unavailable; ignore errors.
       try {
         const saved = localStorage.getItem('theme');
@@ -105,25 +107,40 @@ const nav = [
           </svg>
           {SITE_NAME}
         </a>
-        <nav aria-label="Main">
-          <ul class="nav-list">
-            {nav.map((item) => (
-              <li>
-                <a href={href(item.path)} aria-current={section === item.key ? 'page' : undefined}>
-                  {item.label}
-                  {item.key === 'feed' && <NavStatus client:idle />}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <form class="header-search" role="search" action={href('bills/')} method="get">
-          <label for="site-search" class="visually-hidden">
-            Search bills
-          </label>
-          <input id="site-search" name="q" type="search" placeholder="Search bills" autocomplete="off" />
-          <button type="submit">Search</button>
-        </form>
+        <button
+          type="button"
+          class="menu-toggle"
+          id="menu-toggle"
+          aria-expanded="false"
+          aria-controls="site-menu"
+          aria-label="Menu"
+        >
+          <span class="menu-icon" aria-hidden="true">
+            <span></span>
+          </span>
+          <span class="menu-label">Menu</span>
+        </button>
+        <div class="site-menu" id="site-menu">
+          <nav aria-label="Main">
+            <ul class="nav-list">
+              {nav.map((item) => (
+                <li>
+                  <a href={href(item.path)} aria-current={section === item.key ? 'page' : undefined}>
+                    {item.label}
+                    {item.key === 'feed' && <NavStatus client:idle />}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <form class="header-search" role="search" action={href('bills/')} method="get">
+            <label for="site-search" class="visually-hidden">
+              Search bills
+            </label>
+            <input id="site-search" name="q" type="search" placeholder="Search bills" autocomplete="off" />
+            <button type="submit">Search</button>
+          </form>
+        </div>
       </div>
     </header>
     {DEMO && (
@@ -176,6 +193,33 @@ const nav = [
         sync();
       });
     </script>
+    <script is:inline>
+      // Expanding menu on narrow screens: toggle, close on Escape or when a link is chosen.
+      (function () {
+        const button = document.getElementById('menu-toggle');
+        const menu = document.getElementById('site-menu');
+        if (!button || !menu) return;
+        const set = (open) => {
+          button.setAttribute('aria-expanded', String(open));
+          menu.toggleAttribute('data-open', open);
+        };
+        button.addEventListener('click', () => {
+          const open = button.getAttribute('aria-expanded') !== 'true';
+          set(open);
+          if (open) menu.querySelector('a, input')?.focus();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
+            set(false);
+            button.focus();
+          }
+        });
+        menu.addEventListener('click', (e) => {
+          if (e.target instanceof Element && e.target.closest('a')) set(false);
+        });
+        window.matchMedia('(min-width: 60rem)').addEventListener('change', (e) => e.matches && set(false));
+      })();
+    </script>
   </body>
 </html>
 
@@ -185,12 +229,10 @@ const nav = [
     color: var(--header-text);
     box-shadow: 0 1px 0 rgb(0 0 0 / 20%);
   }
-  @media (min-width: 60rem) {
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 5;
-    }
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
   }
   .header-inner {
     display: flex;
@@ -213,6 +255,102 @@ const nav = [
     width: 1.6rem;
     height: 1.6rem;
     color: var(--highlight);
+  }
+  .site-menu {
+    display: contents;
+  }
+  .menu-toggle {
+    display: none;
+  }
+  @media (max-width: 59.99rem) {
+    .header-inner {
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      position: relative;
+    }
+    .menu-toggle {
+      display: inline-flex;
+      gap: var(--space-2);
+      background: transparent;
+      color: var(--header-text);
+      border-color: rgb(255 255 255 / 30%);
+      font-weight: 650;
+    }
+    .menu-toggle:hover {
+      border-color: var(--header-text);
+    }
+    /* Three bars that turn into a cross when open. */
+    .menu-icon,
+    .menu-icon::before,
+    .menu-icon::after,
+    .menu-icon > span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+    }
+    .menu-icon {
+      position: relative;
+      background: transparent;
+    }
+    .menu-icon::before,
+    .menu-icon::after {
+      content: '';
+      position: absolute;
+      left: 0;
+    }
+    .menu-icon::before {
+      top: -6px;
+    }
+    .menu-icon::after {
+      top: 6px;
+    }
+    .menu-toggle[aria-expanded='true'] .menu-icon > span {
+      opacity: 0;
+    }
+    .menu-toggle[aria-expanded='true'] .menu-icon::before {
+      transform: translateY(6px) rotate(45deg);
+    }
+    .menu-toggle[aria-expanded='true'] .menu-icon::after {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+    .site-menu {
+      display: block;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      background: var(--header-bg);
+      padding: var(--space-2) var(--space-4) var(--space-4);
+      box-shadow: 0 12px 24px rgb(0 0 0 / 25%);
+    }
+    :global(html.js) .site-menu:not([data-open]) {
+      display: none;
+    }
+    .site-menu .nav-list {
+      flex-direction: column;
+      gap: 0;
+    }
+    .site-menu .nav-list a {
+      display: flex;
+      width: 100%;
+      padding: var(--space-2) var(--space-1);
+      border-bottom: 1px solid rgb(255 255 255 / 10%);
+      font-size: var(--step-1);
+    }
+    .site-menu .nav-list a[aria-current='page'] {
+      box-shadow: inset 4px 0 0 var(--highlight);
+      padding-left: var(--space-3);
+    }
+    .site-menu .header-search {
+      margin: var(--space-3) 0 0;
+      max-width: none;
+    }
   }
   .nav-list {
     display: flex;
