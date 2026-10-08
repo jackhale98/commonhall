@@ -1,0 +1,26 @@
+name: Load council districts
+
+# One-time (and after redistricting): downloads the Boston City Council districts
+# from Analyze Boston into the council_districts table, using the session pooler
+# connection string. Safe to re-run: existing districts are replaced.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Load Boston council districts
+        run: npm run load-districts
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

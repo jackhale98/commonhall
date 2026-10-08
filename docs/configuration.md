@@ -12,7 +12,7 @@ Settings → Secrets and variables → Actions → Secrets. Private; workflows o
 | `SUPABASE_ACCESS_TOKEN` | for Deploy Supabase | `supabase-deploy.yml` | Scoped access token for this project only: Project Settings (Read), API Keys (Read), API Key Secrets (Read), Edge Functions (Read-write) |
 | `SUPABASE_PROJECT_REF` | for Deploy Supabase | `supabase-deploy.yml` | The 20-character project id |
 | `SUPABASE_DB_PASSWORD` | for Deploy Supabase | `supabase-deploy.yml` | Database password; used by `supabase link` and `db push` |
-| `SUPABASE_DB_URL` | for Deploy Supabase and Backfill | `supabase-deploy.yml` (migrations), `backfill.yml` | Session pooler string (IPv4), port 5432; URL-encode special characters in the password |
+| `SUPABASE_DB_URL` | for Deploy Supabase, Backfill and Load council districts | `supabase-deploy.yml` (migrations), `backfill.yml`, `load-districts.yml` | Session pooler string (IPv4), port 5432; URL-encode special characters in the password |
 | `CONGRESS_API_KEY` | for Backfill | `backfill.yml` | Congress.gov key |
 
 Deploy Supabase skips itself if any of its three secrets is missing. The token is

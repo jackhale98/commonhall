@@ -124,7 +124,7 @@ New repository secret). Repository secrets, not environment secrets:
 | `SUPABASE_ACCESS_TOKEN` | a Supabase **scoped** access token for this project (permissions in step 2.3) | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) → Generate new token | Deploy Supabase |
 | `SUPABASE_PROJECT_REF` | the project ref, e.g. `abcdefghijklmnopqrst` | the dashboard URL `…/project/<ref>`, or Project Settings → General | Deploy Supabase |
 | `SUPABASE_DB_PASSWORD` | the database password | chosen when creating the project; reset under Project Settings → Database | Deploy Supabase |
-| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in (URL-encode any special characters in the password) | Connect (top of the dashboard) → Session pooler | Deploy Supabase (migrations), Backfill |
+| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in (URL-encode any special characters in the password) | Connect (top of the dashboard) → Session pooler | Deploy Supabase (migrations), Backfill, Load council districts |
 | `CONGRESS_API_KEY` | your Congress.gov key | the email from [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Backfill |
 
 **e. Variables** (same page → **Variables** tab → New repository variable). These
@@ -153,6 +153,7 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | Nightly rebuild | 09:17 UTC daily | same as Deploy site |
 | Deploy Supabase | push to `main` touching `supabase/` or `packages/`, and manually | the three `SUPABASE_*` deploy secrets (skips cleanly without them), plus `SUPABASE_DB_URL` for migrations |
 | Backfill | manually only | `SUPABASE_DB_URL`, `CONGRESS_API_KEY`, write permission (b) |
+| Load council districts | manually (once, and after redistricting) | `SUPABASE_DB_URL` |
 
 GitHub turns off scheduled workflows in a repository with no activity for 60 days.
 If the nightly rebuild stops, re-enable it from the Actions tab.
@@ -251,8 +252,10 @@ A `401` in `net._http_response` means the Vault `sync_secret` and the function
    every bill and every roll call of the current Congress, pausing at the hourly
    API limit and re-dispatching itself until done (roughly a day). The 10-minute
    `sync-federal` job then keeps it current.
-2. **Boston council districts** (once, and again after redistricting):
-   `SUPABASE_DB_URL='<session pooler string>' npm run load-districts`. Council
+2. **Boston council districts** (once, and again after redistricting): Actions →
+   "Load council districts" → Run workflow. It downloads the Analyze Boston layer
+   into PostGIS using the `SUPABASE_DB_URL` secret. (Or locally:
+   `SUPABASE_DB_URL='<session pooler string>' npm run load-districts`.) Council
    data then arrives with the nightly `sync-boston` (no key needed).
 3. **State data** fills in over the following nights through `sync-state`,
    Massachusetts first.
