@@ -20,6 +20,7 @@ import type {
   HouseVoteMembers,
   MemberDetail,
   MemberListItem,
+  SponsoredItem,
   TextVersion,
 } from './types.ts';
 
@@ -210,6 +211,17 @@ export class CongressClient {
     const body = await this.get<{ member?: MemberDetail }>(`/member/${bioguideId}`);
     if (!body.member) throw new Error(`Member ${bioguideId} missing from response`);
     return body.member;
+  }
+
+  /** Most recent legislation a member sponsored (first page only). */
+  async getSponsoredLegislation(bioguideId: string, limit = 20): Promise<SponsoredItem[]> {
+    const body = await this.get<{ sponsoredLegislation?: SponsoredItem[] }>(
+      `/member/${bioguideId}/sponsored-legislation`,
+      {
+        limit,
+      },
+    );
+    return body.sponsoredLegislation ?? [];
   }
 
   // ---- House votes -------------------------------------------------------

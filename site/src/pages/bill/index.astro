@@ -1,0 +1,17 @@
+---
+import BillFallback from '../../components/BillFallback';
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="Bill" section="bills" noindex>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('bills/')}>Bills</a>
+  </nav>
+  <noscript>
+    <p class="notice">
+      This page needs JavaScript. Try <a href={href('bills/')}>browsing bills</a>.
+    </p>
+  </noscript>
+  <BillFallback client:load />
+</Base>

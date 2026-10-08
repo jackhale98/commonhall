@@ -1,0 +1,248 @@
+---
+import BillLive from '../../../../components/BillLive';
+import MemberChip from '../../../../components/MemberChip';
+import Base from '../../../../layouts/Base.astro';
+import { loadActions, loadBills, loadCosponsors, loadMembers, loadSubjects } from '../../../../lib/build-data';
+import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraphs } from '../../../../lib/format';
+import { href } from '../../../../lib/paths';
+import type { Bill } from '../../../../lib/types';
+
+export async function getStaticPaths() {
+  const bills = await loadBills();
+  return bills.map((bill) => ({
+    params: { congress: String(bill.congress), type: bill.bill_type, number: String(bill.number) },
+    props: { bill },
+  }));
+}
+
+interface Props {
+  bill: Bill;
+}
+
+const { bill } = Astro.props;
+const [members, actionsByBill, cosponsorsByBill, subjectsByBill] = await Promise.all([
+  loadMembers(),
+  loadActions(),
+  loadCosponsors(),
+  loadSubjects(),
+]);
+const actions = actionsByBill.get(bill.id) ?? [];
+const cosponsors = (cosponsorsByBill.get(bill.id) ?? [])
+  .filter((c) => !c.withdrawn_date)
+  .sort(
+    (a, b) => (a.sponsored_date ?? '').localeCompare(b.sponsored_date ?? '') || a.member_id.localeCompare(b.member_id),
+  );
+const withdrawn = (cosponsorsByBill.get(bill.id) ?? []).filter((c) => c.withdrawn_date);
+const subjects = subjectsByBill.get(bill.id) ?? [];
+const sponsor = bill.sponsor_id ? members.get(bill.sponsor_id) : undefined;
+const title = billDisplayTitle(bill);
+const label = billNumberLabel(bill);
+const summary = paragraphs(bill.summary_text);
+const partyCounts = cosponsors.reduce<Record<string, number>>((acc, c) => {
+  const p = members.get(c.member_id)?.party ?? '?';
+  acc[p] = (acc[p] ?? 0) + 1;
+  return acc;
+}, {});
+const description = `${label} (${congressLabel(bill.congress)}): ${bill.title}`.slice(0, 300);
+const liveActions = actions.map(({ seq, action_date, text, chamber, source_system }) => ({
+  seq,
+  action_date,
+  text,
+  chamber,
+  source_system,
+}));
+---
+
+<Base title={`${label}: ${title}`} description={description} section="bills">
+  <nav aria-label="Breadcrumb" class="small breadcrumb">
+    <a href={href('bills/')}>Bills</a> › {congressLabel(bill.congress)} › {label}
+  </nav>
+
+  <header class="bill-header">
+    <p class="eyebrow">
+      {label} · {congressLabel(bill.congress)}
+    </p>
+    <h1>{title}</h1>
+    {bill.short_title && bill.short_title !== bill.title && <p class="official-title">{bill.title}</p>}
+    <p class="meta cluster small">
+      {bill.introduced_date && <span>Introduced {formatDate(bill.introduced_date)}</span>}
+      {bill.policy_area && <span>Policy area: {bill.policy_area}</span>}
+      {bill.law_number && <span>Public Law {bill.law_number}</span>}
+    </p>
+    <div class="cluster bill-actions-row" data-follow-slot data-target-type="bill" data-target-id={bill.id}>
+      {bill.text_url && (
+        <a class="button" href={bill.text_url} rel="noopener">
+          Read the text
+        </a>
+      )}
+      {bill.congress_gov_url && (
+        <a class="button" href={bill.congress_gov_url} rel="noopener">
+          On Congress.gov
+        </a>
+      )}
+    </div>
+  </header>
+
+  <div class="bill-layout">
+    <div class="bill-main">
+      <section aria-label="Status">
+        <BillLive
+          client:idle
+          part="summary"
+          billId={bill.id}
+          billType={bill.bill_type}
+          status={bill.status}
+          latest_action_date={bill.latest_action_date}
+          latest_action_text={bill.latest_action_text}
+          actions={[]}
+        />
+      </section>
+
+      <section aria-labelledby="summary-h">
+        <h2 id="summary-h">Summary</h2>
+        {summary.length > 0 ? (
+          <div class="summary">
+            {summary.map((p) =>
+              p.includes('\n• ') || p.startsWith('• ') ? (
+                <ul>
+                  {p
+                    .split('\n')
+                    .map((line) => line.replace(/^• /, '').trim())
+                    .filter(Boolean)
+                    .map((line) => (
+                      <li>{line}</li>
+                    ))}
+                </ul>
+              ) : (
+                <p>{p}</p>
+              ),
+            )}
+            <p class="small muted">Summary by the Congressional Research Service.</p>
+          </div>
+        ) : (
+          <p class="muted">The Congressional Research Service has not summarized this bill yet.</p>
+        )}
+      </section>
+
+      <section aria-labelledby="actions-h">
+        <h2 id="actions-h">Actions</h2>
+        <BillLive
+          client:visible
+          part="timeline"
+          billId={bill.id}
+          billType={bill.bill_type}
+          status={bill.status}
+          latest_action_date={bill.latest_action_date}
+          latest_action_text={bill.latest_action_text}
+          actions={liveActions}
+        />
+      </section>
+
+      <section aria-labelledby="votes-h" data-bill-votes={bill.id} hidden>
+        <h2 id="votes-h">Roll-call votes</h2>
+      </section>
+    </div>
+
+    <aside class="bill-side">
+      <section aria-labelledby="sponsor-h" class="card">
+        <h2 id="sponsor-h" class="h-small">
+          Sponsor
+        </h2>
+        {sponsor ? <MemberChip member={sponsor} /> : <p class="muted">Not recorded.</p>}
+
+        <h2 class="h-small" id="cosponsors-h">
+          Cosponsors <span class="muted">({cosponsors.length})</span>
+        </h2>
+        {cosponsors.length > 0 ? (
+          <>
+            <p class="small muted">
+              {Object.entries(partyCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([p, n]) => `${n} ${p}`)
+                .join(' · ')}
+            </p>
+            <details class="more" open={cosponsors.length <= 10}>
+              <summary>Show cosponsors</summary>
+              <ul class="plain-list">
+                {cosponsors.map((c) => {
+                  const m = members.get(c.member_id);
+                  return (
+                    <li>
+                      {m ? <MemberChip member={m} /> : c.member_id}
+                      {c.is_original && <span class="small muted"> · original</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          </>
+        ) : (
+          <p class="muted">None.</p>
+        )}
+        {withdrawn.length > 0 && <p class="small muted">{withdrawn.length} withdrew their cosponsorship.</p>}
+      </section>
+
+      {subjects.length > 0 && (
+        <section aria-labelledby="subjects-h" class="card">
+          <h2 id="subjects-h" class="h-small">
+            Subjects <span class="muted">({subjects.length})</span>
+          </h2>
+          <details class="more" open={subjects.length <= 12}>
+            <summary>Show subjects</summary>
+            <ul class="chips">
+              {subjects.map((s) => (
+                <li class="chip">{s}</li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .breadcrumb {
+    margin-bottom: var(--space-3);
+    color: var(--text-muted);
+  }
+  .bill-actions-row {
+    margin-top: var(--space-4);
+  }
+  .bill-layout {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .bill-layout {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+  }
+  .bill-side {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+  }
+  .summary ul {
+    max-width: var(--measure);
+  }
+  .plain-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-2) 0 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-2) 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .chips .chip {
+    white-space: normal;
+  }
+</style>

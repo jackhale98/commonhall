@@ -1,0 +1,53 @@
+---
+import BillExplorer from '../../components/BillExplorer';
+import Base from '../../layouts/Base.astro';
+import { CURRENT_CONGRESS, loadBills, loadPolicyAreas } from '../../lib/build-data';
+import { congressLabel } from '../../lib/format';
+import type { BillListItem as Bill } from '../../lib/types';
+
+const [bills, policyAreas] = await Promise.all([loadBills(), loadPolicyAreas()]);
+// loadBills() is ordered by latest action, newest first.
+const initial: Bill[] = bills
+  .slice(0, 50)
+  .map(
+    ({
+      id,
+      congress,
+      bill_type,
+      number,
+      title,
+      short_title,
+      introduced_date,
+      latest_action_date,
+      latest_action_text,
+      status,
+      sponsor_id,
+      policy_area,
+    }) => ({
+      id,
+      congress,
+      bill_type,
+      number,
+      title,
+      short_title,
+      introduced_date,
+      latest_action_date,
+      latest_action_text,
+      status,
+      sponsor_id,
+      policy_area,
+    }),
+  );
+---
+
+<Base title="Bills" description={`Search and filter bills in the ${congressLabel(CURRENT_CONGRESS)}.`} section="bills">
+  <h1>Bills in the {congressLabel(CURRENT_CONGRESS)}</h1>
+  <p class="muted">
+    {bills.length > 0 ? `${bills.length.toLocaleString()} bills and resolutions.` : ''} Search titles and summaries, or
+    filter by chamber, status, policy area and the sponsor’s party.
+  </p>
+  <noscript>
+    <p class="notice">Search and filters need JavaScript. The most recently active bills are listed below.</p>
+  </noscript>
+  <BillExplorer client:load congress={CURRENT_CONGRESS} initial={initial} policyAreas={policyAreas} />
+</Base>

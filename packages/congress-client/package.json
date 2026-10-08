@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Typed clients for Congress.gov, senate.gov roll-call XML, congress-legislators, Open States and the Census geocoder.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.0"

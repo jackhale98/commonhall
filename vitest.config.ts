@@ -13,6 +13,7 @@ export default defineConfig({
       {
         test: {
           name: 'db',
+          globalSetup: ['supabase/tests/global-setup.ts'],
           include: ['supabase/tests/**/*.test.ts', 'packages/*/test-db/**/*.test.ts'],
           environment: 'node',
           // Tests share one local database; run files one at a time.

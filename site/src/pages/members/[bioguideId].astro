@@ -1,0 +1,208 @@
+---
+import BillListItem from '../../components/BillListItem';
+import MemberPhoto from '../../components/MemberPhoto';
+import Base from '../../layouts/Base.astro';
+import { CURRENT_CONGRESS, loadCosponsorCounts, loadMembers, loadSponsored } from '../../lib/build-data';
+import { congressLabel, memberRole, partyClass, partyLabel } from '../../lib/format';
+import { href } from '../../lib/paths';
+import type { Member } from '../../lib/types';
+
+export async function getStaticPaths() {
+  const members = await loadMembers();
+  return [...members.values()].map((member) => ({ params: { bioguideId: member.bioguide_id }, props: { member } }));
+}
+
+interface Props {
+  member: Member;
+}
+
+const { member } = Astro.props;
+const [sponsoredBy, cosponsorCounts] = await Promise.all([loadSponsored(), loadCosponsorCounts()]);
+const sponsored = sponsoredBy.get(member.bioguide_id) ?? [];
+const cosponsored = cosponsorCounts.get(member.bioguide_id) ?? 0;
+const role = memberRole(member);
+const laws = sponsored.filter((b) => b.status === 'law').length;
+const social = Object.entries(member.social ?? {});
+const SOCIAL_LABELS: Record<string, string> = {
+  twitter: 'X (Twitter)',
+  facebook: 'Facebook',
+  youtube: 'YouTube',
+  instagram: 'Instagram',
+  bluesky: 'Bluesky',
+  mastodon: 'Mastodon',
+};
+---
+
+<Base
+  title={member.name}
+  description={`${member.name}, ${role}. Sponsored bills, votes and contact details.`}
+  section="members"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('members/')}>Members</a> › {member.name}
+  </nav>
+
+  <header class="member-header">
+    <MemberPhoto name={member.name} url={member.photo_url} size={120} />
+    <div>
+      <h1>{member.name}</h1>
+      <p class="role">
+        <span class={`party ${partyClass(member.party)}`}>{partyLabel(member.party)}</span> · {role}
+      </p>
+      {!member.current && <p class="small muted">Not currently serving.</p>}
+      <div class="cluster" data-follow-slot data-target-type="member" data-target-id={member.bioguide_id}></div>
+    </div>
+  </header>
+
+  <div class="member-layout">
+    <div>
+      <section aria-labelledby="stats-h">
+        <h2 id="stats-h" class="visually-hidden">
+          At a glance
+        </h2>
+        <dl class="stats">
+          <div>
+            <dt>Bills sponsored</dt>
+            <dd>{sponsored.length}</dd>
+          </div>
+          <div>
+            <dt>Became law</dt>
+            <dd>{laws}</dd>
+          </div>
+          <div>
+            <dt>Bills cosponsored</dt>
+            <dd>{cosponsored}</dd>
+          </div>
+          <div data-party-rate hidden>
+            <dt>Votes with party</dt>
+            <dd>–</dd>
+          </div>
+        </dl>
+        <p class="small muted">{congressLabel(CURRENT_CONGRESS)}.</p>
+      </section>
+
+      <section aria-labelledby="sponsored-h">
+        <h2 id="sponsored-h">Sponsored bills</h2>
+        {sponsored.length > 0 ? (
+          <>
+            <ul class="list">
+              {sponsored.slice(0, 15).map((b) => (
+                <BillListItem bill={b} />
+              ))}
+            </ul>
+            {sponsored.length > 15 && (
+              <p>
+                <a href={href(`bills/?sponsor=${member.bioguide_id}`)}>All {sponsored.length} sponsored bills</a>
+              </p>
+            )}
+          </>
+        ) : (
+          <p class="muted">No bills sponsored in the {congressLabel(CURRENT_CONGRESS)} yet.</p>
+        )}
+      </section>
+
+      <section aria-labelledby="votes-h" data-member-votes={member.bioguide_id} hidden>
+        <h2 id="votes-h">Recent votes</h2>
+      </section>
+    </div>
+
+    <aside class="card contact">
+      <h2 class="h-small">Contact</h2>
+      <ul class="plain">
+        {member.website && (
+          <li>
+            <a href={member.website} rel="noopener">
+              Official website
+            </a>
+          </li>
+        )}
+        {member.contact_form && (
+          <li>
+            <a href={member.contact_form} rel="noopener">
+              Contact form
+            </a>
+          </li>
+        )}
+        {member.phone && (
+          <li>
+            Phone: <a href={`tel:${member.phone.replace(/[^\d+]/g, '')}`}>{member.phone}</a>
+          </li>
+        )}
+        {member.office && <li>{member.office}</li>}
+        {social.map(([k, url]) => (
+          <li>
+            <a href={url} rel="noopener">
+              {SOCIAL_LABELS[k] ?? k}
+            </a>
+          </li>
+        ))}
+        {!member.website && !member.phone && !member.office && social.length === 0 && (
+          <li class="muted">No contact details on file.</li>
+        )}
+      </ul>
+      <p class="small">
+        <a href={`https://www.congress.gov/member/${member.bioguide_id}`} rel="noopener">
+          Profile on Congress.gov
+        </a>
+      </p>
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .member-header {
+    display: flex;
+    gap: var(--space-5);
+    align-items: flex-start;
+    margin: var(--space-4) 0 var(--space-5);
+  }
+  .member-header h1 {
+    margin-bottom: var(--space-2);
+  }
+  .role {
+    margin-bottom: var(--space-3);
+  }
+  .member-layout {
+    display: grid;
+    gap: var(--space-6);
+  }
+  @media (min-width: 60rem) {
+    .member-layout {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+  }
+  .stats div {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+  }
+  .stats dt {
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .stats dd {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    font-weight: 700;
+  }
+  .contact {
+    align-self: start;
+  }
+  .plain {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-3);
+    display: grid;
+    gap: var(--space-2);
+  }
+  .contact a {
+    overflow-wrap: anywhere;
+  }
+</style>

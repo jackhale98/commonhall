@@ -1,0 +1,68 @@
+---
+import MemberChip from '../../components/MemberChip';
+import MemberPhoto from '../../components/MemberPhoto';
+import Base from '../../layouts/Base.astro';
+import { loadMembers } from '../../lib/build-data';
+import { LEGISLATURE_STATES, STATE_CODES, memberRole, stateName } from '../../lib/format';
+import { href } from '../../lib/paths';
+
+export function getStaticPaths() {
+  return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const members = [...(await loadMembers()).values()].filter((m) => m.current && m.state === code);
+const senators = members.filter((m) => m.chamber === 'senate').sort((a, b) => a.name.localeCompare(b.name));
+const reps = members.filter((m) => m.chamber === 'house').sort((a, b) => (a.district ?? 0) - (b.district ?? 0));
+const hasLegislature = LEGISLATURE_STATES.includes(code);
+---
+
+<Base title={name} description={`${name}’s members of Congress, state legislators and state bills.`} section="states">
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('states/')}>States</a> › {name}
+  </nav>
+  <h1>{name}</h1>
+
+  <section aria-labelledby="fed-h">
+    <h2 id="fed-h">In Congress</h2>
+    {members.length === 0 && <p class="muted">No members on file.</p>}
+    <ul class="grid people">
+      {[...senators, ...reps].map((m) => (
+        <li class="card person">
+          <MemberPhoto name={m.name} url={m.photo_url} size={56} />
+          <div>
+            <MemberChip member={m} />
+            <p class="small muted">{memberRole(m)}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  {hasLegislature && (
+    <section aria-labelledby="leg-h" data-state-legislature={code}>
+      <h2 id="leg-h">State legislature</h2>
+      <p class="muted">State legislators and bills are coming soon.</p>
+    </section>
+  )}
+</Base>
+
+<style>
+  .people {
+    list-style: none;
+    padding: 0;
+  }
+  .person {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+  .person p {
+    margin: 0;
+  }
+</style>

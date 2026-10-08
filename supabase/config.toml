@@ -426,3 +426,9 @@ import_map = "./functions/deno.json"
 enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
+
+# Public: called from the site's fallback pages; guarded by an hourly request cap.
+[functions.fetch-on-demand]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"

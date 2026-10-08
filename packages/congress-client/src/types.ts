@@ -163,3 +163,15 @@ export interface CongressInfo {
   endYear?: string;
   sessions?: CongressSession[];
 }
+
+export interface SponsoredItem {
+  congress?: number;
+  introducedDate?: string;
+  latestAction?: LatestAction;
+  number?: string;
+  policyArea?: { name?: string };
+  title?: string;
+  type?: string;
+  url?: string;
+  amendmentNumber?: string;
+}

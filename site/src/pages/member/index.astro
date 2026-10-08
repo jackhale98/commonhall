@@ -1,0 +1,17 @@
+---
+import MemberFallback from '../../components/MemberFallback';
+import Base from '../../layouts/Base.astro';
+import { href } from '../../lib/paths';
+---
+
+<Base title="Member" section="members" noindex>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('members/')}>Members</a>
+  </nav>
+  <noscript>
+    <p class="notice">
+      This page needs JavaScript. Try <a href={href('members/')}>browsing members</a>.
+    </p>
+  </noscript>
+  <MemberFallback client:load />
+</Base>

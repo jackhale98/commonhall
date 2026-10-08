@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/paths';
+---
+
+<Base title="Not found" noindex>
+  <h1 id="nf-title">Page not found</h1>
+  <p id="nf-body">
+    That page doesn’t exist. Try <a href={href('bills/')}>searching bills</a> or browsing
+    <a href={href('members/')}>members</a>.
+  </p>
+  <script is:inline define:vars={{ base: import.meta.env.BASE_URL }}>
+    // Bills and members newer than the last build (or from older Congresses) have no
+    // prerendered page; send canonical URLs to the client-rendered fallbacks.
+    (function () {
+      const root = base.endsWith('/') ? base : base + '/';
+      const path = location.pathname.slice(root.length - 1);
+      const bill = /^\/bills\/(\d{2,3})\/([a-z]+)\/(\d+)\/?$/.exec(path);
+      if (bill) {
+        document.getElementById('nf-title').textContent = 'Loading bill…';
+        location.replace(root + 'bill/?id=' + bill[1] + '-' + bill[2] + '-' + bill[3]);
+        return;
+      }
+      const member = /^\/members\/([A-Z]\d{6})\/?$/.exec(path);
+      if (member) {
+        document.getElementById('nf-title').textContent = 'Loading member…';
+        location.replace(root + 'member/?id=' + member[1]);
+      }
+    })();
+  </script>
+</Base>

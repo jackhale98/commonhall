@@ -19,11 +19,17 @@ const {
 } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const sources = [
+  { name: 'Congress.gov', url: 'https://api.congress.gov/' },
+  { name: 'senate.gov', url: 'https://www.senate.gov/legislative/votes.htm' },
+  { name: 'congress-legislators', url: 'https://github.com/unitedstates/congress-legislators' },
+  { name: 'Open States', url: 'https://openstates.org/' },
+  { name: 'the Census Geocoder', url: 'https://geocoding.geo.census.gov/' },
+];
 const nav = [
   { key: 'bills', label: 'Bills', path: 'bills/' },
   { key: 'members', label: 'Members', path: 'members/' },
   { key: 'states', label: 'States', path: 'states/' },
-  { key: 'feed', label: 'Feed', path: 'feed/' },
 ] as const;
 ---
 
@@ -72,11 +78,6 @@ const nav = [
                 </a>
               </li>
             ))}
-            <li>
-              <a href={href('account/')} aria-current={section === 'account' ? 'page' : undefined}>
-                Account
-              </a>
-            </li>
           </ul>
         </nav>
         <form class="header-search" role="search" action={href('bills/')} method="get">
@@ -94,11 +95,13 @@ const nav = [
     <footer class="site-footer">
       <div class="container cluster small muted">
         <span>
-          Data from <a href="https://api.congress.gov/">Congress.gov</a>,
-          <a href="https://www.senate.gov/legislative/votes.htm">senate.gov</a>,
-          <a href="https://github.com/unitedstates/congress-legislators">congress-legislators</a>,
-          <a href="https://openstates.org/">Open States</a> and the
-          <a href="https://geocoding.geo.census.gov/">Census Geocoder</a>.
+          Data from{' '}
+          {sources.map((source, i) => (
+            <>
+              <a href={source.url}>{source.name}</a>
+              {i < sources.length - 2 ? ', ' : i === sources.length - 2 ? ' and ' : '.'}
+            </>
+          ))}
         </span>
         <span>Free and open source. No ads, no tracking.</span>
         <button type="button" class="link-button" id="theme-toggle" aria-pressed="false">
@@ -156,8 +159,9 @@ const nav = [
     padding: 0;
   }
   .nav-list a {
-    display: inline-block;
-    padding-block: var(--space-2);
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--text);
     text-decoration: none;
   }

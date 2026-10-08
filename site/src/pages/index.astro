@@ -1,17 +1,77 @@
 ---
+import BillListItem from '../components/BillListItem';
 import Base from '../layouts/Base.astro';
+import { CURRENT_CONGRESS, loadBills } from '../lib/build-data';
+import { congressLabel } from '../lib/format';
 import { href } from '../lib/paths';
+
+const bills = await loadBills();
+const recent = bills.slice(0, 8);
+const laws = bills.filter((b) => b.status === 'law').length;
 ---
 
 <Base section="home">
-  <h1>Follow what Congress and your statehouse are doing</h1>
-  <p class="muted">
-    Browse federal and state bills, legislators and roll-call votes. Sign in with your email to follow bills and
-    legislators and see their activity in one feed.
-  </p>
-  <p>
-    <a class="button primary" href={href('bills/')}>
-      Browse bills
-    </a>
-  </p>
+  <section class="hero">
+    <h1>Follow what Congress and your statehouse are doing</h1>
+    <p class="lede">
+      Federal and state bills, legislators and roll-call votes, in plain view. Sign in with your email to follow bills
+      and legislators and see their activity in one feed.
+    </p>
+    <form class="hero-search" role="search" action={href('bills/')} method="get">
+      <label for="home-q" class="visually-hidden">
+        Search bills
+      </label>
+      <input id="home-q" name="q" type="search" placeholder="Search bills, e.g. “veterans housing”" />
+      <button type="submit" class="primary">
+        Search
+      </button>
+    </form>
+  </section>
+
+  <div data-home-feed></div>
+  <div data-find-reps></div>
+
+  <section aria-labelledby="recent-h">
+    <h2 id="recent-h">Recently active bills</h2>
+    {recent.length > 0 ? (
+      <>
+        <ul class="list">
+          {recent.map((b) => (
+            <BillListItem bill={b} />
+          ))}
+        </ul>
+        <p>
+          <a href={href('bills/')}>
+            All {bills.length.toLocaleString()} bills in the {congressLabel(CURRENT_CONGRESS)}
+          </a>
+          {laws > 0 && <span class="muted"> · {laws} have become law</span>}
+        </p>
+      </>
+    ) : (
+      <p class="muted">No bills loaded yet.</p>
+    )}
+  </section>
+
+  <div data-recent-votes></div>
 </Base>
+
+<style>
+  .hero {
+    padding-block: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--space-5);
+  }
+  .hero h1 {
+    max-width: 22ch;
+    font-size: clamp(2rem, 1.5rem + 2.5vw, 3.2rem);
+  }
+  .lede {
+    font-size: var(--step-1);
+    color: var(--text-muted);
+  }
+  .hero-search {
+    display: flex;
+    gap: var(--space-2);
+    max-width: 36rem;
+  }
+</style>

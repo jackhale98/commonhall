@@ -14,9 +14,11 @@ npm run db:start      # supabase start: Postgres, Auth, REST and functions in Do
 npm run db:reset      # apply migrations and load supabase/seed.sql
 cp .env.example site/.env   # then paste the local anon key printed by `supabase status`
 npm run dev           # site on http://localhost:4321
+# Quicker builds while working on templates: SITE_MAX_BILL_PAGES=200 npm run build
 ```
 
-No API key is needed to work on the UI: `seed.sql` loads a small fixture dataset.
+No API key is needed to work on the UI: `seed.sql` loads all current members and
+50 real bills. Regenerate it with `scripts/make-seed.ts` (see the header of that file).
 
 ## Checks
 
@@ -27,7 +29,7 @@ npm run lint          # ESLint + Prettier
 npm run typecheck     # tsc for packages/scripts, astro check for the site
 npm test -- --project unit   # API client, status logic, site helpers (fixtures only, no network)
 npm run test:db       # migrations, RLS and sync jobs against local Supabase
-                      # (truncates data tables in your local DB; `npm run db:reset` reloads the seed)
+                      # (uses your local DB, then reloads supabase/seed.sql when it finishes)
 (cd supabase/functions && deno check */index.ts)
 ```
 

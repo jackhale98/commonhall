@@ -402,3 +402,218 @@ th {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- Components ----------------------------------------------------------- */
+
+.h-small {
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  font-weight: 700;
+  margin: var(--space-4) 0 var(--space-2);
+}
+.h-small:first-child {
+  margin-top: 0;
+}
+
+/* Status tracker */
+.tracker-label {
+  margin-bottom: var(--space-3);
+}
+.tracker-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  display: grid;
+  grid-auto-flow: row;
+  gap: var(--space-2);
+}
+@media (min-width: 40rem) {
+  .tracker-steps {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 0;
+  }
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+@media (min-width: 40rem) {
+  .step {
+    flex-direction: column;
+    text-align: center;
+    position: relative;
+  }
+  .step + .step::before {
+    content: '';
+    position: absolute;
+    top: 0.75rem;
+    right: 50%;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .step-done + .step::before,
+  .step-done + .step-current::before {
+    background: var(--text);
+  }
+}
+.step-dot {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: var(--bg);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.step-done,
+.step-current {
+  color: var(--text);
+}
+.step-done .step-dot {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+.step-current .step-dot {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 5px var(--text);
+}
+.step-current .step-name {
+  font-weight: 700;
+}
+
+.latest-action {
+  border-left: 4px solid var(--text);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-subtle);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.latest-action p {
+  margin: 0;
+}
+
+/* Action timeline */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid var(--border);
+}
+.timeline > li {
+  position: relative;
+  padding: 0 0 var(--space-4) var(--space-4);
+}
+.timeline > li::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 0.45em;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border-strong);
+}
+.timeline time {
+  font-weight: 600;
+  font-size: var(--step--1);
+  margin-right: var(--space-2);
+}
+.timeline p {
+  margin: var(--space-1) 0 0;
+}
+
+details.more > summary {
+  cursor: pointer;
+  color: var(--link);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Bill lists */
+.bill-item .bill-title {
+  font-family: var(--font-serif);
+  font-size: var(--step-1);
+  margin: var(--space-1) 0;
+}
+.bill-item .bill-title a {
+  color: var(--text);
+  text-decoration: none;
+}
+.bill-item .bill-title a:hover {
+  text-decoration: underline;
+}
+.bill-item p {
+  margin: 0;
+}
+.status-chip {
+  font-weight: 600;
+}
+
+/* Members */
+.member-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+}
+.photo {
+  display: block;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--bg-subtle);
+}
+.photo-fallback {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: end;
+  margin-bottom: var(--space-4);
+}
+.toolbar .field {
+  margin: 0;
+  flex: 1 1 10rem;
+}
+
+.pager {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+.eyebrow {
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.official-title {
+  color: var(--text-muted);
+  font-style: italic;
+}

@@ -1,0 +1,124 @@
+---
+import MemberChip from '../../components/MemberChip';
+import Base from '../../layouts/Base.astro';
+import { CURRENT_CONGRESS, loadMembers } from '../../lib/build-data';
+import { congressLabel, stateName } from '../../lib/format';
+import { stateHref } from '../../lib/paths';
+
+const members = [...(await loadMembers()).values()].filter((m) => m.current && m.state);
+const byState = new Map<string, typeof members>();
+for (const m of members) byState.set(m.state!, [...(byState.get(m.state!) ?? []), m]);
+const states = [...byState.keys()].sort((a, b) => stateName(a).localeCompare(stateName(b)));
+const counts = {
+  senate: members.filter((m) => m.chamber === 'senate').length,
+  house: members.filter((m) => m.chamber === 'house').length,
+};
+const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
+---
+
+<Base
+  title="Members"
+  description={`Senators and representatives in the ${congressLabel(CURRENT_CONGRESS)}, by state.`}
+  section="members"
+>
+  <h1>Members of the {congressLabel(CURRENT_CONGRESS)}</h1>
+  <p class="muted">
+    {counts.senate} senators and {counts.house} representatives and delegates.
+  </p>
+
+  <form class="toolbar" id="member-filter" aria-label="Filter members">
+    <div class="field">
+      <label for="f-party">Party</label>
+      <select id="f-party" name="party">
+        <option value="">All</option>
+        <option value="D">Democrat</option>
+        <option value="R">Republican</option>
+        <option value="I">Independent</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="f-chamber">Chamber</label>
+      <select id="f-chamber" name="chamber">
+        <option value="">Both</option>
+        <option value="senate">Senate</option>
+        <option value="house">House</option>
+      </select>
+    </div>
+    <div class="field" style="flex-basis: 14rem">
+      <label for="f-name">Name</label>
+      <input id="f-name" name="name" type="search" autocomplete="off" />
+    </div>
+  </form>
+  <p class="small muted" id="member-count" aria-live="polite"></p>
+
+  <div class="states">
+    {states.map((state) => {
+      const list = byState.get(state)!;
+      const senators = list.filter((m) => m.chamber === 'senate').sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+      const reps = list.filter((m) => m.chamber === 'house').sort((a, b) => (a.district ?? 0) - (b.district ?? 0));
+      return (
+        <section class="state" data-state={state} aria-labelledby={`st-${state}`}>
+          <h2 id={`st-${state}`} class="h-small">
+            <a href={stateHref(state)}>{stateName(state)}</a>
+          </h2>
+          <ul class="plain-members">
+            {[...senators, ...reps].map((m) => (
+              <li data-party={(m.party ?? '').charAt(0)} data-chamber={m.chamber} data-name={m.name.toLowerCase()}>
+                <MemberChip member={m} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      );
+    })}
+  </div>
+</Base>
+
+<script>
+  const form = document.getElementById('member-filter') as HTMLFormElement | null;
+  const count = document.getElementById('member-count');
+  const apply = () => {
+    if (!form) return;
+    const data = new FormData(form);
+    const party = String(data.get('party') ?? '');
+    const chamber = String(data.get('chamber') ?? '');
+    const name = String(data.get('name') ?? '')
+      .trim()
+      .toLowerCase();
+    let shown = 0;
+    document.querySelectorAll<HTMLElement>('.state').forEach((section) => {
+      let visible = 0;
+      section.querySelectorAll<HTMLElement>('li[data-party]').forEach((li) => {
+        const ok =
+          (!party || li.dataset.party === party) &&
+          (!chamber || li.dataset.chamber === chamber) &&
+          (!name || (li.dataset.name ?? '').includes(name));
+        li.hidden = !ok;
+        if (ok) visible += 1;
+      });
+      section.hidden = visible === 0;
+      shown += visible;
+    });
+    if (count) count.textContent = party || chamber || name ? `${shown} members shown` : '';
+  };
+  form?.addEventListener('input', apply);
+  form?.addEventListener('submit', (e) => e.preventDefault());
+</script>
+
+<style>
+  .states {
+    columns: 18rem;
+    column-gap: var(--space-6);
+  }
+  .state {
+    break-inside: avoid;
+    margin-bottom: var(--space-5);
+  }
+  .plain-members {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-1);
+  }
+</style>

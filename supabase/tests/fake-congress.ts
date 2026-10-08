@@ -214,6 +214,40 @@ export class FakeCongress {
         }
       }
     }
+    if ((m = /^\/member\/([A-Z]\d{6})(\/sponsored-legislation)?$/.exec(path))) {
+      const mem = this.members.get(m[1]!);
+      if (!mem) return this.json({ error: 'not found' }, 404);
+      if (m[2]) {
+        const items = [...this.bills.values()]
+          .filter((b) => b.sponsor?.bioguideId === mem.bioguideId)
+          .map((b) => ({ ...this.listItem(b), policyArea: b.policyArea ? { name: b.policyArea } : undefined }));
+        return this.page('sponsoredLegislation', items, url, path);
+      }
+      const [last, first] = mem.name.split(',').map((x) => x.trim());
+      return this.json({
+        member: {
+          bioguideId: mem.bioguideId,
+          currentMember: mem.current,
+          directOrderName: `${first} ${last}`,
+          invertedOrderName: mem.name,
+          depiction: mem.imageUrl ? { imageUrl: mem.imageUrl } : undefined,
+          officialWebsiteUrl: 'https://example.house.gov',
+          addressInformation: { phoneNumber: '(202) 225-0000', officeAddress: '1 Longworth HOB' },
+          partyHistory: [{ partyAbbreviation: mem.partyName[0], partyName: mem.partyName, startYear: 2019 }],
+          state: mem.state,
+          terms: [
+            {
+              chamber: mem.chamber,
+              congress: 118,
+              startYear: 2023,
+              endYear: 2025,
+              stateCode: 'TX',
+              district: mem.district,
+            },
+          ],
+        },
+      });
+    }
     if ((m = /^\/member\/congress\/(\d+)$/.exec(path))) {
       const current = url.searchParams.get('currentMember') === 'true';
       const items = [...this.members.values()]
