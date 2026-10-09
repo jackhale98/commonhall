@@ -41,6 +41,13 @@ about, and take part in moderated public discussions.
   small versus large donors, PACs, in-state versus out-of-state money, and the
   employers of their largest donors.
 
+**The executive branch**
+
+- Executive orders as published in the Federal Register, with which earlier
+  orders each one revokes, and counts per year and per presidential term.
+- Every nomination the President sends to the Senate and where it stands, from
+  committee to confirmation, linked to the Senate's recorded vote.
+
 **Massachusetts** (covered in full)
 
 - State legislators by chamber, with a party chart of each chamber.
@@ -82,6 +89,8 @@ automatically.
 | Federal bills, actions, summaries, members | [Congress.gov API](https://api.congress.gov/) | every 10 minutes |
 | House and Senate roll-call votes | Congress.gov and [senate.gov](https://www.senate.gov/legislative/votes.htm) | every 10 minutes |
 | Member contact details and IDs | [congress-legislators](https://github.com/unitedstates/congress-legislators) (public domain) | daily |
+| Executive orders | [Federal Register API](https://www.federalregister.gov/developers/documentation/api/v1) | hourly |
+| Nominations | Congress.gov | hourly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
 | State legislators and bills | [Open States](https://openstates.org/) (CC0) | nightly, Massachusetts first |
@@ -160,7 +169,8 @@ and [discussion rules](https://jackhale98.github.io/opencongress/moderation/).
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
 | Massachusetts bills | Arriving with the nightly Open States sync |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
-| Executive orders, nominations, Supreme Court | In progress |
+| Executive orders and nominations | Ready; load on the first hourly run after deploy |
+| Supreme Court | In progress |
 
 The site is static and rebuilds nightly (and on every deploy), so new data shows
 up on pages the next morning; bill pages also fetch their latest status live.

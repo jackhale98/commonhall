@@ -29,6 +29,7 @@ import {
 import { upsertIfChanged, type Sql } from '../db.ts';
 import { partyCode, stateCode, toTimestamp } from '../text.ts';
 import { writeFeedEvents, type FeedEventRow } from './events.ts';
+import { nominationIdFromSenate } from './executive.ts';
 
 export interface VoteRow extends Record<string, unknown> {
   id: string;
@@ -50,6 +51,8 @@ export interface VoteRow extends Record<string, unknown> {
   not_voting_total: number;
   source_url: string | null;
   source_updated_at: string | null;
+  /** Senate votes on a nomination (confirmation, cloture), e.g. "119-pn615-2". */
+  nomination_id?: string | null;
 }
 
 export interface PositionRow {
@@ -325,6 +328,8 @@ export function senateVoteRow(v: SenateVote): VoteRow {
     not_voting_total: v.stated.notVoting,
     source_url: voteHtmlUrl(v.congress, v.session, v.rollNumber),
     source_updated_at: v.modifyDate ? new Date(v.modifyDate).toISOString() : null,
+    nomination_id:
+      v.document?.type === 'PN' && v.document.number ? nominationIdFromSenate(congress, v.document.number) : null,
   };
 }
 

@@ -1,0 +1,319 @@
+---
+import BarList from '../../components/viz/BarList';
+import StackedBar from '../../components/viz/StackedBar';
+import Base from '../../layouts/Base.astro';
+import { CURRENT_CONGRESS, loadExecutiveOrders, loadNominations, loadVotesByNomination } from '../../lib/build-data';
+import { NOMINATION_STATUS, nominationUrl, type Nomination, type NominationStatus } from '../../lib/executive';
+import { congressLabel, formatDate } from '../../lib/format';
+import { voteHref } from '../../lib/paths';
+
+const [orders, nominations, votesByNomination] = await Promise.all([
+  loadExecutiveOrders(),
+  loadNominations(),
+  loadVotesByNomination(),
+]);
+const congress = congressLabel(CURRENT_CONGRESS);
+
+// Executive orders, oldest first by signing date (publication date when unsigned), split into terms:
+// consecutive runs of one president. The newest run is the current term.
+const when = (o: (typeof orders)[number]) => o.signing_date ?? o.publication_date;
+const chronological = [...orders].sort(
+  (a, b) => when(a).localeCompare(when(b)) || (a.eo_number ?? 0) - (b.eo_number ?? 0),
+);
+const terms: { president: string | null; name: string; orders: typeof orders }[] = [];
+for (const o of chronological) {
+  const last = terms[terms.length - 1];
+  if (last && last.president === o.president) last.orders.push(o);
+  else terms.push({ president: o.president, name: o.president_name ?? 'Unknown', orders: [o] });
+}
+const currentTerm = terms[terms.length - 1];
+const currentName = currentTerm?.name ?? null;
+const currentOrders = [...(currentTerm?.orders ?? [])].reverse();
+const byNumber = new Map(orders.filter((o) => o.eo_number).map((o) => [o.eo_number!, o]));
+// "Revoked by" comes from the later order's own "Revokes" note as well as the earlier order's notes.
+const revokedBy = new Map<number, Set<number>>();
+for (const o of orders) {
+  for (const n of o.revokes ?? [])
+    if (o.eo_number) (revokedBy.get(n) ?? revokedBy.set(n, new Set()).get(n)!).add(o.eo_number);
+  for (const n of o.revoked_by ?? [])
+    if (o.eo_number) (revokedBy.get(o.eo_number) ?? revokedBy.set(o.eo_number, new Set()).get(o.eo_number)!).add(n);
+}
+const byYear = [...Map.groupBy(currentOrders, (o) => (o.signing_date ?? o.publication_date).slice(0, 4))]
+  .map(([year, list]) => ({ label: year, value: list.length }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+const termBars = terms
+  .map((t) => {
+    const from = when(t.orders[0]!).slice(0, 4);
+    const to = when(t.orders[t.orders.length - 1]!).slice(0, 4);
+    return { label: `${t.name} (${from === to ? from : `${from}–${to}`})`, value: t.orders.length };
+  })
+  .reverse();
+
+// Nominations: civilian positions (military promotions come in long lists and are counted separately).
+const civilian = nominations.filter((n) => !n.is_military);
+const military = nominations.filter((n) => n.is_military);
+const count = (list: Nomination[], s: NominationStatus) => list.filter((n) => n.status === s).length;
+const statusOrder: NominationStatus[] = [
+  'confirmed',
+  'floor',
+  'on_calendar',
+  'reported',
+  'in_committee',
+  'received',
+  'withdrawn',
+  'returned',
+  'rejected',
+];
+const segments = statusOrder
+  .map((s) => ({ label: NOMINATION_STATUS[s].label, value: count(civilian, s), tone: NOMINATION_STATUS[s].tone }))
+  .filter((s) => s.value > 0);
+const confirmed = civilian.filter((n) => n.status === 'confirmed').slice(0, 20);
+const pending = civilian
+  .filter((n) => NOMINATION_STATUS[n.status].pending)
+  .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status))
+  .slice(0, 20);
+const pendingTotal = civilian.filter((n) => NOMINATION_STATUS[n.status].pending).length;
+const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation;
+---
+
+<Base
+  title="Executive branch"
+  description="Executive orders signed by the President and nominations sent to the Senate, with how each one stands."
+  section="executive"
+>
+  <header class="page-head wash">
+    <p class="kicker">Executive branch</p>
+    <h1>The President’s orders and nominees</h1>
+    <p class="lede">
+      Executive orders as published in the Federal Register, and every nomination the President sends to the Senate,
+      from committee to confirmation vote.
+    </p>
+  </header>
+
+  <dl class="stat-grid">
+    <div class="stat">
+      <dt>
+        Executive orders{currentName && ` by ${currentName}`}
+        {currentName && ' (this term)'}
+      </dt>
+      <dd>{currentOrders.length.toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Nominees confirmed ({congress})</dt>
+      <dd>{count(civilian, 'confirmed').toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Awaiting the Senate</dt>
+      <dd>{pendingTotal.toLocaleString()}</dd>
+    </div>
+  </dl>
+
+  <section aria-labelledby="eo-h">
+    <div class="section-head">
+      <h2 id="eo-h">Executive orders</h2>
+      <a class="see-all" href="https://www.federalregister.gov/presidential-documents/executive-orders" rel="noopener">
+        Federal Register
+      </a>
+    </div>
+    {orders.length === 0 ? (
+      <p class="muted">Executive orders have not loaded yet.</p>
+    ) : (
+      <div class="eo-layout">
+        <div class="panel">
+          <ul class="list eo-list">
+            {currentOrders.slice(0, 30).map((o) => {
+              const revokes = (o.revokes ?? []).filter(Boolean);
+              const revoked = [...(revokedBy.get(o.eo_number ?? -1) ?? [])];
+              return (
+                <li>
+                  <p class="meta">
+                    {o.eo_number ? `EO ${o.eo_number}` : 'Executive order'} · signed {formatDate(o.signing_date)}
+                  </p>
+                  <p class="eo-title">
+                    <a href={o.html_url} rel="noopener">
+                      {o.title}
+                    </a>
+                  </p>
+                  {(revokes.length > 0 || revoked.length > 0) && (
+                    <p class="small muted">
+                      {revokes.length > 0 && (
+                        <>
+                          Revokes{' '}
+                          {revokes.map((n, i) => (
+                            <>
+                              {i > 0 && ', '}
+                              {byNumber.get(n) ? <a href={byNumber.get(n)!.html_url}>EO {n}</a> : `EO ${n}`}
+                            </>
+                          ))}
+                          {revoked.length > 0 && ' · '}
+                        </>
+                      )}
+                      {revoked.length > 0 && (
+                        <strong>
+                          Revoked by{' '}
+                          {revoked.map((n, i) => (
+                            <>
+                              {i > 0 && ', '}
+                              {byNumber.get(n) ? <a href={byNumber.get(n)!.html_url}>EO {n}</a> : `EO ${n}`}
+                            </>
+                          ))}
+                        </strong>
+                      )}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          {currentOrders.length > 30 && (
+            <p class="small muted">
+              Showing the latest 30 of {currentOrders.length.toLocaleString()}. All are on the{' '}
+              <a href="https://www.federalregister.gov/presidential-documents/executive-orders" rel="noopener">
+                Federal Register
+              </a>
+              .
+            </p>
+          )}
+        </div>
+        <aside>
+          {byYear.length > 0 && (
+            <div class="panel side-panel">
+              <h3 class="h-small">Signed per year this term</h3>
+              <BarList items={byYear} label="Executive orders signed per year" />
+            </div>
+          )}
+          {termBars.length > 1 && (
+            <div class="panel side-panel">
+              <h3 class="h-small">Orders per presidential term since 2009</h3>
+              <BarList items={termBars} label="Executive orders per presidential term" tone="fill-sky" />
+            </div>
+          )}
+        </aside>
+      </div>
+    )}
+  </section>
+
+  <section aria-labelledby="nom-h">
+    <div class="section-head">
+      <h2 id="nom-h">Nominations</h2>
+      <a class="see-all" href="https://www.congress.gov/nominations" rel="noopener">
+        Congress.gov
+      </a>
+    </div>
+    {civilian.length === 0 ? (
+      <p class="muted">Nominations have not loaded yet.</p>
+    ) : (
+      <>
+        <div class="panel">
+          <h3 class="h-small">Where {civilian.length.toLocaleString()} civilian nominations stand</h3>
+          <StackedBar segments={segments} legend />
+          {military.length > 0 && (
+            <p class="small muted">
+              Plus {military.length.toLocaleString()} lists of military promotions, usually confirmed together without a
+              recorded vote.
+            </p>
+          )}
+        </div>
+        <div class="nom-columns">
+          <div>
+            <h3>Recently confirmed</h3>
+            <ul class="list panel nom-list">
+              {confirmed.map((n) => {
+                const vote = votesByNomination.get(n.id)?.find((v) => /nomination/i.test(v.question ?? ''));
+                return (
+                  <li>
+                    <p class="meta">
+                      {n.organization ?? 'Nomination'} · confirmed {formatDate(n.latest_action_date)}
+                    </p>
+                    <p class="nom-name">
+                      <a href={nominationUrl(n)} rel="noopener">
+                        {nomineeLabel(n)}
+                      </a>
+                    </p>
+                    {n.position && <p class="small">{n.position}</p>}
+                    <p class="small muted">
+                      {vote ? (
+                        <a href={voteHref(vote.id)}>
+                          Senate vote {vote.yea_total}–{vote.nay_total}
+                        </a>
+                      ) : /voice vote|unanimous consent/i.test(n.latest_action_text ?? '') ? (
+                        'By voice vote or unanimous consent'
+                      ) : (
+                        n.latest_action_text
+                      )}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div>
+            <h3>Awaiting the Senate</h3>
+            <ul class="list panel nom-list">
+              {pending.map((n) => (
+                <li>
+                  <p class="meta">
+                    <span class="chip">{NOMINATION_STATUS[n.status].label}</span> · received{' '}
+                    {formatDate(n.received_date)}
+                  </p>
+                  <p class="nom-name">
+                    <a href={nominationUrl(n)} rel="noopener">
+                      {nomineeLabel(n)}
+                    </a>
+                  </p>
+                  {n.position && <p class="small">{n.position}</p>}
+                  {n.latest_action_text && (
+                    <p class="small muted">
+                      {formatDate(n.latest_action_date)}: {n.latest_action_text}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </>
+    )}
+  </section>
+  <p class="small muted">
+    Sources: the Federal Register (executive orders since 2009) and Congress.gov (nominations in the {congress}).
+    Refreshed hourly.
+  </p>
+</Base>
+
+<style>
+  .stat-grid {
+    margin-top: var(--space-5);
+  }
+  .eo-layout {
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 60rem) {
+    .eo-layout {
+      grid-template-columns: 2fr 1fr;
+      align-items: start;
+    }
+  }
+  .side-panel {
+    margin-bottom: var(--space-4);
+  }
+  .eo-title,
+  .nom-name {
+    margin: 0;
+    font-weight: 650;
+  }
+  .nom-list p {
+    margin: 0;
+  }
+  .nom-columns {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+  @media (min-width: 50rem) {
+    .nom-columns {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

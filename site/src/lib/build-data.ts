@@ -7,6 +7,7 @@
  */
 import { congressForDate } from '@civic/congress-client/ids';
 import demoData from '../data/demo.json';
+import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
@@ -64,6 +65,7 @@ function demoQuery<T>(table: string, params: Params): T[] {
     if (value.startsWith('eq.')) rows = rows.filter((r) => String(r[key]) === value.slice(3));
     else if (value.startsWith('neq.')) rows = rows.filter((r) => String(r[key]) !== value.slice(4));
     else if (value === 'is.null') rows = rows.filter((r) => r[key] === null || r[key] === undefined);
+    else if (value === 'not.is.null') rows = rows.filter((r) => r[key] !== null && r[key] !== undefined);
     else if (value.startsWith('in.(')) {
       const wanted = new Set(
         value
@@ -86,14 +88,15 @@ function selectAll<T>(table: string, params: Params = {}): Promise<T[]> {
 }
 
 /**
- * For tables added after launch: a missing table (its migration not applied yet,
- * PostgREST PGRST205) reads as empty instead of failing the whole build.
+ * For tables and columns added after launch: when the migration is not applied yet
+ * (PostgREST PGRST205 for a table, 42703 for a column) the read is empty instead
+ * of failing the whole build.
  */
 async function selectAllOptional<T>(table: string, params: Params = {}): Promise<T[]> {
   try {
     return await selectAll<T>(table, params);
   } catch (error) {
-    if (error instanceof RestError && error.status === 404 && error.message.includes('PGRST205')) {
+    if (error instanceof RestError && /PGRST205|42703/.test(error.message)) {
       console.warn(`[build-data] ${table} is not in the database yet; skipping it`);
       return [];
     }
@@ -332,6 +335,39 @@ export const loadMemberFinance = memo(
         await selectAllOptional<MemberFinance>('member_finance', { select: FINANCE_COLUMNS, order: 'member_id.asc' })
       ).map((f) => [f.member_id, f]),
     ),
+);
+
+// ---- Executive branch ---------------------------------------------------------
+
+/** Executive orders since 2009, newest first. */
+export const loadExecutiveOrders = memo(async () =>
+  selectAllOptional<ExecutiveOrder>('executive_orders', {
+    select: EXECUTIVE_ORDER_COLUMNS,
+    signing_date: 'gte.2009-01-20',
+    order: 'signing_date.desc.nullslast,eo_number.desc.nullslast',
+  }),
+);
+
+/** Nominations received in the current Congress (civilian and military), latest action first. */
+export const loadNominations = memo(async () =>
+  selectAllOptional<Nomination>('nominations', {
+    select: NOMINATION_COLUMNS,
+    congress: `eq.${CURRENT_CONGRESS}`,
+    order: 'latest_action_date.desc.nullslast,id.desc',
+  }),
+);
+
+/** Senate roll calls on nominations, grouped by nomination id (newest first). */
+export const loadVotesByNomination = memo(async () =>
+  groupBy(
+    await selectAllOptional<VoteSummary & { nomination_id: string }>('votes', {
+      select:
+        'id,chamber,roll_number,date,question,result,bill_id,yea_total,nay_total,present_total,not_voting_total,nomination_id',
+      nomination_id: 'not.is.null',
+      order: 'date.desc.nullslast,id.desc',
+    }),
+    (v) => v.nomination_id,
+  ),
 );
 
 // ---- Boston -----------------------------------------------------------------

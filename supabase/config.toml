@@ -465,3 +465,8 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
 static_files = ["./data/boston-council-seats.json"]
+
+[functions.sync-executive]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"

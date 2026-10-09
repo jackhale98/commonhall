@@ -20,6 +20,7 @@ import type {
   HouseVoteMembers,
   MemberDetail,
   MemberListItem,
+  NominationListItem,
   SponsoredItem,
   TextVersion,
 } from './types.ts';
@@ -225,6 +226,16 @@ export class CongressClient {
   }
 
   // ---- House votes -------------------------------------------------------
+
+  // ---- Nominations ---------------------------------------------------------
+
+  /** Nominations received in a Congress; fromDateTime limits to those updated since. */
+  listNominations(congress: number, options: { fromDateTime?: string } = {}): AsyncGenerator<NominationListItem> {
+    return this.paginate<'nominations', NominationListItem>(`/nomination/${congress}`, 'nominations', {
+      fromDateTime: options.fromDateTime ? toApiDateTime(options.fromDateTime) : undefined,
+      limit: MAX_PAGE_SIZE,
+    });
+  }
 
   listHouseVotes(congress: number, session: number): AsyncGenerator<HouseVoteListItem> {
     return this.paginate<'houseRollCallVotes', HouseVoteListItem>(

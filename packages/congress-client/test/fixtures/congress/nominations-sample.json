@@ -1,0 +1,84 @@
+{
+  "_note": "Shaped by the published OpenAPI schema (components.schemas.nomination). PN373 and PN615-2 follow senate.gov records (descriptions from the vote documents, outcomes from the 2026 vote menu); PN480 and PN501 are illustrative. Not a recorded response.",
+  "nominations": [
+    {
+      "citation": "PN615-2",
+      "congress": 119,
+      "description": "Alexander C. Van Hook, of Louisiana, to be United States District Judge for the Western District of Louisiana.",
+      "latestAction": {
+        "actionDate": "2026-01-08",
+        "text": "Confirmed by the Senate by Yea-Nay Vote. 53 - 40. Record Vote Number: 6."
+      },
+      "nominationType": {
+        "isCivilian": true,
+        "isMilitary": false
+      },
+      "number": 615,
+      "organization": "The Judiciary",
+      "partNumber": "02",
+      "receivedDate": "2025-10-06",
+      "updateDate": "2026-01-09T05:12:44Z",
+      "url": "https://api.congress.gov/v3/nomination/119/615?format=json"
+    },
+    {
+      "citation": "PN373",
+      "congress": 119,
+      "description": "Sara Bailey, of Texas, to be Director of National Drug Control Policy.",
+      "latestAction": {
+        "actionDate": "2026-01-06",
+        "text": "Confirmed by the Senate by Yea-Nay Vote. 52 - 48. Record Vote Number: 3."
+      },
+      "nominationType": {
+        "isCivilian": true,
+        "isMilitary": false
+      },
+      "number": 373,
+      "organization": "Executive Office of the President",
+      "partNumber": "00",
+      "receivedDate": "2025-05-05",
+      "updateDate": "2026-01-07T05:12:44Z",
+      "url": "https://api.congress.gov/v3/nomination/119/373?format=json"
+    },
+    {
+      "citation": "PN480",
+      "congress": 119,
+      "description": "Jordan Example, of Ohio, to be an Assistant Secretary of Commerce, vice Pat Smith, resigned.",
+      "latestAction": {
+        "actionDate": "2025-09-10",
+        "text": "Received in the Senate and referred to the Committee on Commerce, Science, and Transportation."
+      },
+      "nominationType": {
+        "isCivilian": true,
+        "isMilitary": false
+      },
+      "number": 480,
+      "organization": "Department of Commerce",
+      "partNumber": "00",
+      "receivedDate": "2025-09-10",
+      "updateDate": "2025-09-11T04:00:00Z",
+      "url": "https://api.congress.gov/v3/nomination/119/480?format=json"
+    },
+    {
+      "citation": "PN501",
+      "congress": 119,
+      "description": "Army nominations (12) beginning JANE DOE, and ending JOHN ROE, which nominations were received by the Senate and appeared in the Congressional Record on September 15, 2025.",
+      "latestAction": {
+        "actionDate": "2025-10-01",
+        "text": "Confirmed by the Senate by Voice Vote."
+      },
+      "nominationType": {
+        "isCivilian": false,
+        "isMilitary": true
+      },
+      "number": 501,
+      "organization": "Army",
+      "partNumber": "00",
+      "receivedDate": "2025-09-15",
+      "updateDate": "2025-10-02T04:00:00Z",
+      "url": "https://api.congress.gov/v3/nomination/119/501?format=json"
+    }
+  ],
+  "pagination": {
+    "count": 4
+  }
+}

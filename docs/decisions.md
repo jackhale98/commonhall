@@ -416,3 +416,25 @@ Both chambers load the newest roll calls first, and the Senate (capped per run)
 runs before the House, so a partial load already shows recent votes and neither
 chamber waits for the other to finish. Stored roll calls are skipped by checking
 the database, so the order does not affect resuming.
+
+## 43. Executive orders and nominations
+
+Approved by the owner. `/executive/` shows executive orders (Federal Register API,
+no key) and presidential nominations (Congress.gov, the existing key), refreshed
+hourly by `sync-executive`.
+
+- Orders since 2009 are shown; the table holds whatever the Federal Register lists
+  (1994 onward, about 1,600 rows). Terms are runs of consecutive orders by one
+  president, so a second, non-consecutive term counts separately. "Revokes" and
+  "Revoked by" come from the Federal Register's disposition notes, read in both
+  directions.
+- Nominations come from the list endpoint only (one request per 250), which
+  carries the description, organization, civilian or military flag and latest
+  action. Status is read from the latest action text. Nominee and position are
+  parsed from the description for civilian nominations; military promotion lists
+  are counted, not listed.
+- Senate roll calls on a nomination store `votes.nomination_id` from the vote's
+  document (`PN615-2` → `119-pn615-2`), so confirmations link to the recorded vote.
+- New tables are read with a fallback at build time: when a migration has not
+  reached the database yet, the section shows as not loaded instead of failing
+  the build. The site also rebuilds after each Supabase deploy.

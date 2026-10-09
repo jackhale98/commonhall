@@ -175,3 +175,6 @@ export interface SponsoredItem {
   url?: string;
   amendmentNumber?: string;
 }
+
+/** /nomination/{congress} list item. One row per nomination part (PN615-1, PN615-2, …). */
+export type NominationListItem = Schemas['nomination'];

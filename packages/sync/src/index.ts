@@ -12,3 +12,4 @@ export * from './state/sync-state.ts';
 export * from './state/reps.ts';
 export * from './local/boston.ts';
 export * from './federal/finance.ts';
+export * from './federal/executive.ts';

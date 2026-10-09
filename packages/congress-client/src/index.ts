@@ -10,3 +10,4 @@ export * from './status.ts';
 export * from './positions.ts';
 export * from './legistar.ts';
 export * from './fec.ts';
+export * from './federal-register.ts';

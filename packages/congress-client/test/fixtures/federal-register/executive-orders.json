@@ -1,0 +1,72 @@
+{
+  "description": "Documents of type Presidential Document and of presidential document type Executive Order",
+  "count": 1570,
+  "total_pages": 50,
+  "next_page_url": "https://www.federalregister.gov/api/v1/documents?page=2",
+  "results": [
+    {
+      "document_number": "2026-20321",
+      "executive_order_number": "14434",
+      "title": "Inaugurating the Era of Super Intelligence",
+      "signing_date": "2026-09-29",
+      "publication_date": "2026-10-02",
+      "president": {
+        "identifier": "donald-trump",
+        "name": "Donald Trump"
+      },
+      "html_url": "https://www.federalregister.gov/documents/2026/10/02/2026-20321/inaugurating-the-era-of-super-intelligence",
+      "pdf_url": "https://www.govinfo.gov/content/pkg/FR-2026-10-02/pdf/2026-20321.pdf",
+      "abstract": null,
+      "citation": "91 FR 63129",
+      "disposition_notes": "See: EO 14252, March 27, 2025; EO 14292, May 5, 2025"
+    },
+    {
+      "document_number": "2026-20320",
+      "executive_order_number": "14433",
+      "title": "Eliminating Disease-Carrying Pests and Restoring Enjoyment of the Great Outdoors",
+      "signing_date": "2026-09-29",
+      "publication_date": "2026-10-02",
+      "president": {
+        "identifier": "donald-trump",
+        "name": "Donald Trump"
+      },
+      "html_url": "https://www.federalregister.gov/documents/2026/10/02/2026-20320/eliminating-disease-carrying-pests-and-restoring-enjoyment-of-the-great-outdoors",
+      "pdf_url": "https://www.govinfo.gov/content/pkg/FR-2026-10-02/pdf/2026-20320.pdf",
+      "abstract": null,
+      "citation": "91 FR 63125",
+      "disposition_notes": null
+    },
+    {
+      "document_number": "2026-20319",
+      "executive_order_number": "14432",
+      "title": "Streamlining Access to Government Services Through America.gov",
+      "signing_date": "2026-09-29",
+      "publication_date": "2026-10-02",
+      "president": {
+        "identifier": "donald-trump",
+        "name": "Donald Trump"
+      },
+      "html_url": "https://www.federalregister.gov/documents/2026/10/02/2026-20319/streamlining-access-to-government-services-through-americagov",
+      "pdf_url": "https://www.govinfo.gov/content/pkg/FR-2026-10-02/pdf/2026-20319.pdf",
+      "abstract": null,
+      "citation": "91 FR 63121",
+      "disposition_notes": null
+    },
+    {
+      "document_number": "2026-19555",
+      "executive_order_number": "14431",
+      "title": "Enhancing Program Integrity and Interagency Coordination in the Administration of the H-1B Nonimmigrant Visa Program",
+      "signing_date": "2026-09-18",
+      "publication_date": "2026-09-23",
+      "president": {
+        "identifier": "donald-trump",
+        "name": "Donald Trump"
+      },
+      "html_url": "https://www.federalregister.gov/documents/2026/09/23/2026-19555/enhancing-program-integrity-and-interagency-coordination-in-the-administration-of-the-h-1b",
+      "pdf_url": "https://www.govinfo.gov/content/pkg/FR-2026-09-23/pdf/2026-19555.pdf",
+      "abstract": null,
+      "citation": "91 FR 60501",
+      "disposition_notes": null
+    }
+  ]
+}

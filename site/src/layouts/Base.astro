@@ -13,7 +13,8 @@ interface Props {
   title?: string;
   description?: string;
   /** Path of the current section, used to mark the active nav item. */
-  section?: 'home' | 'bills' | 'members' | 'votes' | 'states' | 'discussions' | 'feed' | 'following' | 'account';
+  section?:
+    'home' | 'bills' | 'members' | 'votes' | 'executive' | 'states' | 'discussions' | 'feed' | 'following' | 'account';
   noindex?: boolean;
 }
 
@@ -46,6 +47,7 @@ const nav = [
   { key: 'bills', label: 'Bills', path: 'bills/' },
   { key: 'members', label: 'Members', path: 'members/' },
   { key: 'votes', label: 'Votes', path: 'votes/' },
+  { key: 'executive', label: 'Executive', path: 'executive/' },
   { key: 'states', label: 'States & local', path: 'states/' },
   { key: 'discussions', label: 'Discuss', path: 'discussions/' },
   { key: 'feed', label: 'Feed', path: 'feed/' },
