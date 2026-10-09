@@ -35,6 +35,9 @@ export default function LocalMatters({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  // Counts given the other filters; starts from the build's overall counts.
+  const [counts, setCounts] = useState({ types: facets.types, statuses: facets.statuses });
+  const [allTypes, setAllTypes] = useState(false);
   const first = useRef(true);
   const active = Boolean(filters.q || filters.type || filters.status || filters.sponsor);
 
@@ -93,6 +96,37 @@ export default function LocalMatters({
       .finally(() => setLoading(false));
   }, [filters, page]);
 
+  useEffect(() => {
+    if (local) return;
+    rpc<{ facet: string; value: string; n: number }[]>('local_matter_facets', {
+      p_city: 'boston',
+      p_type: filters.type || null,
+      p_status: filters.status || null,
+      p_sponsor: filters.sponsor || null,
+      p_q: filters.q.trim() || null,
+    })
+      .then((rows) => {
+        const pick = (facet: string) =>
+          rows
+            .filter((r) => r.facet === facet)
+            .map((r) => ({ value: r.value, count: r.n }))
+            .sort((a, b) => b.count - a.count);
+        setCounts({ types: pick('type'), statuses: pick('status') });
+      })
+      .catch(() => undefined);
+  }, [filters]);
+
+  // Keep the chosen type and status visible even when their count drops to zero.
+  const withChosen = (list: { value: string; count: number }[], chosen: string) =>
+    chosen && !list.some((x) => x.value === chosen) ? [...list, { value: chosen, count: 0 }] : list;
+  const types = withChosen(counts.types, filters.type);
+  const statuses = withChosen(counts.statuses, filters.status);
+  const TYPE_LIMIT = 8;
+  const shownTypes =
+    allTypes || types.length <= TYPE_LIMIT + 1
+      ? types
+      : types.filter((t, i) => i < TYPE_LIMIT || t.value === filters.type);
+
   const set = (patch: Partial<Filters>) => {
     setPage(1);
     setFilters((f) => ({ ...f, ...patch }));
@@ -102,12 +136,12 @@ export default function LocalMatters({
   const short = (t: string) => t.replace(/^Council /, '');
   return (
     <div>
-      {facets.types.length > 1 && (
+      {types.length > 0 && (
         <div class="type-chips" role="group" aria-label="Filter by type">
           <button type="button" class="chip-button" aria-pressed={!filters.type} onClick={() => set({ type: '' })}>
             All
           </button>
-          {facets.types.slice(0, 7).map((t) => (
+          {shownTypes.map((t) => (
             <button
               type="button"
               class="chip-button"
@@ -117,6 +151,11 @@ export default function LocalMatters({
               {short(t.value)} <span class="muted">{t.count.toLocaleString()}</span>
             </button>
           ))}
+          {shownTypes.length < types.length && (
+            <button type="button" class="link-button" onClick={() => setAllTypes(true)}>
+              {types.length - shownTypes.length} more types
+            </button>
+          )}
         </div>
       )}
       <form
@@ -132,21 +171,10 @@ export default function LocalMatters({
           <input id="lm-q" name="q" type="search" placeholder="Words or docket number, e.g. bike lanes" />
         </div>
         <div class="field">
-          <label for="lm-type">Type</label>
-          <select id="lm-type" value={filters.type} onChange={(e) => set({ type: e.currentTarget.value })}>
-            <option value="">All types</option>
-            {facets.types.map((t) => (
-              <option value={t.value}>
-                {t.value} ({t.count.toLocaleString()})
-              </option>
-            ))}
-          </select>
-        </div>
-        <div class="field">
           <label for="lm-status">Status</label>
           <select id="lm-status" value={filters.status} onChange={(e) => set({ status: e.currentTarget.value })}>
             <option value="">Any status</option>
-            {facets.statuses.map((s) => (
+            {statuses.map((s) => (
               <option value={s.value}>
                 {s.value} ({s.count.toLocaleString()})
               </option>

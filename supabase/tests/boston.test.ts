@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { LegistarClient, type FetchLike, type LegistarMatter } from '@civic/congress-client';
 import { BOSTON_JOB, meetingStart, runJob, syncBoston, type BostonCursor, type SeatMap, type Sql } from '@civic/sync';
 import { loadDistricts } from '../../scripts/load-districts.ts';
-import { asUser, createUser } from './auth.ts';
+import { asAnon, asUser, createUser } from './auth.ts';
 import { connect } from './db.ts';
 import { fixtureJson } from './fake-congress.ts';
 
@@ -196,5 +196,36 @@ describe('council districts', () => {
     expect(meetingStart('2026-10-07T00:00:00', '12:00 PM')).toBe('2026-10-07T16:00:00.000Z');
     expect(meetingStart('2026-12-02T00:00:00', '12:00 PM')).toBe('2026-12-02T17:00:00.000Z');
     expect(meetingStart('2026-12-02T00:00:00', null)).toBeNull();
+  });
+});
+
+describe('council matter filters', () => {
+  it('counts each facet given the other filters', async () => {
+    const city = 'facettest';
+    await sql`delete from public.local_matters where city = ${city}`;
+    const rows = [
+      ['facettest-1', 1, 'Ordinance', 'Passed'],
+      ['facettest-2', 2, 'Ordinance', 'Assigned to Committee'],
+      ['facettest-3', 3, 'Order', 'Passed'],
+      ['facettest-4', 4, 'Order', 'Passed'],
+    ] as const;
+    for (const [id, matterId, type, status] of rows) {
+      await sql`insert into public.local_matters (id, city, matter_id, title, type, status)
+                values (${id}, ${city}, ${matterId}, ${`Test ${type}`}, ${type}, ${status})`;
+    }
+    const facets = async (type: string | null, status: string | null) =>
+      Object.fromEntries(
+        (
+          await asAnon(
+            sql,
+            (tx) => tx`select facet, value, n from public.local_matter_facets(${city}, ${type}, ${status})`,
+          )
+        ).map((r) => [`${r.facet}:${r.value}`, r.n]),
+      );
+    // Choosing a type narrows the status counts, and vice versa.
+    expect(await facets('Ordinance', null)).toMatchObject({ 'status:Passed': 1, 'status:Assigned to Committee': 1 });
+    expect(await facets(null, 'Passed')).toMatchObject({ 'type:Ordinance': 1, 'type:Order': 2 });
+    expect(await facets(null, null)).toMatchObject({ 'status:Passed': 3, 'type:Order': 2 });
+    await sql`delete from public.local_matters where city = ${city}`;
   });
 });
