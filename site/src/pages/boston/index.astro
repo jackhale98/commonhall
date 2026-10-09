@@ -182,6 +182,7 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
         client:visible
         initial={matters}
         local={DEMO}
+        total={matterFacets.total}
         facets={{
           ...matterFacets,
           sponsors: [...officials]

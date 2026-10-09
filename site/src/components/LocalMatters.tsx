@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { HIDDEN_MATTER_TYPES, hiddenTypesFilter } from '../lib/local';
 import { rpc, selectWithCount, type Params } from '../lib/rest';
 import { LOCAL_MATTER_COLUMNS, type LocalMatter } from '../lib/types';
 import LocalMatterItem from './LocalMatterItem';
 
-const PAGE = 20;
+const PAGE = 10;
 
 export interface MatterFacets {
   types: { value: string; count: number }[];
@@ -16,29 +17,45 @@ interface Filters {
   type: string;
   status: string;
   sponsor: string;
+  /** Include the types hidden by default (consent-agenda resolutions). */
+  all: boolean;
 }
 
-const NONE: Filters = { q: '', type: '', status: '', sponsor: '' };
+const NONE: Filters = { q: '', type: '', status: '', sponsor: '', all: false };
 
-/** Council matters with search, filters (type, status, sponsor) and paging. Starts from the prerendered list. */
+/**
+ * Council matters with search, filters (type, status, sponsor) and paging. Starts
+ * from the prerendered list. Consent-agenda resolutions are hidden until the
+ * toggle is on or that type is chosen. With `sponsor`, the list is one
+ * councilor's matters (their page) and the sponsor menu is hidden.
+ */
 export default function LocalMatters({
   initial,
   facets,
   local = false,
+  sponsor,
+  total: initialTotal,
 }: {
   initial: LocalMatter[];
   facets: MatterFacets;
   local?: boolean;
+  sponsor?: string;
+  /** How many matters the prerendered list stands for (so the count and pager show at once). */
+  total?: number;
 }) {
+  const base: Filters = { ...NONE, sponsor: sponsor ?? '' };
   const [matters, setMatters] = useState(initial);
-  const [filters, setFilters] = useState<Filters>(NONE);
+  const [filters, setFilters] = useState<Filters>(base);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState<number | null>(null);
+  const [total, setTotal] = useState<number | null>(initialTotal ?? null);
   const [loading, setLoading] = useState(false);
   // Counts given the other filters; starts from the build's overall counts.
   const [counts, setCounts] = useState({ types: facets.types, statuses: facets.statuses });
   const first = useRef(true);
-  const active = Boolean(filters.q || filters.type || filters.status || filters.sponsor);
+  const active = Boolean(
+    filters.q || filters.type || filters.status || filters.all || filters.sponsor !== base.sponsor,
+  );
+  const hiding = !filters.type && !filters.all;
 
   useEffect(() => {
     if (first.current) {
@@ -53,6 +70,7 @@ export default function LocalMatters({
         (m) =>
           words.every((w) => `${m.file_number} ${m.title}`.toLowerCase().includes(w)) &&
           (!filters.type || m.type === filters.type) &&
+          (!hiding || !HIDDEN_MATTER_TYPES.includes(m.type ?? '')) &&
           (!filters.status || m.status === filters.status),
       );
       setMatters(hits.slice((page - 1) * PAGE, page * PAGE));
@@ -60,7 +78,7 @@ export default function LocalMatters({
       return;
     }
     const where: Params = {
-      type: filters.type ? `eq.${filters.type}` : undefined,
+      type: filters.type ? `eq.${filters.type}` : hiding ? hiddenTypesFilter() : undefined,
       status: filters.status ? `eq.${filters.status}` : undefined,
     };
     // Sponsor: an inner join on local_matter_sponsors, filtered to that councilor.
@@ -103,6 +121,7 @@ export default function LocalMatters({
       p_status: filters.status || null,
       p_sponsor: filters.sponsor || null,
       p_q: filters.q.trim() || null,
+      p_exclude_types: hiding ? HIDDEN_MATTER_TYPES : null,
     })
       .then((rows) => {
         const pick = (facet: string) =>
@@ -187,7 +206,7 @@ export default function LocalMatters({
               </option>
             ))}
           </select>
-          {!local && facets.sponsors.length > 0 && (
+          {!local && !sponsor && facets.sponsors.length > 0 && (
             <>
               <label for="lm-sponsor" class="visually-hidden">
                 Sponsor
@@ -205,13 +224,23 @@ export default function LocalMatters({
               </select>
             </>
           )}
+          {!filters.type && (
+            <button
+              type="button"
+              class="filter-toggle"
+              aria-pressed={filters.all}
+              onClick={() => set({ all: !filters.all })}
+            >
+              Include consent-agenda resolutions
+            </button>
+          )}
           {active && (
             <button
               type="button"
               class="link-button clear-filters"
               onClick={(e) => {
                 (e.currentTarget.form as HTMLFormElement).reset();
-                set(NONE);
+                set(base);
               }}
             >
               Clear
@@ -222,6 +251,7 @@ export default function LocalMatters({
       {total !== null && (
         <p class="small muted" aria-live="polite">
           {total.toLocaleString()} {total === 1 ? 'matter' : 'matters'}
+          {hiding && ' (consent-agenda resolutions hidden)'}
           {filters.q && total >= 200 && ' (top 200 search results)'}
         </p>
       )}

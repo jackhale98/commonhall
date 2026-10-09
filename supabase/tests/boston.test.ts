@@ -242,6 +242,18 @@ describe('council matter filters', () => {
     expect(await facets('Ordinance', null)).toMatchObject({ 'status:Passed': 1, 'status:Assigned to Committee': 1 });
     expect(await facets(null, 'Passed')).toMatchObject({ 'type:Ordinance': 1, 'type:Order': 2 });
     expect(await facets(null, null)).toMatchObject({ 'status:Passed': 3, 'type:Order': 2 });
+    // Hidden types (consent-agenda resolutions in the app) drop out of the status
+    // counts of the default list but stay listed as types, so they can be chosen.
+    const hidden = Object.fromEntries(
+      (
+        await asAnon(
+          sql,
+          (tx) =>
+            tx`select facet, value, n from public.local_matter_facets(${city}, null, null, null, null, ${['Order']})`,
+        )
+      ).map((r) => [`${r.facet}:${r.value}`, r.n]),
+    );
+    expect(hidden).toMatchObject({ 'status:Passed': 1, 'status:Assigned to Committee': 1, 'type:Order': 2 });
     await sql`delete from public.local_matters where city = ${city}`;
   });
 });

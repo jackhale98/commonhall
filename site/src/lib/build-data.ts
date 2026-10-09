@@ -22,6 +22,7 @@ import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type 
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
+import { HIDDEN_MATTER_TYPES, hiddenTypesFilter } from './local';
 import { RestError, inList, rpc, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
 import {
   BILL_PAGE_COLUMNS,
@@ -77,7 +78,15 @@ function demoQuery<T>(table: string, params: Params): T[] {
     else if (value.startsWith('neq.')) rows = rows.filter((r) => String(r[key]) !== value.slice(4));
     else if (value === 'is.null') rows = rows.filter((r) => r[key] === null || r[key] === undefined);
     else if (value === 'not.is.null') rows = rows.filter((r) => r[key] !== null && r[key] !== undefined);
-    else if (value.startsWith('in.(')) {
+    else if (value.startsWith('not.in.(')) {
+      const unwanted = new Set(
+        value
+          .slice(8, -1)
+          .split(',')
+          .map((v) => v.replace(/^"|"$/g, '')),
+      );
+      rows = rows.filter((r) => !unwanted.has(String(r[key])));
+    } else if (value.startsWith('in.(')) {
       const wanted = new Set(
         value
           .slice(4, -1)
@@ -457,29 +466,34 @@ export const loadLocalOfficials = memo(async () =>
   }),
 );
 
-/** Most recently active council matters (for the Boston page). */
+/** Most recently active council matters, consent-agenda resolutions left out (the default list). */
 export const loadRecentLocalMatters = memo(async () =>
   select<LocalMatter>('local_matters', {
     select: LOCAL_MATTER_COLUMNS,
     city: 'eq.boston',
+    type: hiddenTypesFilter(),
     order: 'latest_action_date.desc.nullslast,last_modified.desc',
-    limit: 25,
+    limit: 10,
   }),
 );
 
-/** Type and status counts for the Boston matters filters. */
+/**
+ * Counts for the Boston matters filters: every type; statuses and the total over
+ * the default list (consent-agenda resolutions left out), so they match it.
+ */
 export const loadLocalMatterFacets = memo(async () => {
   const rows = await selectAll<{ type: string | null; status: string | null }>('local_matters', {
     select: 'type,status',
     city: 'eq.boston',
     order: 'id.asc',
   });
-  const count = (key: 'type' | 'status') => {
+  const shown = rows.filter((r) => !HIDDEN_MATTER_TYPES.includes(r.type ?? ''));
+  const count = (list: typeof rows, key: 'type' | 'status') => {
     const map = new Map<string, number>();
-    for (const r of rows) if (r[key]) map.set(r[key]!, (map.get(r[key]!) ?? 0) + 1);
+    for (const r of list) if (r[key]) map.set(r[key]!, (map.get(r[key]!) ?? 0) + 1);
     return [...map].map(([value, n]) => ({ value, count: n })).sort((a, b) => b.count - a.count);
   };
-  return { types: count('type'), statuses: count('status') };
+  return { types: count(rows, 'type'), statuses: count(shown, 'status'), total: shown.length };
 });
 
 export const loadLocalMeetings = memo(async () =>
