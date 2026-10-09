@@ -135,10 +135,12 @@ class FakeOpenStates {
       const since = url.searchParams.get('updated_since');
       const page = Number(url.searchParams.get('page') ?? 1);
       const perPage = Number(url.searchParams.get('per_page') ?? 20);
+      const desc = url.searchParams.get('sort') === 'updated_desc';
       const all = (this.bills[state] ?? [])
         .filter((b) => b.session === url.searchParams.get('session'))
         .filter((b) => !since || b.updated_at >= since)
         .sort((a, b) => a.updated_at.localeCompare(b.updated_at) || a.id.localeCompare(b.id));
+      if (desc) all.reverse();
       const slice = all.slice((page - 1) * perPage, page * perPage);
       return this.json({
         results: slice.map((b) => ({
@@ -183,7 +185,7 @@ class FakeOpenStates {
   }
 }
 
-async function runState(api: FakeOpenStates, limit = 1000, states = ['TX', 'CA']) {
+async function runState(api: FakeOpenStates, limit = 1000, states = ['TX', 'CA'], at = '2026-10-08T07:00:00Z') {
   const client = api.client(limit);
   return runJob<StateCursor>({
     sql,
@@ -191,7 +193,7 @@ async function runState(api: FakeOpenStates, limit = 1000, states = ['TX', 'CA']
     timeLimitMs: 60_000,
     budgets: { [OPENSTATES_API]: client.budget },
     log: () => undefined,
-    run: (ctx) => syncStates(ctx, { client, states, now: () => new Date('2026-10-08T07:00:00Z') }),
+    run: (ctx) => syncStates(ctx, { client, states, now: () => new Date(at) }),
   });
 }
 
@@ -239,7 +241,7 @@ describe('sync-state', () => {
     moved.updated_at = '2026-10-07T23:00:00.000000+00:00';
     api.addBills('tx', 1, 46, () => '2026-10-07T23:30:00.000000+00:00');
     api.requests.length = 0;
-    const second = await runState(api);
+    const second = await runState(api, 1000, ['TX', 'CA'], '2026-10-09T07:00:00Z');
     const txBillRequests = api.requests.filter((u) => u.pathname === '/bills' && u.search.includes('state%3Atx'));
     expect(txBillRequests).toHaveLength(1);
     expect(second.rowsWritten).toBeGreaterThanOrEqual(4);
@@ -301,11 +303,83 @@ describe('sync-state', () => {
     );
     api.bills.tx![1]!.latest_action_description = 'Signed by the Governor';
     api.bills.tx![1]!.updated_at = '2026-10-07T00:00:00.000000+00:00';
-    await runState(api);
+    await runState(api, 1000, ['TX', 'CA'], '2026-10-09T07:00:00Z');
     const feed = await asUser(sql, user, (tx) => tx`select kind, summary, payload from public.feed`);
     expect(feed).toHaveLength(1);
     expect(feed[0]).toMatchObject({ kind: 'action', summary: 'TX HB 2: Signed by the Governor' });
     expect(feed[0]!.payload.openstates_url).toMatch(/openstates\.org\/tx\/bills/);
+  });
+
+  it('loads every state’s legislators before any bills', async () => {
+    const api = new FakeOpenStates();
+    api.people.ca = [
+      { id: 'ocd-person/ca-1', name: 'Cal Person', party: 'Democratic', chamber: 'upper', district: '1' },
+    ];
+    api.addBills('tx', 100);
+    // Sessions (1) + legislators for both states (2) + one page of bills.
+    const result = await runState(api, 4);
+    expect(result.status).toBe('ok');
+    const states = await sql`select distinct state from public.state_legislators order by state`;
+    expect(states.map((s) => s.state)).toEqual(['CA', 'TX']);
+    expect(api.requests.filter((u) => u.pathname === '/bills')).toHaveLength(1);
+  });
+
+  it('reads a state’s newest bills first, then catches up from where the load began', async () => {
+    const api = new FakeOpenStates();
+    api.addBills('tx', 100);
+    // Sessions (1) + legislators (1) + one page of bills: it holds the 20 newest.
+    await runState(api, 3, ['TX']);
+    const newest = [...api.bills.tx!].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 20);
+    const stored = await sql`select id from public.state_bills order by id`;
+    expect(new Set(stored.map((r) => r.id))).toEqual(new Set(newest.map((b) => b.id)));
+    // The rest arrive on later runs; once loaded, the state catches up oldest-first.
+    await runState(api, 1000, ['TX']);
+    expect(Number((await sql`select count(*)::int as n from public.state_bills`)[0]!.n)).toBe(100);
+    const [state] = await sql`select cursor from public.sync_state where job = ${STATE_JOB}`;
+    expect(state!.cursor.bills.TX).toMatchObject({ filled: true, since: newest[0]!.updated_at });
+  });
+
+  it('gives Massachusetts about half the requests and every other state a turn', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ma: '194', tx: '89', ca: '20252026' };
+    api.bills = { ma: [], tx: [], ca: [] };
+    api.people = { ...api.people, ma: [] };
+    api.addBills('ma', 400);
+    api.addBills('tx', 200);
+    api.addBills('ca', 200);
+    // Sessions (1) + legislators (3) + 16 pages of bills.
+    await runState(api, 20, ['MA', 'TX', 'CA']);
+    const pagesFor = (st: string) =>
+      api.requests.filter((u) => u.pathname === '/bills' && u.search.includes(`state%3A${st}`)).length;
+    expect(pagesFor('ma')).toBe(8);
+    expect(pagesFor('tx')).toBe(4);
+    expect(pagesFor('ca')).toBe(4);
+  });
+
+  it('finishes a part-loaded state newest-first, stopping at the bills it already has', async () => {
+    const api = new FakeOpenStates();
+    api.addBills('tx', 100);
+    const sorted = [...api.bills.tx!].sort((a, b) => a.updated_at.localeCompare(b.updated_at));
+    // An earlier oldest-first load stored the 30 oldest and stopped.
+    const since = sorted[29]!.updated_at;
+    await sql`insert into public.sync_state (job, cursor) values (${STATE_JOB}, ${sql.json({
+      sessions: { TX: '89', CA: '20252026' },
+      sessionsCheckedAt: '2026-10-08T00:00:00Z',
+      legislatorsAt: { TX: '2026-10-08T00:00:00Z', CA: '2026-10-08T00:00:00Z' },
+      bills: { TX: { session: '89', since, page: 1 } },
+    })})`;
+    api.requests.length = 0;
+    await runState(api);
+    // Pages of 20, newest first: page 4 reaches the stored bills, so page 5 is never read.
+    const txPages = api.requests.filter((u) => u.pathname === '/bills' && u.search.includes('state%3Atx'));
+    expect(txPages.map((u) => [u.searchParams.get('sort'), u.searchParams.get('page')])).toEqual([
+      ['updated_desc', '1'],
+      ['updated_desc', '2'],
+      ['updated_desc', '3'],
+      ['updated_desc', '4'],
+    ]);
+    // This test's database didn't hold the 20 oldest; a real one would.
+    expect(Number((await sql`select count(*)::int as n from public.state_bills where state = 'TX'`)[0]!.n)).toBe(80);
   });
 });
 

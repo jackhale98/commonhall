@@ -839,3 +839,29 @@ so an old cached page cannot store a street; when a street cannot be told apart 
 the place, nothing is kept. The migration rewrote existing labels the same way. The
 privacy page says so. Addresses still go to the Census Geocoder for the lookup and are
 never stored or logged by us.
+
+## 70. State bills: legislators first, a fair share, newest bills first
+
+Open States' free key allows about 500 requests a day and returns 20 bills a page.
+The first version read one state at a time, oldest-updated bills first, with
+Massachusetts always first, so other states waited for Massachusetts to finish and a
+state's page showed its oldest bills for weeks. Now `sync-state`:
+
+- loads legislators for every state (a few requests each) before any bills, so every
+  state page has its legislature after one night;
+- reads bills in rounds that alternate first-class states (Massachusetts) with each
+  other state in turn: Massachusetts gets about half the requests and every state
+  moves forward every night;
+- loads a state newest-updated first (page by page, saved after each), so its recent
+  bills appear after one request. It records the newest timestamp when the load
+  begins; when the load ends it switches to the existing catch-up (oldest first from
+  that timestamp, always page 1), which gets anything updated during the load. Paging
+  newest-first can only repeat a bill (when one is updated and moves to the top), never
+  skip one. A state part-loaded by the old oldest-first load stops when it reaches
+  the bills it already has.
+- checks loaded states for changes once a day (Massachusetts every run), so those
+  checks don't use the budget first loads need.
+
+Open States' bulk downloads need a signed-in account and are monthly, so they are
+not used. A higher API limit, which Open States grants civic projects on request,
+would finish the first load in days.

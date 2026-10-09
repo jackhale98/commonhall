@@ -2,17 +2,23 @@
  * Nightly state sync from Open States: current-session bills (trimmed to
  * essentials) and, weekly, legislators, for all 50 states and DC.
  *
- * Open States' free-tier limits are low and unpublished, so the job:
+ * Open States' free-tier limits are low (about 500 requests a day), so the job:
  *  - spends at most a daily request budget (shared `api_usage`, per UTC day);
  *  - spaces requests out (the client's minIntervalMs);
- *  - works through states in priority order (states people follow first, then
- *    the least recently synced) and caps pages per state per run, so the first
- *    full load spreads over several nights and later nights are incremental.
+ *  - loads legislators for every state first (a few requests each), so every state
+ *    page has its legislature before any bills;
+ *  - then reads bills in rounds that alternate first-class states (Massachusetts)
+ *    with each other state in turn, so first-class states get about half the
+ *    requests and every state moves forward every night.
  *
- * Bills are read oldest-update first with `updated_since` = the last updated_at
- * seen, always asking for page 1; this cannot skip bills the way page offsets
- * can when items change mid-run. New-bill feed events are only written once a
- * state's first full load is done.
+ * A state's first load reads newest-updated bills first (page by page), so its
+ * recent bills appear after one request; it remembers the newest timestamp seen at
+ * the start. When the load reaches the end (or bills an earlier load already
+ * stored), the state switches to the nightly catch-up: oldest-update first with
+ * `updated_since`, always page 1, which cannot skip bills the way page offsets can.
+ * Anything updated during the first load is newer than that starting timestamp, so
+ * the catch-up gets it. New-bill feed events are only written once a state's first
+ * full load is done.
  */
 import {
   BudgetExhaustedError,
@@ -89,13 +95,21 @@ export const STATES = [
 ];
 
 const WEEK_MS = 7 * 24 * 3_600_000;
+/** How often a loaded state (other than a first-class one) is checked for changes. */
+const CATCH_UP_EVERY_MS = 20 * 3_600_000;
 
 export interface StateBillsCursor {
   session: string;
+  /** Catch-up: bills updated since this time (oldest first). */
   since?: string;
   page?: number;
   filled?: boolean;
   lastRun?: string;
+  /** First load (newest first): the newest updated_at when it began, and the next page. */
+  newest?: string;
+  backPage?: number;
+  /** First load can stop at bills updated before this: an earlier load stored them. */
+  stopAt?: string;
 }
 
 export interface StateCursor extends Record<string, unknown> {
@@ -108,7 +122,7 @@ export interface StateCursor extends Record<string, unknown> {
 export interface SyncStateOptions {
   client: OpenStatesClient;
   now?: () => Date;
-  /** Pages of bills per state per run before moving on. Default 25. */
+  /** At most this many pages of bills per state per run. Default 60. */
   pagesPerState?: number;
   /** Only these states (e.g. for a manual run). */
   states?: string[];
@@ -302,11 +316,86 @@ async function refreshSessions(sql: Sql, client: OpenStatesClient, cursor: State
   return written;
 }
 
+/**
+ * One page of a state's bills: newest first during its first load, then the nightly
+ * catch-up (oldest update first since the last one seen). Returns true when the state
+ * has nothing more to read this run.
+ */
+async function billPage(
+  run: JobRun<StateCursor>,
+  client: OpenStatesClient,
+  cursor: StateCursor,
+  state: string,
+  now: Date,
+): Promise<boolean> {
+  const session = cursor.sessions![state]!;
+  const bc: StateBillsCursor = { ...(cursor.bills?.[state] ?? { session }) };
+  let done: boolean;
+  if (!bc.filled) {
+    // First load, newest first. A state part-loaded by the older oldest-first load keeps
+    // those bills: this load stops when it reaches them.
+    if (bc.backPage === undefined) {
+      bc.stopAt = bc.since;
+      bc.backPage = 1;
+      bc.page = 1;
+    }
+    const page = bc.backPage;
+    const result = await client.bills({
+      jurisdiction: stateJurisdiction(state),
+      session,
+      sort: 'updated_desc',
+      page,
+    });
+    if (page === 1) bc.newest = result.results[0]?.updated_at ?? bc.newest;
+    run.rowsWritten += await writeStateBills(run.sql, result.results, false);
+    const oldest = result.results.at(-1)?.updated_at;
+    done =
+      result.results.length === 0 ||
+      page >= (result.pagination?.max_page ?? 1) ||
+      Boolean(bc.stopAt && oldest && oldest < bc.stopAt);
+    if (done) {
+      // Loaded: from now on, catch up from the newest bill seen when the load began.
+      bc.filled = true;
+      bc.since = bc.newest ?? bc.since;
+      bc.page = 1;
+      delete bc.backPage;
+      delete bc.stopAt;
+      delete bc.newest;
+    } else bc.backPage = page + 1;
+  } else {
+    const page = bc.page ?? 1;
+    const result = await client.bills({
+      jurisdiction: stateJurisdiction(state),
+      session,
+      updatedSince: bc.since,
+      sort: 'updated_asc',
+      page,
+    });
+    run.rowsWritten += await writeStateBills(run.sql, result.results, true);
+    const last = result.results.at(-1)?.updated_at;
+    done = result.results.length === 0 || page >= (result.pagination?.max_page ?? 1);
+    if (done) {
+      if (last) bc.since = last;
+      bc.page = 1;
+    } else if (last && last !== bc.since) {
+      bc.since = last;
+      bc.page = 1;
+    } else {
+      // A full page sharing one timestamp: step through pages at this timestamp.
+      bc.page = page + 1;
+    }
+  }
+  bc.lastRun = now.toISOString();
+  cursor.bills = { ...(cursor.bills ?? {}), [state]: bc };
+  await run.checkpoint(cursor);
+  return done;
+}
+
 export async function syncStates(run: JobRun<StateCursor>, options: SyncStateOptions): Promise<StateCursor> {
   const { client } = options;
   const now = options.now ?? (() => new Date());
   const cursor: StateCursor = structuredClone(run.cursor ?? {});
-  const pagesPerState = options.pagesPerState ?? 25;
+  const pagesPerState = options.pagesPerState ?? 60;
 
   try {
     const checked = cursor.sessionsCheckedAt ? new Date(cursor.sessionsCheckedAt).getTime() : 0;
@@ -314,48 +403,45 @@ export async function syncStates(run: JobRun<StateCursor>, options: SyncStateOpt
       run.rowsWritten += await refreshSessions(run.sql, client, cursor, now());
       await run.checkpoint(cursor);
     }
+    const order = (await stateOrder(run.sql, cursor, options.states)).filter((state) => cursor.sessions?.[state]);
 
-    for (const state of await stateOrder(run.sql, cursor, options.states)) {
-      if (run.outOfTime() || client.budget.exhausted) break;
-      const session = cursor.sessions?.[state];
-      if (!session) continue;
-
+    // 1. Legislators for every state that is due (weekly), before any bills.
+    for (const state of order) {
+      if (run.outOfTime() || client.budget.exhausted) return cursor;
       const legislatorsAt = cursor.legislatorsAt?.[state];
-      if (!legislatorsAt || now().getTime() - new Date(legislatorsAt).getTime() > WEEK_MS) {
-        run.rowsWritten += await syncLegislators(run.sql, client, state);
-        cursor.legislatorsAt = { ...(cursor.legislatorsAt ?? {}), [state]: now().toISOString() };
-        await run.checkpoint(cursor);
-      }
+      if (legislatorsAt && now().getTime() - new Date(legislatorsAt).getTime() <= WEEK_MS) continue;
+      run.rowsWritten += await syncLegislators(run.sql, client, state);
+      cursor.legislatorsAt = { ...(cursor.legislatorsAt ?? {}), [state]: now().toISOString() };
+      await run.checkpoint(cursor);
+    }
 
-      const bc: StateBillsCursor = { ...(cursor.bills?.[state] ?? { session }) };
-      for (let pages = 0; pages < pagesPerState; pages++) {
-        if (run.outOfTime()) break;
-        const page = bc.page ?? 1;
-        const result = await client.bills({
-          jurisdiction: stateJurisdiction(state),
-          session,
-          updatedSince: bc.since,
-          sort: 'updated_asc',
-          page,
-        });
-        run.rowsWritten += await writeStateBills(run.sql, result.results, Boolean(bc.filled));
-        const last = result.results.at(-1)?.updated_at;
-        const done = result.results.length === 0 || page >= (result.pagination?.max_page ?? 1);
-        if (done) {
-          if (last) bc.since = last;
-          bc.page = 1;
-          bc.filled = true;
-        } else if (last && last !== bc.since) {
-          bc.since = last;
-          bc.page = 1;
-        } else {
-          // A full page sharing one timestamp: step through pages at this timestamp.
-          bc.page = page + 1;
-        }
-        bc.lastRun = now().toISOString();
-        cursor.bills = { ...(cursor.bills ?? {}), [state]: bc };
-        await run.checkpoint(cursor);
-        if (done) break;
+    // 2. Bills in rounds: first-class states alternate with each other state in turn.
+    const pages = new Map<string, number>();
+    // Loaded states catch up once a day (first-class states every run), so the checks
+    // don't use up the budget that first loads need.
+    const caughtUp = new Set(
+      order.filter((st) => {
+        const bc = cursor.bills?.[st];
+        return (
+          bc?.filled &&
+          !FIRST_CLASS_STATES.includes(st) &&
+          bc.lastRun &&
+          now().getTime() - new Date(bc.lastRun).getTime() < CATCH_UP_EVERY_MS
+        );
+      }),
+    );
+    const busy = (state: string) => !caughtUp.has(state) && (pages.get(state) ?? 0) < pagesPerState;
+    for (;;) {
+      const first = order.filter((st) => FIRST_CLASS_STATES.includes(st) && busy(st));
+      const others = order.filter((st) => !FIRST_CLASS_STATES.includes(st) && busy(st));
+      if (first.length === 0 && others.length === 0) break;
+      const round = others.length ? others.flatMap((st) => [...first, st]) : first;
+      for (const state of round) {
+        if (!busy(state)) continue;
+        if (run.outOfTime() || client.budget.exhausted) return cursor;
+        const done = await billPage(run, client, cursor, state, now());
+        pages.set(state, (pages.get(state) ?? 0) + 1);
+        if (done) caughtUp.add(state);
       }
     }
   } catch (error) {
