@@ -590,3 +590,22 @@ The site moved to commonhall.org and the default site name is now CommonHall
 the docs use the new name. Internal names stay as they were: the `@civic/*`
 workspace packages and the `civic.*` browser storage keys, since renaming them
 would churn every import and sign visitors out or reset their saved choices.
+
+## 55. A calmer home page; search and filters for orders and decisions
+
+The home page lost its repeated parts: the "Find your representatives" button (the
+lookup is further down), the topic chips (the bills page has topics), and the "Every
+level of government" cards (the header has every section). Its search box now opens
+the full header search (bills, people, hearings, orders, cases, Boston) and falls back
+to the bill search without JavaScript. The numbers row covers all three branches:
+bills, new laws, votes, executive orders this term, decisions in the latest Supreme
+Court term and committee hearings in the last 30 days. On phones the bill, discussion
+and vote lists are shortened.
+
+The executive and court pages get the same search-and-filter pattern as the bills
+page. Each prerenders its latest items and loads a compact list built with the site
+(`executive/orders.json`, about 33 KB gzipped; `court/cases.json`) for instant
+filtering: orders by president's term, year, revoked or not, and having a
+discussion; decisions by term, opinion author, argued or not, and having a
+discussion. CourtListener delivers most decisions as one combined document, so the
+court filters use the author and argument date rather than dissent counts.

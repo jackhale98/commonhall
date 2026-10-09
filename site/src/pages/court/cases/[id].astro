@@ -2,7 +2,7 @@
 import DiscussionLink from '../../../components/DiscussionLink.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadScotusCases } from '../../../lib/build-data';
-import { docketUrl, type ScotusCase } from '../../../lib/court';
+import { docketUrl, opinionAuthor, type ScotusCase } from '../../../lib/court';
 import { formatDate } from '../../../lib/format';
 import { href } from '../../../lib/paths';
 
@@ -16,8 +16,13 @@ interface Props {
 
 const { c } = Astro.props;
 const discussion = (await loadDiscussionsByTarget()).get(`scotus_case:${c.cluster_id}`);
+const author = opinionAuthor(c);
 const opinions = [
-  c.per_curiam ? 'Decided per curiam (an unsigned opinion of the Court)' : null,
+  author === 'Per Curiam'
+    ? 'Decided per curiam (an unsigned opinion of the Court)'
+    : author
+      ? `Opinion of the Court by ${author}`
+      : null,
   c.concurrences > 0 ? `${c.concurrences} concurring opinion${c.concurrences > 1 ? 's' : ''}` : null,
   c.dissents > 0 ? `${c.dissents} dissenting opinion${c.dissents > 1 ? 's' : ''}` : null,
 ].filter(Boolean);

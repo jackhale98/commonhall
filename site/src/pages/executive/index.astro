@@ -1,4 +1,5 @@
 ---
+import OrderExplorer from '../../components/OrderExplorer';
 import BarList from '../../components/viz/BarList';
 import StackedBar from '../../components/viz/StackedBar';
 import Base from '../../layouts/Base.astro';
@@ -9,9 +10,17 @@ import {
   loadNominations,
   loadVotesByNomination,
 } from '../../lib/build-data';
-import { NOMINATION_STATUS, nominationUrl, type Nomination, type NominationStatus } from '../../lib/executive';
+import {
+  NOMINATION_STATUS,
+  nominationUrl,
+  orderRows,
+  orderTerms,
+  termLabel,
+  type Nomination,
+  type NominationStatus,
+} from '../../lib/executive';
 import { congressLabel, formatDate } from '../../lib/format';
-import { executiveOrderHref, voteHref } from '../../lib/paths';
+import { voteHref } from '../../lib/paths';
 
 const [orders, nominations, votesByNomination, discussions] = await Promise.all([
   loadExecutiveOrders(),
@@ -21,40 +30,17 @@ const [orders, nominations, votesByNomination, discussions] = await Promise.all(
 ]);
 const congress = congressLabel(CURRENT_CONGRESS);
 
-// Executive orders, oldest first by signing date (publication date when unsigned), split into terms:
-// consecutive runs of one president. The newest run is the current term.
-const when = (o: (typeof orders)[number]) => o.signing_date ?? o.publication_date;
-const chronological = [...orders].sort(
-  (a, b) => when(a).localeCompare(when(b)) || (a.eo_number ?? 0) - (b.eo_number ?? 0),
-);
-const terms: { president: string | null; name: string; orders: typeof orders }[] = [];
-for (const o of chronological) {
-  const last = terms[terms.length - 1];
-  if (last && last.president === o.president) last.orders.push(o);
-  else terms.push({ president: o.president, name: o.president_name ?? 'Unknown', orders: [o] });
-}
+// Executive orders split into presidential terms (consecutive runs of one president); the newest is current.
+const terms = orderTerms(orders);
 const currentTerm = terms[terms.length - 1];
-const currentName = currentTerm?.name ?? null;
+const currentName = currentTerm?.term.name ?? null;
 const currentOrders = [...(currentTerm?.orders ?? [])].reverse();
-const byNumber = new Map(orders.filter((o) => o.eo_number).map((o) => [o.eo_number!, o]));
-// "Revoked by" comes from the later order's own "Revokes" note as well as the earlier order's notes.
-const revokedBy = new Map<number, Set<number>>();
-for (const o of orders) {
-  for (const n of o.revokes ?? [])
-    if (o.eo_number) (revokedBy.get(n) ?? revokedBy.set(n, new Set()).get(n)!).add(o.eo_number);
-  for (const n of o.revoked_by ?? [])
-    if (o.eo_number) (revokedBy.get(o.eo_number) ?? revokedBy.set(o.eo_number, new Set()).get(o.eo_number)!).add(n);
-}
+const rows = orderRows(orders, (doc) => discussions.has(`executive_order:${doc}`));
+const initialRows = rows.filter((r) => r.g === currentTerm?.term.key).slice(0, 30);
 const byYear = [...Map.groupBy(currentOrders, (o) => (o.signing_date ?? o.publication_date).slice(0, 4))]
   .map(([year, list]) => ({ label: year, value: list.length }))
   .sort((a, b) => a.label.localeCompare(b.label));
-const termBars = terms
-  .map((t) => {
-    const from = when(t.orders[0]!).slice(0, 4);
-    const to = when(t.orders[t.orders.length - 1]!).slice(0, 4);
-    return { label: `${t.name} (${from === to ? from : `${from}–${to}`})`, value: t.orders.length };
-  })
-  .reverse();
+const termBars = terms.map(({ term }) => ({ label: termLabel(term), value: term.count })).reverse();
 
 // Nominations: civilian positions (military promotions come in long lists and are counted separately).
 const civilian = nominations.filter((n) => !n.is_military);
@@ -113,6 +99,10 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
       <dt>Awaiting the Senate</dt>
       <dd>{pendingTotal.toLocaleString()}</dd>
     </div>
+    <div class="stat">
+      <dt>Revoked by later orders (since 2009)</dt>
+      <dd>{rows.filter((r) => r.rb).length.toLocaleString()}</dd>
+    </div>
   </dl>
 
   <section aria-labelledby="eo-h">
@@ -126,69 +116,7 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
       <p class="muted">Executive orders have not loaded yet.</p>
     ) : (
       <div class="eo-layout">
-        <div class="panel">
-          <ul class="list eo-list">
-            {currentOrders.slice(0, 30).map((o) => {
-              const revokes = (o.revokes ?? []).filter(Boolean);
-              const revoked = [...(revokedBy.get(o.eo_number ?? -1) ?? [])];
-              return (
-                <li>
-                  <p class="meta">
-                    {o.eo_number ? `EO ${o.eo_number}` : 'Executive order'} · signed {formatDate(o.signing_date)}
-                  </p>
-                  <p class="eo-title">
-                    <a href={executiveOrderHref(o.document_number)}>{o.title}</a>
-                    {discussions.has(`executive_order:${o.document_number}`) && <span class="chip">Discussion</span>}
-                  </p>
-                  {(revokes.length > 0 || revoked.length > 0) && (
-                    <p class="small muted">
-                      {revokes.length > 0 && (
-                        <>
-                          Revokes{' '}
-                          {revokes.map((n, i) => (
-                            <>
-                              {i > 0 && ', '}
-                              {byNumber.get(n) ? (
-                                <a href={executiveOrderHref(byNumber.get(n)!.document_number)}>EO {n}</a>
-                              ) : (
-                                `EO ${n}`
-                              )}
-                            </>
-                          ))}
-                          {revoked.length > 0 && ' · '}
-                        </>
-                      )}
-                      {revoked.length > 0 && (
-                        <strong>
-                          Revoked by{' '}
-                          {revoked.map((n, i) => (
-                            <>
-                              {i > 0 && ', '}
-                              {byNumber.get(n) ? (
-                                <a href={executiveOrderHref(byNumber.get(n)!.document_number)}>EO {n}</a>
-                              ) : (
-                                `EO ${n}`
-                              )}
-                            </>
-                          ))}
-                        </strong>
-                      )}
-                    </p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-          {currentOrders.length > 30 && (
-            <p class="small muted">
-              Showing the latest 30 of {currentOrders.length.toLocaleString()}. All are on the{' '}
-              <a href="https://www.federalregister.gov/presidential-documents/executive-orders" rel="noopener">
-                Federal Register
-              </a>
-              .
-            </p>
-          )}
-        </div>
+        <OrderExplorer client:visible terms={terms.map((t) => t.term).reverse()} initial={initialRows} />
         <aside>
           {byYear.length > 0 && (
             <div class="panel side-panel">
@@ -316,13 +244,30 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
   .side-panel {
     margin-bottom: var(--space-4);
   }
-  .eo-title,
+  .eo-layout :global(.eo-list p) {
+    margin: 0;
+  }
+  .eo-layout :global(.eo-title a),
+  .nom-name a {
+    text-decoration: none;
+  }
+  .eo-layout :global(.eo-title a:hover),
+  .nom-name a:hover {
+    text-decoration: underline;
+  }
+  .eo-layout :global(.eo-title),
   .nom-name {
     margin: 0;
     font-weight: 650;
   }
   .nom-list p {
     margin: 0;
+  }
+  /* Phones: the first few of each list; the rest are on Congress.gov. */
+  @media (max-width: 40rem) {
+    .nom-list > li:nth-child(n + 7) {
+      display: none;
+    }
   }
   .nom-columns {
     display: grid;

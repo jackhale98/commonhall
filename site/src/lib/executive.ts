@@ -68,3 +68,97 @@ export function nominationUrl(n: Pick<Nomination, 'congress' | 'number'>): strin
     n.congress % 100 >= 11 && n.congress % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n.congress % 10] ?? 'th');
   return `https://www.congress.gov/nomination/${n.congress}${suffix}-congress/${n.number}`;
 }
+
+/** One presidential term: a consecutive run of orders by one president, oldest first. */
+export interface OrderTerm {
+  key: string;
+  president: string | null;
+  name: string;
+  from: string;
+  to: string;
+  count: number;
+}
+
+const orderDate = (o: Pick<ExecutiveOrder, 'signing_date' | 'publication_date'>) =>
+  o.signing_date ?? o.publication_date;
+
+/** Splits orders into terms (consecutive runs of one president), oldest term first. */
+export function orderTerms<T extends ExecutiveOrder>(orders: T[]): { term: OrderTerm; orders: T[] }[] {
+  const chronological = [...orders].sort(
+    (a, b) => orderDate(a).localeCompare(orderDate(b)) || (a.eo_number ?? 0) - (b.eo_number ?? 0),
+  );
+  const out: { term: OrderTerm; orders: T[] }[] = [];
+  for (const o of chronological) {
+    const last = out[out.length - 1];
+    if (last && last.term.president === o.president) {
+      last.orders.push(o);
+      last.term.to = orderDate(o).slice(0, 4);
+      last.term.count++;
+    } else {
+      const year = orderDate(o).slice(0, 4);
+      out.push({
+        term: {
+          key: `${o.president ?? 'unknown'}-${year}`,
+          president: o.president,
+          name: o.president_name ?? 'Unknown',
+          from: year,
+          to: year,
+          count: 1,
+        },
+        orders: [o],
+      });
+    }
+  }
+  return out;
+}
+
+export const termLabel = (t: OrderTerm) => `${t.name} (${t.from === t.to ? t.from : `${t.from}–${t.to}`})`;
+
+/** Executive order numbers each order is revoked by, from both sides' Federal Register notes. */
+export function revokedByMap(orders: ExecutiveOrder[]): Map<number, number[]> {
+  const map = new Map<number, Set<number>>();
+  const add = (n: number, by: number) => (map.get(n) ?? map.set(n, new Set()).get(n)!).add(by);
+  for (const o of orders) {
+    if (!o.eo_number) continue;
+    for (const n of o.revokes ?? []) add(n, o.eo_number);
+    for (const n of o.revoked_by ?? []) add(o.eo_number, n);
+  }
+  return new Map([...map].map(([n, s]) => [n, [...s].sort((a, b) => a - b)]));
+}
+
+/** Compact order row for the executive orders explorer (orders.json). */
+export interface OrderRow {
+  /** Document number (page slug). */
+  d: string;
+  /** EO number. */
+  n: number | null;
+  t: string;
+  /** Signing (or publication) date. */
+  s: string;
+  /** Term key. */
+  g: string;
+  /** Orders this one revokes. */
+  rv?: number[];
+  /** Orders that revoke this one. */
+  rb?: number[];
+  /** Has a discussion. */
+  x?: 1;
+}
+
+/** Compact rows for every order, newest first, with each order's term and revocations. */
+export function orderRows(orders: ExecutiveOrder[], hasDiscussion: (doc: string) => boolean): OrderRow[] {
+  const revoked = revokedByMap(orders);
+  const rows: OrderRow[] = [];
+  for (const { term, orders: list } of orderTerms(orders)) {
+    for (const o of list) {
+      const row: OrderRow = { d: o.document_number, n: o.eo_number, t: o.title, s: orderDate(o), g: term.key };
+      const rv = (o.revokes ?? []).filter(Boolean);
+      const rb = o.eo_number ? revoked.get(o.eo_number) : undefined;
+      if (rv.length) row.rv = rv;
+      if (rb?.length) row.rb = rb;
+      if (hasDiscussion(o.document_number)) row.x = 1;
+      rows.push(row);
+    }
+  }
+  return rows.reverse();
+}

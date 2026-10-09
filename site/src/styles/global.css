@@ -1161,6 +1161,15 @@ button.danger {
   gap: var(--space-3);
   margin: 0;
 }
+@media (max-width: 40rem) {
+  /* Phones: two per row, an odd last tile spans the row. */
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stat-grid > :last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+}
 .stat {
   background: var(--bg-raised);
   border: 1px solid var(--border);
@@ -2047,23 +2056,24 @@ summary:has(.inline-h) {
 .meeting .meta .swatch {
   margin-right: 0.4em;
 }
-.explorer-filters {
+/* The committees explorer uses labelled fields in a grid rather than filter pills. */
+.committee-explorer .explorer-filters {
   display: grid;
   gap: var(--space-3);
   grid-template-columns: minmax(0, 1fr);
 }
 @media (min-width: 50rem) {
-  .explorer-filters {
+  .committee-explorer .explorer-filters {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr);
     align-items: end;
   }
 }
-.explorer-filters .field {
+.committee-explorer .explorer-filters .field {
   margin: 0;
   min-width: 0;
 }
-.explorer-filters input,
-.explorer-filters select {
+.committee-explorer .explorer-filters input,
+.committee-explorer .explorer-filters select {
   width: 100%;
   min-width: 0;
 }

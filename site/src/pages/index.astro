@@ -11,28 +11,28 @@ import Base from '../layouts/Base.astro';
 import {
   CURRENT_CONGRESS,
   loadBills,
+  loadCommitteeMeetings,
   loadDiscussions,
+  loadExecutiveOrders,
   loadLocalMeetings,
-  loadLocalOfficials,
   loadMembers,
-  loadRecentLocalMatters,
-  loadStateLegislators,
+  loadScotusCases,
   loadVotes,
 } from '../lib/build-data';
-import { chamberGroups, pipeline, topPolicyAreas, voteSegments } from '../lib/charts';
+import { chamberGroups, pipeline, voteSegments } from '../lib/charts';
 import { DEMO } from '../lib/config';
 import { congressLabel, formatDate } from '../lib/format';
 import { billHref, href, voteHref } from '../lib/paths';
 
-const [bills, votes, members, discussions, officials, matters, meetings, legislators] = await Promise.all([
+const [bills, votes, members, discussions, meetings, orders, cases, hearings] = await Promise.all([
   loadBills(),
   loadVotes(),
   loadMembers(),
   loadDiscussions(),
-  loadLocalOfficials(),
-  loadRecentLocalMatters(),
   loadLocalMeetings(),
-  loadStateLegislators(),
+  loadExecutiveOrders(),
+  loadScotusCases(),
+  loadCommitteeMeetings(),
 ]);
 const recent = bills.slice(0, 6);
 const laws = bills.filter((b) => b.status === 'law');
@@ -41,18 +41,41 @@ const latestVote = votes[0];
 const house = chamberGroups(members.values(), 'house');
 const senate = chamberGroups(members.values(), 'senate');
 const stages = pipeline(bills);
-const topics = topPolicyAreas(bills, 12);
 const openDiscussions = discussions.filter((d) => d.status === 'open');
-const maLegislators = legislators.get('MA')?.length ?? 0;
 const today = new Date().toISOString().slice(0, 10);
 const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
 const congress = congressLabel(CURRENT_CONGRESS);
+
+// Executive orders in the current presidential term (terms start January 20 after a leap-year election).
+const latestOrder = orders.find((o) => o.signing_date);
+const termYear = latestOrder?.signing_date
+  ? (() => {
+      const y = Number(latestOrder.signing_date.slice(0, 4));
+      const start = y - ((y - 1) % 4);
+      return latestOrder.signing_date >= `${start}-01-20` ? start : start - 4;
+    })()
+  : null;
+const termOrders = termYear
+  ? orders.filter((o) => o.president === latestOrder!.president && (o.signing_date ?? '') >= `${termYear}-01-20`)
+  : [];
+// Supreme Court: the most recent term with decisions.
+const courtTerm = cases[0]?.term;
+const termCases = courtTerm === undefined ? [] : cases.filter((c) => c.term === courtTerm);
+const monthAgo = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
+const recentHearings = hearings.filter((m) => m.date && m.date >= monthAgo && m.date <= today);
+
 const stats = [
-  { value: bills.length, label: 'bills and resolutions', href: href('bills/') },
-  { value: votes.length, label: 'roll-call votes', href: href('votes/') },
+  { value: bills.length, label: 'bills this Congress', href: href('bills/') },
   { value: laws.length, label: laws.length === 1 ? 'new law' : 'new laws', href: href('bills/?status=law') },
-  { value: openDiscussions.length, label: 'open discussions', href: href('discussions/') },
-];
+  { value: votes.length, label: 'roll-call votes', href: href('votes/') },
+  { value: termOrders.length, label: 'executive orders this term', href: href('executive/') },
+  {
+    value: termCases.length,
+    label: courtTerm === undefined ? 'court decisions' : `court decisions, ${courtTerm} term`,
+    href: href('court/'),
+  },
+  { value: recentHearings.length, label: 'hearings in the last 30 days', href: href('committees/') },
+].filter((s) => s.value > 0);
 ---
 
 <Base section="home">
@@ -67,31 +90,23 @@ const stats = [
       </p>
       <form class="hero-search" role="search" action={href('bills/')} method="get">
         <label for="home-q" class="visually-hidden">
-          Search bills
+          Search bills, people, hearings, executive orders and more
         </label>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
           <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
         </svg>
-        <input id="home-q" name="q" type="search" placeholder="Try “housing”, “veterans” or “H.R. 1”" />
+        <input
+          id="home-q"
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="Search bills, people, hearings, orders…"
+        />
         <button type="submit" class="primary">
           Search
         </button>
       </form>
-      <div class="hero-ctas">
-        {DEMO ? (
-          <a class="button gradient large" href={href('states/ma/')}>
-            Explore Massachusetts
-          </a>
-        ) : (
-          <a class="button gradient large" href="#reps-h">
-            Find your representatives
-          </a>
-        )}
-        <a class="button large ghost" href={href('discussions/')}>
-          Join a discussion →
-        </a>
-      </div>
     </div>
 
     <div class="this-week" aria-label="Latest">
@@ -140,7 +155,7 @@ const stats = [
     </div>
   </section>
 
-  <ul class="stat-strip" aria-label={`${congress} so far`}>
+  <ul class="stat-strip" aria-label="By the numbers">
     {stats.map((s) => (
       <li>
         <a href={s.href}>
@@ -154,23 +169,6 @@ const stats = [
   <FeedView client:idle compact />
   {!DEMO && <FindMyReps client:visible />}
 
-  {topics.length > 0 && (
-    <section aria-labelledby="topics-h">
-      <div class="section-head">
-        <h2 id="topics-h">Explore by topic</h2>
-      </div>
-      <ul class="topic-chips">
-        {topics.map((t) => (
-          <li>
-            <a href={t.href}>
-              {t.label} <span class="count">{t.value}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
-
   <section aria-labelledby="recent-h">
     <div class="section-head">
       <h2 id="recent-h">Moving in Congress</h2>
@@ -179,7 +177,7 @@ const stats = [
       </a>
     </div>
     {recent.length > 0 ? (
-      <ul class="card-grid list">
+      <ul class="card-grid list moving">
         {recent.map((b) => (
           <BillListItem bill={b} />
         ))}
@@ -248,46 +246,28 @@ const stats = [
           All votes
         </a>
       </div>
-      <VoteList votes={votes.slice(0, 4)} />
+      <div class="home-votes">
+        <VoteList votes={votes.slice(0, 4)} />
+      </div>
     </section>
   )}
-
-  <section aria-labelledby="levels-h">
-    <div class="section-head">
-      <h2 id="levels-h">Every level of government</h2>
-    </div>
-    <div class="layers">
-      <a class="card layer layer-federal" href={href('bills/')}>
-        <span class="layer-kicker">Federal</span>
-        <strong>Congress</strong>
-        <span class="small muted">
-          {bills.length.toLocaleString()} bills, {votes.length} votes, every member
-        </span>
-      </a>
-      <a class="card layer layer-state" href={href('states/ma/')}>
-        <span class="layer-kicker">State</span>
-        <strong>Massachusetts</strong>
-        <span class="small muted">
-          {maLegislators > 0 ? `${maLegislators} legislators and state bills` : 'Legislators and state bills'}
-        </span>
-      </a>
-      <a class="card layer layer-city" href={href('boston/')}>
-        <span class="layer-kicker">City</span>
-        <strong>Boston City Council</strong>
-        <span class="small muted">
-          {officials.length > 0
-            ? `${officials.length} councilors, ${matters.length} recent matters`
-            : 'Councilors and matters'}
-        </span>
-      </a>
-      <a class="card layer layer-all" href={href('states/')}>
-        <span class="layer-kicker">Nationwide</span>
-        <strong>All 50 states</strong>
-        <span class="small muted">Delegations, legislatures and bills</span>
-      </a>
-    </div>
-  </section>
 </Base>
+
+<script>
+  // The hero search opens the full search (the header's) once it is ready; before
+  // that, or without JavaScript, it submits to the bill search.
+  const input = document.getElementById('home-q') as HTMLInputElement | null;
+  const openSearch = (e?: Event) => {
+    if (!input || !('searchReady' in document.documentElement.dataset)) return;
+    e?.preventDefault();
+    document.dispatchEvent(new CustomEvent('open-search', { detail: { q: input.value } }));
+    input.value = '';
+    input.blur();
+  };
+  input?.addEventListener('focus', () => openSearch());
+  input?.addEventListener('input', () => openSearch());
+  input?.form?.addEventListener('submit', (e) => openSearch(e));
+</script>
 
 <style>
   .hero {
@@ -342,11 +322,6 @@ const stats = [
   }
   .hero-search input:focus-visible {
     box-shadow: none;
-  }
-  .hero-ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
   }
   .this-week {
     display: grid;
@@ -425,11 +400,28 @@ const stats = [
     margin: 0 0 var(--space-6);
     display: grid;
     gap: var(--space-3);
-    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (min-width: 40rem) {
+    .stat-strip {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 72rem) {
+    .stat-strip {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+  .stat-strip li {
+    display: grid;
   }
   .stat-strip a {
-    display: grid;
-    padding: var(--space-4) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--space-1);
+    height: 100%;
+    padding: var(--space-4);
     border-radius: var(--radius-lg);
     background: var(--bg-raised);
     border: 1px solid var(--border);
@@ -442,7 +434,7 @@ const stats = [
   }
   .stat-value {
     font-family: var(--font-heading);
-    font-size: 2.2rem;
+    font-size: clamp(1.7rem, 1.3rem + 1.2vw, 2.2rem);
     font-weight: 750;
     letter-spacing: -0.03em;
     line-height: 1.1;
@@ -451,6 +443,7 @@ const stats = [
   .stat-label {
     color: var(--text-muted);
     font-size: var(--step--1);
+    line-height: 1.3;
   }
   .discuss-band {
     display: grid;
@@ -534,47 +527,29 @@ const stats = [
       grid-template-columns: 1fr;
     }
   }
-  .layers {
-    display: grid;
-    gap: var(--space-3);
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  }
-  .layer {
-    display: grid;
-    gap: var(--space-1);
-    padding: var(--space-5);
-    position: relative;
-    overflow: hidden;
-  }
-  .layer::after {
-    content: '';
-    position: absolute;
-    inset: auto -20% -60% auto;
-    width: 9rem;
-    height: 9rem;
-    border-radius: 50%;
-    opacity: 0.18;
-    background: var(--brand);
-  }
-  .layer-state::after {
-    background: var(--sky);
-  }
-  .layer-city::after {
-    background: var(--highlight);
-  }
-  .layer-all::after {
-    background: var(--ok);
-  }
-  .layer strong {
-    font-family: var(--font-heading);
-    font-size: 1.35rem;
-    letter-spacing: -0.02em;
-  }
-  .layer-kicker {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: var(--text-muted);
+  /* Phones: fewer bills and discussions, so the page doesn't scroll forever. */
+  @media (max-width: 40rem) {
+    .moving > :global(li:nth-child(n + 4)) {
+      display: none;
+    }
+    .discuss-list :global(li:nth-child(n + 3)) {
+      display: none;
+    }
+    .discuss-list :global(.small) {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .steps {
+      display: none;
+    }
+    .home-votes :global(li:nth-child(n + 3)) {
+      display: none;
+    }
+    /* An odd number of stat tiles: the last one spans the row. */
+    .stat-strip li:last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
   }
 </style>

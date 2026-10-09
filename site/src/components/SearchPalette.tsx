@@ -61,7 +61,8 @@ const QUICK: Searchable[] = [
 /**
  * Header search: a button that opens a dialog with instant results across people,
  * places, discussions and notable bills. The index loads on first open; "/" or
- * Ctrl/Cmd+K open it from anywhere.
+ * Ctrl/Cmd+K open it from anywhere. Other search boxes on a page (the home page
+ * hero) open it by dispatching `open-search` on `document`, with the text typed so far.
  */
 export default function SearchPalette() {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -89,6 +90,17 @@ export default function SearchPalette() {
     input.current?.focus();
     loadIndex().then(setIndex);
   };
+
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const text = (e as CustomEvent<{ q?: string }>).detail?.q;
+      if (text) setQ(text);
+      open();
+    };
+    document.addEventListener('open-search', onOpen);
+    document.documentElement.dataset.searchReady = '';
+    return () => document.removeEventListener('open-search', onOpen);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

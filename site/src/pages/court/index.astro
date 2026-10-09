@@ -1,9 +1,9 @@
 ---
+import CaseExplorer from '../../components/CaseExplorer';
 import BarList from '../../components/viz/BarList';
 import Base from '../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadNominations, loadScotusCases } from '../../lib/build-data';
-import { scotusCaseHref } from '../../lib/paths';
-import { docketUrl, supremeCourtTerm, type ScotusCase } from '../../lib/court';
+import { caseRows, supremeCourtTerm } from '../../lib/court';
 import { NOMINATION_STATUS, nominationUrl } from '../../lib/executive';
 import { formatDate } from '../../lib/format';
 
@@ -13,23 +13,23 @@ const [cases, nominations, discussions] = await Promise.all([
   loadDiscussionsByTarget(),
 ]);
 const term = supremeCourtTerm(new Date());
-const termLabel = (t: number) => `October Term ${t}`;
-const thisTerm = cases.filter((c) => c.term === term);
-const lastTerm = cases.filter((c) => c.term === term - 1);
 const perTerm = [...Map.groupBy(cases, (c) => c.term)]
   .sort((a, b) => b[0] - a[0])
   .map(([t, list]) => ({ label: `${t}–${String(t + 1).slice(2)}`, value: list.length }));
 // Early in a term few decisions are out yet, so the list leads with the newest across terms.
-const latest = cases.slice(0, 40);
+const rows = caseRows(cases, (id) => discussions.has(`scotus_case:${id}`));
+const termsWithCases = [...new Set(cases.map((c) => c.term))].sort((a, b) => b - a);
+// The newest term with decisions (a new term has none until the first opinions in the fall).
+const latestTermYear = cases[0]?.term ?? term;
+const latestTerm = cases.filter((c) => c.term === latestTermYear);
+const latestTermLabel = `${latestTermYear}–${String(latestTermYear + 1).slice(2)}`;
+const latestRows = rows.filter((r) => r.t === latestTermYear);
+const authors = [...new Set(rows.map((r) => r.j).filter((j): j is string => !!j))].sort(
+  (a, b) => Number(a === 'Per Curiam') - Number(b === 'Per Curiam') || a.localeCompare(b),
+);
 const courtNominations = nominations.filter((n) =>
   /supreme court of the united states|justice of the supreme/i.test(n.position ?? n.description ?? ''),
 );
-const tags = (c: ScotusCase) =>
-  [
-    c.per_curiam ? 'Per curiam' : null,
-    c.concurrences > 0 ? `${c.concurrences} concurring opinion${c.concurrences > 1 ? 's' : ''}` : null,
-    c.dissents > 0 ? `${c.dissents} dissent${c.dissents > 1 ? 's' : ''}` : null,
-  ].filter(Boolean);
 ---
 
 <Base
@@ -48,12 +48,20 @@ const tags = (c: ScotusCase) =>
 
   <dl class="stat-grid">
     <div class="stat">
-      <dt>Decisions this term ({termLabel(term)})</dt>
-      <dd>{thisTerm.length.toLocaleString()}</dd>
+      <dt>Decisions, {latestTermLabel} term</dt>
+      <dd>{latestTerm.length.toLocaleString()}</dd>
     </div>
     <div class="stat">
-      <dt>Decisions last term</dt>
-      <dd>{lastTerm.length.toLocaleString()}</dd>
+      <dt>Argued that term</dt>
+      <dd>{latestTerm.filter((c) => c.date_argued).length.toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Unsigned (per curiam)</dt>
+      <dd>{latestRows.filter((r) => r.pc).length.toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Decisions since {cases.at(-1)?.date_filed.slice(0, 4) ?? '2020'}</dt>
+      <dd>{cases.length.toLocaleString()}</dd>
     </div>
   </dl>
 
@@ -63,36 +71,12 @@ const tags = (c: ScotusCase) =>
     <div class="court-layout">
       <section aria-labelledby="latest-h">
         <div class="section-head">
-          <h2 id="latest-h">Latest decisions</h2>
+          <h2 id="latest-h">Decisions</h2>
           <a class="see-all" href="https://www.supremecourt.gov/opinions/opinions.aspx" rel="noopener">
             supremecourt.gov
           </a>
         </div>
-        <div class="panel">
-          <ul class="list case-list">
-            {latest.map((c) => (
-              <li>
-                <p class="meta">
-                  Decided {formatDate(c.date_filed)}
-                  {c.docket_number && (
-                    <>
-                      {' · '}
-                      <a href={docketUrl(c.docket_number)} rel="noopener">
-                        No. {c.docket_number}
-                      </a>
-                    </>
-                  )}
-                  {c.citations[0] && <> · {c.citations[0]}</>}
-                </p>
-                <p class="case-name">
-                  <a href={scotusCaseHref(c.cluster_id)}>{c.case_name}</a>
-                  {discussions.has(`scotus_case:${c.cluster_id}`) && <span class="chip">Discussion</span>}
-                </p>
-                {tags(c).length > 0 && <p class="small muted">{tags(c).join(' · ')}</p>}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <CaseExplorer client:visible initial={rows.slice(0, 30)} terms={termsWithCases} authors={authors} />
       </section>
       <aside>
         <div class="panel side-panel">
@@ -128,8 +112,8 @@ const tags = (c: ScotusCase) =>
     <a href="https://www.courtlistener.com/" rel="noopener">
       CourtListener
     </a>{' '}
-    (Free Law Project), refreshed hourly. Concurring and dissenting opinions are counted when CourtListener lists them
-    separately; some decisions arrive as a single combined document.
+    (Free Law Project), refreshed hourly. The author is the Justice CourtListener lists for the opinion; most decisions
+    arrive as one combined document, so separate concurrences and dissents are rarely listed.
   </p>
 </Base>
 
@@ -150,11 +134,17 @@ const tags = (c: ScotusCase) =>
   .side-panel {
     margin-bottom: var(--space-4);
   }
-  .case-list p {
+  .court-layout :global(.case-list p) {
     margin: 0;
   }
-  .case-name {
+  .court-layout :global(.case-name) {
     font-weight: 650;
+  }
+  .court-layout :global(.case-name a) {
+    text-decoration: none;
+  }
+  .court-layout :global(.case-name a:hover) {
+    text-decoration: underline;
   }
   .plain-list {
     list-style: none;
