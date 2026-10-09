@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { areaLabel } from '../lib/address';
 import { accountUrl, followMany, getClient, getSession, hasStoredSession, savePendingFollows } from '../lib/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from '../lib/config';
 import { memberRole, partyClass, partyLabel, stateName } from '../lib/format';
@@ -144,7 +145,7 @@ export default function FindMyReps({ saved = false }: Props) {
         )
         .maybeSingle();
       if (data) {
-        setSavedLabel(data.address_label);
+        setSavedLabel(data.address_label ?? (data.state ? stateName(data.state) : null));
         setResult(await repsFromProfile(data as Profile));
       }
     })().catch(() => undefined);
@@ -214,7 +215,8 @@ export default function FindMyReps({ saved = false }: Props) {
       if (!data.session) return;
       const { error } = await client.from('profiles').upsert({
         user_id: data.session.user.id,
-        address_label: result.matchedAddress,
+        // Only the place (city, state, ZIP) is kept, never the street; the database enforces this too.
+        address_label: areaLabel(result.matchedAddress),
         state: result.state,
         congressional_district: result.congressionalDistrict,
         state_upper_district: result.stateUpper,
@@ -224,8 +226,8 @@ export default function FindMyReps({ saved = false }: Props) {
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
-      setSavedLabel(result.matchedAddress);
-      setStatus('Saved to your account.');
+      setSavedLabel(areaLabel(result.matchedAddress) ?? stateName(result.state));
+      setStatus('Saved to your account: your districts and town, not your street address.');
     } catch {
       setStatus('Could not save; please try again.');
     }

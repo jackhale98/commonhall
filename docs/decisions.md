@@ -828,3 +828,14 @@ adds the lines itself. Checked against the city: FY27 spending and revenue both 
 $4,942,387,983 (+$29 million, 0.6%, on FY26), property tax 73% and state aid 11% of
 revenue, as the city states. Department changes compare with the prior year as
 appropriated (amended), which is what the city's file gives.
+
+## 69. Saved locations keep no street address
+
+Find my reps used to save the matched street address with a user's districts, to show
+it back to them. Nothing needs it: the feed and discussion residency use the districts.
+Now only the town, state and ZIP are kept ("Washington, DC 20500"). The browser saves
+that form, and a trigger on `profiles` (`private.area_label`) cuts every write to it,
+so an old cached page cannot store a street; when a street cannot be told apart from
+the place, nothing is kept. The migration rewrote existing labels the same way. The
+privacy page says so. Addresses still go to the Census Geocoder for the lookup and are
+never stored or logged by us.
