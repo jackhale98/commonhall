@@ -1,4 +1,5 @@
 ---
+import NominationExplorer from '../../components/NominationExplorer';
 import OrderExplorer from '../../components/OrderExplorer';
 import OrdersPace from '../../components/viz/OrdersPace.astro';
 import StackedBar from '../../components/viz/StackedBar';
@@ -12,13 +13,13 @@ import {
 } from '../../lib/build-data';
 import {
   NOMINATION_STATUS,
-  nominationUrl,
+  nominationRows,
   orderRows,
   orderTerms,
   type Nomination,
   type NominationStatus,
 } from '../../lib/executive';
-import { congressLabel, formatDate } from '../../lib/format';
+import { congressLabel } from '../../lib/format';
 import { voteHref } from '../../lib/paths';
 
 const [orders, nominations, votesByNomination, discussions] = await Promise.all([
@@ -55,13 +56,20 @@ const statusOrder: NominationStatus[] = [
 const segments = statusOrder
   .map((s) => ({ label: NOMINATION_STATUS[s].label, value: count(civilian, s), tone: NOMINATION_STATUS[s].tone }))
   .filter((s) => s.value > 0);
-const confirmed = civilian.filter((n) => n.status === 'confirmed').slice(0, 20);
-const pending = civilian
-  .filter((n) => NOMINATION_STATUS[n.status].pending)
-  .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status))
-  .slice(0, 20);
 const pendingTotal = civilian.filter((n) => NOMINATION_STATUS[n.status].pending).length;
-const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation;
+const nomRows = nominationRows(civilian, (n) => {
+  const v = votesByNomination.get(n.id)?.find((x) => /nomination/i.test(x.question ?? ''));
+  return v ? { href: voteHref(v.id), yea: v.yea_total, nay: v.nay_total } : undefined;
+});
+const initialNominations = nomRows.filter((n) => NOMINATION_STATUS[n.s].pending).slice(0, 30);
+const agencies = [
+  ...Map.groupBy(
+    civilian.filter((n) => n.organization),
+    (n) => n.organization!,
+  ),
+]
+  .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+  .map(([name]) => name);
 ---
 
 <Base
@@ -141,67 +149,8 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
             </p>
           )}
         </div>
-        <div class="nom-columns">
-          <div>
-            <h3>Recently confirmed</h3>
-            <div class="panel">
-              <ul class="list nom-list">
-                {confirmed.map((n) => {
-                  const vote = votesByNomination.get(n.id)?.find((v) => /nomination/i.test(v.question ?? ''));
-                  return (
-                    <li>
-                      <p class="meta">
-                        {n.organization ?? 'Nomination'} · confirmed {formatDate(n.latest_action_date)}
-                      </p>
-                      <p class="nom-name">
-                        <a href={nominationUrl(n)} rel="noopener">
-                          {nomineeLabel(n)}
-                        </a>
-                      </p>
-                      {n.position && <p class="small">{n.position}</p>}
-                      <p class="small muted">
-                        {vote ? (
-                          <a href={voteHref(vote.id)}>
-                            Senate vote {vote.yea_total}–{vote.nay_total}
-                          </a>
-                        ) : /voice vote|unanimous consent/i.test(n.latest_action_text ?? '') ? (
-                          'By voice vote or unanimous consent'
-                        ) : (
-                          n.latest_action_text
-                        )}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-          <div>
-            <h3>Awaiting the Senate</h3>
-            <div class="panel">
-              <ul class="list nom-list">
-                {pending.map((n) => (
-                  <li>
-                    <p class="meta">
-                      <span class="chip">{NOMINATION_STATUS[n.status].label}</span> · received{' '}
-                      {formatDate(n.received_date)}
-                    </p>
-                    <p class="nom-name">
-                      <a href={nominationUrl(n)} rel="noopener">
-                        {nomineeLabel(n)}
-                      </a>
-                    </p>
-                    {n.position && <p class="small">{n.position}</p>}
-                    {n.latest_action_text && (
-                      <p class="small muted">
-                        {formatDate(n.latest_action_date)}: {n.latest_action_text}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+        <div class="nom-explorer">
+          <NominationExplorer client:visible initial={initialNominations} agencies={agencies} />
         </div>
       </>
     )}
@@ -227,35 +176,22 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
     margin: 0;
   }
   .eo-layout :global(.eo-title a),
-  .nom-name a {
+  .nom-explorer :global(.nom-name a) {
     text-decoration: none;
   }
   .eo-layout :global(.eo-title a:hover),
-  .nom-name a:hover {
+  .nom-explorer :global(.nom-name a:hover) {
     text-decoration: underline;
   }
   .eo-layout :global(.eo-title),
-  .nom-name {
+  .nom-explorer :global(.nom-name) {
     margin: 0;
     font-weight: 650;
   }
-  .nom-list p {
+  .nom-explorer :global(.nom-list p) {
     margin: 0;
   }
-  /* Phones: the first few of each list; the rest are on Congress.gov. */
-  @media (max-width: 40rem) {
-    .nom-list > li:nth-child(n + 7) {
-      display: none;
-    }
-  }
-  .nom-columns {
-    display: grid;
-    gap: var(--space-4);
+  .nom-explorer {
     margin-top: var(--space-4);
-  }
-  @media (min-width: 50rem) {
-    .nom-columns {
-      grid-template-columns: 1fr 1fr;
-    }
   }
 </style>

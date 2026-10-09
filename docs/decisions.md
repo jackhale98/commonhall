@@ -657,3 +657,15 @@ meeting (desktop only) and, last, an open discussion.
 Search boxes use short hints ("Keyword or bill #", "Topic or EO #", "Search
 everything") that fit a 390 px phone; the labels and help text carry the detail.
 The Supreme Court outcome charts start folded on phones.
+
+## 59. Nominations are searchable
+
+The executive page's two fixed lists ("Recently confirmed", "Awaiting the Senate",
+20 each) became one explorer over every civilian nomination this Congress: search
+by name, position or agency, and filter by where it stands (awaiting the Senate,
+confirmed, withdrawn/returned/rejected, all) and agency. Like the orders, it
+prerenders the first page and loads a compact list built with the site
+(`executive/nominations.json`, about 33 KB gzipped). When Congress.gov gives no
+separate nominee or position, both are read from the description ("Keith Heffern,
+of Virginia, …, to be Ambassador … to the Gabonese Republic."); the header search
+uses the same split.

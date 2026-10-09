@@ -20,7 +20,7 @@ import {
   STATE_CODES,
   stateName,
 } from '../lib/format';
-import { NOMINATION_STATUS, nominationUrl } from '../lib/executive';
+import { NOMINATION_STATUS, nominationUrl, splitNomination } from '../lib/executive';
 import {
   billHref,
   discussionHref,
@@ -168,12 +168,16 @@ export async function GET() {
     ...nominations
       .filter((n) => !n.is_military)
       .slice(0, 2000)
-      .map((n) => ({
-        k: 'nomination' as const,
-        t: clip(n.nominee ?? n.description ?? n.citation),
-        s: `${n.position ? `${clip(n.position, 70)} · ` : ''}${NOMINATION_STATUS[n.status].label}`,
-        h: nominationUrl(n),
-      })),
+      .map((n) => {
+        const split = n.description ? splitNomination(n.description) : { name: null, position: null };
+        const position = n.position ?? split.position;
+        return {
+          k: 'nomination' as const,
+          t: clip(n.nominee ?? split.name ?? n.description ?? n.citation),
+          s: `${position ? `${clip(position, 70)} · ` : ''}${NOMINATION_STATUS[n.status].label}`,
+          h: nominationUrl(n),
+        };
+      }),
     ...matters.slice(0, 1000).map(({ matter: m }) => ({
       k: 'matter' as const,
       t: clip(m.title),

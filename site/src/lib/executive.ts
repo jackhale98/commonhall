@@ -162,3 +162,62 @@ export function orderRows(orders: ExecutiveOrder[], hasDiscussion: (doc: string)
   }
   return rows.reverse();
 }
+
+/** Compact civilian nomination for the nominations explorer (nominations.json). */
+export interface NominationRow {
+  /** Congress.gov page. */
+  u: string;
+  /** Nominee (or the description when there is no single nominee). */
+  w: string;
+  /** Position. */
+  p: string | null;
+  /** Agency or organisation. */
+  o: string | null;
+  s: NominationStatus;
+  /** Received date. */
+  r: string | null;
+  /** Latest action date and text. */
+  d: string | null;
+  a: string | null;
+  /** Confirmation roll call: vote page path, yeas, nays. */
+  v?: [string, number, number];
+}
+
+/**
+ * Name and position from a description such as "Keith Heffern, of Virginia, a
+ * Career Member of …, to be Ambassador … to the Gabonese Republic." (used when
+ * Congress.gov gives no separate nominee or position).
+ */
+export function splitNomination(description: string): { name: string | null; position: string | null } {
+  const name = /^(.+?), of [^,]+,/.exec(description)?.[1] ?? null;
+  const position = /,\s*to be (.+?)\.?$/.exec(description)?.[1] ?? null;
+  return { name, position: position && position.charAt(0).toUpperCase() + position.slice(1) };
+}
+
+/** Civilian nominations in compact form, newest action first. */
+export function nominationRows(
+  nominations: Nomination[],
+  confirmationVote: (n: Nomination) => { href: string; yea: number; nay: number } | undefined,
+): NominationRow[] {
+  return nominations
+    .filter((n) => !n.is_military)
+    .map((n) => {
+      const split = n.description ? splitNomination(n.description) : { name: null, position: null };
+      const row: NominationRow = {
+        u: nominationUrl(n),
+        w: n.nominee ?? split.name ?? n.description ?? n.citation,
+        p: n.position ?? split.position,
+        o: n.organization,
+        s: n.status,
+        r: n.received_date,
+        d: n.latest_action_date,
+        a:
+          n.latest_action_text && n.latest_action_text.length > 160
+            ? `${n.latest_action_text.slice(0, 157)}…`
+            : n.latest_action_text,
+      };
+      const vote = n.status === 'confirmed' ? confirmationVote(n) : undefined;
+      if (vote) row.v = [vote.href, vote.yea, vote.nay];
+      return row;
+    });
+}
