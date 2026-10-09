@@ -609,3 +609,17 @@ filtering: orders by president's term, year, revoked or not, and having a
 discussion; decisions by term, opinion author, argued or not, and having a
 discussion. CourtListener delivers most decisions as one combined document, so the
 court filters use the author and argument date rather than dissent counts.
+
+## 56. A shorter phone home page; the pace of executive orders
+
+The home page drops the parts that repeated others: the open-discussion card in the
+hero (the discussions band follows), the "Latest votes" list (the hero shows the
+latest vote) and "Where bills stand" (on the bills page). On phones the hero shows
+two "Latest" cards and the footer folds into two columns with the data sources on
+one line. The phone home page went from about 8,500 px to about 3,800 px tall.
+
+The executive page replaces its two bar lists with one chart: executive orders
+signed over each four-year term since 2009, counted from Inauguration Day. It is an
+emphasis chart (current term in the accent colour, earlier terms in grey, labelled
+at their ends), with a month-by-month readout on hover, tap or arrow keys, and a
+table (first 100 days, first year, whole term).

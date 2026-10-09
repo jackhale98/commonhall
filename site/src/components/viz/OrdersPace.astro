@@ -1,0 +1,444 @@
+---
+/**
+ * Executive orders signed over each four-year term, counted from Inauguration Day:
+ * one cumulative line per term, the current term in the accent colour and earlier
+ * terms in grey (an emphasis chart). Hover, touch or arrow keys move a readout
+ * through the term month by month; the same numbers are in the table below.
+ */
+import type { ExecutiveOrder } from '../../lib/executive';
+
+interface Props {
+  orders: ExecutiveOrder[];
+  /** Today (YYYY-MM-DD), so the current term's line stops where the term is. */
+  today: string;
+}
+
+const { orders, today } = Astro.props;
+const TERM_DAYS = 1461;
+const MONTHS = 48;
+const DAY = 86_400_000;
+const inauguration = (date: string) => {
+  const y = Number(date.slice(0, 4));
+  const start = y - ((y - 1) % 4);
+  return date >= `${start}-01-20` ? start : start - 4;
+};
+const daysSince = (date: string, start: number) =>
+  Math.floor((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${start}-01-20T00:00:00Z`)) / DAY);
+
+interface Series {
+  key: string;
+  label: string;
+  short: string;
+  start: number;
+  days: number[];
+  /** Days into the term covered (the full term, or up to today). */
+  span: number;
+  current: boolean;
+}
+const groups = new Map<string, Series>();
+for (const o of orders) {
+  if (!o.signing_date) continue;
+  const start = inauguration(o.signing_date);
+  const key = `${start}-${o.president ?? ''}`;
+  const name = o.president_name ?? 'Unknown';
+  const last =
+    name
+      .split(' ')
+      .filter((w) => !/^(jr|sr)\.?$/i.test(w))
+      .at(-1) ?? name;
+  const g =
+    groups.get(key) ??
+    groups
+      .set(key, {
+        key,
+        label: `${name}, ${start}–${start + 4}`,
+        short: `${last} ${start}`,
+        start,
+        days: [],
+        span: TERM_DAYS,
+        current: false,
+      })
+      .get(key)!;
+  g.days.push(daysSince(o.signing_date, start));
+}
+const series = [...groups.values()]
+  .filter((s) => s.start >= 2009)
+  .sort((a, b) => a.start - b.start)
+  .map((s) => ({ ...s, days: s.days.sort((a, b) => a - b) }));
+const current = series.at(-1);
+if (current) {
+  current.current = true;
+  current.span = Math.min(TERM_DAYS, Math.max(0, daysSince(today, current.start)));
+  current.label = `${current.label.replace(/–\d+$/, '–')}`;
+}
+const countBy = (s: Series, day: number) => {
+  let n = 0;
+  for (const d of s.days) if (d <= day) n++;
+  return n;
+};
+const total = (s: Series) => countBy(s, s.span);
+const yMax = Math.max(10, ...series.map(total));
+const yTop = Math.ceil(yMax / 50) * 50;
+const ticks = [0, 1, 2, 3, 4].map((i) => Math.round((yTop * i) / 4));
+
+// Plot coordinates: viewBox 0..1000 × 0..400, y grows downward.
+const W = 1000;
+const H = 400;
+const px = (day: number) => (day / TERM_DAYS) * W;
+const py = (n: number) => H - (n / yTop) * H;
+const path = (s: Series) => {
+  const pts: string[] = [`M0,${H}`];
+  let n = 0;
+  for (const d of s.days) {
+    if (d > s.span) break;
+    pts.push(`L${px(d).toFixed(1)},${py(n).toFixed(1)}`);
+    n++;
+    pts.push(`L${px(d).toFixed(1)},${py(n).toFixed(1)}`);
+  }
+  pts.push(`L${px(s.span).toFixed(1)},${py(n).toFixed(1)}`);
+  return pts.join('');
+};
+
+// Monthly readings for the readout and the table.
+const monthDay = (m: number) => Math.round((m * TERM_DAYS) / MONTHS);
+const readings = series.map((s) => ({
+  label: s.current ? `${s.short}–` : `${s.short}–${String(s.start + 4).slice(2)}`,
+  current: s.current,
+  values: Array.from({ length: MONTHS + 1 }, (_, m) => (monthDay(m) <= s.span ? countBy(s, monthDay(m)) : null)),
+}));
+
+// End labels at each line's end; a label that would overlap one already placed is
+// left to the legend, readout and table (the current term's label always shows).
+const ends = [...series]
+  .sort((a, b) => Number(b.current) - Number(a.current) || total(b) - total(a))
+  .reduce<{ s: Series; y: number }[]>((placed, s) => {
+    const y = (py(total(s)) / H) * 100;
+    if (!s.current && placed.some((p) => Math.abs(p.y - y) < 9)) return placed;
+    return [...placed, { s, y }];
+  }, []);
+const data = JSON.stringify({ months: MONTHS, readings });
+---
+
+<figure class="pace" data-pace={data}>
+  <div class="pace-legend small">
+    <span>
+      <i class="key key-current" aria-hidden="true"></i>
+      {current?.label ?? 'Current term'}
+    </span>
+    <span>
+      <i class="key key-past" aria-hidden="true"></i>Earlier terms
+    </span>
+  </div>
+  <div class="pace-frame">
+    <div class="pace-y" aria-hidden="true">
+      {ticks.map((t) => (
+        <span style={`bottom:${(t / yTop) * 100}%`}>{t}</span>
+      ))}
+    </div>
+    <div
+      class="pace-plot"
+      tabindex="0"
+      role="img"
+      aria-label={`Executive orders signed over each four-year term since 2009, counted from Inauguration Day. ${series
+        .map((s) => `${s.label}: ${total(s)}${s.current ? ' so far' : ''}`)
+        .join('; ')}.`}
+    >
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+        {ticks.map((t) => (
+          <line class="grid" x1="0" x2={W} y1={py(t)} y2={py(t)} />
+        ))}
+        {[1, 2, 3].map((y) => (
+          <line class="grid grid-year" x1={px(y * 365.25)} x2={px(y * 365.25)} y1="0" y2={H} />
+        ))}
+        {series
+          .filter((s) => !s.current)
+          .map((s) => (
+            <path class="line line-past" d={path(s)} />
+          ))}
+        {current && <path class="line line-current" d={path(current)} />}
+        <line class="cross" x1="0" x2="0" y1="0" y2={H} />
+      </svg>
+      {current && (
+        <span
+          class="end-dot"
+          aria-hidden="true"
+          style={`left:${(px(current.span) / W) * 100}%;top:${(py(total(current)) / H) * 100}%`}
+        />
+      )}
+      {ends.map(({ s, y }) => (
+        <span
+          class={`end-label${s.current ? ' is-current' : ''}${px(s.span) > W * 0.8 ? ' at-right' : ''}`}
+          aria-hidden="true"
+          style={`left:${(px(s.span) / W) * 100}%;top:${y}%`}
+        >
+          {s.short} · <strong>{total(s)}</strong>
+        </span>
+      ))}
+      <div class="pace-tip" aria-hidden="true" hidden></div>
+    </div>
+    <div class="pace-x" aria-hidden="true">
+      <span style="left:0">Day 1</span>
+      {[1, 2, 3, 4].map((y) => (
+        <span style={`left:${(px(y * 365.25) / W) * 100}%`}>
+          {y} yr{y > 1 ? 's' : ''}
+        </span>
+      ))}
+    </div>
+  </div>
+  <figcaption class="small muted">
+    Each line counts the orders signed from Inauguration Day (January 20) through that term. Hover, tap or use the arrow
+    keys on the chart to compare terms month by month.
+  </figcaption>
+  <details class="more">
+    <summary>Show as a table</summary>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Term</th>
+            <th scope="col">First 100 days</th>
+            <th scope="col">First year</th>
+            <th scope="col">Whole term</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...series].reverse().map((s) => (
+            <tr>
+              <th scope="row">{s.label}</th>
+              <td>{s.span >= 100 ? countBy(s, 100) : '—'}</td>
+              <td>{s.span >= 365 ? countBy(s, 365) : '—'}</td>
+              <td>{s.current ? `${total(s)} so far` : total(s)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<script>
+  // Readout: the pointer (or arrow keys) picks a month; the tip lists every term's count then.
+  for (const fig of document.querySelectorAll<HTMLElement>('.pace')) {
+    const { months, readings } = JSON.parse(fig.dataset.pace ?? '{}') as {
+      months: number;
+      readings: { label: string; current: boolean; values: (number | null)[] }[];
+    };
+    const plot = fig.querySelector<HTMLElement>('.pace-plot')!;
+    const tip = fig.querySelector<HTMLElement>('.pace-tip')!;
+    const cross = fig.querySelector<SVGLineElement>('.cross')!;
+    let month = -1;
+    const show = (m: number) => {
+      month = Math.max(0, Math.min(months, m));
+      const x = (month / months) * 1000;
+      cross.setAttribute('x1', String(x));
+      cross.setAttribute('x2', String(x));
+      cross.classList.add('on');
+      tip.replaceChildren();
+      const head = document.createElement('strong');
+      const y = Math.floor(month / 12);
+      const mo = month % 12;
+      head.textContent = month === 0 ? 'Inauguration Day' : `${y ? `${y} yr ` : ''}${mo ? `${mo} mo` : ''} in office`;
+      tip.append(head);
+      for (const r of [...readings].sort((a, b) => Number(b.current) - Number(a.current))) {
+        const v = r.values[month];
+        if (v === null || v === undefined) continue;
+        const row = document.createElement('span');
+        const key = document.createElement('i');
+        key.className = `key ${r.current ? 'key-current' : 'key-past'}`;
+        row.append(key, document.createTextNode(`${r.label}: ${v}`));
+        tip.append(row);
+      }
+      tip.hidden = false;
+      tip.classList.toggle('flip', month > months / 2);
+      tip.style.left = `${(month / months) * 100}%`;
+    };
+    const hide = () => {
+      tip.hidden = true;
+      cross.classList.remove('on');
+    };
+    const at = (e: PointerEvent) => {
+      const box = plot.getBoundingClientRect();
+      show(Math.round(((e.clientX - box.left) / box.width) * months));
+    };
+    // Mouse: follow the pointer. Touch: a tap (or drag) shows the readout and leaves it up.
+    plot.addEventListener('pointermove', at);
+    plot.addEventListener('pointerdown', at);
+    plot.addEventListener('pointerleave', (e) => {
+      if (e.pointerType === 'mouse') hide();
+    });
+    plot.addEventListener('blur', hide);
+    plot.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        show((month < 0 ? 0 : month) + (e.key === 'ArrowRight' ? 1 : -1));
+      } else if (e.key === 'Escape') hide();
+    });
+  }
+</script>
+
+<style>
+  .pace {
+    margin: 0;
+  }
+  .pace-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin-bottom: var(--space-3);
+    color: var(--text-muted);
+  }
+  .pace-legend span,
+  .pace :global(.pace-tip span) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+  .pace :global(.key) {
+    display: inline-block;
+    width: 14px;
+    height: 2px;
+    border-radius: 2px;
+    flex: none;
+  }
+  .pace :global(.key-current) {
+    background: var(--brand);
+    height: 3px;
+  }
+  .pace :global(.key-past) {
+    background: var(--border-strong);
+  }
+  .pace-frame {
+    display: grid;
+    grid-template-columns: 2.2rem 1fr;
+    grid-template-rows: auto auto;
+    column-gap: var(--space-2);
+  }
+  .pace-y {
+    position: relative;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .pace-y span {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+  }
+  .pace-plot {
+    position: relative;
+    height: clamp(13rem, 34vw, 18rem);
+    margin-right: 5.5rem;
+    touch-action: pan-y;
+    cursor: crosshair;
+    outline-offset: 4px;
+  }
+  .pace-plot svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .grid {
+    stroke: var(--border);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .grid-year {
+    stroke-dasharray: none;
+    opacity: 0.6;
+  }
+  .line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .line-past {
+    stroke: var(--border-strong);
+  }
+  .line-current {
+    stroke: var(--brand);
+    stroke-width: 2.5;
+  }
+  .cross {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    opacity: 0;
+  }
+  .cross:global(.on) {
+    opacity: 0.6;
+  }
+  .end-dot {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 0 0 2px var(--bg-raised);
+    transform: translate(-50%, -50%);
+  }
+  .end-label {
+    position: absolute;
+    transform: translate(8px, -50%);
+    white-space: nowrap;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .end-label.is-current {
+    color: var(--text);
+  }
+  .end-label.at-right {
+    transform: translate(6px, -50%);
+  }
+  .pace-x {
+    grid-column: 2;
+    position: relative;
+    height: 1.4rem;
+    margin-right: 5.5rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .pace-x span {
+    position: absolute;
+    top: 0.3rem;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .pace-x span:first-child {
+    transform: none;
+  }
+  .pace-tip {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    display: grid;
+    gap: 2px;
+    min-width: 12rem;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    font-size: var(--step--1);
+    transform: translateX(12px);
+    pointer-events: none;
+  }
+  .pace-tip[hidden] {
+    display: none;
+  }
+  .pace-tip:global(.flip) {
+    transform: translateX(calc(-100% - 12px));
+  }
+  /* Phones: earlier terms' end labels give way to the legend, readout and table. */
+  @media (max-width: 40rem) {
+    .pace-plot,
+    .pace-x {
+      margin-right: 1rem;
+    }
+    .end-label:not(.is-current) {
+      display: none;
+    }
+  }
+</style>

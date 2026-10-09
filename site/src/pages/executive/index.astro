@@ -1,6 +1,6 @@
 ---
 import OrderExplorer from '../../components/OrderExplorer';
-import BarList from '../../components/viz/BarList';
+import OrdersPace from '../../components/viz/OrdersPace.astro';
 import StackedBar from '../../components/viz/StackedBar';
 import Base from '../../layouts/Base.astro';
 import {
@@ -15,7 +15,6 @@ import {
   nominationUrl,
   orderRows,
   orderTerms,
-  termLabel,
   type Nomination,
   type NominationStatus,
 } from '../../lib/executive';
@@ -37,10 +36,6 @@ const currentName = currentTerm?.term.name ?? null;
 const currentOrders = [...(currentTerm?.orders ?? [])].reverse();
 const rows = orderRows(orders, (doc) => discussions.has(`executive_order:${doc}`));
 const initialRows = rows.filter((r) => r.g === currentTerm?.term.key).slice(0, 30);
-const byYear = [...Map.groupBy(currentOrders, (o) => (o.signing_date ?? o.publication_date).slice(0, 4))]
-  .map(([year, list]) => ({ label: year, value: list.length }))
-  .sort((a, b) => a.label.localeCompare(b.label));
-const termBars = terms.map(({ term }) => ({ label: termLabel(term), value: term.count })).reverse();
 
 // Nominations: civilian positions (military promotions come in long lists and are counted separately).
 const civilian = nominations.filter((n) => !n.is_military);
@@ -116,21 +111,11 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
       <p class="muted">Executive orders have not loaded yet.</p>
     ) : (
       <div class="eo-layout">
+        <div class="panel pace-panel">
+          <h3 class="h-small">The pace of executive orders, term by term</h3>
+          <OrdersPace orders={orders} today={new Date().toISOString().slice(0, 10)} />
+        </div>
         <OrderExplorer client:visible terms={terms.map((t) => t.term).reverse()} initial={initialRows} />
-        <aside>
-          {byYear.length > 0 && (
-            <div class="panel side-panel">
-              <h3 class="h-small">Signed per year this term</h3>
-              <BarList items={byYear} label="Executive orders signed per year" />
-            </div>
-          )}
-          {termBars.length > 1 && (
-            <div class="panel side-panel">
-              <h3 class="h-small">Orders per presidential term since 2009</h3>
-              <BarList items={termBars} label="Executive orders per presidential term" tone="fill-sky" />
-            </div>
-          )}
-        </aside>
       </div>
     )}
   </section>
@@ -235,14 +220,8 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
     display: grid;
     gap: var(--space-4);
   }
-  @media (min-width: 60rem) {
-    .eo-layout {
-      grid-template-columns: 2fr 1fr;
-      align-items: start;
-    }
-  }
-  .side-panel {
-    margin-bottom: var(--space-4);
+  .pace-panel .h-small {
+    margin-top: 0;
   }
   .eo-layout :global(.eo-list p) {
     margin: 0;

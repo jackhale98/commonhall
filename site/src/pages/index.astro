@@ -3,9 +3,7 @@ import BillListItem from '../components/BillListItem';
 import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
 import FindMyReps from '../components/FindMyReps';
-import VoteList from '../components/VoteList';
 import Hemicycle from '../components/viz/Hemicycle';
-import Pipeline from '../components/viz/Pipeline';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
@@ -19,7 +17,7 @@ import {
   loadScotusCases,
   loadVotes,
 } from '../lib/build-data';
-import { chamberGroups, pipeline, voteSegments } from '../lib/charts';
+import { chamberGroups, voteSegments } from '../lib/charts';
 import { DEMO } from '../lib/config';
 import { congressLabel, formatDate } from '../lib/format';
 import { billHref, href, voteHref } from '../lib/paths';
@@ -40,7 +38,6 @@ const latestLaw = [...laws].sort((a, b) => (b.latest_action_date ?? '').localeCo
 const latestVote = votes[0];
 const house = chamberGroups(members.values(), 'house');
 const senate = chamberGroups(members.values(), 'senate');
-const stages = pipeline(bills);
 const openDiscussions = discussions.filter((d) => d.status === 'open');
 const today = new Date().toISOString().slice(0, 10);
 const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
@@ -133,16 +130,6 @@ const stats = [
           <strong>{latestLaw.short_title ?? latestLaw.title}</strong>
         </a>
       )}
-      {openDiscussions[0] && (
-        <a class="pulse-card pulse-discuss" href={href(`discussions/${openDiscussions[0].id}/`)}>
-          <span class="pulse-label">
-            <span class="dot dot-discuss" aria-hidden="true" />
-            Open discussion
-          </span>
-          <strong>{openDiscussions[0].title}</strong>
-          <span class="pulse-meta">Add your voice →</span>
-        </a>
-      )}
       {nextMeeting && (
         <a class="pulse-card" href={href('boston/')}>
           <span class="pulse-label">
@@ -228,29 +215,7 @@ const stats = [
         <Hemicycle title="Senate" groups={senate} />
       </div>
     </section>
-    <section aria-labelledby="pipe-h">
-      <div class="section-head">
-        <h2 id="pipe-h">Where bills stand</h2>
-      </div>
-      <div class="panel">
-        <Pipeline stages={stages} label={`Bills and joint resolutions in the ${congress} by stage`} />
-      </div>
-    </section>
   </div>
-
-  {votes.length > 0 && (
-    <section aria-labelledby="votes-h">
-      <div class="section-head">
-        <h2 id="votes-h">Latest votes</h2>
-        <a class="see-all" href={href('votes/')}>
-          All votes
-        </a>
-      </div>
-      <div class="home-votes">
-        <VoteList votes={votes.slice(0, 4)} />
-      </div>
-    </section>
-  )}
 </Base>
 
 <script>
@@ -366,15 +331,6 @@ const stats = [
     gap: var(--space-2);
     font-weight: 600;
   }
-  .pulse-discuss {
-    background: var(--grad);
-    border: 0;
-    color: #fff;
-  }
-  .pulse-discuss .pulse-label,
-  .pulse-discuss .pulse-meta {
-    color: rgb(255 255 255 / 85%);
-  }
   .dot {
     width: 8px;
     height: 8px;
@@ -387,9 +343,6 @@ const stats = [
   }
   .dot-law {
     background: var(--highlight);
-  }
-  .dot-discuss {
-    background: #fff;
   }
   .dot-city {
     background: var(--sky);
@@ -509,23 +462,12 @@ const stats = [
   }
   .home-grid {
     display: grid;
-    gap: var(--space-5);
-  }
-  @media (min-width: 60rem) {
-    .home-grid {
-      grid-template-columns: 1.2fr 1fr;
-    }
   }
   .chambers {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: var(--space-4);
     align-items: end;
-  }
-  @media (max-width: 30rem) {
-    .chambers {
-      grid-template-columns: 1fr;
-    }
   }
   /* Phones: fewer bills and discussions, so the page doesn't scroll forever. */
   @media (max-width: 40rem) {
@@ -544,10 +486,10 @@ const stats = [
     .steps {
       display: none;
     }
-    .home-votes :global(li:nth-child(n + 3)) {
+    /* An odd number of stat tiles: the last one spans the row. */
+    .this-week > a:nth-of-type(n + 3) {
       display: none;
     }
-    /* An odd number of stat tiles: the last one spans the row. */
     .stat-strip li:last-child:nth-child(odd) {
       grid-column: span 2;
     }
