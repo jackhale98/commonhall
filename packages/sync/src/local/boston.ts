@@ -1,14 +1,18 @@
 /**
- * Nightly Boston City Council sync from Legistar.
+ * Boston City Council sync from Legistar (every 15 minutes; quiet runs cost two list requests).
  *
  *  - Councilors (weekly): office records for the council body on today's date,
  *    with seats from the committed seat map (Legistar has no seat data).
- *  - Matters: council matters modified since the cursor, legislative types only
- *    (ordinances, orders, resolutions, petitions, motions); each changed matter's
- *    histories and sponsors are re-read. New actions and new matters become feed
- *    events (new matters only after the first full load).
- *  - Meetings: council events modified since the cursor; roll calls are read
- *    from agenda items flagged as roll calls (Boston currently records none).
+ *  - Meetings first: on the first run, every meeting from six months ago onward
+ *    (upcoming ones included), newest first; afterwards, meetings modified since
+ *    the cursor. Roll calls are read from agenda items flagged as roll calls
+ *    (Boston currently records none).
+ *  - Matters: the first load walks matters introduced since the start date,
+ *    newest first, a page at a time (so recent items appear at once); afterwards,
+ *    matters modified since the load began, ignoring older matters that were only
+ *    touched. Legislative types only (ordinances, orders, resolutions, petitions,
+ *    motions); each matter's histories and sponsors are read. New actions and new
+ *    matters become feed events (new matters only after the first load).
  *
  * Cursors advance per item processed, so a run cut short resumes where it
  * stopped; re-reading an unchanged matter writes nothing.
@@ -33,6 +37,10 @@ import { toDate } from '../text.ts';
 export const BOSTON_JOB = 'boston';
 export const CITY = 'boston';
 export const COUNCIL_BODY = 'City Council';
+/** First load of meetings: this many days back, plus everything upcoming. */
+const MEETINGS_FIRST_DAYS = 180;
+/** Matters per page during the first load. */
+const MATTER_PAGE = 100;
 
 /** Matter types that are council legislation (Legistar's other types are agendas, minutes, reports…). */
 export const LEGISLATIVE_TYPES = new Set([
@@ -61,12 +69,17 @@ export interface BostonCursor extends Record<string, unknown> {
   officialsAt?: string;
   /** True once the first full load of matters is done (enables new-matter feed events). */
   filled?: boolean;
+  /** First load of matters: how many of the newest-first list are done, and when it began. */
+  fillOffset?: number;
+  fillStartedAt?: string;
+  /** First load of meetings done (then meetings follow eventsSince). */
+  eventsFilled?: boolean;
 }
 
 export interface SyncBostonOptions {
   client: LegistarClient;
   seats: SeatMap;
-  /** First run: load matters modified since this date (default: start of the current council term). */
+  /** First load: matters introduced since this date (default: 2024-01-01, the current council term). */
   startDate?: string;
   now?: () => Date;
 }
@@ -354,30 +367,25 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
       await run.checkpoint(cursor);
     }
 
-    // Resume a second early: Legistar's filter is strictly "after", and two matters can share a timestamp.
+    // Resume a second early: Legistar's filter is strictly "after", and two items can share a timestamp.
     const rewind = (iso: string) => new Date(new Date(iso).getTime() - 1000).toISOString();
-    const matters = await client.mattersModifiedSince(cursor.bodyId, rewind(cursor.mattersSince ?? start));
-    let skipped = 0;
-    let sinceCheckpoint = 0;
-    for (const m of matters) {
-      if (run.outOfTime()) break;
-      if (m.MatterTypeName && LEGISLATIVE_TYPES.has(m.MatterTypeName)) {
-        const [histories, sponsors] = await Promise.all([client.histories(m.MatterId), client.sponsors(m.MatterId)]);
-        run.rowsWritten += await writeMatter(run.sql, m, histories, sponsors, Boolean(cursor.filled));
-      } else {
-        skipped += 1;
-      }
-      cursor.mattersSince = legistarUtc(m.MatterLastModifiedUtc) ?? cursor.mattersSince;
-      if (++sinceCheckpoint >= 10) {
-        await run.checkpoint(cursor);
-        sinceCheckpoint = 0;
-      }
-    }
-    await run.checkpoint(cursor);
-    if (!run.outOfTime()) cursor.filled = true;
-    run.log('matters', { listed: matters.length, skippedNonLegislative: skipped });
 
-    if (!run.outOfTime()) {
+    // 1. Meetings. Few and cheap, so they never wait behind the much longer matters load.
+    if (!cursor.eventsFilled) {
+      const startedAt = now().toISOString();
+      const from = new Date(now().getTime() - MEETINGS_FIRST_DAYS * 86_400_000).toISOString();
+      const events = await client.eventsOnOrAfter(cursor.bodyId, from);
+      for (const e of events) {
+        if (run.outOfTime()) break;
+        run.rowsWritten += await syncMeeting(run.sql, client, e);
+      }
+      if (!run.outOfTime()) {
+        cursor.eventsFilled = true;
+        cursor.eventsSince = startedAt;
+        await run.checkpoint(cursor);
+      }
+      run.log('meetings first load', { listed: events.length, done: cursor.eventsFilled === true });
+    } else {
       const events = await client.eventsModifiedSince(cursor.bodyId, rewind(cursor.eventsSince ?? start));
       for (const e of events) {
         if (run.outOfTime()) break;
@@ -386,6 +394,56 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
         await run.checkpoint(cursor);
       }
     }
+
+    const syncMatter = async (m: LegistarMatter) => {
+      if (m.MatterTypeName && LEGISLATIVE_TYPES.has(m.MatterTypeName)) {
+        const [histories, sponsors] = await Promise.all([client.histories(m.MatterId), client.sponsors(m.MatterId)]);
+        run.rowsWritten += await writeMatter(run.sql, m, histories, sponsors, Boolean(cursor.filled));
+        return true;
+      }
+      return false;
+    };
+
+    // 2. Matters, first load: introduced since the start date, newest first, one page at a time.
+    if (!cursor.filled) {
+      cursor.fillStartedAt ??= now().toISOString();
+      let loaded = 0;
+      while (!run.outOfTime()) {
+        const page = await client.mattersIntroducedSince(cursor.bodyId, start, cursor.fillOffset ?? 0, MATTER_PAGE);
+        for (const m of page) {
+          if (run.outOfTime()) break;
+          if (await syncMatter(m)) loaded += 1;
+          cursor.fillOffset = (cursor.fillOffset ?? 0) + 1;
+          if (cursor.fillOffset % 10 === 0) await run.checkpoint(cursor);
+        }
+        if (page.length < MATTER_PAGE && !run.outOfTime()) {
+          // Done: from now on follow changes made since the load began.
+          cursor.filled = true;
+          cursor.mattersSince = cursor.fillStartedAt;
+          break;
+        }
+      }
+      await run.checkpoint(cursor);
+      run.log('matters first load', { loaded, offset: cursor.fillOffset, done: cursor.filled === true });
+      return cursor;
+    }
+
+    // 3. Matters, afterwards: changes since the cursor, ignoring old matters that were only touched.
+    const matters = await client.mattersModifiedSince(cursor.bodyId, rewind(cursor.mattersSince ?? start));
+    let skipped = 0;
+    let sinceCheckpoint = 0;
+    for (const m of matters) {
+      if (run.outOfTime()) break;
+      const introduced = m.MatterIntroDate ? `${m.MatterIntroDate.slice(0, 10)}T00:00:00Z` : null;
+      if (!introduced || introduced < start || !(await syncMatter(m))) skipped += 1;
+      cursor.mattersSince = legistarUtc(m.MatterLastModifiedUtc) ?? cursor.mattersSince;
+      if (++sinceCheckpoint >= 10) {
+        await run.checkpoint(cursor);
+        sinceCheckpoint = 0;
+      }
+    }
+    await run.checkpoint(cursor);
+    run.log('matters', { listed: matters.length, skipped });
   } catch (error) {
     if (error instanceof BudgetExhaustedError) {
       run.log('Legistar rate limited; resuming next run');

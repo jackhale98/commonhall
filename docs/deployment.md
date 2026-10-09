@@ -313,14 +313,15 @@ Common problems:
    "Load council districts" → Run workflow. It downloads the Analyze Boston layer
    into PostGIS using the `SUPABASE_DB_URL` secret. (Or locally:
    `SUPABASE_DB_URL='<session pooler string>' npm run load-districts`.) Council
-   data then arrives with the nightly `sync-boston` (no key needed).
+   data then arrives with `sync-boston`, every 15 minutes (no key needed): meetings
+   on the first run, then about 3,000 matters over the next couple of hours.
 3. **State data** fills in over the following nights through `sync-state`,
    Massachusetts first.
 
 ## 9. Switch the site to live data
 
 Wait until the data is in: members load in the backfill's first hour, every bill
-within about a day, and Boston council data after the first nightly `sync-boston`.
+within about a day, and Boston council meetings within 15 minutes (matters over the next couple of hours).
 Check with `select count(*) from bills;` and `select count(*) from members;` in the
 SQL editor. Sign-in (step 7) should be set up too.
 

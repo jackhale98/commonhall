@@ -168,6 +168,24 @@ export class LegistarClient {
     });
   }
 
+  /** One page of a body's matters introduced on or after `since`, newest first (for the first load). */
+  mattersIntroducedSince(bodyId: number, since: string, skip: number, top = 100): Promise<LegistarMatter[]> {
+    return this.get<LegistarMatter[]>('matters', {
+      $filter: `MatterBodyId eq ${bodyId} and MatterIntroDate ge ${odataDate(since)}`,
+      $orderby: 'MatterIntroDate desc,MatterId desc',
+      $top: top,
+      $skip: skip || undefined,
+    });
+  }
+
+  /** A body's meetings held on or after `date` (including upcoming ones), newest first. */
+  eventsOnOrAfter(bodyId: number, date: string): Promise<LegistarEvent[]> {
+    return this.all<LegistarEvent>('events', {
+      $filter: `EventBodyId eq ${bodyId} and EventDate ge ${odataDate(date)}`,
+      $orderby: 'EventDate desc',
+    });
+  }
+
   matter(id: number): Promise<LegistarMatter> {
     return this.get<LegistarMatter>(`matters/${id}`);
   }

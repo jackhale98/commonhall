@@ -110,7 +110,7 @@ automatically.
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
 | State legislators and bills | [Open States](https://openstates.org/) (CC0) | nightly, Massachusetts first |
-| Boston City Council | [Boston Legistar](https://boston.legistar.com/) | nightly |
+| Boston City Council | [Boston Legistar](https://boston.legistar.com/) | every 15 minutes |
 | Boston council districts | [Analyze Boston](https://data.boston.gov/) | on redistricting |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
@@ -153,7 +153,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events |
 | `sync-members` | daily | Members of Congress |
 | `sync-state` | nightly | State bills and legislators, Massachusetts first |
-| `sync-boston` | nightly | Council matters, sponsors, meetings and councilors |
+| `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |
 
 The reasoning behind the main design choices is recorded in

@@ -35,6 +35,18 @@ class FakeLegistar {
     if (path === 'bodies') return json([{ BodyId: 138, BodyName: 'City Council' }]);
     if (path === 'officerecords') return json(this.officeRecords);
     if (path === 'matters') {
+      const introducedSince = /MatterIntroDate ge datetime'([^']+)'/.exec(url.searchParams.get('$filter') ?? '')?.[1];
+      if (introducedSince) {
+        // First load: newest first, paged.
+        const skip = Number(url.searchParams.get('$skip') ?? 0);
+        const top = Number(url.searchParams.get('$top') ?? 1000);
+        return json(
+          this.matters
+            .filter((m) => (m.MatterIntroDate ?? '') >= introducedSince)
+            .sort((a, b) => (b.MatterIntroDate ?? '').localeCompare(a.MatterIntroDate ?? '') || b.MatterId - a.MatterId)
+            .slice(skip, skip + top),
+        );
+      }
       return json(
         this.matters
           .filter((m) => after(m.MatterLastModifiedUtc))
@@ -44,7 +56,11 @@ class FakeLegistar {
     let m: RegExpExecArray | null;
     if ((m = /^matters\/(\d+)\/histories$/.exec(path))) return json(this.histories.get(Number(m[1])) ?? []);
     if ((m = /^matters\/(\d+)\/sponsors$/.exec(path))) return json(this.sponsors.get(Number(m[1])) ?? []);
-    if (path === 'events') return json(this.events.filter((e) => after(String(e.EventLastModifiedUtc))));
+    if (path === 'events') {
+      const from = /EventDate ge datetime'([^']+)'/.exec(url.searchParams.get('$filter') ?? '')?.[1];
+      if (from) return json(this.events.filter((e) => String(e.EventDate) >= from));
+      return json(this.events.filter((e) => after(String(e.EventLastModifiedUtc))));
+    }
     if (/^events\/\d+\/eventitems$/.test(path)) return json(fixtureJson('legistar/eventitems-14256.json'));
     return new Response('not found', { status: 404 });
   };
@@ -119,7 +135,7 @@ describe('sync-boston', () => {
 
     // Upstream: a new action on 43547 and a brand-new resolution.
     const m = api.matters.find((x) => x.MatterId === 43547)!;
-    m.MatterLastModifiedUtc = '2026-10-07T18:00:00.000';
+    m.MatterLastModifiedUtc = '2026-10-08T07:00:00.000';
     api.histories.set(43547, [
       ...(api.histories.get(43547) ?? []),
       {
@@ -136,7 +152,7 @@ describe('sync-boston', () => {
       MatterFile: '2026-2000',
       MatterTitle: 'Order for a hearing on bike lanes.',
       MatterTypeName: 'Council Hearing Order',
-      MatterLastModifiedUtc: '2026-10-07T19:00:00.000',
+      MatterLastModifiedUtc: '2026-10-08T07:05:00.000',
     });
     api.sponsors.set(50001, [
       {

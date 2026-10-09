@@ -521,3 +521,15 @@ Short titles "for portions of this bill" are no longer chosen as a bill's title
 when a whole-bill title exists (H.R. 1 showed as "FEHB Protection Act of 2025").
 `bills.titles_rev` records which rule picked each title; `sync-committees`
 re-checks older bills 60 an hour.
+
+## 49. Boston loads meetings first and recent matters first
+
+The first Boston load walked every council matter *modified* since January 2024,
+oldest first, and only then read meetings. Old matters are touched constantly, so
+that was 32,691 matters (about 65,000 requests), re-listed on every run, and with
+four short runs a night meetings never arrived. Now each run reads meetings first
+(six months back plus everything upcoming on the first run, then changes); the
+first matters load walks only matters *introduced* since the start date, newest
+first, one page of 100 at a time (about 3,000 legislative matters); afterwards it
+follows changes since the load began and ignores older matters that were only
+touched. The job runs every 15 minutes; a quiet run costs two list requests.
