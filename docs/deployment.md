@@ -125,7 +125,7 @@ New repository secret). Repository secrets, not environment secrets:
 | `SUPABASE_ACCESS_TOKEN` | a Supabase **scoped** access token for this project (permissions in step 2.3) | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) → Generate new token | Deploy Supabase |
 | `SUPABASE_PROJECT_REF` | the project ref, e.g. `abcdefghijklmnopqrst` | the dashboard URL `…/project/<ref>`, or Project Settings → General | Deploy Supabase |
 | `SUPABASE_DB_PASSWORD` | the database password | chosen when creating the project; reset under Project Settings → Database | Deploy Supabase |
-| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in (URL-encode any special characters in the password) | Connect (top of the dashboard) → Session pooler | Deploy Supabase (migrations), Backfill, Load council districts |
+| `SUPABASE_DB_URL` | the **session pooler** connection string, password filled in (URL-encode any special characters in the password) | Connect (top of the dashboard) → Session pooler | Deploy Supabase (migrations), Backfill, Load council districts, Load Supreme Court Database |
 | `CONGRESS_API_KEY` | your Congress.gov key | the email from [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Backfill |
 
 **e. Variables** (same page → **Variables** tab → New repository variable). These
@@ -156,6 +156,7 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | Deploy Supabase | push to `main` touching `supabase/` or `packages/`, and manually | the three `SUPABASE_*` deploy secrets (skips cleanly without them), plus `SUPABASE_DB_URL` for migrations |
 | Backfill | manually only | `SUPABASE_DB_URL`, `CONGRESS_API_KEY`, write permission (b) |
 | Load council districts | manually (once, and after redistricting) | `SUPABASE_DB_URL` |
+| Load Supreme Court Database | monthly (3rd, 07:41 UTC) and manually | `SUPABASE_DB_URL` |
 
 GitHub turns off scheduled workflows in a repository with no activity for 60 days.
 If the nightly rebuild stops, re-enable it from the Actions tab.

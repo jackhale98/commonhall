@@ -1,0 +1,264 @@
+---
+/**
+ * Supreme Court outcomes per term, from the Supreme Court Database: who won
+ * (petitioner, respondent, unclear) and how divided the Court was (unanimous to
+ * 5–4). One 100% bar per term in each chart; hover or focus a row for its counts,
+ * and the same numbers are in the table below.
+ */
+import type { ScotusOutcome } from '../../lib/court';
+
+interface Props {
+  outcomes: ScotusOutcome[];
+  /** How many recent terms to show. */
+  terms?: number;
+}
+
+const { outcomes, terms: termCount = 6 } = Astro.props;
+const termYears = [...new Set(outcomes.map((o) => o.term))].sort((a, b) => b - a).slice(0, termCount);
+const termLabel = (t: number) => `${t}–${String(t + 1).slice(2)}`;
+
+const WIN = [
+  { key: 'petitioner', label: 'Petitioner won', test: (o: ScotusOutcome) => o.party_winning === 1 },
+  { key: 'respondent', label: 'Respondent won', test: (o: ScotusOutcome) => o.party_winning === 0 },
+  { key: 'unclear', label: 'Mixed or unclear', test: (o: ScotusOutcome) => o.party_winning === 2 },
+] as const;
+const SPLIT = [
+  { key: 's0', label: 'Unanimous', test: (o: ScotusOutcome) => o.min_votes === 0 },
+  { key: 's1', label: '1–2 dissenting', test: (o: ScotusOutcome) => o.min_votes === 1 || o.min_votes === 2 },
+  { key: 's3', label: '3 dissenting (6–3)', test: (o: ScotusOutcome) => o.min_votes === 3 },
+  { key: 's4', label: '4 dissenting (5–4)', test: (o: ScotusOutcome) => (o.min_votes ?? 0) >= 4 },
+] as const;
+
+const rows = (groups: readonly { key: string; label: string; test: (o: ScotusOutcome) => boolean }[]) =>
+  termYears.map((t) => {
+    const list = outcomes.filter((o) => o.term === t);
+    const counts = groups.map((g) => ({ ...g, n: list.filter(g.test).length }));
+    const total = counts.reduce((n, c) => n + c.n, 0);
+    return { term: t, counts, total };
+  });
+const winRows = rows(WIN);
+const splitRows = rows(SPLIT);
+const describe = (r: (typeof winRows)[number]) =>
+  `${termLabel(r.term)} term: ` + r.counts.map((c) => `${c.label.toLowerCase()} ${c.n}`).join(', ');
+const charts = [
+  { id: 'win', title: 'Who won', rows: winRows, groups: WIN },
+  { id: 'split', title: 'How divided the Court was', rows: splitRows, groups: SPLIT },
+];
+---
+
+{termYears.length > 0 && (
+  <figure class="outcomes">
+    <div class="outcome-charts">
+      {charts.map((chart) => (
+        <div class="outcome-chart">
+          <h3 class="h-small">{chart.title}</h3>
+          <ul class="legend small" aria-hidden="true">
+            {chart.groups.map((g) => (
+              <li>
+                <i class={`swatch seg-${g.key}`} />
+                {g.label}
+              </li>
+            ))}
+          </ul>
+          <ul class="term-rows" aria-label={`${chart.title}, by term`}>
+            {chart.rows.map((r) => (
+              <li tabindex="0" aria-label={describe(r)}>
+                <span class="term-label">{termLabel(r.term)}</span>
+                <span class="term-bar">
+                  {r.counts
+                    .filter((c) => c.n > 0)
+                    .map((c) => (
+                      <span class={`seg seg-${c.key}`} style={`flex-grow:${c.n}`} />
+                    ))}
+                </span>
+                <span class="term-n">{r.total}</span>
+                <span class="term-tip" aria-hidden="true">
+                  <strong>{termLabel(r.term)} term</strong>
+                  {r.counts.map((c) => (
+                    <span>
+                      <i class={`swatch seg-${c.key}`} />
+                      {c.label}: {c.n} ({r.total ? Math.round((c.n / r.total) * 100) : 0}%)
+                    </span>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <figcaption class="small muted">
+      Argued and summary decisions coded by the{' '}
+      <a href="https://scdb.la.psu.edu/" rel="noopener">
+        Supreme Court Database
+      </a>
+      . The petitioner is the side that brought the case to the Court; it “won” when the Court reversed or vacated the
+      lower court. The number at the end of each bar is the term’s decisions.
+    </figcaption>
+    <details class="more">
+      <summary>Show as a table</summary>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Term</th>
+              {WIN.map((g) => (
+                <th scope="col">{g.label}</th>
+              ))}
+              {SPLIT.map((g) => (
+                <th scope="col">{g.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {termYears.map((t, i) => (
+              <tr>
+                <th scope="row">{termLabel(t)}</th>
+                {winRows[i]!.counts.map((c) => (
+                  <td>{c.n}</td>
+                ))}
+                {splitRows[i]!.counts.map((c) => (
+                  <td>{c.n}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </figure>
+)}
+
+<style>
+  .outcomes {
+    margin: 0;
+  }
+  .outcome-charts {
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 50rem) {
+    .outcome-charts {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .outcome-chart .h-small {
+    margin: 0 0 var(--space-2);
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-3);
+    color: var(--text-muted);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+  }
+  .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+  .term-rows {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .term-rows li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.8rem 1fr 2rem;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--step--1);
+    border-radius: 6px;
+    outline-offset: 2px;
+  }
+  .term-label {
+    white-space: nowrap;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .term-n {
+    text-align: right;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .term-bar {
+    display: flex;
+    gap: 2px;
+    height: 16px;
+  }
+  .seg {
+    min-width: 2px;
+    height: 100%;
+  }
+  .seg:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+  .seg:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+  .seg:only-child {
+    border-radius: 4px;
+  }
+  .term-rows li:hover .term-bar,
+  .term-rows li:focus-visible .term-bar {
+    filter: brightness(1.08);
+  }
+  /* Who won: two identity colours (validated as a pair) and grey for unclear. */
+  .seg-petitioner {
+    background: var(--cat-hearing);
+  }
+  .seg-respondent {
+    background: var(--cat-markup);
+  }
+  .seg-unclear {
+    background: var(--border-strong);
+  }
+  /* How divided: one hue, light (unanimous) to dark (5–4). */
+  .seg-s0 {
+    background: color-mix(in srgb, var(--brand) 22%, var(--bg-raised));
+  }
+  .seg-s1 {
+    background: color-mix(in srgb, var(--brand) 48%, var(--bg-raised));
+  }
+  .seg-s3 {
+    background: color-mix(in srgb, var(--brand) 74%, var(--bg-raised));
+  }
+  .seg-s4 {
+    background: var(--brand);
+  }
+  .term-tip {
+    position: absolute;
+    left: 3.8rem;
+    bottom: calc(100% + 6px);
+    z-index: 2;
+    display: none;
+    gap: 2px;
+    min-width: 13rem;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+  }
+  .term-tip span {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+  .term-rows li:hover .term-tip,
+  .term-rows li:focus-visible .term-tip {
+    display: grid;
+  }
+</style>

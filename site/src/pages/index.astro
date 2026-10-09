@@ -106,6 +106,16 @@ const stats = [
 
     <div class="this-week" aria-label="Latest">
       <p class="kicker">Latest</p>
+      {openDiscussions[0] && (
+        <a class="pulse-card pulse-discuss" href={href(`discussions/${openDiscussions[0].id}/`)}>
+          <span class="pulse-label">
+            <span class="dot dot-discuss" aria-hidden="true" />
+            Open discussion
+          </span>
+          <strong>{openDiscussions[0].title}</strong>
+          <span class="pulse-meta">Add your voice →</span>
+        </a>
+      )}
       {latestVote && (
         <a class="pulse-card" href={voteHref(latestVote.id)}>
           <span class="pulse-label">
@@ -191,9 +201,9 @@ const stats = [
         Browse discussions →
       </a>
     </div>
-    {openDiscussions.length > 0 && (
+    {openDiscussions.length > 1 && (
       <ul class="list discuss-list">
-        {openDiscussions.slice(0, 3).map((d) => (
+        {openDiscussions.slice(1, 4).map((d) => (
           <DiscussionCard discussion={d} />
         ))}
       </ul>
@@ -329,6 +339,15 @@ const stats = [
     gap: var(--space-2);
     font-weight: 600;
   }
+  .pulse-discuss {
+    background: var(--grad);
+    border: 0;
+    color: #fff;
+  }
+  .pulse-discuss .pulse-label,
+  .pulse-discuss .pulse-meta {
+    color: rgb(255 255 255 / 85%);
+  }
   .dot {
     width: 8px;
     height: 8px;
@@ -344,6 +363,9 @@ const stats = [
   }
   .dot-city {
     background: var(--sky);
+  }
+  .dot-discuss {
+    background: #fff;
   }
   .stat-strip {
     list-style: none;
@@ -485,7 +507,7 @@ const stats = [
       display: none;
     }
     /* An odd number of stat tiles: the last one spans the row. */
-    .this-week > a:nth-of-type(n + 3) {
+    .this-week > a:nth-of-type(n + 4) {
       display: none;
     }
     .stat-strip li:last-child:nth-child(odd) {

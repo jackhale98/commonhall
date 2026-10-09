@@ -72,6 +72,29 @@ describe('sync-scotus', () => {
     ]);
   });
 
+  it('drops a "Revisions" copy of a decision, whichever arrives first', async () => {
+    const base = JSON.parse(sample) as { results: Record<string, unknown>[] };
+    const original = base.results[0]!;
+    const revision = { ...original, cluster_id: 99_000_001, caseName: `${original.caseName} Revisions: 7/01/24` };
+    const serve = (results: unknown[]) => {
+      const fetch: FetchLike = async () =>
+        new Response(JSON.stringify({ count: results.length, next: null, results }), {
+          headers: { 'content-type': 'application/json' },
+        });
+      return run(fetch);
+    };
+    // Revision first (alone), then the original: the revision gives way.
+    await serve([revision]);
+    expect((await sql`select case_name, revision from public.scotus_cases`)[0]).toEqual({
+      case_name: 'Trump v. United States',
+      revision: true,
+    });
+    await sql`delete from public.sync_state where job = ${SCOTUS_JOB}`;
+    await serve([original, revision]);
+    const rows = await sql`select cluster_id, case_name from public.scotus_cases order by cluster_id`;
+    expect(rows).toEqual([{ cluster_id: String(original.cluster_id), case_name: 'Trump v. United States' }]);
+  });
+
   it('is public to read', async () => {
     await run(fake().fetch);
     const rows = await asAnon(sql, (tx) => tx`select case_name from public.scotus_cases order by date_filed desc`);

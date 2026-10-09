@@ -54,7 +54,11 @@ export interface ScotusCaseRow extends Record<string, unknown> {
   concurrences: number;
   per_curiam: boolean;
   syllabus: string | null;
+  /** A corrected opinion published as its own cluster ("… Revisions: 7/01/26"). */
+  revision: boolean;
 }
+
+const REVISION = /\s+Revisions?:.*$/i;
 
 /** October Term year: decisions from October 2025 to September 2026 belong to OT2025. */
 export function supremeCourtTerm(date: string): number {
@@ -67,7 +71,7 @@ export function scotusCaseRow(c: ClCluster): ScotusCaseRow {
   return {
     cluster_id: c.cluster_id,
     docket_id: c.docket_id ?? null,
-    case_name: c.caseName.trim(),
+    case_name: c.caseName.replace(REVISION, '').trim(),
     case_name_full: c.caseNameFull?.trim() || null,
     docket_number: c.docketNumber?.trim() || null,
     date_filed: c.dateFiled,
@@ -82,7 +86,16 @@ export function scotusCaseRow(c: ClCluster): ScotusCaseRow {
     concurrences: types.filter((t) => t === 'concurrence-opinion' || t === 'in-part-opinion').length,
     per_curiam: c.opinions.some((o) => o.per_curiam),
     syllabus: c.syllabus?.trim() || null,
+    revision: REVISION.test(c.caseName),
   };
+}
+
+async function hasOriginal(sql: JobRun<ScotusCursor>['sql'], row: ScotusCaseRow): Promise<boolean> {
+  if (!row.docket_number) return false;
+  const [hit] = await sql`
+    select 1 from public.scotus_cases
+     where not revision and term = ${row.term} and docket_number = ${row.docket_number} limit 1`;
+  return Boolean(hit);
 }
 
 export async function syncSupremeCourt(
@@ -96,9 +109,18 @@ export async function syncSupremeCourt(
     for await (const cluster of options.client.supremeCourtOpinions(since, until)) {
       seen++;
       const row = scotusCaseRow(cluster);
+      if (row.revision && (await hasOriginal(run.sql, row))) continue;
       if (await upsertIfChanged(run.sql, 'public.scotus_cases', ['cluster_id'], row)) run.rowsWritten++;
       if (!cursor.newest || row.date_filed > cursor.newest) cursor.newest = row.date_filed;
     }
+    // A revision stored before its original arrived gives way to it.
+    const dropped = await run.sql`
+      delete from public.scotus_cases r
+       where r.revision
+         and exists (select 1 from public.scotus_cases o
+                      where not o.revision and o.term = r.term and o.docket_number = r.docket_number)
+      returning 1`;
+    run.rowsWritten += dropped.length;
     return seen;
   };
   try {

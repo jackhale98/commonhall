@@ -17,7 +17,7 @@ import {
   type CommitteeMeeting,
   type CommitteeMember,
 } from './committees';
-import { SCOTUS_COLUMNS, type ScotusCase } from './court';
+import { SCOTUS_COLUMNS, SCOTUS_OUTCOME_COLUMNS, matchOutcomes, type ScotusCase, type ScotusOutcome } from './court';
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
@@ -431,6 +431,19 @@ export const loadScotusCases = memo(async () =>
     select: SCOTUS_COLUMNS,
     order: 'date_filed.desc,cluster_id.desc',
   }),
+);
+
+/** Supreme Court Database outcomes (who won, vote split), from 2009. */
+export const loadScotusOutcomes = memo(async () =>
+  selectAllOptional<ScotusOutcome>('scotus_outcomes', {
+    select: SCOTUS_OUTCOME_COLUMNS,
+    order: 'term.desc,scdb_case_id.desc',
+  }),
+);
+
+/** Each loaded decision's outcome, by CourtListener cluster id. */
+export const loadScotusOutcomeMap = memo(async () =>
+  matchOutcomes(await loadScotusCases(), await loadScotusOutcomes()),
 );
 
 // ---- Boston -----------------------------------------------------------------

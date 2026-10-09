@@ -12,7 +12,7 @@ Settings → Secrets and variables → Actions → Secrets. Private; workflows o
 | `SUPABASE_ACCESS_TOKEN` | for Deploy Supabase | `supabase-deploy.yml` | Scoped access token for this project only: Project Settings (Read), API Keys (Read), API Key Secrets (Read), Edge Functions (Read-write) |
 | `SUPABASE_PROJECT_REF` | for Deploy Supabase | `supabase-deploy.yml` | The 20-character project id |
 | `SUPABASE_DB_PASSWORD` | for Deploy Supabase | `supabase-deploy.yml` | Database password; used by `supabase link` and `db push` |
-| `SUPABASE_DB_URL` | for Deploy Supabase, Backfill and Load council districts | `supabase-deploy.yml` (migrations), `backfill.yml`, `load-districts.yml` | Session pooler string (IPv4), port 5432; URL-encode special characters in the password |
+| `SUPABASE_DB_URL` | for Deploy Supabase, Backfill, Load council districts and Load Supreme Court Database | `supabase-deploy.yml` (migrations), `backfill.yml`, `load-districts.yml`, `load-scdb.yml` | Session pooler string (IPv4), port 5432; URL-encode special characters in the password |
 | `CONGRESS_API_KEY` | for Backfill | `backfill.yml` | Congress.gov key |
 
 Deploy Supabase skips itself if any of its three secrets is missing. The token is
@@ -98,7 +98,7 @@ In `site/.env` (copy `.env.example`) or the shell.
 | `PUBLIC_POLIS_SITE_ID` | site | Optional |
 | `SITE_URL`, `BASE_PATH` | site build | Default `http://localhost:4321` and `/` |
 | `SITE_MAX_BILL_PAGES` | site build | Cap prerendered bills for quick builds |
-| `SUPABASE_DB_URL` | scripts (`backfill`, `job`, `load-districts`, `make-local-seed`, `demo:export`, `verify:*`) | Local: `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
+| `SUPABASE_DB_URL` | scripts (`backfill`, `job`, `load-districts`, `load-scdb`, `make-local-seed`, `demo:export`, `verify:*`) | Local: `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
 | `CONGRESS_API_KEY` | `backfill`, `verify:votes` | |
 | `OPENSTATES_API_KEY` | `job -- state`, `verify:reps` | |
 | `BACKFILL_CONGRESS`, `BACKFILL_MAX_HOURS` | `backfill` | Set by the Backfill workflow |

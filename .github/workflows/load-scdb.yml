@@ -1,0 +1,29 @@
+name: Load Supreme Court Database
+
+# Who won each Supreme Court case, the disposition and the vote split, from the
+# Supreme Court Database (scdb.la.psu.edu), into scotus_outcomes. The database
+# publishes about once a year; a monthly run picks up a new release within weeks.
+# Safe to re-run: the stored rows are replaced by the newest release.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 7 3 * *' # 07:41 UTC on the 3rd of each month
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Load the newest SCDB release
+        run: npm run load-scdb
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

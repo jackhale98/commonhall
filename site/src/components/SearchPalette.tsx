@@ -195,8 +195,14 @@ export default function SearchPalette() {
               onInput={(e) => setQ(e.currentTarget.value)}
               onKeyDown={onKeyDown}
             />
-            <button type="button" class="palette-close" onClick={() => dialog.current?.close()}>
-              Esc
+            <button
+              type="button"
+              class="palette-close"
+              aria-label="Close search"
+              onClick={() => dialog.current?.close()}
+            >
+              <span class="close-touch">Cancel</span>
+              <span class="close-keys">Esc</span>
             </button>
           </div>
           <p class="palette-heading">{q.trim() ? 'Results' : 'Jump to'}</p>

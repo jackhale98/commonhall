@@ -623,3 +623,24 @@ signed over each four-year term since 2009, counted from Inauguration Day. It is
 emphasis chart (current term in the accent colour, earlier terms in grey, labelled
 at their ends), with a month-by-month readout on hover, tap or arrow keys, and a
 table (first 100 days, first year, whole term).
+
+## 57. Who won at the Supreme Court comes from the Supreme Court Database
+
+CourtListener says when a case was decided and by whom, but not who won. The
+Supreme Court Database (Washington University, now hosted at Penn State) codes
+every decision: the winning party, the disposition and the vote split. It is the
+scholarly standard and free. The "Load Supreme Court Database" workflow
+(`scripts/load-scdb.ts`, monthly and on demand) finds the newest release, downloads
+the case-centered CSV organised by citation (it checks the file name), and replaces
+`scotus_outcomes` with every case from 2009. The 2026 release covers through the
+2025–26 term; the database codes a term after it ends and leaves out most emergency
+applications, so those show no outcome rather than a guess. SCDB's ideological
+"direction" codes are deliberately not loaded.
+
+Decisions are matched by term and any shared docket number. The court page shows,
+per term, who won (petitioner, respondent, mixed) and how divided the Court was
+(unanimous to 5–4), and the list can be filtered by both.
+
+CourtListener sometimes publishes a corrected opinion as a second cluster named
+"… Revisions: 7/01/26" (13 of the first 187 decisions). The sync strips the suffix,
+marks the row as a revision and drops it once the original decision is stored.

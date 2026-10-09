@@ -1616,6 +1616,9 @@ nav[aria-label='Breadcrumb'] {
   padding: 0 0.6rem;
   font-size: 0.75rem;
 }
+.palette-close .close-touch {
+  display: none;
+}
 .palette-heading {
   margin: var(--space-3) var(--space-4) var(--space-1);
   font-size: 0.72rem;
@@ -1686,6 +1689,22 @@ nav[aria-label='Breadcrumb'] {
     width: 4.5rem;
   }
   .palette-foot {
+    display: none;
+  }
+  /* Phones: a plain "Cancel" instead of a keyboard hint. */
+  .palette-close {
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--link);
+    font-size: var(--step-0);
+    font-weight: 600;
+    padding: 0 0.25rem;
+  }
+  .palette-close .close-touch {
+    display: inline;
+  }
+  .palette-close .close-keys {
     display: none;
   }
 }
@@ -2062,6 +2081,15 @@ summary:has(.inline-h) {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* Explorer lists prerender 30 rows; phones show 8 until the component takes over. */
+@media (max-width: 40rem) {
+  .trimmable > li:nth-child(n + 9) {
+    display: none;
+  }
+  .trimmable.is-live > li:nth-child(n + 9) {
+    display: revert;
+  }
 }
 /* Boston matters sit in a panel: on phones the filters wrap in two columns instead of scrolling. */
 @media (max-width: 40rem) {

@@ -1,29 +1,42 @@
 ---
 import CaseExplorer from '../../components/CaseExplorer';
 import BarList from '../../components/viz/BarList';
+import CourtOutcomes from '../../components/viz/CourtOutcomes.astro';
 import Base from '../../layouts/Base.astro';
-import { loadDiscussionsByTarget, loadNominations, loadScotusCases } from '../../lib/build-data';
+import {
+  loadDiscussionsByTarget,
+  loadNominations,
+  loadScotusCases,
+  loadScotusOutcomeMap,
+  loadScotusOutcomes,
+} from '../../lib/build-data';
 import { caseRows, supremeCourtTerm } from '../../lib/court';
 import { NOMINATION_STATUS, nominationUrl } from '../../lib/executive';
 import { formatDate } from '../../lib/format';
 
-const [cases, nominations, discussions] = await Promise.all([
+const [cases, nominations, discussions, outcomes, outcomeMap] = await Promise.all([
   loadScotusCases(),
   loadNominations(),
   loadDiscussionsByTarget(),
+  loadScotusOutcomes(),
+  loadScotusOutcomeMap(),
 ]);
 const term = supremeCourtTerm(new Date());
 const perTerm = [...Map.groupBy(cases, (c) => c.term)]
   .sort((a, b) => b[0] - a[0])
   .map(([t, list]) => ({ label: `${t}–${String(t + 1).slice(2)}`, value: list.length }));
 // Early in a term few decisions are out yet, so the list leads with the newest across terms.
-const rows = caseRows(cases, (id) => discussions.has(`scotus_case:${id}`));
+const rows = caseRows(cases, (id) => discussions.has(`scotus_case:${id}`), outcomeMap);
 const termsWithCases = [...new Set(cases.map((c) => c.term))].sort((a, b) => b - a);
 // The newest term with decisions (a new term has none until the first opinions in the fall).
 const latestTermYear = cases[0]?.term ?? term;
 const latestTerm = cases.filter((c) => c.term === latestTermYear);
 const latestTermLabel = `${latestTermYear}–${String(latestTermYear + 1).slice(2)}`;
-const latestRows = rows.filter((r) => r.t === latestTermYear);
+// The newest term the Supreme Court Database has coded.
+const codedTerm = outcomes[0]?.term;
+const coded = outcomes.filter((o) => o.term === codedTerm);
+const share = (n: number) => (coded.length ? `${Math.round((n / coded.length) * 100)}%` : '—');
+const codedLabel = codedTerm === undefined ? '' : `${codedTerm}–${String(codedTerm + 1).slice(2)}`;
 const authors = [...new Set(rows.map((r) => r.j).filter((j): j is string => !!j))].sort(
   (a, b) => Number(a === 'Per Curiam') - Number(b === 'Per Curiam') || a.localeCompare(b),
 );
@@ -55,71 +68,99 @@ const courtNominations = nominations.filter((n) =>
       <dt>Argued that term</dt>
       <dd>{latestTerm.filter((c) => c.date_argued).length.toLocaleString()}</dd>
     </div>
-    <div class="stat">
-      <dt>Unsigned (per curiam)</dt>
-      <dd>{latestRows.filter((r) => r.pc).length.toLocaleString()}</dd>
-    </div>
-    <div class="stat">
-      <dt>Decisions since {cases.at(-1)?.date_filed.slice(0, 4) ?? '2020'}</dt>
-      <dd>{cases.length.toLocaleString()}</dd>
-    </div>
+    {coded.length > 0 && (
+      <>
+        <div class="stat">
+          <dt>Petitioner won, {codedLabel} term</dt>
+          <dd>{share(coded.filter((o) => o.party_winning === 1).length)}</dd>
+        </div>
+        <div class="stat">
+          <dt>Unanimous, {codedLabel} term</dt>
+          <dd>{share(coded.filter((o) => o.min_votes === 0).length)}</dd>
+        </div>
+      </>
+    )}
   </dl>
 
   {cases.length === 0 ? (
     <p class="muted">Supreme Court decisions have not loaded yet.</p>
   ) : (
-    <div class="court-layout">
-      <section aria-labelledby="latest-h">
-        <div class="section-head">
-          <h2 id="latest-h">Decisions</h2>
-          <a class="see-all" href="https://www.supremecourt.gov/opinions/opinions.aspx" rel="noopener">
-            supremecourt.gov
-          </a>
-        </div>
-        <CaseExplorer client:visible initial={rows.slice(0, 30)} terms={termsWithCases} authors={authors} />
-      </section>
-      <aside>
-        <div class="panel side-panel">
-          <h3 class="h-small">Decisions per term</h3>
-          <BarList items={perTerm} label="Supreme Court decisions per October Term" tone="fill-sky" />
-          <p class="small muted">
-            A term starts on the first Monday in October; most decisions come out from spring through June.
-          </p>
-        </div>
-        {courtNominations.length > 0 && (
-          <div class="panel side-panel">
-            <h3 class="h-small">Nominations to the Court</h3>
-            <ul class="plain-list">
-              {courtNominations.map((n) => (
-                <li>
-                  <a href={nominationUrl(n)} rel="noopener">
-                    {n.nominee ?? n.citation}
-                  </a>
-                  <span class="small muted">
-                    {' '}
-                    · {NOMINATION_STATUS[n.status].label}, {formatDate(n.latest_action_date)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+    <>
+      {outcomes.length > 0 && (
+        <section class="panel outcomes-panel" aria-labelledby="outcomes-h">
+          <h2 id="outcomes-h" class="visually-hidden">
+            Outcomes by term
+          </h2>
+          <CourtOutcomes outcomes={outcomes} />
+        </section>
+      )}
+      <div class="court-layout">
+        <section aria-labelledby="latest-h">
+          <div class="section-head">
+            <h2 id="latest-h">Decisions</h2>
+            <a class="see-all" href="https://www.supremecourt.gov/opinions/opinions.aspx" rel="noopener">
+              supremecourt.gov
+            </a>
           </div>
-        )}
-      </aside>
-    </div>
+          <CaseExplorer
+            client:visible
+            initial={rows.slice(0, 30)}
+            terms={termsWithCases}
+            authors={authors}
+            outcomes={outcomes.length > 0}
+          />
+        </section>
+        <aside>
+          <div class="panel side-panel">
+            <h3 class="h-small">Decisions per term</h3>
+            <BarList items={perTerm} label="Supreme Court decisions per October Term" tone="fill-sky" />
+            <p class="small muted">
+              A term starts on the first Monday in October; most decisions come out from spring through June.
+            </p>
+          </div>
+          {courtNominations.length > 0 && (
+            <div class="panel side-panel">
+              <h3 class="h-small">Nominations to the Court</h3>
+              <ul class="plain-list">
+                {courtNominations.map((n) => (
+                  <li>
+                    <a href={nominationUrl(n)} rel="noopener">
+                      {n.nominee ?? n.citation}
+                    </a>
+                    <span class="small muted">
+                      {' '}
+                      · {NOMINATION_STATUS[n.status].label}, {formatDate(n.latest_action_date)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </aside>
+      </div>
+    </>
   )}
   <p class="small muted">
     Decisions and opinions from{' '}
     <a href="https://www.courtlistener.com/" rel="noopener">
       CourtListener
     </a>{' '}
-    (Free Law Project), refreshed hourly. The author is the Justice CourtListener lists for the opinion; most decisions
-    arrive as one combined document, so separate concurrences and dissents are rarely listed.
+    (Free Law Project), refreshed hourly; who won and the vote split from the{' '}
+    <a href="https://scdb.la.psu.edu/" rel="noopener">
+      Supreme Court Database
+    </a>{' '}
+    (refreshed monthly; it codes a term after it ends, and leaves out most emergency applications). The author is the
+    Justice CourtListener lists for the opinion; most decisions arrive as one combined document, so separate
+    concurrences and dissents are rarely listed.
   </p>
 </Base>
 
 <style>
   .stat-grid {
     margin-top: var(--space-5);
+  }
+  .outcomes-panel {
+    margin-block: var(--space-5) var(--space-6);
   }
   .court-layout {
     display: grid;

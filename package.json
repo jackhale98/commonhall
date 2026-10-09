@@ -26,6 +26,7 @@
     "seed:make": "tsx scripts/make-seed.ts",
     "demo:export": "tsx scripts/export-demo.ts",
     "load-districts": "tsx scripts/load-districts.ts",
+    "load-scdb": "tsx scripts/load-scdb.ts",
     "job": "tsx scripts/run-job.ts",
     "check:polis": "tsx scripts/check-polis-privacy.ts"
   },

@@ -1,8 +1,8 @@
 ---
 import DiscussionLink from '../../../components/DiscussionLink.astro';
 import Base from '../../../layouts/Base.astro';
-import { loadDiscussionsByTarget, loadScotusCases } from '../../../lib/build-data';
-import { docketUrl, opinionAuthor, type ScotusCase } from '../../../lib/court';
+import { loadDiscussionsByTarget, loadScotusCases, loadScotusOutcomeMap } from '../../../lib/build-data';
+import { DISPOSITION, docketUrl, opinionAuthor, outcomeSummary, type ScotusCase } from '../../../lib/court';
 import { formatDate } from '../../../lib/format';
 import { href } from '../../../lib/paths';
 
@@ -16,6 +16,9 @@ interface Props {
 
 const { c } = Astro.props;
 const discussion = (await loadDiscussionsByTarget()).get(`scotus_case:${c.cluster_id}`);
+const outcome = (await loadScotusOutcomeMap()).get(c.cluster_id);
+const summary = outcome && outcomeSummary(c.case_name, outcome);
+const disposition = outcome?.case_disposition ? DISPOSITION[outcome.case_disposition] : undefined;
 const author = opinionAuthor(c);
 const opinions = [
   author === 'Per Curiam'
@@ -48,6 +51,23 @@ const opinions = [
   <DiscussionLink discussion={discussion} targetType="scotus_case" targetId={String(c.cluster_id)} />
 
   <dl class="facts">
+    {summary && (
+      <div>
+        <dt>Outcome</dt>
+        <dd>
+          <strong>{summary}</strong>
+          {disposition && <span class="muted"> · {disposition}</span>}
+          <span class="small muted">
+            {' '}
+            (
+            <a href="https://scdb.la.psu.edu/" rel="noopener">
+              Supreme Court Database
+            </a>
+            )
+          </span>
+        </dd>
+      </div>
+    )}
     {c.docket_number && (
       <div>
         <dt>Docket</dt>

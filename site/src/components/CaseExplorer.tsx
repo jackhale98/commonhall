@@ -4,6 +4,10 @@ import { formatDate } from '../lib/format';
 import { href, scotusCaseHref } from '../lib/paths';
 
 const PAGE = 30;
+/** Phones start with fewer, so the page's other sections stay close. */
+const PHONE_PAGE = 8;
+const pageSize = () =>
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? PHONE_PAGE : PAGE;
 
 type Kind = '' | 'argued' | 'summary';
 
@@ -14,12 +18,20 @@ interface Props {
   terms: number[];
   /** Opinion authors, alphabetical ("Per Curiam" last). */
   authors: string[];
+  /** Outcomes (who won, vote split) are loaded: show their filters. */
+  outcomes?: boolean;
 }
+
+type Won = '' | 'p' | 'r';
+type Vote = '' | 'unanimous' | 'divided' | 'close';
+const dissenting = (v?: string) => (v ? Number(v.split('–')[1]) : null);
 
 const termName = (t: number) => `${t}–${String(t + 1).slice(2)} term`;
 
 const tags = (c: CaseRow) =>
   [
+    c.w === 'p' ? 'Petitioner won' : c.w === 'r' ? 'Respondent won' : c.w === 'u' ? 'Mixed result' : null,
+    c.v ? (dissenting(c.v) === 0 ? `${c.v}, unanimous` : c.v) : null,
     c.j ? (c.pc ? 'Per curiam (unsigned)' : `Opinion by ${c.j}`) : null,
     c.a ? null : 'Decided without oral argument',
     c.cc > 0 ? `${c.cc} concurring opinion${c.cc > 1 ? 's' : ''}` : null,
@@ -31,15 +43,23 @@ const tags = (c: CaseRow) =>
  * (term, author, argued or not, has a discussion). Starts from the prerendered latest
  * decisions and loads the full list (cases.json, built with the site) on view.
  */
-export default function CaseExplorer({ initial, terms, authors }: Props) {
+export default function CaseExplorer({ initial, terms, authors, outcomes = false }: Props) {
   const [rows, setRows] = useState<CaseRow[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [q, setQ] = useState('');
   const [term, setTerm] = useState('');
   const [author, setAuthor] = useState('');
   const [kind, setKind] = useState<Kind>('');
+  const [won, setWon] = useState<Won>('');
+  const [vote, setVote] = useState<Vote>('');
   const [discussed, setDiscussed] = useState(false);
   const [shown, setShown] = useState(PAGE);
+  // Prerendered with PAGE rows (CSS trims them on phones until hydration); then the device's size.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setShown(pageSize());
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetch(href('court/cases.json'))
@@ -56,27 +76,34 @@ export default function CaseExplorer({ initial, terms, authors }: Props) {
       if (author && c.j !== author) return false;
       if (kind === 'argued' && !c.a) return false;
       if (kind === 'summary' && c.a) return false;
+      if (won && c.w !== won) return false;
+      const d = dissenting(c.v);
+      if (vote === 'unanimous' && d !== 0) return false;
+      if (vote === 'divided' && !d) return false;
+      if (vote === 'close' && (d === null || d < 4)) return false;
       if (discussed && !c.x) return false;
       if (words.length === 0) return true;
       const text = `${c.n} ${c.k ?? ''} ${c.c ?? ''} ${c.j ?? ''}`.toLowerCase();
       return words.every((w) => text.includes(w));
     });
-  }, [all, q, term, author, kind, discussed]);
+  }, [all, q, term, author, kind, won, vote, discussed]);
 
-  const active = q || term || author || kind || discussed;
+  const active = q || term || author || kind || won || vote || discussed;
   const reset = () => {
     setQ('');
     setTerm('');
     setAuthor('');
     setKind('');
+    setWon('');
+    setVote('');
     setDiscussed(false);
-    setShown(PAGE);
+    setShown(pageSize());
   };
   const set =
     <T,>(fn: (v: T) => void) =>
     (v: T) => {
       fn(v);
-      setShown(PAGE);
+      setShown(pageSize());
     };
 
   return (
@@ -140,6 +167,37 @@ export default function CaseExplorer({ initial, terms, authors }: Props) {
             <option value="argued">Argued cases</option>
             <option value="summary">Decided without argument</option>
           </select>
+          {outcomes && (
+            <>
+              <label for="case-won" class="visually-hidden">
+                Who won
+              </label>
+              <select
+                id="case-won"
+                value={won}
+                class={won ? 'is-set' : ''}
+                onChange={(e) => set(setWon)(e.currentTarget.value as Won)}
+              >
+                <option value="">Any outcome</option>
+                <option value="p">Petitioner won</option>
+                <option value="r">Respondent won</option>
+              </select>
+              <label for="case-vote" class="visually-hidden">
+                Vote
+              </label>
+              <select
+                id="case-vote"
+                value={vote}
+                class={vote ? 'is-set' : ''}
+                onChange={(e) => set(setVote)(e.currentTarget.value as Vote)}
+              >
+                <option value="">Any vote</option>
+                <option value="unanimous">Unanimous</option>
+                <option value="divided">Divided</option>
+                <option value="close">5–4 or closer</option>
+              </select>
+            </>
+          )}
           <button
             type="button"
             class="filter-toggle"
@@ -172,7 +230,7 @@ export default function CaseExplorer({ initial, terms, authors }: Props) {
         </p>
       ) : (
         <div class="panel">
-          <ul class="list case-list">
+          <ul class={`list case-list trimmable${mounted ? ' is-live' : ''}`}>
             {hits.slice(0, shown).map((c) => (
               <li key={c.i}>
                 <p class="meta">
@@ -196,7 +254,7 @@ export default function CaseExplorer({ initial, terms, authors }: Props) {
             ))}
           </ul>
           {hits.length > shown && (
-            <button type="button" onClick={() => setShown(shown + PAGE)}>
+            <button type="button" onClick={() => setShown(shown + pageSize())}>
               Show more ({(hits.length - shown).toLocaleString()} left)
             </button>
           )}

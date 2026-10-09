@@ -266,6 +266,10 @@ const data = JSON.stringify({ months: MONTHS, readings });
     plot.addEventListener('pointerleave', (e) => {
       if (e.pointerType === 'mouse') hide();
     });
+    // A tap anywhere else closes the readout.
+    document.addEventListener('pointerdown', (e) => {
+      if (!plot.contains(e.target as Node)) hide();
+    });
     plot.addEventListener('blur', hide);
     plot.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {

@@ -4,6 +4,10 @@ import { formatDate } from '../lib/format';
 import { executiveOrderHref, href } from '../lib/paths';
 
 const PAGE = 30;
+/** Phones start with fewer, so the page's other sections stay close. */
+const PHONE_PAGE = 8;
+const pageSize = () =>
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? PHONE_PAGE : PAGE;
 
 type Status = '' | 'in-effect' | 'revoked' | 'revokes';
 
@@ -31,6 +35,12 @@ export default function OrderExplorer({ terms, initial }: Props) {
   const [status, setStatus] = useState<Status>('');
   const [discussed, setDiscussed] = useState(false);
   const [shown, setShown] = useState(PAGE);
+  // Prerendered with PAGE rows (CSS trims them on phones until hydration); then the device's size.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setShown(pageSize());
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetch(href('executive/orders.json'))
@@ -69,13 +79,13 @@ export default function OrderExplorer({ terms, initial }: Props) {
     setYear('');
     setStatus('');
     setDiscussed(false);
-    setShown(PAGE);
+    setShown(pageSize());
   };
   const set =
     <T,>(fn: (v: T) => void) =>
     (v: T) => {
       fn(v);
-      setShown(PAGE);
+      setShown(pageSize());
     };
   const termLabel = terms.find((t) => t.key === term);
   const orderLink = (n: number) => {
@@ -184,7 +194,7 @@ export default function OrderExplorer({ terms, initial }: Props) {
         </p>
       ) : (
         <div class="panel">
-          <ul class="list eo-list">
+          <ul class={`list eo-list trimmable${mounted ? ' is-live' : ''}`}>
             {hits.slice(0, shown).map((r) => (
               <li key={r.d}>
                 <p class="meta">
@@ -226,7 +236,7 @@ export default function OrderExplorer({ terms, initial }: Props) {
             ))}
           </ul>
           {hits.length > shown && (
-            <button type="button" onClick={() => setShown(shown + PAGE)}>
+            <button type="button" onClick={() => setShown(shown + pageSize())}>
               Show more ({(hits.length - shown).toLocaleString()} left)
             </button>
           )}
