@@ -143,10 +143,9 @@ const nav = [
           <nav aria-label="Main">
             <ul class="nav-list">
               {nav.map((item) => (
-                <li>
+                <li class={['feed', 'account'].includes(item.key) ? 'nav-personal' : undefined}>
                   <a href={href(item.path)} aria-current={section === item.key ? 'page' : undefined}>
                     {item.label}
-                    {item.key === 'feed' && <NavStatus client:idle />}
                   </a>
                 </li>
               ))}
@@ -155,6 +154,47 @@ const nav = [
         </div>
         <div class="header-actions">
           <SearchPalette client:idle />
+          {!DEMO && (
+            <>
+              <a
+                class="icon-link"
+                href={href('feed/')}
+                aria-label="Your feed"
+                title="Your feed"
+                aria-current={section === 'feed' ? 'page' : undefined}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                  <path
+                    d="M6 10a6 6 0 1 1 12 0c0 4.5 2 6 2 6H4s2-1.5 2-6M10 20a2 2 0 0 0 4 0"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <NavStatus client:idle />
+              </a>
+              <a
+                class="icon-link"
+                href={href('account/')}
+                aria-label="Account"
+                title="Account"
+                aria-current={section === 'account' ? 'page' : undefined}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2" />
+                  <path
+                    d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </a>
+            </>
+          )}
           <noscript>
             <a class="search-trigger" href={href('bills/')}>
               Search bills
@@ -361,7 +401,8 @@ const nav = [
     display: inline-flex;
     align-items: center;
     min-height: 40px;
-    padding: 0 0.85rem;
+    padding: 0 0.75rem;
+    white-space: nowrap;
     border-radius: 999px;
     color: var(--text-muted);
     font-weight: 560;
@@ -387,7 +428,40 @@ const nav = [
   .menu-toggle {
     display: none;
   }
+  /* Feed and account sit beside search as icons on wide screens, and in the menu on small ones. */
+  .icon-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    color: var(--text-muted);
+  }
+  .icon-link:hover {
+    color: var(--text);
+    background: var(--bg-subtle);
+  }
+  .icon-link[aria-current='page'] {
+    color: var(--brand-strong);
+    background: var(--brand-soft);
+  }
+  .icon-link :global(.badge) {
+    position: absolute;
+    top: 2px;
+    right: -2px;
+    margin: 0;
+  }
+  @media (min-width: 64rem) {
+    .nav-personal {
+      display: none;
+    }
+  }
   @media (max-width: 63.99rem) {
+    .icon-link {
+      display: none;
+    }
     .menu-toggle {
       display: inline-flex;
       width: 44px;

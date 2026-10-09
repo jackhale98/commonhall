@@ -1533,6 +1533,7 @@ nav[aria-label='Breadcrumb'] {
   background: var(--bg-subtle);
   border-color: transparent;
   font-weight: 500;
+  white-space: nowrap;
 }
 .search-trigger:hover {
   color: var(--text);
@@ -1547,7 +1548,8 @@ nav[aria-label='Breadcrumb'] {
   background: var(--bg-raised);
   color: var(--text-muted);
 }
-@media (max-width: 47.99rem) {
+/* The full search box only where the whole menu fits beside it. */
+@media (max-width: 79.99rem) {
   .search-trigger {
     width: 44px;
     padding: 0;
