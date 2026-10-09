@@ -1,8 +1,7 @@
 ---
 import LiveDiscussions from '../../components/LiveDiscussions';
-import FollowButton from '../../components/FollowButton';
+import CouncilorFinder from '../../components/CouncilorFinder';
 import LocalMatters from '../../components/LocalMatters';
-import MemberPhoto from '../../components/MemberPhoto';
 import BarList from '../../components/viz/BarList';
 import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
@@ -61,6 +60,17 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
       Thirteen councilors: one for each of the nine districts and four elected citywide (at-large).{' '}
       {!DEMO && <a href={href('#reps-h')}>Find your district councilor</a>}
     </p>
+    <nav class="jump" aria-label="On this page">
+      <a class="chip-button" href="#meet-h">
+        Meetings
+      </a>
+      <a class="chip-button" href="#matters-h">
+        Ordinances, resolutions and orders
+      </a>
+      <a class="chip-button" href="#council-h">
+        Councilors
+      </a>
+    </nav>
   </header>
 
   <section aria-labelledby="disc-h">
@@ -83,29 +93,39 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
   </section>
 
   <section aria-labelledby="council-h">
-    <h2 id="council-h">Councilors</h2>
+    <div class="section-head">
+      <h2 id="council-h">Councilors</h2>
+      {!DEMO && (
+        <a class="see-all" href={href('#reps-h')}>
+          Find yours by address
+        </a>
+      )}
+    </div>
     {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
-    {features.length > 0 && (
-      <div class="panel map-panel">
-        <DistrictMap features={features} label="Boston City Council districts; select one for its councilor" />
-        <p class="small muted">
-          Nine district councilors and four at-large councilors elected citywide. Select a district to meet its
-          councilor.
-        </p>
+    <div class="council-layout">
+      <div class="panel">
+        <CouncilorFinder
+          client:visible
+          councilors={[...byDistrict, ...atLarge].map((o) => ({
+            id: o.id,
+            name: o.name,
+            seat: o.seat,
+            district: o.district,
+            photo_url: o.photo_url,
+          }))}
+        />
       </div>
-    )}
-    <ul class="grid people">
-      {[...byDistrict, ...atLarge].map((o) => (
-        <li class="card person">
-          <MemberPhoto name={o.name} url={o.photo_url} size={56} />
-          <div>
-            <a href={localOfficialHref(o.id)}>{o.name}</a>
-            <p class="small muted">{o.seat ?? 'Councilor'}</p>
-          </div>
-          <FollowButton client:visible targetType="local_official" targetId={o.id} label={o.name} />
-        </li>
-      ))}
-    </ul>
+      {features.length > 0 && (
+        <details class="panel map-panel" id="district-map">
+          <summary class="h-small">District map</summary>
+          <DistrictMap features={features} label="Boston City Council districts; select one for its councilor" />
+          <p class="small muted">
+            Nine district councilors and four at-large councilors elected citywide. Select a district to meet its
+            councilor.
+          </p>
+        </details>
+      )}
+    </div>
   </section>
 
   <section aria-labelledby="meet-h">
@@ -186,32 +206,40 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
 
   <p class="small muted">
     Council data from the City of Boston’s <a href="https://boston.legistar.com/">Legistar</a> and
-    <a href="https://data.boston.gov/">Analyze Boston</a>, refreshed nightly.
+    <a href="https://data.boston.gov/">Analyze Boston</a>, refreshed every 15 minutes.
   </p>
 </Base>
 
+<script>
+  // The district map starts open on wide screens and folded on phones, so the lists come first.
+  const map = document.getElementById('district-map');
+  if (map && window.matchMedia('(min-width: 60rem)').matches) map.setAttribute('open', '');
+</script>
+
 <style>
-  .map-panel {
+  .council-layout {
+    display: grid;
+    gap: var(--space-4);
     margin-bottom: var(--space-4);
-    max-width: 40rem;
+  }
+  @media (min-width: 60rem) {
+    .council-layout {
+      grid-template-columns: 1.3fr 1fr;
+      align-items: start;
+    }
+  }
+  .map-panel summary {
+    cursor: pointer;
+    margin-bottom: var(--space-2);
+  }
+  .jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
   }
   .types-panel {
     margin-bottom: var(--space-4);
-  }
-  .people {
-    list-style: none;
-    padding: 0;
-  }
-  .person {
-    display: flex;
-    gap: var(--space-3);
-    align-items: center;
-  }
-  .person > div {
-    flex: 1;
-  }
-  .person p {
-    margin: 0;
   }
   .meeting {
     display: flex;
