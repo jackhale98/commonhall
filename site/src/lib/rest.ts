@@ -37,10 +37,24 @@ async function check(response: Response): Promise<Response> {
   return response;
 }
 
+/**
+ * At build time, retry a request the database timed out or briefly failed (a 5xx,
+ * e.g. a statement timeout while the syncs are busy) twice before failing the build.
+ * In the browser a failed request fails at once; the page shows its fallback.
+ */
+async function fetchRows(input: string, init: RequestInit): Promise<Response> {
+  const attempts = import.meta.env.SSR ? 3 : 1;
+  for (let i = 1; ; i++) {
+    const response = await fetch(input, init);
+    if (response.status < 500 || i >= attempts) return response;
+    await new Promise((r) => setTimeout(r, 2000 * i));
+  }
+}
+
 /** GET rows from a table or view. Pass PostgREST filters as params, e.g. `{ id: 'eq.119-hr-1' }`. */
 export async function select<T>(table: string, params: Params = {}, init: RequestInit = {}): Promise<T[]> {
   if (!hasSupabase) return [];
-  const response = await check(await fetch(url(table, params), { ...init, headers: headers() }));
+  const response = await check(await fetchRows(url(table, params), { ...init, headers: headers() }));
   return (await response.json()) as T[];
 }
 
