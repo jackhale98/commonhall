@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  budgetChange,
+  budgetSummary,
   capitalStage,
   change311,
   closeTime,
@@ -116,5 +118,42 @@ describe('capital projects', () => {
       ['later', -5_000],
       ['external', 60_000],
     ]);
+  });
+});
+
+describe('city budget summary', () => {
+  const line = (
+    kind: 'expense' | 'revenue',
+    dept: string,
+    grouping: string,
+    year: number,
+    basis: string,
+    amount: number,
+  ) => ({ kind, dept, grouping, line: 'x', fiscal_year: year, basis, amount }) as never;
+
+  it('totals the newest adopted year and compares departments with the year before', () => {
+    const s = budgetSummary([
+      line('expense', 'Schools', 'K-8', 2027, 'budget', 100),
+      line('expense', 'Schools', 'K-8', 2026, 'appropriation', 80),
+      line('expense', 'Schools', 'K-8', 2025, 'actual', 70),
+      line('expense', 'Police', 'Patrol', 2027, 'budget', 50),
+      line('expense', 'Police', 'Patrol', 2026, 'appropriation', 50),
+      line('revenue', 'Assessing', 'Property Tax', 2027, 'budget', 110),
+      line('revenue', 'Collecting', 'State Aid', 2027, 'budget', 40),
+    ])!;
+    expect(s).toMatchObject({ year: 2027, prevYear: 2026, total: 150, prevTotal: 130, revenueTotal: 150 });
+    expect(s.departments).toEqual([
+      { label: 'Schools', value: 100, prev: 80 },
+      { label: 'Police', value: 50, prev: 50 },
+    ]);
+    expect(s.revenue.map((r) => r.label)).toEqual(['Property Tax', 'State Aid']);
+    expect(budgetSummary([])).toBeNull();
+  });
+
+  it('words changes', () => {
+    expect(budgetChange(103.9, 100)).toBe('+3.9%');
+    expect(budgetChange(99.4, 100)).toBe('−0.6%');
+    expect(budgetChange(100, 100)).toBe('no change');
+    expect(budgetChange(5, 0)).toBe('new');
   });
 });

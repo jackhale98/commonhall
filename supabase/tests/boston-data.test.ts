@@ -5,13 +5,16 @@ import { AnalyzeBostonClient, type FetchLike } from '@civic/congress-client';
 import {
   BOSTON_311_JOB,
   CAPITAL_PLAN_JOB,
+  CITY_BUDGET_JOB,
   ZBA_JOB,
   runJob,
   syncBoston311,
+  syncCityBudget,
   syncCapitalPlan,
   syncZoningAppeals,
   type Boston311Cursor,
   type CapitalPlanCursor,
+  type CityBudgetCursor,
   type Sql,
   type ZbaCursor,
 } from '@civic/sync';
@@ -98,7 +101,8 @@ beforeEach(async () => {
   await sql`delete from public.zba_appeals`;
   await sql`delete from public.zba_decision_counts`;
   await sql`delete from public.boston_311_daily`;
-  await sql`delete from public.sync_state where job in (${CAPITAL_PLAN_JOB}, ${ZBA_JOB}, ${BOSTON_311_JOB})`;
+  await sql`delete from public.city_budget_lines`;
+  await sql`delete from public.sync_state where job in (${CAPITAL_PLAN_JOB}, ${ZBA_JOB}, ${BOSTON_311_JOB}, ${CITY_BUDGET_JOB})`;
   await sql`delete from public.sync_lock`;
 });
 
@@ -266,5 +270,124 @@ describe('sync-boston-311', () => {
       { closed: 3 },
       { closed: 3 },
     ]);
+  });
+});
+
+/** The operating and revenue budgets, shaped like the city's files (with the operating file's grand total). */
+class FakeBudget {
+  modified = '2026-08-03T14:44:14';
+  expense: Record<string, unknown>[] = [
+    {
+      _id: 1,
+      Cabinet: 'Education Cabinet',
+      Dept: 'Boston Public Schools',
+      Program: 'K-8',
+      'Expense Category': 'Personnel Services',
+      'FY24 Actual Expense': '#Missing',
+      'FY25 Actual Expense': '90',
+      'FY26 Appropriation': '95',
+      'FY27 Budget': '100',
+    },
+    {
+      _id: 2,
+      Cabinet: 'Public Safety Cabinet',
+      Dept: 'Police Department',
+      Program: 'Patrol',
+      'Expense Category': 'Personnel Services',
+      'FY24 Actual Expense': '40',
+      'FY25 Actual Expense': '45',
+      'FY26 Appropriation': '50',
+      'FY27 Budget': '50',
+    },
+    {
+      _id: 3,
+      Cabinet: '',
+      Dept: '',
+      Program: '',
+      'Expense Category': '',
+      'FY24 Actual Expense': '40',
+      'FY25 Actual Expense': '135',
+      'FY26 Appropriation': '145',
+      'FY27 Budget': '150',
+    },
+  ];
+  revenue: Record<string, unknown>[] = [
+    {
+      _id: 1,
+      'Revenue Category': 'Property Tax',
+      Account: 'Real Estate Tax',
+      Cabinet: 'Finance',
+      Dept: 'Collecting Division',
+      'FY24 Actual': 100,
+      'FY25 Actual': 105,
+      'FY26 Budget': 110,
+      'FY27 Budget': 112,
+    },
+    {
+      _id: 2,
+      'Revenue Category': 'State Aid',
+      Account: 'Chapter 70',
+      Cabinet: 'Finance',
+      Dept: 'Budget Office',
+      'FY24 Actual': 30,
+      'FY25 Actual': 33,
+      'FY26 Budget': 35,
+      'FY27 Budget': 38,
+    },
+  ];
+  fetch: FetchLike = async (input) => {
+    const url = new URL(input);
+    if (url.pathname.endsWith('/package_show')) {
+      const kind = url.searchParams.get('id') === 'operating-budget' ? 'expense' : 'revenue';
+      return ok({
+        name: url.searchParams.get('id'),
+        title: '',
+        metadata_modified: '',
+        resources: [{ id: kind, name: kind, format: 'CSV', datastore_active: true, last_modified: this.modified }],
+      });
+    }
+    const rows = url.searchParams.get('resource_id') === 'expense' ? this.expense : this.revenue;
+    const offset = Number(url.searchParams.get('offset'));
+    const limit = Number(url.searchParams.get('limit'));
+    return ok({ records: rows.slice(offset, offset + limit), total: rows.length });
+  };
+}
+
+const runBudget = (api: FakeBudget) =>
+  runJob<CityBudgetCursor>({
+    sql,
+    job: CITY_BUDGET_JOB,
+    timeLimitMs: 60_000,
+    log: () => undefined,
+    run: (ctx) => syncCityBudget(ctx, { client: new AnalyzeBostonClient({ fetch: api.fetch }) }),
+  });
+
+describe('sync-city-budget', () => {
+  it('stores each line and year, skips the grand total and "#Missing", and replaces changed files', async () => {
+    const api = new FakeBudget();
+    expect((await runBudget(api)).status).toBe('ok');
+    const totals = await asAnon(
+      sql,
+      (tx) => tx`select kind, fiscal_year, basis, sum(amount)::float as total, count(*)::int as n
+                   from public.city_budget_lines group by 1, 2, 3 order by 1, 2`,
+    );
+    expect(totals).toEqual([
+      { kind: 'expense', fiscal_year: 2024, basis: 'actual', total: 40, n: 1 },
+      { kind: 'expense', fiscal_year: 2025, basis: 'actual', total: 135, n: 2 },
+      { kind: 'expense', fiscal_year: 2026, basis: 'appropriation', total: 145, n: 2 },
+      { kind: 'expense', fiscal_year: 2027, basis: 'budget', total: 150, n: 2 },
+      { kind: 'revenue', fiscal_year: 2024, basis: 'actual', total: 130, n: 2 },
+      { kind: 'revenue', fiscal_year: 2025, basis: 'actual', total: 138, n: 2 },
+      { kind: 'revenue', fiscal_year: 2026, basis: 'budget', total: 145, n: 2 },
+      { kind: 'revenue', fiscal_year: 2027, basis: 'budget', total: 150, n: 2 },
+    ]);
+    // Unchanged files are not read again.
+    expect((await runBudget(api)).rowsWritten).toBe(0);
+
+    // A new file without the Police line: its four years leave.
+    api.modified = '2027-08-01T00:00:00';
+    api.expense = api.expense.filter((r) => r.Dept !== 'Police Department');
+    expect((await runBudget(api)).rowsWritten).toBe(4);
+    expect(await sql`select 1 from public.city_budget_lines where dept = 'Police Department'`).toHaveLength(0);
   });
 });

@@ -9,6 +9,7 @@ import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
 import {
   loadCapitalProjects,
+  loadCityBudget,
   loadCouncilDistricts,
   loadBoston311,
   loadDiscussions,
@@ -23,7 +24,7 @@ import { formatDate } from '../../lib/format';
 import { CAPITAL_STAGES, capitalStage, change311, closeTime, spentLabel, streetAddress } from '../../lib/local';
 import { capitalProjectHref, href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts, appeals, report, projects] = await Promise.all([
+const [officials, matters, meetings, discussions, districts, appeals, report, projects, operating] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
@@ -32,6 +33,7 @@ const [officials, matters, meetings, discussions, districts, appeals, report, pr
   loadZbaAppeals(),
   loadBoston311(),
   loadCapitalProjects(),
+  loadCityBudget(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -52,7 +54,6 @@ const upcoming = meetings
 const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 2);
 // Capital Plan at a glance: the whole plan, its first year, and where that year's money goes.
 const planTotal = projects.reduce((n, p) => n + p.total_budget, 0);
-const planYear = projects.reduce((n, p) => n + p.year1, 0);
 const planLabel = projects[0]?.plan.replace('-', '–') ?? '';
 const planFy = projects[0]?.first_year ? `FY${String(projects[0].first_year).slice(2)}` : 'the first year';
 const building = projects.filter((p) => capitalStage(p.status) === 3).length;
@@ -179,12 +180,19 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
   {projects.length > 0 && (
     <section aria-labelledby="budget-h">
       <div class="section-head">
-        <h2 id="budget-h">What the city is building</h2>
+        <h2 id="budget-h">The city’s budget</h2>
         <a class="see-all" href={href('boston/budget/')}>
-          The Capital Plan
+          Budget
         </a>
       </div>
       <dl class="stat-grid">
+        {operating && (
+          <div class="stat">
+            <dt>Operating budget, FY{String(operating.year).slice(2)}</dt>
+            <dd>{formatMoney(operating.total)}</dd>
+            <p class="small muted stat-note">to run the city for a year</p>
+          </div>
+        )}
         <div class="stat">
           <dt>Adopted {planLabel} Capital Plan</dt>
           <dd>{formatMoney(planTotal)}</dd>
@@ -192,13 +200,9 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
             {projects.length} projects, {building} under construction or underway
           </p>
         </div>
-        <div class="stat">
-          <dt>Planned spending, {planFy}</dt>
-          <dd>{formatMoney(planYear)}</dd>
-        </div>
       </dl>
       <div class="panel budget-top">
-        <h3 class="h-small">Most money in {planFy}</h3>
+        <h3 class="h-small">Biggest capital projects in {planFy}</h3>
         <ul class="list phone-two">
           {biggestThisYear.map((p) => (
             <li>

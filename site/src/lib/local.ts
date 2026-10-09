@@ -287,3 +287,68 @@ export function change311(s: Summary311): string | null {
   const pct = Math.round(((s.opened - s.openedBefore) / s.openedBefore) * 100);
   return pct === 0 ? 'same as' : `${pct > 0 ? '+' : '−'}${Math.abs(pct)}% vs`;
 }
+
+/** A Boston operating or revenue budget line for one year (city_budget_lines). */
+export interface CityBudgetLine {
+  kind: 'expense' | 'revenue';
+  dept: string;
+  grouping: string;
+  line: string;
+  fiscal_year: number;
+  basis: 'actual' | 'appropriation' | 'budget';
+  amount: number;
+}
+
+export const CITY_BUDGET_COLUMNS = 'kind,dept,grouping,line,fiscal_year,basis,amount';
+
+export interface BudgetSummary {
+  /** The newest adopted budget year, e.g. 2027, and the year before. */
+  year: number;
+  prevYear: number;
+  total: number;
+  /** The year before as appropriated (amended), for the change. */
+  prevTotal: number;
+  revenueTotal: number;
+  /** Revenue categories (Property Tax, State Aid, …), largest first. */
+  revenue: { label: string; value: number }[];
+  /** Departments, largest first, with the year before. */
+  departments: { label: string; value: number; prev: number }[];
+}
+
+/** The newest adopted operating budget, its revenue and its departments. */
+export function budgetSummary(lines: CityBudgetLine[]): BudgetSummary | null {
+  const year = Math.max(...lines.filter((l) => l.kind === 'expense' && l.basis === 'budget').map((l) => l.fiscal_year));
+  if (!Number.isFinite(year)) return null;
+  const prevYear = year - 1;
+  const sumBy = (list: CityBudgetLine[], key: 'dept' | 'grouping') => {
+    const m = new Map<string, number>();
+    for (const l of list) m.set(l[key] || 'Other', (m.get(l[key] || 'Other') ?? 0) + Number(l.amount));
+    return m;
+  };
+  const spend = lines.filter((l) => l.kind === 'expense' && l.fiscal_year === year && l.basis === 'budget');
+  const prevSpend = lines.filter((l) => l.kind === 'expense' && l.fiscal_year === prevYear && l.basis !== 'actual');
+  const income = lines.filter((l) => l.kind === 'revenue' && l.fiscal_year === year && l.basis === 'budget');
+  const prevByDept = sumBy(prevSpend, 'dept');
+  const total = (list: CityBudgetLine[]) => list.reduce((n, l) => n + Number(l.amount), 0);
+  return {
+    year,
+    prevYear,
+    total: total(spend),
+    prevTotal: total(prevSpend),
+    revenueTotal: total(income),
+    revenue: [...sumBy(income, 'grouping')]
+      .map(([label, value]) => ({ label, value }))
+      .sort((a, b) => b.value - a.value),
+    departments: [...sumBy(spend, 'dept')]
+      .map(([label, value]) => ({ label, value, prev: prevByDept.get(label) ?? 0 }))
+      .sort((a, b) => b.value - a.value),
+  };
+}
+
+/** "+3.9%" / "−0.6%" / "new" for a department's change on the year before. */
+export function budgetChange(value: number, prev: number): string {
+  if (prev <= 0) return value > 0 ? 'new' : '';
+  const pct = ((value - prev) / prev) * 100;
+  if (Math.abs(pct) < 0.05) return 'no change';
+  return `${pct > 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)}%`;
+}

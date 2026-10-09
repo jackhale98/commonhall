@@ -809,3 +809,22 @@ its author and says it is not part of the opinion. Text with lost ligatures (som
 PDFs turn "filed" into "fled", "first" into "frst") is rejected rather than shown:
 those cases show their topic only. Lists show the first 180 characters; case pages
 show the opening sentences with the rest folded.
+
+## 68. Boston's operating and revenue budgets
+
+The Budget tab now covers the whole city budget, not only the Capital Plan: the
+adopted operating budget (what the city spends to run departments) and the revenue
+budget (where the money comes from), from Analyze Boston's "operating-budget" and
+"revenue-budget" files (owner approved; found with Boston's open-data MCP server, which
+wraps the same API the sync calls directly). `sync-city-budget` runs weekly and reads a
+file only when the city has changed it.
+
+The files name their year columns ("FY24 Actual Expense", "FY26 Appropriation",
+"FY27 Budget"), so columns are recognised by pattern and stored one row per line and
+year in `city_budget_lines`; next year's file needs no code change. "#Missing" cells
+are left out, not counted as zero. The operating file ends with a grand-total row
+(every label blank) that would double the budget; total rows are skipped and the site
+adds the lines itself. Checked against the city: FY27 spending and revenue both total
+$4,942,387,983 (+$29 million, 0.6%, on FY26), property tax 73% and state aid 11% of
+revenue, as the city states. Department changes compare with the prior year as
+appropriated (amended), which is what the city's file gives.

@@ -4,7 +4,7 @@
  *
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts boston [--minutes 60] [--since 2024-01-01]
  *   SUPABASE_DB_URL=… OPENSTATES_API_KEY=… npx tsx scripts/run-job.ts state [--minutes 60]
- *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba | boston-311
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba | boston-311 | city-budget
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -14,6 +14,7 @@ import {
   BOSTON_311_JOB,
   BOSTON_JOB,
   CAPITAL_PLAN_JOB,
+  CITY_BUDGET_JOB,
   ZBA_JOB,
   OPENSTATES_API,
   STATE_JOB,
@@ -21,6 +22,7 @@ import {
   runJob,
   syncBoston,
   syncCapitalPlan,
+  syncCityBudget,
   syncBoston311,
   syncZoningAppeals,
   syncStates,
@@ -82,6 +84,16 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'city-budget') {
+      const result = await runJob({
+        sql,
+        job: CITY_BUDGET_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) => syncCityBudget(ctx, { client: new AnalyzeBostonClient() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else if (job === 'boston-zba') {
       const result = await runJob({
         sql,
@@ -104,7 +116,7 @@ async function main() {
       if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|state|capital-plan|boston-zba|boston-311> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|state|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

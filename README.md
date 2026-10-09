@@ -78,7 +78,8 @@ about, and take part in moderated public discussions.
   time to close and the most common requests (summaries only).
 - Upcoming Zoning Board of Appeal hearings, searchable by street; the last year's
   decisions as totals by neighborhood (no archive of past cases by address).
-- The five-year Capital Plan by department, neighborhood and project, with a page
+- The city budget: the operating budget by department and revenue by source, and
+  the five-year Capital Plan by department, neighborhood and project, with a page
   per project where people can ask for a discussion.
 
 **Every state**
@@ -124,6 +125,7 @@ automatically.
 | Boston 311 request summaries | [Analyze Boston](https://data.boston.gov/dataset/311-service-requests) (both 311 systems) | daily |
 | Boston Zoning Board of Appeal | [Analyze Boston](https://data.boston.gov/dataset/zoning-board-of-appeal-tracker) | daily |
 | Boston Capital Plan | [Analyze Boston](https://data.boston.gov/dataset/capital-budget) | weekly |
+| Boston operating and revenue budgets | [Analyze Boston](https://data.boston.gov/dataset/operating-budget) | weekly |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 

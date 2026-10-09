@@ -182,7 +182,7 @@ npx supabase functions deploy              # deploy every function
 Check it worked: Dashboard → Table Editor lists `bills`, `members`,
 `local_matters`, `discussions` and the rest; Edge Functions lists `sync-federal`,
 `sync-members`, `sync-state`, `sync-boston`, `sync-boston-311`, `sync-boston-zba`,
-`sync-capital-plan`, `fetch-on-demand`, `geocode` and `delete-account`, among others.
+`sync-capital-plan`, `sync-city-budget`, `fetch-on-demand`, `geocode` and `delete-account`, among others.
 
 ## 5. Function secrets
 
@@ -321,7 +321,7 @@ Common problems:
 4. **Boston 311, zoning and the Capital Plan** (no key) arrive with their first
    scheduled runs: `sync-boston-311` and `sync-boston-zba` daily, `sync-capital-plan`
    weekly. To load them now, run in the SQL editor:
-   `select private.invoke_sync('sync-boston-311'); select private.invoke_sync('sync-boston-zba'); select private.invoke_sync('sync-capital-plan');`
+   `select private.invoke_sync('sync-boston-311'); select private.invoke_sync('sync-boston-zba'); select private.invoke_sync('sync-capital-plan'); select private.invoke_sync('sync-city-budget');`
    (311 loads 90 days at once; each takes seconds.)
 
 ## 9. Switch the site to live data

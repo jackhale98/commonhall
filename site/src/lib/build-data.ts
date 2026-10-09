@@ -33,12 +33,15 @@ import { DISCUSSION_COLUMNS } from './discussions';
 import {
   BOSTON_311_COLUMNS,
   CAPITAL_COLUMNS,
+  CITY_BUDGET_COLUMNS,
+  budgetSummary,
   HIDDEN_MATTER_TYPES,
   ZBA_COLUMNS,
   hiddenTypesFilter,
   report311,
   type Boston311Day,
   type CapitalProject,
+  type CityBudgetLine,
   type ZbaAppeal,
   type ZbaDecisionCount,
 } from './local';
@@ -546,6 +549,18 @@ export const loadZbaAppeals = memo(async () =>
     select: ZBA_COLUMNS,
     order: 'hearing_date.asc,boa_apno.asc',
   }),
+);
+
+/** Boston's newest adopted operating budget and its revenue (null before the first sync). */
+export const loadCityBudget = memo(async () =>
+  budgetSummary(
+    (
+      await selectAllOptional<CityBudgetLine>('city_budget_lines', {
+        select: CITY_BUDGET_COLUMNS,
+        order: 'kind.asc,fiscal_year.asc,dept.asc,grouping.asc,line.asc,basis.asc',
+      })
+    ).map((l) => ({ ...l, amount: Number(l.amount) })),
+  ),
 );
 
 /** Boston Capital Plan projects, largest budget first. */
