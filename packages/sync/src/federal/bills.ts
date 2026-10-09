@@ -121,11 +121,20 @@ export function cosponsorRows(id: string, cosponsors: Cosponsor[]): CosponsorRow
   return [...rows.values()];
 }
 
+/** Bump to re-pick every stored short title (see catchUpBillTitles). */
+export const TITLES_REV = 1;
+
 const SHORT_TITLE_PRIORITY = [/enacted/i, /passed|agreed/i, /reported/i, /introduced/i];
 
-/** Prefer the enacted short title, then passed, reported, introduced. */
+/**
+ * Prefer the enacted short title, then passed, reported, introduced. Titles "for
+ * portions of this bill" name one part of a large bill (H.R. 1's "FEHB Protection
+ * Act of 2025"), so they are used only when nothing else exists.
+ */
 export function pickShortTitle(titles: BillTitle[]): string | null {
-  const short = titles.filter((t) => t.title && /^short title/i.test(t.titleType ?? ''));
+  const all = titles.filter((t) => t.title && /^short title/i.test(t.titleType ?? ''));
+  const whole = all.filter((t) => !/portions?/i.test(t.titleType ?? ''));
+  const short = whole.length > 0 ? whole : all;
   for (const pattern of SHORT_TITLE_PRIORITY) {
     const match = short.find((t) => pattern.test(t.titleType ?? ''));
     if (match?.title) return match.title.trim();
@@ -249,7 +258,10 @@ export async function syncBill(
     row.summary_text = null;
   }
   if (textVersions) row.text_url = pickTextUrl(textVersions);
-  if (titles) row.short_title = pickShortTitle(titles);
+  if (titles) {
+    row.short_title = pickShortTitle(titles);
+    row.titles_rev = TITLES_REV;
+  }
   if (subjects?.policyArea?.name) row.policy_area = subjects.policyArea.name;
 
   const change: BillChange = {
@@ -349,4 +361,30 @@ export async function syncBill(
 
   change.requests = client.budget.used - startRequests;
   return change;
+}
+
+/** Bills whose short title was picked by an older rule: fetch their titles again, most recently active first. */
+export async function catchUpBillTitles(
+  sql: Sql,
+  client: CongressClient,
+  limit: number,
+  outOfTime: () => boolean,
+): Promise<{ checked: number; changed: number }> {
+  const due = await sql<
+    { id: string; congress: number; bill_type: string; number: number; short_title: string | null }[]
+  >`
+    select id, congress, bill_type, number, short_title from public.bills
+     where titles_rev < ${TITLES_REV} and titles_count > 0
+     order by latest_action_date desc nulls last, id
+     limit ${limit}`;
+  let checked = 0;
+  let changed = 0;
+  for (const b of due) {
+    if (outOfTime() || client.budget.remaining < 2) break;
+    const short = pickShortTitle(await client.getBillTitles(b.congress, b.bill_type, b.number));
+    await sql`update public.bills set short_title = ${short}, titles_rev = ${TITLES_REV} where id = ${b.id}`;
+    if (short !== b.short_title) changed++;
+    checked++;
+  }
+  return { checked, changed };
 }

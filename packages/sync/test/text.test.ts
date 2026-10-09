@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { pickShortTitle, pickTextUrl } from '../src/federal/bills.ts';
 import { buildMemberRows } from '../src/federal/members.ts';
@@ -53,6 +54,20 @@ describe('bill field pickers', () => {
       ]),
     ).toBe('Final Name Act');
     expect(pickShortTitle([{ title: 'An act.', titleType: 'Official Title as Introduced' }])).toBeNull();
+  });
+
+  it('ignores short titles for portions of a bill (recorded H.R. 1, 119th Congress)', () => {
+    const { titles } = JSON.parse(
+      readFileSync(
+        new URL('../../congress-client/test/fixtures/congress/bill-hr1-titles.json', import.meta.url),
+        'utf8',
+      ),
+    );
+    expect(pickShortTitle(titles)).toBe('One Big Beautiful Bill Act');
+    // Only portion titles: still better than none.
+    expect(
+      pickShortTitle([{ title: 'Part Act', titleType: 'Short Titles as Enacted for portions of this bill' }]),
+    ).toBe('Part Act');
   });
 
   it('links the newest text version, HTML first', () => {

@@ -504,3 +504,20 @@ Draft discussions are visible only to maintainers, so the client-rendered
 discussion page retries with the signed-in session when the public lookup finds
 nothing; that lets maintainers preview a draft (and create its Pol.is
 conversation) before opening it.
+
+## 48. Search that finds what people type
+
+Whole-word full-text search missed acronyms and partial words ("EA" did not find
+the EARA, but did find summaries mentioning an "EA") and ignored bill numbers.
+`search_bills` now: treats a bill number in any common form ("H.R. 677",
+"hr677", "s 5") as a lookup; ranks short titles that equal or start with the query
+first, then titles containing every word as a word prefix, then ordinary
+full-text matches (summaries included); and, only when nothing matches, falls back
+to titles whose words are spelled like the query's (pg_trgm word similarity), so
+typos work without adding noise to good searches. `search_local_matters` gets the
+same prefix matching and docket-number lookups ("2026-1882", "#1882", "1882").
+
+Short titles "for portions of this bill" are no longer chosen as a bill's title
+when a whole-bill title exists (H.R. 1 showed as "FEHB Protection Act of 2025").
+`bills.titles_rev` records which rule picked each title; `sync-committees`
+re-checks older bills 60 an hour.
