@@ -10,7 +10,7 @@ import demoData from '../data/demo.json';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
-import { inList, rpc, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
+import { RestError, inList, rpc, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
 import {
   BILL_PAGE_COLUMNS,
   LOCAL_MATTER_COLUMNS,
@@ -83,6 +83,22 @@ function demoQuery<T>(table: string, params: Params): T[] {
 
 function selectAll<T>(table: string, params: Params = {}): Promise<T[]> {
   return DEMO ? Promise.resolve(demoQuery<T>(table, params)) : restSelectAll<T>(table, params);
+}
+
+/**
+ * For tables added after launch: a missing table (its migration not applied yet,
+ * PostgREST PGRST205) reads as empty instead of failing the whole build.
+ */
+async function selectAllOptional<T>(table: string, params: Params = {}): Promise<T[]> {
+  try {
+    return await selectAll<T>(table, params);
+  } catch (error) {
+    if (error instanceof RestError && error.status === 404 && error.message.includes('PGRST205')) {
+      console.warn(`[build-data] ${table} is not in the database yet; skipping it`);
+      return [];
+    }
+    throw error;
+  }
 }
 
 function select<T>(table: string, params: Params = {}): Promise<T[]> {
@@ -312,9 +328,9 @@ export const loadPositionsByMember = memo(async () =>
 export const loadMemberFinance = memo(
   async () =>
     new Map(
-      (await selectAll<MemberFinance>('member_finance', { select: FINANCE_COLUMNS, order: 'member_id.asc' })).map(
-        (f) => [f.member_id, f],
-      ),
+      (
+        await selectAllOptional<MemberFinance>('member_finance', { select: FINANCE_COLUMNS, order: 'member_id.asc' })
+      ).map((f) => [f.member_id, f]),
     ),
 );
 
