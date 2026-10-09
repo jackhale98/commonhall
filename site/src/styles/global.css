@@ -2141,3 +2141,8 @@ a.chip-button {
   align-items: center;
   text-decoration: none;
 }
+
+/* In-page links land below the sticky header. */
+html {
+  scroll-padding-top: 5rem;
+}
