@@ -1,16 +1,13 @@
 ---
 import FollowButton from '../../../components/FollowButton';
-import LocalMatterItem from '../../../components/LocalMatterItem';
+import LocalMatters from '../../../components/LocalMatters';
 import MemberPhoto from '../../../components/MemberPhoto';
 import DistrictMap from '../../../components/viz/DistrictMap';
 import Base from '../../../layouts/Base.astro';
-import {
-  loadCouncilDistricts,
-  loadLocalOfficials,
-  loadPrerenderLocalMatters,
-  loadSponsoredMatters,
-} from '../../../lib/build-data';
-import { href, localMatterFallbackHref, localMatterHref, localOfficialHref } from '../../../lib/paths';
+import { loadCouncilDistricts, loadLocalOfficials, loadSponsoredMatters } from '../../../lib/build-data';
+import { DEMO } from '../../../lib/config';
+import { HIDDEN_MATTER_TYPES } from '../../../lib/local';
+import { href, localOfficialHref } from '../../../lib/paths';
 import type { LocalOfficial } from '../../../lib/types';
 
 export async function getStaticPaths() {
@@ -23,9 +20,8 @@ interface Props {
 }
 
 const { official } = Astro.props;
-const [sponsored, prerendered, districts, officials] = await Promise.all([
+const [sponsored, districts, officials] = await Promise.all([
   loadSponsoredMatters(official.id),
-  loadPrerenderLocalMatters(),
   loadCouncilDistricts(),
   loadLocalOfficials(),
 ]);
@@ -38,9 +34,20 @@ const features = districts.map((d) => {
     title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
   };
 });
-const typeCount = new Set(sponsored.map((m) => m.type)).size;
-const passed = sponsored.filter((m) => m.passed_date || /adopted|passed/i.test(m.status ?? '')).length;
-const withPage = new Set(prerendered.map((p) => p.matter.id));
+// The default list leaves out consent-agenda resolutions (congratulations and commendations).
+const substantive = sponsored.filter((m) => !HIDDEN_MATTER_TYPES.includes(m.type ?? ''));
+const consent = sponsored.length - substantive.length;
+const passed = substantive.filter((m) => m.passed_date || /adopted|passed/i.test(m.status ?? '')).length;
+const count = (list: typeof sponsored, key: 'type' | 'status') =>
+  [
+    ...Map.groupBy(
+      list.filter((m) => m[key]),
+      (m) => m[key]!,
+    ),
+  ]
+    .map(([value, rows]) => ({ value, count: rows.length }))
+    .sort((a, b) => b.count - a.count);
+const facets = { types: count(sponsored, 'type'), statuses: count(substantive, 'status'), sponsors: [] };
 const seat = official.seat ?? 'Councilor';
 ---
 
@@ -72,16 +79,16 @@ const seat = official.seat ?? 'Councilor';
   <div class="councilor-glance">
     <dl class="stat-grid">
       <div class="stat">
-        <dt>Matters sponsored</dt>
-        <dd>{sponsored.length}</dd>
+        <dt>Ordinances, orders and resolutions</dt>
+        <dd>{substantive.length}</dd>
       </div>
       <div class="stat">
         <dt>Passed or adopted</dt>
         <dd>{passed}</dd>
       </div>
       <div class="stat">
-        <dt>Kinds of matter</dt>
-        <dd>{typeCount}</dd>
+        <dt>Consent-agenda resolutions</dt>
+        <dd>{consent}</dd>
       </div>
     </dl>
     {features.length > 0 && (
@@ -104,20 +111,21 @@ const seat = official.seat ?? 'Councilor';
   </div>
 
   <section aria-labelledby="sp-h">
-    <h2 id="sp-h">
-      Sponsored <span class="muted">({sponsored.length})</span>
-    </h2>
-    {sponsored.length === 0 && <p class="muted">No sponsored matters loaded.</p>}
-    <div class="panel">
-      <ul class="list">
-        {sponsored.map((m) => (
-          <LocalMatterItem
-            matter={m}
-            href={withPage.has(m.id) ? localMatterHref(m.id) : localMatterFallbackHref(m.id)}
-          />
-        ))}
-      </ul>
-    </div>
+    <h2 id="sp-h">Sponsored</h2>
+    {sponsored.length === 0 ? (
+      <p class="muted">No sponsored matters loaded.</p>
+    ) : (
+      <div class="panel">
+        <LocalMatters
+          client:visible
+          initial={substantive.slice(0, 10)}
+          total={substantive.length}
+          local={DEMO}
+          sponsor={official.id}
+          facets={facets}
+        />
+      </div>
+    )}
   </section>
   <p class="small muted">
     Boston records roll-call votes in meeting minutes rather than in Legistar, so votes are not listed here.

@@ -1,0 +1,73 @@
+---
+/**
+ * The header shared by Boston's sub-pages: breadcrumb, title and the tab row
+ * (each tab is its own page, so it can be linked to and stays short).
+ */
+import { BOSTON_TABS, type BostonTab } from '../lib/local';
+import { href } from '../lib/paths';
+
+interface Props {
+  current: BostonTab;
+  /** One line under the title. */
+  lede?: string;
+}
+
+const { current, lede } = Astro.props;
+---
+
+<header class="boston-head">
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('states/')}>States</a> › <a href={href('states/ma/')}>Massachusetts</a> › Boston
+  </nav>
+  <h1>Boston</h1>
+  {lede && <p class="lede">{lede}</p>}
+  <nav class="local-tabs" aria-label="Boston">
+    {BOSTON_TABS.map((t) => (
+      <a href={href(t.path)} aria-current={t.key === current ? 'page' : undefined}>
+        {t.label}
+      </a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .boston-head h1 {
+    margin-bottom: var(--space-2);
+  }
+  .boston-head .lede {
+    font-size: var(--step-0);
+    margin: 0 0 var(--space-3);
+  }
+  .local-tabs {
+    position: sticky;
+    top: var(--header-h, 4rem);
+    z-index: 5;
+    display: flex;
+    gap: var(--space-1);
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 calc(-1 * var(--space-4)) var(--space-5);
+    padding: var(--space-2) var(--space-4);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .local-tabs a {
+    flex: none;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .local-tabs a:hover {
+    color: var(--text);
+    background: var(--bg-raised);
+  }
+  .local-tabs a[aria-current='page'] {
+    color: var(--brand-strong);
+    background: var(--brand-soft);
+  }
+</style>

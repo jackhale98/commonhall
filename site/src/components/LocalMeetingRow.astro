@@ -1,0 +1,53 @@
+---
+/** One Boston council meeting as a compact row: date, time, body, and its agenda or minutes. */
+import { formatDate } from '../lib/format';
+
+interface Props {
+  meeting: {
+    date: string;
+    time: string | null;
+    body: string | null;
+    location: string | null;
+    agenda_url: string | null;
+    minutes_url: string | null;
+    legistar_url: string | null;
+  };
+  upcoming?: boolean;
+}
+
+const { meeting: m, upcoming = false } = Astro.props;
+---
+
+<li class="meeting">
+  <span>
+    <strong>{formatDate(m.date)}</strong>
+    {upcoming && m.time && ` · ${m.time}`} · {m.body ?? 'City Council'}
+    {upcoming && m.location && <span class="small muted"> · {m.location}</span>}
+  </span>
+  <span class="cluster small">
+    {m.agenda_url && (
+      <a href={m.agenda_url} rel="noopener">
+        Agenda
+      </a>
+    )}
+    {m.minutes_url && (
+      <a href={m.minutes_url} rel="noopener">
+        Minutes
+      </a>
+    )}
+    {!m.agenda_url && !m.minutes_url && m.legistar_url && (
+      <a href={m.legistar_url} rel="noopener">
+        Legistar
+      </a>
+    )}
+  </span>
+</li>
+
+<style>
+  .meeting {
+    display: flex;
+    gap: var(--space-1) var(--space-3);
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+</style>

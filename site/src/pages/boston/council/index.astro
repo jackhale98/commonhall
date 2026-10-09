@@ -1,0 +1,101 @@
+---
+import BostonHeader from '../../../components/BostonHeader.astro';
+import LocalMatters from '../../../components/LocalMatters';
+import LocalMeetingRow from '../../../components/LocalMeetingRow.astro';
+import Base from '../../../layouts/Base.astro';
+import {
+  loadLocalMatterFacets,
+  loadLocalMeetings,
+  loadLocalOfficials,
+  loadRecentLocalMatters,
+} from '../../../lib/build-data';
+import { DEMO } from '../../../lib/config';
+
+const [officials, matters, meetings, matterFacets] = await Promise.all([
+  loadLocalOfficials(),
+  loadRecentLocalMatters(),
+  loadLocalMeetings(),
+  loadLocalMatterFacets(),
+]);
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = meetings.filter((m) => m.date >= today).reverse();
+const recent = meetings.filter((m) => m.date < today);
+const FIRST = 5;
+---
+
+<Base
+  title="Boston City Council"
+  description="Boston City Council ordinances, orders, hearing orders and resolutions, and its meetings."
+  section="states"
+>
+  <BostonHeader current="council" />
+
+  <section aria-labelledby="matters-h">
+    <h2 id="matters-h">Ordinances, orders and resolutions</h2>
+    <div class="panel">
+      <LocalMatters
+        client:visible
+        initial={matters}
+        local={DEMO}
+        total={matterFacets.total}
+        facets={{
+          ...matterFacets,
+          sponsors: [...officials]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((o) => ({ id: o.id, name: o.name })),
+        }}
+      />
+    </div>
+  </section>
+
+  <section aria-labelledby="meetings-h">
+    <h2 id="meetings-h">Meetings</h2>
+    {upcoming.length > 0 && (
+      <>
+        <h3 class="h-small">Coming up</h3>
+        <div class="panel">
+          <ul class="list">
+            {upcoming.map((m) => (
+              <LocalMeetingRow meeting={m} upcoming />
+            ))}
+          </ul>
+        </div>
+      </>
+    )}
+    <h3 class="h-small">Recent</h3>
+    {recent.length === 0 && <p class="muted">None loaded yet.</p>}
+    <div class="panel">
+      <ul class="list">
+        {recent.slice(0, FIRST).map((m) => (
+          <LocalMeetingRow meeting={m} />
+        ))}
+      </ul>
+      {recent.length > FIRST && (
+        <details class="more-meetings">
+          <summary>{recent.length - FIRST} earlier meetings</summary>
+          <ul class="list">
+            {recent.slice(FIRST).map((m) => (
+              <LocalMeetingRow meeting={m} />
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  </section>
+
+  <p class="small muted">
+    From the City of Boston’s <a href="https://boston.legistar.com/">Legistar</a>, refreshed every 15 minutes.
+    Consent-agenda resolutions (mostly congratulations and commendations) are hidden unless you include them.
+  </p>
+</Base>
+
+<style>
+  .more-meetings summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
+</style>

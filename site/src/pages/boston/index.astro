@@ -1,7 +1,10 @@
 ---
-import LiveDiscussions from '../../components/LiveDiscussions';
+import BostonHeader from '../../components/BostonHeader.astro';
 import CouncilorFinder from '../../components/CouncilorFinder';
-import LocalMatters from '../../components/LocalMatters';
+import FindMyReps from '../../components/FindMyReps';
+import LiveDiscussions from '../../components/LiveDiscussions';
+import LocalMatterItem from '../../components/LocalMatterItem';
+import LocalMeetingRow from '../../components/LocalMeetingRow.astro';
 import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
 import {
@@ -9,20 +12,17 @@ import {
   loadDiscussions,
   loadLocalMeetings,
   loadLocalOfficials,
-  loadLocalMatterFacets,
   loadRecentLocalMatters,
 } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
-import { formatDate } from '../../lib/format';
 import { href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts, matterFacets] = await Promise.all([
+const [officials, matters, meetings, discussions, districts] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
   loadDiscussions(),
   loadCouncilDistricts(),
-  loadLocalMatterFacets(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -36,64 +36,27 @@ const features = districts.map((d) => {
 const byDistrict = officials.filter((o) => o.district !== null).sort((a, b) => a.district! - b.district!);
 const atLarge = officials.filter((o) => o.district === null).sort((a, b) => a.name.localeCompare(b.name));
 const today = new Date().toISOString().slice(0, 10);
-const upcoming = meetings.filter((m) => m.date >= today).reverse();
-const recent = meetings.filter((m) => m.date < today).slice(0, 6);
+const upcoming = meetings
+  .filter((m) => m.date >= today)
+  .reverse()
+  .slice(0, 2);
+const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 2);
 const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' && d.status === 'open');
 ---
 
 <Base
-  title="Boston City Council"
-  description="Boston City Council members, meetings, ordinances, resolutions and hearing orders."
+  title="Boston"
+  description="Boston city government: the City Council, your councilor, meetings and what the council is working on."
   section="states"
 >
-  <header class="page-head wash">
-    <p class="kicker">City of Boston</p>
-    <h1>Boston City Council</h1>
-    <p class="lede">
-      Thirteen councilors: one for each of the nine districts and four elected citywide (at-large).{' '}
-      {!DEMO && <a href={href('#reps-h')}>Find your district councilor</a>}
-    </p>
-    <nav class="jump" aria-label="On this page">
-      <span class="muted">Jump to</span>
-      <a href="#meet-h">
-        Meetings <span aria-hidden="true">↓</span>
-      </a>
-      <a href="#matters-h">
-        Ordinances, resolutions and orders <span aria-hidden="true">↓</span>
-      </a>
-      <a href="#council-h">
-        Councilors <span aria-hidden="true">↓</span>
-      </a>
-    </nav>
-  </header>
-
-  <section aria-labelledby="disc-h">
-    <div class="section-head">
-      <h2 id="disc-h">Have your say on Boston</h2>
-      <a class="see-all" href={href('discussions/')}>
-        All discussions
-      </a>
-    </div>
-    <LiveDiscussions
-      client:idle
-      initial={bostonDiscussions}
-      jurisdictions={['boston']}
-      empty="No Boston discussion is open right now."
-    />
-    <p class="small muted">
-      Want residents to weigh in on an ordinance, hearing or order? Open it under Council matters below and choose “Ask
-      for a public discussion”. Maintainers open discussions on the most requested items.
-    </p>
-  </section>
+  <BostonHeader
+    current="overview"
+    lede="Thirteen city councilors: one for each of nine districts and four elected citywide."
+  />
 
   <section aria-labelledby="council-h">
     <div class="section-head">
-      <h2 id="council-h">Councilors</h2>
-      {!DEMO && (
-        <a class="see-all" href={href('#reps-h')}>
-          Find yours by address
-        </a>
-      )}
+      <h2 id="council-h">Your councilors</h2>
     </div>
     {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
     <div class="council-layout">
@@ -108,99 +71,76 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
             photo_url: o.photo_url,
           }))}
         />
+        {!DEMO && (
+          <details class="by-address">
+            <summary>Find your district by address</summary>
+            <FindMyReps client:visible />
+          </details>
+        )}
       </div>
       {features.length > 0 && (
         <details class="panel map-panel" id="district-map">
           <summary class="h-small">District map</summary>
           <DistrictMap features={features} label="Boston City Council districts; select one for its councilor" />
-          <p class="small muted">
-            Nine district councilors and four at-large councilors elected citywide. Select a district to meet its
-            councilor.
-          </p>
         </details>
       )}
     </div>
   </section>
 
   <section aria-labelledby="meet-h">
-    <h2 id="meet-h">Meetings</h2>
-    {upcoming.length > 0 && (
-      <>
-        <h3 class="h-small">Coming up</h3>
-        <ul class="list">
-          {upcoming.map((m) => (
-            <li class="meeting">
-              <span>
-                <strong>{formatDate(m.date)}</strong>
-                {m.time && ` · ${m.time}`} · {m.body ?? 'City Council'}
-                {m.location && <span class="small muted"> · {m.location}</span>}
-              </span>
-              {(m.agenda_url ?? m.legistar_url) && (
-                <a href={m.agenda_url ?? m.legistar_url!} rel="noopener">
-                  Agenda
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
-      </>
-    )}
-    <h3 class="h-small">Recent</h3>
-    {recent.length === 0 && <p class="muted">None loaded yet.</p>}
-    <ul class="list">
-      {recent.map((m) => (
-        <li class="meeting">
-          <span>
-            <strong>{formatDate(m.date)}</strong> · {m.body ?? 'City Council'}
-          </span>
-          <span class="cluster small">
-            {m.agenda_url && (
-              <a href={m.agenda_url} rel="noopener">
-                Agenda
-              </a>
-            )}
-            {m.minutes_url && (
-              <a href={m.minutes_url} rel="noopener">
-                Minutes
-              </a>
-            )}
-            {!m.agenda_url && !m.minutes_url && m.legistar_url && (
-              <a href={m.legistar_url} rel="noopener">
-                Legistar
-              </a>
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section aria-labelledby="matters-h">
-    <h2 id="matters-h">Ordinances, resolutions and orders</h2>
+    <div class="section-head">
+      <h2 id="meet-h">Council meetings</h2>
+      <a class="see-all" href={href('boston/council/#meetings-h')}>
+        All meetings
+      </a>
+    </div>
+    {upcoming.length + recent.length === 0 && <p class="muted">None loaded yet.</p>}
     <div class="panel">
-      <LocalMatters
-        client:visible
-        initial={matters}
-        local={DEMO}
-        total={matterFacets.total}
-        facets={{
-          ...matterFacets,
-          sponsors: [...officials]
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((o) => ({ id: o.id, name: o.name })),
-        }}
-      />
+      <ul class="list">
+        {upcoming.map((m) => (
+          <LocalMeetingRow meeting={m} upcoming />
+        ))}
+        {recent.map((m) => (
+          <LocalMeetingRow meeting={m} />
+        ))}
+      </ul>
     </div>
   </section>
 
+  <section aria-labelledby="latest-h">
+    <div class="section-head">
+      <h2 id="latest-h">Latest from the council</h2>
+      <a class="see-all" href={href('boston/council/')}>
+        All ordinances and orders
+      </a>
+    </div>
+    <div class="panel">
+      <ul class="list">
+        {matters.slice(0, 3).map((m) => (
+          <LocalMatterItem matter={m} />
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="disc-h">
+    <h2 id="disc-h">Have your say on Boston</h2>
+    <LiveDiscussions
+      client:idle
+      initial={bostonDiscussions}
+      jurisdictions={['boston']}
+      empty="No Boston discussion is open right now. Ask for one from any council matter’s page."
+    />
+  </section>
+
   <p class="small muted">
-    Council data from the City of Boston’s <a href="https://boston.legistar.com/">Legistar</a> and
-    <a href="https://data.boston.gov/">Analyze Boston</a>, refreshed every 15 minutes.
+    Council data from the City of Boston’s <a href="https://boston.legistar.com/">Legistar</a>, refreshed every 15
+    minutes.
   </p>
 </Base>
 
 <script>
-  // The district map starts open on wide screens and folded on phones, so the lists come first.
+  // The district map starts open on wide screens and folded on phones.
   const map = document.getElementById('district-map');
   if (map && window.matchMedia('(min-width: 60rem)').matches) map.setAttribute('open', '');
 </script>
@@ -217,29 +157,20 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
       align-items: start;
     }
   }
-  .map-panel summary {
+  .map-panel summary,
+  .by-address summary {
     cursor: pointer;
-    margin-bottom: var(--space-2);
-  }
-  .jump {
+    min-height: 44px;
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-4);
-    align-items: baseline;
+    align-items: center;
+  }
+  .by-address {
     margin-top: var(--space-3);
-    font-size: var(--step--1);
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-2);
   }
-  .jump a {
+  .by-address summary {
+    color: var(--link);
     font-weight: 600;
-    text-decoration: none;
-  }
-  .jump a:hover {
-    text-decoration: underline;
-  }
-  .meeting {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: space-between;
-    flex-wrap: wrap;
   }
 </style>

@@ -231,7 +231,7 @@ export default function LocalMatters({
               aria-pressed={filters.all}
               onClick={() => set({ all: !filters.all })}
             >
-              Include consent-agenda resolutions
+              Include consent agenda
             </button>
           )}
           {active && (
