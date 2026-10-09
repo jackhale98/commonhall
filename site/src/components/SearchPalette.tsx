@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { DEMO } from '../lib/config';
+import { billLabel } from '@civic/congress-client/ids';
+import { DEMO, hasSupabase } from '../lib/config';
+import { rpc } from '../lib/rest';
 import { href } from '../lib/paths';
 import { prepare, search, type Searchable } from '../lib/search';
 
@@ -12,7 +14,28 @@ const KIND_LABEL: Record<string, string> = {
   discussion: 'Discussion',
   bill: 'Bill',
   'state-bill': 'State bill',
+  order: 'Exec. order',
+  case: 'Court',
+  hearing: 'Hearing',
+  nomination: 'Nominee',
+  matter: 'Boston',
 };
+
+/** Best-matching bills from the database (the instant index holds only notable bills). */
+async function liveBills(q: string): Promise<Searchable[]> {
+  const rows = await rpc<
+    { congress: number; bill_type: string; number: number; short_title: string | null; title: string }[]
+  >('search_bills', { q, max_results: 5 }, { select: 'congress,bill_type,number,short_title,title' });
+  return rows.map((b) => ({
+    k: 'bill',
+    t:
+      (b.short_title ?? b.title).length > 110
+        ? `${(b.short_title ?? b.title).slice(0, 109)}…`
+        : (b.short_title ?? b.title),
+    s: billLabel(b.bill_type, b.number),
+    h: href(`bills/${b.congress}/${b.bill_type}/${b.number}/`),
+  }));
+}
 
 let indexPromise: Promise<ReturnType<typeof prepare<Searchable>>> | undefined;
 function loadIndex() {
@@ -46,6 +69,19 @@ export default function SearchPalette() {
   const [q, setQ] = useState('');
   const [index, setIndex] = useState<ReturnType<typeof prepare<Searchable>> | null>(null);
   const [active, setActive] = useState(0);
+  const [live, setLive] = useState<{ q: string; items: Searchable[] }>({ q: '', items: [] });
+
+  // Ask the database for matching bills once typing pauses.
+  useEffect(() => {
+    const term = q.trim();
+    if (!hasSupabase || term.length < 2) return;
+    const timer = setTimeout(() => {
+      liveBills(term)
+        .then((items) => setLive({ q: term, items }))
+        .catch(() => undefined);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [q]);
 
   const open = () => {
     if (!dialog.current || dialog.current.open) return;
@@ -70,8 +106,12 @@ export default function SearchPalette() {
     const term = q.trim();
     if (!term) return QUICK;
     const hits = index ? search(index, term, 8) : [];
+    const seen = new Set(hits.map((h) => h.h));
+    const bills =
+      live.q === term ? live.items.filter((b) => !seen.has(b.h)).slice(0, Math.max(3, 10 - hits.length)) : [];
     return [
       ...hits,
+      ...bills,
       {
         k: 'all',
         t: `Search all bills for “${term}”`,
@@ -79,7 +119,7 @@ export default function SearchPalette() {
         h: `${href('bills/')}?q=${encodeURIComponent(term)}`,
       },
     ];
-  }, [q, index]);
+  }, [q, index, live]);
 
   useEffect(() => setActive(0), [q]);
 
@@ -138,7 +178,7 @@ export default function SearchPalette() {
               aria-controls="palette-results"
               aria-activedescendant={results[active] ? `palette-opt-${active}` : undefined}
               aria-autocomplete="list"
-              placeholder="Search bills, members, states, Boston…"
+              placeholder="Search bills, people, hearings, orders, Boston…"
               value={q}
               onInput={(e) => setQ(e.currentTarget.value)}
               onKeyDown={onKeyDown}

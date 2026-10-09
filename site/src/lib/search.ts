@@ -25,6 +25,11 @@ const KIND_WEIGHT: Record<string, number> = {
   discussion: 3,
   bill: 2,
   'state-bill': 1,
+  order: 2,
+  case: 2,
+  matter: 1,
+  nomination: 1,
+  hearing: 1,
 };
 
 interface Prepared<T> {

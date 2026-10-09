@@ -551,3 +551,13 @@ subcommittees), meeting type and time (coming up, last 30 days, this Congress). 
 opens on "coming up" only when something is scheduled, otherwise on the last 30
 days. Field hearings' addresses arrive from Congress.gov as JSON; they are now
 shown as "building, city, state".
+
+## 51. The header search covers orders, hearings, nominees, cases and Boston
+
+The prerendered search index now includes executive orders, Supreme Court
+decisions, committee hearings and markups (the past year and anything scheduled),
+civilian nominations and recent Boston council matters, alongside members, states
+and pages. It is about 66 KB gzipped. Bills are too many to prerender, so while
+you type the palette also asks `search_bills` for the top matches (debounced, two
+characters or more) and lists them after the instant hits, followed by "Search all
+bills".

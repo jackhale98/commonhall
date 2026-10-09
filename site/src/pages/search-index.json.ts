@@ -1,4 +1,9 @@
 import {
+  loadCommitteeMeetings,
+  loadExecutiveOrders,
+  loadNominations,
+  loadPrerenderLocalMatters,
+  loadScotusCases,
   loadCommittees,
   loadDiscussions,
   loadLocalOfficials,
@@ -9,17 +14,43 @@ import {
 import {
   billDisplayTitle,
   billNumberLabel,
+  formatDate,
   LEGISLATURE_STATES,
   memberRole,
   STATE_CODES,
   stateName,
 } from '../lib/format';
-import { billHref, discussionHref, href, localOfficialHref, memberHref, stateBillHref, stateHref } from '../lib/paths';
+import { NOMINATION_STATUS, nominationUrl } from '../lib/executive';
+import {
+  billHref,
+  discussionHref,
+  executiveOrderHref,
+  href,
+  localMatterHref,
+  localOfficialHref,
+  memberHref,
+  scotusCaseHref,
+  stateBillHref,
+  stateHref,
+} from '../lib/paths';
 
 /** One entry in the search palette's index. Short keys keep the file small. */
 export interface SearchEntry {
   /** kind */
-  k: 'page' | 'member' | 'committee' | 'state' | 'councilor' | 'discussion' | 'bill' | 'state-bill';
+  k:
+    | 'page'
+    | 'member'
+    | 'committee'
+    | 'state'
+    | 'councilor'
+    | 'discussion'
+    | 'bill'
+    | 'state-bill'
+    | 'order'
+    | 'case'
+    | 'hearing'
+    | 'nomination'
+    | 'matter';
   /** title */
   t: string;
   /** subtitle */
@@ -33,14 +64,33 @@ const clip = (text: string, n = 110) => (text.length > n ? `${text.slice(0, n - 
 
 /** Everything the header search can find instantly; full bill search goes to /bills/?q=. */
 export async function GET() {
-  const [members, officials, discussions, bills, stateBills, committees] = await Promise.all([
+  const [
+    members,
+    officials,
+    discussions,
+    bills,
+    stateBills,
+    committees,
+    orders,
+    cases,
+    meetings,
+    nominations,
+    matters,
+  ] = await Promise.all([
     loadMembers(),
     loadLocalOfficials(),
     loadDiscussions(),
     loadPrerenderBills(),
     loadPrerenderStateBills(),
     loadCommittees(),
+    loadExecutiveOrders(),
+    loadScotusCases(),
+    loadCommitteeMeetings(),
+    loadNominations(),
+    loadPrerenderLocalMatters(),
   ]);
+  const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
+  const chamberName = (code: string) => (code.startsWith('h') ? 'House' : code.startsWith('s') ? 'Senate' : 'Joint');
   const entries: SearchEntry[] = [
     { k: 'page', t: 'Bills', s: 'Search and filter every bill', h: href('bills/') },
     { k: 'page', t: 'Votes', s: 'Every House and Senate roll call', h: href('votes/') },
@@ -93,6 +143,42 @@ export async function GET() {
       t: clip(b.title),
       s: `${b.state} ${b.identifier}`,
       h: stateBillHref(b.state, b.session, b.identifier),
+    })),
+    ...orders.map((o) => ({
+      k: 'order' as const,
+      t: clip(o.title),
+      s: `${o.eo_number ? `EO ${o.eo_number} · ` : ''}${o.president_name ?? ''} · ${formatDate(o.signing_date ?? o.publication_date)}`,
+      h: executiveOrderHref(o.document_number),
+    })),
+    ...cases.map((c) => ({
+      k: 'case' as const,
+      t: clip(c.case_name),
+      s: `Supreme Court · ${formatDate(c.date_filed)}${c.docket_number ? ` · No. ${c.docket_number}` : ''}`,
+      h: scotusCaseHref(c.cluster_id),
+    })),
+    // Hearings and markups from the past year and everything scheduled.
+    ...meetings
+      .filter((m) => m.date && m.date >= yearAgo && m.title)
+      .map((m) => ({
+        k: 'hearing' as const,
+        t: clip(m.title!),
+        s: `${m.committee_names[0] ?? (m.committee_codes[0] ? chamberName(m.committee_codes[0]) : 'Committee')} · ${m.meeting_type ?? 'Meeting'} · ${formatDate(m.date)}`,
+        h: m.url,
+      })),
+    ...nominations
+      .filter((n) => !n.is_military)
+      .slice(0, 2000)
+      .map((n) => ({
+        k: 'nomination' as const,
+        t: clip(n.nominee ?? n.description ?? n.citation),
+        s: `${n.position ? `${clip(n.position, 70)} · ` : ''}${NOMINATION_STATUS[n.status].label}`,
+        h: nominationUrl(n),
+      })),
+    ...matters.slice(0, 1000).map(({ matter: m }) => ({
+      k: 'matter' as const,
+      t: clip(m.title),
+      s: `Boston${m.file_number ? ` · Docket #${m.file_number}` : ''}${m.type ? ` · ${m.type.replace(/^Council /, '')}` : ''}`,
+      h: localMatterHref(m.id),
     })),
   ];
   return new Response(JSON.stringify(entries), { headers: { 'content-type': 'application/json' } });
