@@ -87,12 +87,12 @@ const courtNominations = nominations.filter((n) =>
   ) : (
     <>
       {outcomes.length > 0 && (
-        <section class="panel outcomes-panel" aria-labelledby="outcomes-h">
-          <h2 id="outcomes-h" class="visually-hidden">
-            Outcomes by term
-          </h2>
+        <details class="panel outcomes-panel" id="court-outcomes">
+          <summary>
+            <span class="h-small">Who won, and how divided the Court was, term by term</span>
+          </summary>
           <CourtOutcomes outcomes={outcomes} />
-        </section>
+        </details>
       )}
       <div class="court-layout">
         <section aria-labelledby="latest-h">
@@ -155,12 +155,24 @@ const courtNominations = nominations.filter((n) =>
   </p>
 </Base>
 
+<script>
+  // The outcome charts start open on wide screens and folded on phones.
+  const panel = document.getElementById('court-outcomes');
+  if (panel && window.matchMedia('(min-width: 60rem)').matches) panel.setAttribute('open', '');
+</script>
+
 <style>
   .stat-grid {
     margin-top: var(--space-5);
   }
   .outcomes-panel {
     margin-block: var(--space-5) var(--space-6);
+  }
+  .outcomes-panel > summary {
+    cursor: pointer;
+  }
+  .outcomes-panel[open] > summary {
+    margin-bottom: var(--space-4);
   }
   .court-layout {
     display: grid;

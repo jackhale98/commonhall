@@ -644,3 +644,16 @@ per term, who won (petitioner, respondent, mixed) and how divided the Court was
 CourtListener sometimes publishes a corrected opinion as a second cluster named
 "… Revisions: 7/01/26" (13 of the first 187 decisions). The sync strips the suffix,
 marks the row as a revision and drops it once the original decision is stored.
+
+## 58. A short home page; search hints that fit a phone
+
+The home page is now the hero (search and "Latest"), the numbers row, the
+representatives lookup and "Moving in Congress". The discussions band and "Congress
+at a glance" are gone (the discussions and members pages carry them). "Latest" lists
+the newest vote and law, the newest executive order and Supreme Court decision when
+they are from the last 30 days (with who won, once coded), the next Boston council
+meeting (desktop only) and, last, an open discussion.
+
+Search boxes use short hints ("Keyword or bill #", "Topic or EO #", "Search
+everything") that fit a 390 px phone; the labels and help text carry the detail.
+The Supreme Court outcome charts start folded on phones.

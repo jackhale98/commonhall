@@ -121,7 +121,7 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
             id="case-q"
             type="search"
             value={q}
-            placeholder="Search by case name, docket, citation or Justice"
+            placeholder="Case or Justice"
             onInput={(e) => set(setQ)(e.currentTarget.value)}
           />
         </div>

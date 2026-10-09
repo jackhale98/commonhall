@@ -108,7 +108,7 @@ export default function OrderExplorer({ terms, initial }: Props) {
             id="eo-q"
             type="search"
             value={q}
-            placeholder="Search orders, e.g. “tariffs” or “14434”"
+            placeholder="Topic or EO #"
             onInput={(e) => set(setQ)(e.currentTarget.value)}
           />
         </div>

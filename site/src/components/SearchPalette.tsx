@@ -190,7 +190,7 @@ export default function SearchPalette() {
               aria-controls="palette-results"
               aria-activedescendant={results[active] ? `palette-opt-${active}` : undefined}
               aria-autocomplete="list"
-              placeholder="Search bills, people, hearings, orders, Boston…"
+              placeholder="Search everything"
               value={q}
               onInput={(e) => setQ(e.currentTarget.value)}
               onKeyDown={onKeyDown}

@@ -216,13 +216,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
             <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
             <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          <input
-            id="bills-q"
-            name="q"
-            type="search"
-            value={filters.q}
-            placeholder="Search bills by keyword, e.g. “child care” or “H.R. 1”"
-          />
+          <input id="bills-q" name="q" type="search" value={filters.q} placeholder="Keyword or bill #" />
           <button type="submit" class="primary">
             Search
           </button>

@@ -35,7 +35,7 @@ export default function CouncilorFinder({ councilors }: { councilors: CouncilorR
           id="cf-q"
           type="search"
           value={q}
-          placeholder="Name or district number"
+          placeholder="Name or district"
           onInput={(e) => setQ(e.currentTarget.value)}
         />
         <div class="type-chips" role="group" aria-label="Seat">

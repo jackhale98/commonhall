@@ -108,7 +108,7 @@ export default function CommitteeExplorer({
             id="ce-q"
             type="search"
             value={q}
-            placeholder="Committees, hearing topics, witnesses"
+            placeholder="Topic or witness"
             onInput={(e) => {
               setQ(e.currentTarget.value);
               setShown(PAGE);

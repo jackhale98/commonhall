@@ -52,7 +52,7 @@ export default function StateBills({ state, initial }: { state: string; initial:
       >
         <div class="field" style={{ flexBasis: '18rem' }}>
           <label for={`sb-q-${state}`}>Search state bills</label>
-          <input id={`sb-q-${state}`} name="q" type="search" placeholder="Title or number, e.g. HB 12" />
+          <input id={`sb-q-${state}`} name="q" type="search" placeholder="Title or bill #" />
         </div>
         <button type="submit">Search</button>
       </form>

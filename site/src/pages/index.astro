@@ -1,9 +1,7 @@
 ---
 import BillListItem from '../components/BillListItem';
-import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
 import FindMyReps from '../components/FindMyReps';
-import Hemicycle from '../components/viz/Hemicycle';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
@@ -12,31 +10,30 @@ import {
   loadDiscussions,
   loadExecutiveOrders,
   loadLocalMeetings,
-  loadMembers,
   loadScotusCases,
+  loadScotusOutcomeMap,
   loadVotes,
 } from '../lib/build-data';
-import { chamberGroups, voteSegments } from '../lib/charts';
+import { voteSegments } from '../lib/charts';
+import { outcomeSummary } from '../lib/court';
 import { DEMO } from '../lib/config';
 import { formatDate } from '../lib/format';
-import { billHref, href, voteHref } from '../lib/paths';
+import { billHref, executiveOrderHref, href, scotusCaseHref, voteHref } from '../lib/paths';
 
-const [bills, votes, members, discussions, meetings, orders, cases, hearings] = await Promise.all([
+const [bills, votes, discussions, meetings, orders, cases, hearings, outcomes] = await Promise.all([
   loadBills(),
   loadVotes(),
-  loadMembers(),
   loadDiscussions(),
   loadLocalMeetings(),
   loadExecutiveOrders(),
   loadScotusCases(),
   loadCommitteeMeetings(),
+  loadScotusOutcomeMap(),
 ]);
 const recent = bills.slice(0, 6);
 const laws = bills.filter((b) => b.status === 'law');
 const latestLaw = [...laws].sort((a, b) => (b.latest_action_date ?? '').localeCompare(a.latest_action_date ?? ''))[0];
 const latestVote = votes[0];
-const house = chamberGroups(members.values(), 'house');
-const senate = chamberGroups(members.values(), 'senate');
 const openDiscussions = discussions.filter((d) => d.status === 'open');
 const today = new Date().toISOString().slice(0, 10);
 const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
@@ -57,6 +54,10 @@ const termOrders = termYear
 const courtTerm = cases[0]?.term;
 const termCases = courtTerm === undefined ? [] : cases.filter((c) => c.term === courtTerm);
 const monthAgo = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
+// The newest order and decision join "Latest" only while they are recent.
+const recentOrder = latestOrder?.signing_date && latestOrder.signing_date >= monthAgo ? latestOrder : undefined;
+const recentCase = cases[0] && cases[0].date_filed >= monthAgo ? cases[0] : undefined;
+const recentCaseOutcome = recentCase && outcomes.get(recentCase.cluster_id);
 const recentHearings = hearings.filter((m) => m.date && m.date >= monthAgo && m.date <= today);
 
 const stats = [
@@ -91,13 +92,7 @@ const stats = [
           <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
           <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
         </svg>
-        <input
-          id="home-q"
-          name="q"
-          type="search"
-          autocomplete="off"
-          placeholder="Search bills, people, hearings, orders…"
-        />
+        <input id="home-q" name="q" type="search" autocomplete="off" placeholder="Search everything" />
         <button type="submit" class="primary">
           Search
         </button>
@@ -106,16 +101,6 @@ const stats = [
 
     <div class="this-week" aria-label="Latest">
       <p class="kicker">Latest</p>
-      {openDiscussions[0] && (
-        <a class="pulse-card pulse-discuss" href={href(`discussions/${openDiscussions[0].id}/`)}>
-          <span class="pulse-label">
-            <span class="dot dot-discuss" aria-hidden="true" />
-            Open discussion
-          </span>
-          <strong>{openDiscussions[0].title}</strong>
-          <span class="pulse-meta">Add your voice →</span>
-        </a>
-      )}
       {latestVote && (
         <a class="pulse-card" href={voteHref(latestVote.id)}>
           <span class="pulse-label">
@@ -138,13 +123,45 @@ const stats = [
           <strong>{latestLaw.short_title ?? latestLaw.title}</strong>
         </a>
       )}
+      {recentOrder && (
+        <a class="pulse-card" href={executiveOrderHref(recentOrder.document_number)}>
+          <span class="pulse-label">
+            <span class="dot dot-order" aria-hidden="true" />
+            Executive order{recentOrder.eo_number ? ` ${recentOrder.eo_number}` : ''} ·{' '}
+            {formatDate(recentOrder.signing_date)}
+          </span>
+          <strong>{recentOrder.title}</strong>
+        </a>
+      )}
+      {recentCase && (
+        <a class="pulse-card" href={scotusCaseHref(recentCase.cluster_id)}>
+          <span class="pulse-label">
+            <span class="dot dot-court" aria-hidden="true" />
+            Supreme Court · {formatDate(recentCase.date_filed)}
+          </span>
+          <strong>{recentCase.case_name}</strong>
+          {recentCaseOutcome && (
+            <span class="pulse-meta">{outcomeSummary(recentCase.case_name, recentCaseOutcome)}</span>
+          )}
+        </a>
+      )}
       {nextMeeting && (
-        <a class="pulse-card" href={href('boston/')}>
+        <a class="pulse-card pulse-city" href={href('boston/')}>
           <span class="pulse-label">
             <span class="dot dot-city" aria-hidden="true" />
             Boston City Council · {formatDate(nextMeeting.date)}
           </span>
           <strong>Next council meeting{nextMeeting.time ? ` at ${nextMeeting.time}` : ''}</strong>
+        </a>
+      )}
+      {openDiscussions[0] && (
+        <a class="pulse-card pulse-discuss" href={href(`discussions/${openDiscussions[0].id}/`)}>
+          <span class="pulse-label">
+            <span class="dot dot-discuss" aria-hidden="true" />
+            Open discussion
+          </span>
+          <strong>{openDiscussions[0].title}</strong>
+          <span class="pulse-meta">Add your voice →</span>
         </a>
       )}
     </div>
@@ -181,49 +198,6 @@ const stats = [
       <p class="muted">No bills loaded yet.</p>
     )}
   </section>
-
-  <section class="discuss-band" aria-labelledby="disc-h">
-    <div class="discuss-intro">
-      <p class="kicker">Discussions</p>
-      <h2 id="disc-h">Have your say, and see where people agree</h2>
-      <ol class="steps">
-        <li>
-          <strong>Vote</strong> agree or disagree on short statements.
-        </li>
-        <li>
-          <strong>Add</strong> your own point of view in a sentence.
-        </li>
-        <li>
-          <strong>See</strong> where opinion divides and where it comes together.
-        </li>
-      </ol>
-      <a class="button large discuss-cta" href={href('discussions/')}>
-        Browse discussions →
-      </a>
-    </div>
-    {openDiscussions.length > 1 && (
-      <ul class="list discuss-list">
-        {openDiscussions.slice(1, 4).map((d) => (
-          <DiscussionCard discussion={d} />
-        ))}
-      </ul>
-    )}
-  </section>
-
-  <div class="home-grid">
-    <section aria-labelledby="glance-h">
-      <div class="section-head">
-        <h2 id="glance-h">Congress at a glance</h2>
-        <a class="see-all" href={href('members/')}>
-          All members
-        </a>
-      </div>
-      <div class="panel chambers">
-        <Hemicycle title="House" groups={house} />
-        <Hemicycle title="Senate" groups={senate} />
-      </div>
-    </section>
-  </div>
 </Base>
 
 <script>
@@ -367,6 +341,12 @@ const stats = [
   .dot-discuss {
     background: #fff;
   }
+  .dot-order {
+    background: var(--brand);
+  }
+  .dot-court {
+    background: var(--cat-markup);
+  }
   .stat-strip {
     list-style: none;
     padding: 0;
@@ -418,96 +398,14 @@ const stats = [
     font-size: var(--step--1);
     line-height: 1.3;
   }
-  .discuss-band {
-    display: grid;
-    gap: var(--space-5);
-    align-items: start;
-    margin: var(--space-7) calc(-1 * var(--space-4));
-    padding: var(--space-6) var(--space-5);
-    border-radius: 28px;
-    background:
-      radial-gradient(70% 90% at 0% 0%, rgb(123 92 255 / 55%), transparent 70%),
-      radial-gradient(60% 80% at 100% 100%, rgb(31 181 211 / 45%), transparent 70%), #14123a;
-    color: #f3f2ff;
-  }
-  @media (min-width: 60rem) {
-    .discuss-band {
-      grid-template-columns: 1fr 1.3fr;
-      margin-inline: 0;
-      padding: var(--space-7);
-    }
-  }
-  .discuss-band h2 {
-    font-size: clamp(1.8rem, 1.3rem + 2vw, 2.6rem);
-    margin-top: 0;
-    color: #fff;
-  }
-  .discuss-band .kicker {
-    color: #c9c3ff;
-  }
-  .steps {
-    padding-left: 1.2rem;
-    display: grid;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-5);
-    color: #dcd9ff;
-  }
-  .steps strong {
-    color: #fff;
-  }
-  .discuss-cta {
-    background: #fff;
-    color: #2b2380;
-    border: 0;
-  }
-  .discuss-cta:hover {
-    background: #ecebff;
-  }
-  .discuss-list :global(li) {
-    background: rgb(255 255 255 / 8%);
-    border-color: rgb(255 255 255 / 14%);
-    box-shadow: none;
-    color: #f3f2ff;
-  }
-  .discuss-list :global(.bill-title a),
-  .discuss-list :global(.meta) {
-    color: #fff;
-  }
-  .discuss-list :global(.join) {
-    color: #c9c3ff;
-  }
-  .discuss-list :global(.status-chip) {
-    background: rgb(255 255 255 / 16%);
-    color: #fff;
-  }
-  .home-grid {
-    display: grid;
-  }
-  .chambers {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: var(--space-4);
-    align-items: end;
-  }
   /* Phones: fewer bills and discussions, so the page doesn't scroll forever. */
   @media (max-width: 40rem) {
     .moving > :global(li:nth-child(n + 4)) {
       display: none;
     }
-    .discuss-list :global(li:nth-child(n + 3)) {
-      display: none;
-    }
-    .discuss-list :global(.small) {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .steps {
-      display: none;
-    }
     /* An odd number of stat tiles: the last one spans the row. */
-    .this-week > a:nth-of-type(n + 4) {
+    /* Phones: the council meeting gives way; everything else in "Latest" stays. */
+    .pulse-city {
       display: none;
     }
     .stat-strip li:last-child:nth-child(odd) {
