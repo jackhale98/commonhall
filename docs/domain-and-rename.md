@@ -66,6 +66,13 @@ Remove any other `A`, `AAAA` or `CNAME` records for the same name (for example a
 registrar "parking" record). DNS changes can take from minutes to a few hours; check
 with `dig civic.example.org +short` until it shows GitHub's addresses.
 
+**Cloudflare DNS:** set these records to **DNS only** (grey cloud), not Proxied.
+Behind the proxy the domain resolves to Cloudflare's addresses, so GitHub reports
+the DNS as wrong and cannot issue the HTTPS certificate. If you later turn the
+proxy on, first wait for the certificate and **Enforce HTTPS**, and set Cloudflare
+**SSL/TLS** to **Full (strict)**; if a certificate renewal fails, switch back to
+DNS only until it renews.
+
 **Verify the domain with GitHub** (recommended, prevents anyone else from claiming
 it for their own Pages site): your GitHub profile → **Settings → Pages → Add a
 domain**, add the TXT record it shows, then **Verify**.

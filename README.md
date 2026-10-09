@@ -7,7 +7,7 @@ U.S. Congress, state legislatures and the Boston City Council. Look up bills and
 votes in plain language, find out who represents you, follow what you care
 about, and take part in moderated public discussions.
 
-**Live site:** https://jackhale98.github.io/opencongress/
+**Live site:** https://commonhall.org/
 
 > **Status:** live data is loading. The database is connected and syncing on
 > schedule, and the first full load of the current Congress (about 15,000 bills
@@ -170,8 +170,8 @@ The reasoning behind the main design choices is recorded in
 - **Discussions stay anonymous.** Pol.is receives a random ID for you and nothing
   else: never your name, email, account ID or address.
 
-Full details are on the site's [privacy page](https://jackhale98.github.io/opencongress/privacy/)
-and [discussion rules](https://jackhale98.github.io/opencongress/moderation/).
+Full details are on the site's [privacy page](https://commonhall.org/privacy/)
+and [discussion rules](https://commonhall.org/moderation/).
 
 ## Running discussions
 
@@ -215,7 +215,7 @@ closed discussions are folded away too.
 **While it runs**
 
 - Moderate new statements in Pol.is at least daily under the published
-  [discussion rules](https://jackhale98.github.io/opencongress/moderation/):
+  [discussion rules](https://commonhall.org/moderation/):
   accept or reject, never edit.
 - Set the status to **closed** to stop voting; results stay readable. Pol.is's
   **Report** and **Export** give a shareable report and CSV files.
