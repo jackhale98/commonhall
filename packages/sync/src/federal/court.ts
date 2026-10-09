@@ -123,7 +123,12 @@ const SYLLABI_PER_RUN = 80;
  * per curiam orders, or when the text is damaged). Recent decisions are checked again
  * daily for a month, in case CourtListener adds the text later.
  */
-export async function fillSyllabi(run: JobRun<ScotusCursor>, client: CourtListenerClient): Promise<number> {
+export async function fillSyllabi(
+  run: JobRun<ScotusCursor>,
+  client: CourtListenerClient,
+  /** Stop by this time (epoch ms); defaults to the run's deadline. */
+  until: number = run.deadline,
+): Promise<number> {
   const due = await run.sql<{ cluster_id: number; opinion_ids: number[]; opinion_types: string[] }[]>`
     select cluster_id, opinion_ids, opinion_types from public.scotus_cases
      where syllabus_text is null and not revision and cardinality(opinion_ids) > 0
@@ -133,7 +138,7 @@ export async function fillSyllabi(run: JobRun<ScotusCursor>, client: CourtListen
      limit ${SYLLABI_PER_RUN}`;
   let found = 0;
   for (const c of due) {
-    if (run.outOfTime()) break;
+    if (run.outOfTime() || Date.now() > until) break;
     const id = syllabusOpinionId(c.opinion_ids, c.opinion_types);
     if (id === null) continue;
     const opinion = await client.opinionText(id);
@@ -186,13 +191,13 @@ export async function syncSupremeCourt(
   };
   try {
     if (!cursor.filledThrough || cursor.filledThrough < today) {
-      // First load, a month at a time; the cursor records each finished month. Half of
-      // each run goes to it and the rest to syllabi, so cases already loaded get theirs
-      // without waiting for every month.
-      const half = Date.now() + (run.deadline - Date.now()) / 2;
+      // First load, a month at a time; the cursor records each finished month. Syllabi
+      // for cases already loaded come first, for up to half the run, so they don't wait
+      // for every month (a month can take most of a run, so they can't go after).
+      await fillSyllabi(run, options.client, Date.now() + (run.deadline - Date.now()) / 2);
       for (const [first, last] of monthWindows(cursor.filledThrough ?? SCOTUS_SINCE, today)) {
         if (cursor.filledThrough && last <= cursor.filledThrough) continue;
-        if (run.outOfTime() || Date.now() > half) break;
+        if (run.outOfTime()) return cursor;
         const seen = await read(first, last);
         run.log('scotus: month', { first, seen });
         cursor.filledThrough = last;
