@@ -16,6 +16,8 @@ import {
   type FecClient,
   type FecCommittee,
   type FecReceipt,
+  type LegislatorsClient,
+  summarizeLegislator,
 } from '@civic/congress-client';
 import type { Sql } from '../db.ts';
 import type { JobRun } from '../job.ts';
@@ -28,6 +30,8 @@ export const FINANCE_MAX_AGE_DAYS = 7;
 export interface FinanceCursor {
   [key: string]: unknown;
   lastMember?: string;
+  /** When missing FEC ids were last looked up in congress-legislators (ISO time). */
+  idsCheckedAt?: string;
   refreshed?: number;
 }
 
@@ -206,13 +210,49 @@ export async function writeFinance(sql: Sql, row: FinanceRow): Promise<void> {
                         then excluded.updated_at else member_finance.updated_at end`;
 }
 
+/**
+ * Fill members' FEC candidate ids and next election years from congress-legislators
+ * (a static file, outside every request budget), so finance does not wait for the
+ * daily members sync. Returns the number of members updated.
+ */
+export async function fillFecIds(sql: Sql, legislators: LegislatorsClient): Promise<number> {
+  const summaries = (await legislators.current())
+    .map(summarizeLegislator)
+    .filter((l): l is NonNullable<typeof l> => !!l && !!l.fecCandidateId);
+  if (summaries.length === 0) return 0;
+  const updated = await sql`
+    update public.members m
+       set fec_candidate_id = v.fec_candidate_id, next_election = v.next_election
+      from jsonb_to_recordset(${sql.json(
+        summaries.map((l) => ({
+          bioguide_id: l.bioguideId,
+          fec_candidate_id: l.fecCandidateId,
+          next_election: l.nextElection,
+        })) as never,
+      )}) as v(bioguide_id text, fec_candidate_id text, next_election int)
+     where m.bioguide_id = v.bioguide_id and m.fec_candidate_id is null
+     returning 1`;
+  return updated.length;
+}
+
 /** One run: refresh as many due members as the budget and time allow. Resumable by design (state is in the rows). */
 export async function syncFinance(
   run: JobRun<FinanceCursor>,
-  options: { client: FecClient; batch?: number; now?: () => Date },
+  options: { client: FecClient; legislators?: LegislatorsClient; batch?: number; now?: () => Date },
 ): Promise<FinanceCursor> {
   const { client } = options;
   const now = options.now ?? (() => new Date());
+  let idsCheckedAt = run.cursor.idsCheckedAt;
+  if (options.legislators && (!idsCheckedAt || Date.parse(idsCheckedAt) < now().getTime() - 86_400_000)) {
+    const [row] = await run.sql<{ missing: boolean }[]>`
+      select exists (select 1 from public.members where current and fec_candidate_id is null) as missing`;
+    if (row?.missing) {
+      const filled = await fillFecIds(run.sql, options.legislators);
+      run.rowsWritten += filled;
+      run.log('finance: filled FEC ids', { filled });
+    }
+    idsCheckedAt = now().toISOString();
+  }
   const due = await dueMembers(run.sql, options.batch ?? 60);
   let refreshed = 0;
   let last: string | undefined;
@@ -249,5 +289,9 @@ export async function syncFinance(
     }
   }
   run.log('finance', { due: due.length, refreshed });
-  return { lastMember: last ?? run.cursor.lastMember, refreshed: (run.cursor.refreshed ?? 0) + refreshed };
+  return {
+    lastMember: last ?? run.cursor.lastMember,
+    refreshed: (run.cursor.refreshed ?? 0) + refreshed,
+    idsCheckedAt,
+  };
 }

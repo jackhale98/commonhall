@@ -572,3 +572,12 @@ comes near a paging limit. About 73 requests, well inside the 5,000 an hour a
 token allows. Existing installs have no `filledThrough` yet, so their next run
 fills the missing years. After the load, each run re-reads the last 30 days as
 before.
+
+## 53. The finance job fills missing FEC ids itself
+
+Members' FEC candidate ids come from congress-legislators through the daily
+members sync, which also needs Congress.gov requests and can lose them to a
+running backfill. After the finance feature shipped, no member had an id yet, so
+finance had nothing to fetch. Once a day, when any current member lacks an id,
+`sync-finance` now reads `legislators-current.json` (a static file outside every
+request budget) and fills only the missing ids and election years.

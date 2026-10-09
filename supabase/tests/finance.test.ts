@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { FecClient, RequestBudget, type FetchLike } from '@civic/congress-client';
+import { FecClient, LegislatorsClient, RequestBudget, type FetchLike } from '@civic/congress-client';
 import { FINANCE_JOB, runJob, syncFinance, type FinanceCursor, type Sql } from '@civic/sync';
 import { asAnon } from './auth.ts';
 import { connect } from './db.ts';
@@ -88,6 +88,39 @@ describe('sync-finance', () => {
     const fec = fakeFec();
     await run(fec.fetch, 8); // room for one member (6 requests), not two
     expect(await sql`select member_id from public.member_finance`).toHaveLength(1);
+  });
+
+  it('fills missing FEC ids from congress-legislators, then refreshes those members', async () => {
+    await sql`update public.members set fec_candidate_id = null, next_election = null where bioguide_id = 'W000817'`;
+    const legislators = new LegislatorsClient({
+      fetch: async () =>
+        new Response(
+          JSON.stringify([
+            {
+              id: { bioguide: 'W000817', fec: ['S2MA00170'] },
+              name: { official_full: 'Elizabeth Warren' },
+              terms: [{ type: 'sen', start: '2025-01-03', end: '2031-01-03', state: 'MA', party: 'Democrat' }],
+            },
+          ]),
+          { headers: { 'content-type': 'application/json' } },
+        ),
+    });
+    const fec = fakeFec();
+    await runJob<FinanceCursor>({
+      sql,
+      job: FINANCE_JOB,
+      timeLimitMs: 60_000,
+      log: () => undefined,
+      run: (ctx) =>
+        syncFinance(ctx, {
+          client: new FecClient({ apiKey: 'test', fetch: fec.fetch, budget: new RequestBudget(100, 'fec') }),
+          legislators,
+        }),
+    });
+    const [m] = await sql`select fec_candidate_id, next_election from public.members where bioguide_id = 'W000817'`;
+    expect(m).toEqual({ fec_candidate_id: 'S2MA00170', next_election: 2030 });
+    const [f] = await sql`select receipts from public.member_finance where member_id = 'W000817'`;
+    expect(Number(f!.receipts)).toBe(4413931.4);
   });
 
   it('is public to read', async () => {
