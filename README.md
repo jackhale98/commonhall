@@ -281,6 +281,7 @@ Checks (CI runs the same): `npm run lint`, `npm run typecheck`,
 | [Deployment and operations](docs/deployment.md) | Connecting Supabase and GitHub, schedules, sign-in, troubleshooting |
 | [Configuration reference](docs/configuration.md) | Every secret, variable and setting in one place |
 | [Discussions](docs/discussions.md) | Setting up Pol.is, creating and moderating discussions, privacy rules |
+| [Custom domain and repository rename](docs/domain-and-rename.md) | Switching to your own domain or renaming the repo without breaking sign-in, links or the backfill |
 | [Design decisions](docs/decisions.md) | Why things work the way they do |
 | [Contributing](CONTRIBUTING.md) | Local setup, checks and project rules |
 

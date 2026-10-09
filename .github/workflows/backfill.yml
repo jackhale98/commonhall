@@ -49,7 +49,10 @@ jobs:
         if: steps.run.outputs.done == 'false' && fromJSON(inputs.max_chain || '0') > 0
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          gh workflow run backfill.yml --ref "${{ github.ref_name }}"
-          -f congress="${{ inputs.congress }}"
-          -f max_chain="$(( ${{ inputs.max_chain }} - 1 ))"
+        # Look the repository up by its permanent id, so the chain survives a rename
+        # made while this run was going (github.repository is the name at start).
+        run: |
+          repo="$(gh api "repositories/${{ github.repository_id }}" --jq .full_name 2>/dev/null || true)"
+          gh workflow run backfill.yml --repo "${repo:-${{ github.repository }}}" --ref "${{ github.ref_name }}" \
+            -f congress="${{ inputs.congress }}" \
+            -f max_chain="$(( ${{ inputs.max_chain }} - 1 ))"

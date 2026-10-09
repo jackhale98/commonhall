@@ -25,6 +25,7 @@ Every setting is also listed in one table in [configuration.md](configuration.md
 8. [Load data](#8-load-data)
 9. [Switch the site to live data](#9-switch-the-site-to-live-data)
 10. [Optional: discussions and maintainers](#10-optional-discussions-and-maintainers)
+- [Custom domain or repository rename](#custom-domain-or-repository-rename)
 - [Free-tier notes](#free-tier-notes)
 - [Troubleshooting](#troubleshooting)
 - [Checking a deployment](#checking-a-deployment)
@@ -341,6 +342,10 @@ yourself a maintainer in the SQL editor:
 insert into public.admins (user_id, role)
 select id, 'admin' from auth.users where email = 'you@example.org';
 ```
+
+## Custom domain or repository rename
+
+See [domain-and-rename.md](domain-and-rename.md) for the full, ordered checklist.
 
 ## Free-tier notes
 
