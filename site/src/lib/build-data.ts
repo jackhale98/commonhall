@@ -32,6 +32,7 @@ import {
   type Boston311Day,
   type CapitalProject,
   type ZbaAppeal,
+  type ZbaDecisionCount,
 } from './local';
 import {
   RestError,
@@ -496,11 +497,19 @@ export const loadBoston311 = memo(async () => {
   );
 });
 
-/** Zoning Board of Appeal cases (open, or heard in the last year), latest hearing first. */
+/** Zoning decisions in the last year, counted per neighborhood and outcome. */
+export const loadZbaDecisionCounts = memo(async () =>
+  selectAllOptional<ZbaDecisionCount>('zba_decision_counts', {
+    select: 'neighborhood,decision,cases',
+    order: 'neighborhood.asc,decision.asc',
+  }),
+);
+
+/** Zoning Board of Appeal cases with a hearing still to come. */
 export const loadZbaAppeals = memo(async () =>
   selectAllOptional<ZbaAppeal>('zba_appeals', {
     select: ZBA_COLUMNS,
-    order: 'hearing_date.desc.nullslast,boa_apno.asc',
+    order: 'hearing_date.asc,boa_apno.asc',
   }),
 );
 

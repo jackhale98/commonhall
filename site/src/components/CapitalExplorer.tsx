@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { formatMoney } from '../lib/finance';
 import type { CapitalRow } from '../lib/local';
-import { href } from '../lib/paths';
+import { capitalProjectHref, href } from '../lib/paths';
 
 const PAGE = 10;
 const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? 5 : PAGE);
@@ -119,7 +119,9 @@ export default function CapitalExplorer({ initial, departments, neighborhoods, s
               <li key={p.i}>
                 <p class="meta">{[p.d, p.h, p.s].filter(Boolean).join(' · ')}</p>
                 <p class="capital-name">
-                  <strong>{p.n}</strong>
+                  <a href={capitalProjectHref(p.i)}>
+                    <strong>{p.n}</strong>
+                  </a>
                 </p>
                 {p.w && <p class="small capital-scope">{p.w}</p>}
                 <p class="small muted">

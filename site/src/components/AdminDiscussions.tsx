@@ -21,6 +21,7 @@ const TYPE_LABEL: Record<DiscussionTargetType, string> = {
   local_matter: 'Boston matter',
   executive_order: 'Executive order',
   scotus_case: 'Supreme Court decision',
+  capital_project: 'Boston capital project',
 };
 
 /** Discussions grouped by status; closed ones are folded away. */
@@ -251,13 +252,14 @@ export default function AdminDiscussions() {
                 <option value="local_matter">Boston council matter</option>
                 <option value="executive_order">Executive order</option>
                 <option value="scotus_case">Supreme Court decision</option>
+                <option value="capital_project">Boston capital project</option>
               </select>
             </div>
             {draft.target_type && (
               <div class="field">
                 <label for="d-tid">
                   Item id (e.g. 119-hr-1, boston-43547; an order's document number, 2026-20321; a decision's id from its
-                  page address)
+                  page address; a capital project's id, CCC25057)
                 </label>
                 <input
                   id="d-tid"

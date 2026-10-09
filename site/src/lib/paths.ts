@@ -40,6 +40,11 @@ export function scotusCaseHref(clusterId: string | number): string {
   return href(`court/cases/${clusterId}/`);
 }
 
+/** A Boston Capital Plan project's page, by the city's project id. */
+export function capitalProjectHref(projId: string): string {
+  return href(`boston/projects/${encodeURIComponent(projId)}/`);
+}
+
 export function localMatterHref(id: string): string {
   const matterId = id.replace(/^boston-/, '');
   return href(`boston/matters/${matterId}/`);

@@ -6,11 +6,6 @@ import { href } from '../lib/paths';
 const PAGE = 10;
 const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? 5 : PAGE);
 
-/** Approved reads as passed, denied as stopped; anything else stays neutral. */
-const decisionClass = (d: string) => (d.startsWith('Approved') ? 'status-law' : d === 'Denied' ? 'status-vetoed' : '');
-
-type Mode = 'upcoming' | 'decided';
-
 interface Props {
   /** Prerendered rows: the next hearings. */
   initial: ZbaRow[];
@@ -20,13 +15,12 @@ interface Props {
 }
 
 /**
- * Zoning Board of Appeal cases: upcoming hearings (soonest first) or decisions of
- * the last year (latest first), searchable by address, neighborhood or project,
- * filtered by neighborhood. Loads the full list (zoning.json) when it comes into view.
+ * Upcoming Zoning Board of Appeal hearings, soonest first, searchable by address
+ * or project and filtered by neighborhood. Loads the full list (zoning.json) when
+ * it comes into view. Past cases are not listed by address (see decisions.md).
  */
 export default function ZoningExplorer({ initial, neighborhoods, today: buildDay }: Props) {
   const [rows, setRows] = useState<ZbaRow[] | null>(null);
-  const [mode, setMode] = useState<Mode>('upcoming');
   const [q, setQ] = useState('');
   const [hood, setHood] = useState('');
   const [shown, setShown] = useState(PAGE);
@@ -43,34 +37,28 @@ export default function ZoningExplorer({ initial, neighborhoods, today: buildDay
       .catch(() => undefined);
   }, []);
 
-  const all = rows ?? initial;
-  const { upcoming, decided } = useMemo(
-    () => ({
-      upcoming: all.filter((z) => z.h && z.h >= today).sort((a, b) => a.h!.localeCompare(b.h!)),
-      decided: all.filter((z) => z.d && (!z.h || z.h < today)),
-    }),
-    [all, today],
-  );
   const hits = useMemo(() => {
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-    return (mode === 'upcoming' ? upcoming : decided).filter((z) => {
-      if (hood && z.n !== hood) return false;
-      const text = `${z.a ?? ''} ${z.n ?? ''} ${z.w ?? ''} ${z.i}`.toLowerCase();
-      return words.every((w) => text.includes(w));
-    });
-  }, [upcoming, decided, mode, q, hood]);
+    return (rows ?? initial)
+      .filter((z) => z.h && z.h >= today)
+      .sort((a, b) => a.h!.localeCompare(b.h!))
+      .filter((z) => {
+        if (hood && z.n !== hood) return false;
+        const text = `${z.a ?? ''} ${z.n ?? ''} ${z.w ?? ''} ${z.i}`.toLowerCase();
+        return words.every((w) => text.includes(w));
+      });
+  }, [rows, initial, today, q, hood]);
   const reset = (fn: () => void) => {
     fn();
     setShown(pageSize());
   };
-  const count = (n: number, one: string, many: string) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
 
   return (
     <div>
       <form class="explorer-search" role="search" onSubmit={(e) => e.preventDefault()}>
         <div class="explorer-query">
           <label for="zba-q" class="visually-hidden">
-            Search zoning appeals
+            Search upcoming zoning hearings
           </label>
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
@@ -80,27 +68,9 @@ export default function ZoningExplorer({ initial, neighborhoods, today: buildDay
             id="zba-q"
             type="search"
             value={q}
-            placeholder="Address or project"
+            placeholder="Street or project"
             onInput={(e) => reset(() => setQ(e.currentTarget.value))}
           />
-        </div>
-        <div class="type-chips" role="group" aria-label="Which cases">
-          <button
-            type="button"
-            class="chip-button"
-            aria-pressed={mode === 'upcoming'}
-            onClick={() => reset(() => setMode('upcoming'))}
-          >
-            Upcoming <span class="muted">{upcoming.length}</span>
-          </button>
-          <button
-            type="button"
-            class="chip-button"
-            aria-pressed={mode === 'decided'}
-            onClick={() => reset(() => setMode('decided'))}
-          >
-            Decided <span class="muted">{decided.length}</span>
-          </button>
         </div>
         <div class="explorer-filters matter-filters" role="group" aria-label="Filters">
           <label for="zba-hood" class="visually-hidden">
@@ -120,28 +90,16 @@ export default function ZoningExplorer({ initial, neighborhoods, today: buildDay
         </div>
       </form>
       <p class="small muted" aria-live="polite">
-        {mode === 'upcoming'
-          ? count(hits.length, 'hearing scheduled', 'hearings scheduled')
-          : count(hits.length, 'decision in the last year', 'decisions in the last year')}
+        {hits.length.toLocaleString()} {hits.length === 1 ? 'hearing' : 'hearings'} scheduled
       </p>
       {hits.length > 0 && (
         <div class="panel">
           <ul class={`list zoning-list trimmable${mounted ? ' is-live' : ''}`}>
             {hits.slice(0, shown).map((z) => (
               <li key={z.i}>
-                <p class="meta">
-                  {[z.h && `${mode === 'upcoming' ? 'Hearing' : 'Heard'} ${formatDate(z.h)}`, z.n, z.t]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </p>
+                <p class="meta">{[z.h && `Hearing ${formatDate(z.h)}`, z.n, z.t].filter(Boolean).join(' · ')}</p>
                 <p>
                   <strong>{z.a ?? z.i}</strong>
-                  {z.d && (
-                    <>
-                      {' '}
-                      <span class={`status-chip ${decisionClass(z.d)}`}>{z.d}</span>
-                    </>
-                  )}
                 </p>
                 {z.w && <p class="small zoning-desc">{z.w}</p>}
               </li>

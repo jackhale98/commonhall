@@ -142,7 +142,8 @@ export const LOCAL_MATTER_COLUMNS =
   'id,city,matter_id,file_number,title,type,status,body,intro_date,passed_date,legistar_url,latest_action_date,latest_action_text';
 export const LOCAL_OFFICIAL_COLUMNS = 'id,city,person_id,name,seat,district,title,email,photo_url,current';
 
-export type DiscussionTargetType = 'bill' | 'state_bill' | 'local_matter' | 'executive_order' | 'scotus_case';
+export type DiscussionTargetType =
+  'bill' | 'state_bill' | 'local_matter' | 'executive_order' | 'scotus_case' | 'capital_project';
 
 export interface Discussion {
   id: string;

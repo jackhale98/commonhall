@@ -11,6 +11,7 @@ import {
   localMatterHref,
   localOfficialHref,
   memberHref,
+  capitalProjectHref,
   scotusCaseHref,
   stateBillFallbackHref,
   voteHref,
@@ -28,7 +29,8 @@ export interface FeedItem {
     | 'local_official'
     | 'discussion'
     | 'executive_order'
-    | 'scotus_case';
+    | 'scotus_case'
+    | 'capital_project';
   target_id: string;
   kind: 'action' | 'vote' | 'cosponsor' | 'new_bill' | 'new_item' | 'discussion_opened';
   member_type: string | null;
@@ -65,6 +67,7 @@ export function targetLink(item: Pick<FeedItem, 'target_type' | 'target_id' | 'p
   if (item.target_type === 'discussion') return discussionHref(item.target_id);
   if (item.target_type === 'executive_order') return executiveOrderHref(item.target_id);
   if (item.target_type === 'scotus_case') return scotusCaseHref(item.target_id);
+  if (item.target_type === 'capital_project') return capitalProjectHref(item.target_id);
   return null;
 }
 

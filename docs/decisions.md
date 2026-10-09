@@ -736,3 +736,30 @@ owner approved each):
 
 The portal's firewall refuses some SQL words (`substr`, `extract`, aggregate
 `FILTER`); the queries use `left()`, `date_part()` and `sum(case …)`.
+
+## 64. Zoning cases leave the site once heard
+
+Zoning appeals are public hearings, and the city publishes each one's address and
+project so neighbors can testify; listing upcoming hearings serves that. A
+searchable archive of decided cases did not: most are ordinary homeowners (a
+mudroom, a roof deck), and a permanent list by address mostly lets people look up
+their neighbors' renovations. So:
+
+- `zba_appeals` holds only cases with a hearing still to come; each row (address and
+  description) is deleted once its hearing date passes or the hearing is cancelled.
+- The last 12 months of decisions are kept only as counts per neighborhood and
+  outcome (`zba_decision_counts`), shown as totals and an approval rate.
+- The Neighborhoods page is `noindex`, so an address on it does not surface in web
+  searches; zoning cases are not in the site search; there are no per-case pages.
+- Applicants' names were never read. The page points to the city's own records
+  for past decisions.
+
+Individual zoning cases cannot be the subject of a discussion, for the same reason.
+
+## 65. Discussions on Boston capital projects
+
+Each Capital Plan project has its own page (`/boston/projects/<id>/`: scope, status
+and money by year) with the usual "Ask for a public discussion" button, and
+discussions can be about a project (`target_type = 'capital_project'`, target id the
+city's project id, e.g. CCC25057). Maintainers open them from the admin page like
+any other, usually with Boston (or the project's district) as the jurisdiction.

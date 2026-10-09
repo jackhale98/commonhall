@@ -42,7 +42,10 @@ const shortPlan = plan.replace('-', '–');
   description={`Boston’s ${shortPlan} Capital Plan: where the city plans to build and repair, by department, neighborhood and project.`}
   section="states"
 >
-  <BostonHeader current="budget" lede={`The ${shortPlan} Capital Plan: what the city plans to build and repair.`} />
+  <BostonHeader
+    current="budget"
+    lede={`The ${shortPlan} Capital Plan: what the city plans to build and repair. Open a project to ask for a discussion on it.`}
+  />
 
   {projects.length === 0 ? (
     <p class="muted">The Capital Plan has not loaded yet.</p>

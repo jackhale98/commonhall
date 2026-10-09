@@ -1,0 +1,89 @@
+---
+import DiscussionLink from '../../../components/DiscussionLink.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadCapitalProjects, loadDiscussionsByTarget } from '../../../lib/build-data';
+import { formatMoney } from '../../../lib/finance';
+import type { CapitalProject } from '../../../lib/local';
+import { href } from '../../../lib/paths';
+
+export async function getStaticPaths() {
+  return (await loadCapitalProjects()).map((p) => ({ params: { id: p.proj_id }, props: { p } }));
+}
+
+interface Props {
+  p: CapitalProject;
+}
+
+const { p } = Astro.props;
+const discussion = (await loadDiscussionsByTarget()).get(`capital_project:${p.proj_id}`);
+const fy = (offset: number) => (p.first_year ? `FY${String(p.first_year + offset).slice(2)}` : null);
+const plan = p.plan.replace('-', '–');
+// Money rows: the plan's own columns, left out when zero.
+const money = [
+  {
+    label: 'Total budget',
+    value: p.total_budget,
+    note: 'the whole project, including earlier years and outside funds',
+  },
+  { label: 'Spent so far', value: p.spent, note: null },
+  // The city's "year 0" is the year before the plan; "year 1" is its first year (first_year).
+  { label: `Planned for ${fy(-1) ?? 'last year'}`, value: p.year0, note: 'the year before the plan' },
+  { label: `Planned for ${fy(0) ?? 'the first plan year'}`, value: p.year1, note: 'the plan’s first year' },
+  { label: `Planned for ${fy(1) && fy(4) ? `${fy(1)}–${fy(4)}` : 'later years'}`, value: p.years_2_5, note: null },
+  { label: 'From outside funds', value: p.external_funds, note: 'state, federal and other grants' },
+].filter((m) => m.value > 0 || m.label === 'Total budget');
+---
+
+<Base
+  title={`${p.name} (Boston capital project)`}
+  description={`${p.name}: ${p.department ?? 'City of Boston'} capital project${p.neighborhood ? ` in ${p.neighborhood}` : ''}, ${formatMoney(p.total_budget)} in the ${plan} Capital Plan.`}
+  section="states"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('boston/')}>Boston</a> › <a href={href('boston/budget/')}>Budget</a> › {p.name}
+  </nav>
+  <header class="page-head">
+    <p class="kicker">{[p.department, p.neighborhood].filter(Boolean).join(' · ')}</p>
+    <h1>{p.name}</h1>
+    {p.status && <p class="lede">{p.status}.</p>}
+  </header>
+
+  <DiscussionLink discussion={discussion} targetType="capital_project" targetId={p.proj_id} />
+
+  {p.scope && (
+    <section aria-labelledby="scope-h">
+      <h2 id="scope-h" class="h-small">
+        What the project is
+      </h2>
+      <p class="scope">{p.scope}</p>
+    </section>
+  )}
+
+  <section aria-labelledby="money-h">
+    <h2 id="money-h" class="h-small">
+      Money
+    </h2>
+    <dl class="facts">
+      {money.map((m) => (
+        <div>
+          <dt>{m.label}</dt>
+          <dd>
+            <strong>{formatMoney(m.value)}</strong>
+            {m.note && <span class="small muted"> · {m.note}</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <p class="small muted">
+    From the City of Boston’s <a href="https://data.boston.gov/dataset/capital-budget">{plan} Capital Plan</a> on
+    Analyze Boston (project {p.proj_id}). <a href={href('boston/budget/')}>All projects</a>.
+  </p>
+</Base>
+
+<style>
+  .scope {
+    max-width: 65ch;
+  }
+</style>

@@ -2,11 +2,17 @@
 import BostonHeader from '../../../components/BostonHeader.astro';
 import District311 from '../../../components/District311';
 import ZoningExplorer from '../../../components/ZoningExplorer';
+import BarList from '../../../components/viz/BarList';
 import Base from '../../../layouts/Base.astro';
-import { loadBoston311, loadLocalOfficials, loadZbaAppeals } from '../../../lib/build-data';
+import { loadBoston311, loadLocalOfficials, loadZbaAppeals, loadZbaDecisionCounts } from '../../../lib/build-data';
 import { zbaRow } from '../../../lib/local';
 
-const [appeals, report, officials] = await Promise.all([loadZbaAppeals(), loadBoston311(), loadLocalOfficials()]);
+const [appeals, report, officials, decisions] = await Promise.all([
+  loadZbaAppeals(),
+  loadBoston311(),
+  loadLocalOfficials(),
+  loadZbaDecisionCounts(),
+]);
 const districtLabels = Array.from({ length: 9 }, (_, i) => {
   const o = officials.find((x) => x.district === i + 1);
   return { district: i + 1, label: `District ${i + 1}${o ? ` · ${o.name}` : ''}` };
@@ -15,6 +21,29 @@ const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_Yo
 const upcoming = appeals
   .filter((z) => z.hearing_date && z.hearing_date >= today)
   .sort((a, b) => a.hearing_date!.localeCompare(b.hearing_date!));
+// The last year's decisions, as counts only (no addresses are kept once a case is heard).
+const decided = decisions.reduce((n, d) => n + d.cases, 0);
+const outcome = (test: (d: string) => boolean) =>
+  decisions.filter((d) => test(d.decision)).reduce((n, d) => n + d.cases, 0);
+const approved = outcome((d) => d.startsWith('Approved'));
+const denied = outcome((d) => d === 'Denied');
+const withdrawn = outcome((d) => d === 'Withdrawn');
+const pct = (n: number) => (decided ? `${Math.round((n / decided) * 100)}%` : '—');
+const byHood = [...Map.groupBy(decisions, (d) => d.neighborhood)]
+  .map(([label, list]) => {
+    const total = list.reduce((n, d) => n + d.cases, 0);
+    const yes = list.filter((d) => d.decision.startsWith('Approved')).reduce((n, d) => n + d.cases, 0);
+    return { label, value: total, note: `(${Math.round((yes / total) * 100)}% approved)` };
+  })
+  .sort((a, b) => b.value - a.value);
+const topHoods = byHood.slice(0, 8);
+const restHoods = byHood.slice(8);
+if (restHoods.length)
+  topHoods.push({
+    label: 'Everywhere else',
+    value: restHoods.reduce((n, r) => n + r.value, 0),
+    note: `(${restHoods.length} more)`,
+  });
 const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n): n is string => !!n))].sort();
 ---
 
@@ -22,6 +51,7 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
   title="Boston neighborhoods: 311 and zoning"
   description="Boston by district: 311 requests and how fast the city closes them, and Zoning Board of Appeal hearings and decisions."
   section="states"
+  noindex
 >
   <BostonHeader
     current="neighborhoods"
@@ -38,13 +68,13 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
   </section>
 
   <section aria-labelledby="zba-h">
-    <h2 id="zba-h">Zoning Board of Appeal</h2>
+    <h2 id="zba-h">Upcoming zoning hearings</h2>
     <p class="small muted lede-note">
       Building something the zoning code doesn’t allow (an extra unit, a taller roof, a new use) needs the board’s
-      approval at a public hearing, where neighbors can speak.
+      approval at a public hearing, where neighbors can speak. Cases are listed here until their hearing.
     </p>
     {appeals.length === 0 ? (
-      <p class="muted">Zoning cases have not loaded yet.</p>
+      <p class="muted">No upcoming hearings loaded.</p>
     ) : (
       <ZoningExplorer
         client:visible
@@ -54,6 +84,39 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
       />
     )}
   </section>
+
+  {decided > 0 && (
+    <section aria-labelledby="zbad-h">
+      <h2 id="zbad-h">Zoning decisions, last 12 months</h2>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Decided</dt>
+          <dd>{decided.toLocaleString()}</dd>
+        </div>
+        <div class="stat">
+          <dt>Approved</dt>
+          <dd>{pct(approved)}</dd>
+          <p class="small muted stat-note">including with conditions</p>
+        </div>
+        <div class="stat">
+          <dt>Denied</dt>
+          <dd>{pct(denied)}</dd>
+        </div>
+        <div class="stat">
+          <dt>Withdrawn</dt>
+          <dd>{pct(withdrawn)}</dd>
+        </div>
+      </dl>
+      <div class="panel decisions-panel">
+        <h3 class="h-small">By neighborhood</h3>
+        <BarList items={topHoods} label="Zoning decisions in the last 12 months by neighborhood" tone="fill-sky" />
+      </div>
+      <p class="small muted">
+        Totals only: CommonHall doesn’t keep a list of past cases by address. Look up a past decision in the city’s
+        <a href="https://www.boston.gov/departments/inspectional-services/zoning-board-appeal">board records</a>.
+      </p>
+    </section>
+  )}
 
   <p class="small muted">
     From the City of Boston on Analyze Boston, checked daily:
@@ -66,6 +129,12 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
 </Base>
 
 <style>
+  .decisions-panel {
+    margin-top: var(--space-4);
+  }
+  .decisions-panel .h-small {
+    margin-top: 0;
+  }
   .lede-note {
     max-width: 60ch;
   }

@@ -38,9 +38,18 @@ class FakeAnalyzeBoston {
   rows = fixtureJson<{ result: { records: Record<string, unknown>[] } }>('capital-rows.json').result.records;
   zba: Record<string, unknown>[] = [
     { boa_apno: 'BOA1', city: 'Dorchester', status: 'Hearing Scheduled', hearing_date: '2026-10-22', decision: null },
-    { boa_apno: 'BOA2', city: 'Roxbury', status: 'Appeal Closed', hearing_date: '2026-03-01', decision: 'AppProv' },
     // A rescheduled hearing repeats the case number: the later row wins.
+    { boa_apno: 'BOA3', city: 'Roxbury', status: 'Hearing Scheduled', hearing_date: '2026-10-15', decision: null },
+    { boa_apno: 'BOA3', city: 'Roxbury', status: 'Hearing Rescheduled', hearing_date: '2026-11-05', decision: null },
+    // Heard already: never stored by address, even if the city's query returns it.
     { boa_apno: 'BOA2', city: 'Roxbury', status: 'Appeal Closed', hearing_date: '2026-04-01', decision: 'Approved' },
+  ];
+  zbaCounts: Record<string, unknown>[] = [
+    { neighborhood: 'Roxbury', decision: 'Approved', cases: 4 },
+    { neighborhood: 'Roxbury', decision: 'AppProv', cases: 2 },
+    { neighborhood: 'Roxbury', decision: 'DeniedPrej', cases: 1 },
+    { neighborhood: 'Roxbury', decision: 'Denied', cases: 1 },
+    { neighborhood: 'Roxbury', decision: '', cases: 9 },
   ];
   sqlSeen: string[] = [];
   calls: URL[] = [];
@@ -49,8 +58,9 @@ class FakeAnalyzeBoston {
     this.calls.push(url);
     if (url.pathname.endsWith('/package_show')) return ok(this.pkg);
     if (url.pathname.endsWith('/datastore_search_sql')) {
-      this.sqlSeen.push(url.searchParams.get('sql')!);
-      return ok({ records: this.zba });
+      const query = url.searchParams.get('sql')!;
+      this.sqlSeen.push(query);
+      return ok({ records: query.includes('count(distinct') ? this.zbaCounts : this.zba });
     }
     if (url.pathname.endsWith('/datastore_search')) {
       const offset = Number(url.searchParams.get('offset'));
@@ -86,6 +96,7 @@ const runZba = (api: FakeAnalyzeBoston) =>
 beforeEach(async () => {
   await sql`delete from public.capital_projects`;
   await sql`delete from public.zba_appeals`;
+  await sql`delete from public.zba_decision_counts`;
   await sql`delete from public.boston_311_daily`;
   await sql`delete from public.sync_state where job in (${CAPITAL_PLAN_JOB}, ${ZBA_JOB}, ${BOSTON_311_JOB})`;
   await sql`delete from public.sync_lock`;
@@ -127,25 +138,34 @@ describe('sync-capital-plan', () => {
 });
 
 describe('sync-boston-zba', () => {
-  it('stores open and recent cases, the latest row per case, without applicant names', async () => {
+  it('stores upcoming hearings by address and past decisions only as counts', async () => {
     const api = new FakeAnalyzeBoston();
     expect((await runZba(api)).status).toBe('ok');
-    expect(api.sqlSeen[0]).toContain("hearing_date >= '2025-10-09'");
-    expect(api.sqlSeen[0]).not.toMatch(/"contact"/);
+    expect(api.sqlSeen.join('\n')).toContain("hearing_date >= '2026-10-09'");
+    expect(api.sqlSeen.join('\n')).not.toMatch(/"contact"|\bcontact\b/);
     const rows = await asAnon(
       sql,
-      (tx) => tx`select boa_apno, neighborhood, decision from public.zba_appeals order by 1`,
+      (tx) => tx`select boa_apno, neighborhood, hearing_date::text from public.zba_appeals order by 1`,
     );
     expect(rows).toEqual([
-      { boa_apno: 'BOA1', neighborhood: 'Dorchester', decision: null },
-      { boa_apno: 'BOA2', neighborhood: 'Roxbury', decision: 'Approved' },
+      { boa_apno: 'BOA1', neighborhood: 'Dorchester', hearing_date: '2026-10-22' },
+      { boa_apno: 'BOA3', neighborhood: 'Roxbury', hearing_date: '2026-11-05' },
+    ]);
+    const counts = await asAnon(
+      sql,
+      (tx) => tx`select neighborhood, decision, cases from public.zba_decision_counts order by 2`,
+    );
+    expect(counts).toEqual([
+      { neighborhood: 'Roxbury', decision: 'Approved', cases: 4 },
+      { neighborhood: 'Roxbury', decision: 'Approved with provisos', cases: 2 },
+      { neighborhood: 'Roxbury', decision: 'Denied', cases: 2 },
     ]);
     expect((await runZba(api)).rowsWritten).toBe(0);
 
-    // A case that leaves the window is removed.
+    // Once a hearing is no longer upcoming, its address leaves the database.
     api.zba = api.zba.slice(0, 1);
     expect((await runZba(api)).rowsWritten).toBe(1);
-    expect(await sql`select boa_apno from public.zba_appeals`).toHaveLength(1);
+    expect(await sql`select boa_apno from public.zba_appeals`).toEqual([{ boa_apno: 'BOA1' }]);
   });
 });
 

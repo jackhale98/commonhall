@@ -74,8 +74,10 @@ about, and take part in moderated public discussions.
 - Upcoming and recent council meetings, with agendas and minutes.
 - 311 requests by council district: how many, the share closed on time, typical
   time to close and the most common requests (summaries only).
-- Zoning Board of Appeal hearings and decisions, searchable by address.
-- The five-year Capital Plan by department, neighborhood and project.
+- Upcoming Zoning Board of Appeal hearings, searchable by street; the last year's
+  decisions as totals by neighborhood (no archive of past cases by address).
+- The five-year Capital Plan by department, neighborhood and project, with a page
+  per project where people can ask for a discussion.
 
 **Every state**
 

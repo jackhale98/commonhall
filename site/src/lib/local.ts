@@ -63,7 +63,7 @@ export const capitalRow = (p: CapitalProject): CapitalRow => ({
   y: Number(p.year1),
 });
 
-/** A Zoning Board of Appeal case (zba_appeals). */
+/** A Zoning Board of Appeal case with a hearing still to come (zba_appeals). */
 export interface ZbaAppeal {
   boa_apno: string;
   address: string | null;
@@ -73,12 +73,16 @@ export interface ZbaAppeal {
   status: string | null;
   description: string | null;
   hearing_date: string | null;
-  decision: string | null;
-  final_decision_date: string | null;
 }
 
-export const ZBA_COLUMNS =
-  'boa_apno,address,neighborhood,ward,appeal_type,status,description,hearing_date,decision,final_decision_date';
+export const ZBA_COLUMNS = 'boa_apno,address,neighborhood,ward,appeal_type,status,description,hearing_date';
+
+/** Zoning decisions in the last year, per neighborhood and outcome (zba_decision_counts). */
+export interface ZbaDecisionCount {
+  neighborhood: string;
+  decision: string;
+  cases: number;
+}
 
 /** Compact case for the zoning explorer (boston/zoning.json). */
 export interface ZbaRow {
@@ -90,7 +94,6 @@ export interface ZbaRow {
   /** Description, trimmed. */
   w: string | null;
   h: string | null;
-  d: string | null;
 }
 
 /** "68 Theodore Parker RD West Roxbury 02132" → "68 Theodore Parker Rd": the neighborhood is shown beside it. */
@@ -113,7 +116,6 @@ export const zbaRow = (z: ZbaAppeal): ZbaRow => ({
   s: z.status,
   w: z.description && z.description.length > 240 ? `${z.description.slice(0, 237).trimEnd()}…` : z.description,
   h: z.hearing_date,
-  d: z.decision,
 });
 
 /** A 311 summary row (boston_311_daily): counts for one day, district, type and system. */

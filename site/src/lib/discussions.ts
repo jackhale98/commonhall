@@ -6,6 +6,7 @@ import {
   billHref,
   executiveOrderHref,
   localMatterHref,
+  capitalProjectHref,
   scotusCaseHref,
   stateBillFallbackHref,
 } from './paths';
@@ -54,6 +55,7 @@ export function targetHref(type: Discussion['target_type'], id: string | null): 
   if (type === 'state_bill') return stateBillFallbackHref(id);
   if (type === 'executive_order') return executiveOrderHref(id);
   if (type === 'scotus_case') return scotusCaseHref(id);
+  if (type === 'capital_project') return capitalProjectHref(id);
   return localMatterHref(id);
 }
 
@@ -66,5 +68,6 @@ export function targetLabel(type: Discussion['target_type'], id: string | null):
   if (type === 'state_bill') return 'the state bill';
   if (type === 'executive_order') return 'the executive order';
   if (type === 'scotus_case') return 'the Supreme Court decision';
+  if (type === 'capital_project') return 'the Boston capital project';
   return `Boston council matter ${id.replace(/^boston-/, '')}`;
 }
