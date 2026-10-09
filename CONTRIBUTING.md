@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. Civic Tracker is a small, forkable stack: an Astro site, a
+Thanks for helping. CommonHall is a small, forkable stack: an Astro site, a
 Supabase database and a few scheduled jobs.
 
 ## Setup

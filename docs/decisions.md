@@ -581,3 +581,12 @@ running backfill. After the finance feature shipped, no member had an id yet, so
 finance had nothing to fetch. Once a day, when any current member lacks an id,
 `sync-finance` now reads `legislators-current.json` (a static file outside every
 request budget) and fills only the missing ids and election years.
+
+## 54. The project is named CommonHall
+
+The site moved to commonhall.org and the default site name is now CommonHall
+(`PUBLIC_SITE_NAME` still overrides it). The repository is renamed
+`jackhale98/commonhall`; the footer link, the user agent sent to data providers and
+the docs use the new name. Internal names stay as they were: the `@civic/*`
+workspace packages and the `civic.*` browser storage keys, since renaming them
+would churn every import and sign visitors out or reset their saved choices.

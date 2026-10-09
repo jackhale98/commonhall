@@ -161,7 +161,7 @@ site_url = "http://localhost:4321"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:4321/account/", "http://127.0.0.1:4321/account/", "http://localhost:4321/opencongress/account/"]
+additional_redirect_urls = ["http://localhost:4321/account/", "http://127.0.0.1:4321/account/"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -246,7 +246,7 @@ otp_expiry = 3600
 
 # Magic-link email (also set this in the hosted project's Auth > Email Templates).
 [auth.email.template.magic_link]
-subject = "Your Civic Tracker sign-in link"
+subject = "Your CommonHall sign-in link"
 content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize email template
@@ -419,7 +419,7 @@ enabled = true
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
 
-# ---- Civic Tracker functions -------------------------------------------------
+# ---- CommonHall functions ----------------------------------------------------
 # Scheduled jobs are called by pg_cron with an x-sync-secret header and check it
 # themselves, so gateway JWT verification is off for them.
 [functions.sync-federal]

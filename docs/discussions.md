@@ -105,9 +105,9 @@ Check this after any change to the embed:
 
 ```sh
 npm run db:start && npm run db:reset
-BASE_PATH=/opencongress/ PUBLIC_POLIS_SITE_ID=polis_check PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 \
+PUBLIC_POLIS_SITE_ID=polis_check PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 \
   PUBLIC_SUPABASE_ANON_KEY=<local anon key> npm run build
-# serve site/dist at http://localhost:4321/opencongress/ (404.html for missing paths), then:
+# serve site/dist at http://localhost:4321/ (404.html for missing paths), then:
 SUPABASE_SERVICE_ROLE_KEY=<local service key> npm run check:polis
 ```
 

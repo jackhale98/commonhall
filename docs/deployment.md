@@ -138,7 +138,7 @@ now**; the others can be set any time:
 | --- | --- | --- |
 | `PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` | Yes for the live site. Empty = demo build |
 | `PUBLIC_SUPABASE_ANON_KEY` | the publishable (anon) key from Project Settings → API Keys | Yes for the live site |
-| `PUBLIC_SITE_NAME` | the name in the header and page titles | No (default "Civic Tracker") |
+| `PUBLIC_SITE_NAME` | the name in the header and page titles | No (default "CommonHall") |
 | `PUBLIC_POLIS_SITE_ID` | your Pol.is site id (`polis_…`) | No; turns on discussions (in the demo, the examples are an open preview without sign-in) |
 | `PUBLIC_OPEN_PARTICIPATION` | `false` to require sign-in for discussions | No; leave unset for open participation |
 
@@ -280,7 +280,7 @@ free tiers that cover a small site:
 4. **Enter them in Supabase.** Authentication → Emails → SMTP Settings → enable
    **Custom SMTP**:
    - Sender email: an address on the verified domain, e.g. `no-reply@mail.example.org`
-   - Sender name: `Civic Tracker`
+   - Sender name: `CommonHall`
    - Host, port, username and password from the table above
    - Minimum interval between emails: keep the default (60 seconds per user)
 5. **Raise the email rate limit.** Authentication → Rate Limits → emails sent per

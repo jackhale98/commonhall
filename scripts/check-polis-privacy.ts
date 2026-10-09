@@ -6,11 +6,11 @@
  * Needs a local Supabase (`supabase start`), a build served at SITE (built with
  * PUBLIC_POLIS_SITE_ID set) and the local service-role key:
  *
- *   SUPABASE_SERVICE_ROLE_KEY=... SITE=http://localhost:4321/opencongress/ npm run check:polis
+ *   SUPABASE_SERVICE_ROLE_KEY=... SITE=http://localhost:4321/ npm run check:polis
  */
 import { chromium, type Request } from 'playwright';
 
-const SITE = (process.env.SITE ?? 'http://localhost:4321/opencongress/').replace(/\/?$/, '/');
+const SITE = (process.env.SITE ?? 'http://localhost:4321/').replace(/\/?$/, '/');
 const SUPABASE = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DISCUSSION = process.env.DISCUSSION ?? 'example-boston-ordinance';

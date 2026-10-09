@@ -10,6 +10,10 @@ Nothing in the code needs to change for either: the site build reads its address
 and base path from GitHub Pages at build time, and sign-in links are built from
 the address the visitor is on. Everything below is settings, done in order.
 
+**Status (October 2026):** the site moved to `https://commonhall.org/` and the
+project was renamed CommonHall; the repository becomes `jackhale98/commonhall`. The
+repository text in A5 and B4 is already updated.
+
 ## Contents
 
 - [Recommended order](#recommended-order)

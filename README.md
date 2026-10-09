@@ -1,8 +1,8 @@
-# Civic Tracker
+# CommonHall
 
 **See what your government is doing, from Congress to City Hall.**
 
-Civic Tracker is a free, nonpartisan, open-source website for following the
+CommonHall is a free, nonpartisan, open-source website for following the
 U.S. Congress, state legislatures and the Boston City Council. Look up bills and
 votes in plain language, find out who represents you, follow what you care
 about, and take part in moderated public discussions.

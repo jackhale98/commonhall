@@ -138,7 +138,7 @@ export class HttpClient {
     this.maxRetryAfterMs = options.maxRetryAfterMs ?? 30_000;
     this.sleep = options.sleep ?? defaultSleep;
     this.headers = {
-      'user-agent': options.userAgent ?? 'civic-tracker (+https://github.com/jackhale98/opencongress)',
+      'user-agent': options.userAgent ?? 'commonhall (+https://github.com/jackhale98/commonhall)',
       ...options.headers,
     };
   }

@@ -5,7 +5,7 @@
  */
 export const SUPABASE_URL: string = import.meta.env.PUBLIC_SUPABASE_URL ?? '';
 export const SUPABASE_ANON_KEY: string = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
-export const SITE_NAME = import.meta.env.PUBLIC_SITE_NAME || 'Civic Tracker';
+export const SITE_NAME = import.meta.env.PUBLIC_SITE_NAME || 'CommonHall';
 
 export const hasSupabase = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
