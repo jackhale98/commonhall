@@ -869,3 +869,27 @@ would finish the first load in days.
 `sync-state` runs hourly at :07 (it ran ten times between 06:00 and 10:30 UTC). The
 daily budget resets at midnight UTC, so the 00:07 run starts each day's requests about
 six hours sooner; runs after the budget is spent stop at once.
+
+## 71. Party unity and campaign-money leaderboards
+
+The members page links to `/members/insights/`, which shows two things.
+
+**Party unity** (view `member_party_unity`) uses the usual CQ definition. A party-line
+roll call is one where most voting Democrats and most voting Republicans took opposite
+sides. A member's score is the share of those roll calls where they voted with their own
+party's majority. Only yea and nay votes count. The page ranks current members only, and
+only those who voted on at least half of their chamber's party-line roll calls, so a
+member who joined late or missed many votes doesn't top or bottom a list on a handful of
+votes. Independents have no party majority to measure against and aren't ranked. The
+score describes how members voted, not their ideology.
+
+**Campaign money** adds up each member's FEC report. Every report lists the 10 largest
+PAC contributors and the 10 employers whose workers gave the most. Totals are summed
+across members and split by the recipient's party. Because each member contributes only
+a top-10 list, every total is a floor. Employer totals are gifts from people who work
+there, not from the company. Retired, self-employed and blank employers are skipped. The
+page states how many members' reports have loaded.
+
+Also: the orange Massachusetts tile on `/states/` was labelled "Full coverage", which
+read as "fully loaded". It now says "Featured state". All states sync the same data; the
+featured state's bills sync first and get their own pages.

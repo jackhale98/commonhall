@@ -28,6 +28,7 @@ import {
 } from './court';
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
+import type { UnityRow } from './insights';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
@@ -380,6 +381,14 @@ export const loadPositionsByVote = memo(async () =>
 
 export const loadPositionsByMember = memo(async () =>
   groupBy(await selectAll<VotePositionWithMember & { vote_id: string }>('vote_positions'), (p) => p.member_id),
+);
+
+/** Party unity for the current Congress: party-line roll calls and votes with the party, per member and chamber. */
+export const loadPartyUnity = memo(async () =>
+  selectAllOptional<UnityRow>('member_party_unity', {
+    select: 'member_id,congress,chamber,party,party_votes,with_party',
+    congress: `eq.${CURRENT_CONGRESS}`,
+  }),
 );
 
 /** Campaign finance (FEC) per member, keyed by bioguide ID. */

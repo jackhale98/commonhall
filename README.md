@@ -62,7 +62,7 @@ about, and take part in moderated public discussions.
 - What each case is about: its topic (Supreme Court Database) and the background
   from the Court's official syllabus, word for word; searchable and filterable.
 
-**Massachusetts** (covered in full)
+**Massachusetts** (the featured state)
 
 - State legislators, searchable by name or district, with a party chart of each chamber.
 - State bills, with their own pages for bills that are advancing, and links to the

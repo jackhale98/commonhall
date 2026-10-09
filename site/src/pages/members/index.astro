@@ -34,7 +34,10 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
         {counts.senate} senators and {counts.house} representatives and delegates. Find anyone by name or state, see how
         they vote and what they sponsor.
       </p>
-      <p>
+      <p class="cluster">
+        <a class="see-all" href={href('members/insights/')}>
+          Party unity and campaign money
+        </a>
         <a class="see-all" href={href('committees/')}>
           Committees and hearings
         </a>
