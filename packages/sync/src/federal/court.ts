@@ -132,6 +132,8 @@ export async function syncSupremeCourt(
         const seen = await read(first, last);
         run.log('scotus: month', { first, seen });
         cursor.filledThrough = last;
+        // Save each month: a run cut off by the platform's wall-clock limit keeps its progress.
+        await run.checkpoint(cursor);
       }
       return cursor;
     }

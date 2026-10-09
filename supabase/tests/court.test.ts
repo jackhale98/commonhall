@@ -62,6 +62,19 @@ describe('sync-scotus', () => {
     expect(api.calls[0]!.searchParams.get('q')).toContain('[2024-06-01 TO *]');
   });
 
+  it('keeps each finished month when a run is cut off part-way', async () => {
+    let calls = 0;
+    const fetch: FetchLike = async () => {
+      if (++calls >= 5) throw new Error('killed by the wall-clock limit');
+      return new Response(sample, { headers: { 'content-type': 'application/json' } });
+    };
+    const result = await run(fetch);
+    expect(result.status).toBe('error');
+    const [state] = await sql`select cursor from public.sync_state where job = ${SCOTUS_JOB}`;
+    // October 2020 to January 2021 finished before the fifth request failed.
+    expect(state!.cursor.filledThrough).toBe('2021-01-31');
+  });
+
   it('resumes the first load from the last finished month', async () => {
     await sql`insert into public.sync_state (job, cursor) values (${SCOTUS_JOB}, ${sql.json({ newest: '2024-07-01', filledThrough: '2024-06-30' })})`;
     const api = fake();
