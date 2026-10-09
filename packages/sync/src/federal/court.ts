@@ -186,10 +186,13 @@ export async function syncSupremeCourt(
   };
   try {
     if (!cursor.filledThrough || cursor.filledThrough < today) {
-      // First load, a month at a time; the cursor records each finished month.
+      // First load, a month at a time; the cursor records each finished month. Half of
+      // each run goes to it and the rest to syllabi, so cases already loaded get theirs
+      // without waiting for every month.
+      const half = Date.now() + (run.deadline - Date.now()) / 2;
       for (const [first, last] of monthWindows(cursor.filledThrough ?? SCOTUS_SINCE, today)) {
         if (cursor.filledThrough && last <= cursor.filledThrough) continue;
-        if (run.outOfTime()) return cursor;
+        if (run.outOfTime() || Date.now() > half) break;
         const seen = await read(first, last);
         run.log('scotus: month', { first, seen });
         cursor.filledThrough = last;
