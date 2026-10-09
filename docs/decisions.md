@@ -683,3 +683,56 @@ callers still cannot read `follows` at all.
 
 The discussions band returned to the bottom of the home page; it lists the open
 discussions after the one shown in "Latest".
+
+## 61. State and local pages are short, tabbed and not repeated
+
+`/states/` lost its list of 56 links: the tile map is the picker, with a select for
+phones and the territories in one line. A state page is an overview: hemicycles
+side by side, a compact Congress delegation (senators and six House members, the
+rest folded), recent bills ten at a time, and legislators as a searchable list
+(chamber chips, ten at a time) instead of card lists. Massachusetts links to Boston
+rather than repeating Boston's district map.
+
+Boston is four linked pages sharing a sticky tab bar: **Overview** (find your
+councilor, meetings, the latest matters, 311 at a glance, the next zoning hearings,
+discussions), **Council** (matters and meetings), **Neighborhoods** (311 by district,
+zoning appeals) and **Budget** (Capital Plan). Each block appears in one place; the
+Overview shows a few items and links to the tab that has them all. Lists show five
+items on phones and ten on wider screens.
+
+## 62. Consent-agenda resolutions are hidden by default
+
+About 70% of Boston's council matters are consent-agenda resolutions
+(congratulations, commendations, memorials). Council lists, counts and the
+Overview leave them out unless the reader turns on "Include consent agenda" or
+chooses that type; the list of hidden types is one constant
+(`HIDDEN_MATTER_TYPES`), and `local_matter_facets` takes it as `p_exclude_types`.
+Councilor pages count them separately.
+
+## 63. Boston data from Analyze Boston: 311, zoning and the Capital Plan
+
+Three City of Boston datasets, read from Analyze Boston's CKAN API (no key; the
+owner approved each):
+
+- **311** (`sync-boston-311`, daily). Only summaries are stored: per day (Boston
+  time), council district, request type and system, the number opened, closed so
+  far and closed on time, and the median hours to close. No request, address or
+  photo is read. The city runs two systems for different departments (the "NEW
+  SYSTEM" for Public Works, Parks and others; the legacy per-year table for
+  Transportation and Inspectional Services); they hold different cases, so they are
+  added together. The legacy system publishes a day later, so the 30-day window
+  ends on the last day both have. The last 14 days are re-read each run because
+  requests close late; the first run backfills 90 days, saving its place after each
+  fortnight; days older than 120 are dropped (about 25,000 rows). "Typical time to
+  close" is the median of each group's median weighted by how many closed — an
+  approximation, labelled "typically". A backlog snapshot was dropped: the legacy
+  system carries thousands of years-old open cases, which would mislead.
+- **Zoning Board of Appeal** (`sync-boston-zba`, daily): open appeals and those heard
+  in the last year (about 1,100). The applicant's name (`contact`) is never read.
+  The city's table repeats a case number when a hearing is rescheduled; the latest
+  row wins. Decision codes become plain words (AppProv → Approved with provisos).
+- **Capital Plan** (`sync-capital-plan`, weekly): the current plan's ~325 projects,
+  rewritten only when the city's file changes.
+
+The portal's firewall refuses some SQL words (`substr`, `extract`, aggregate
+`FILTER`); the queries use `left()`, `date_part()` and `sum(case …)`.

@@ -62,15 +62,20 @@ about, and take part in moderated public discussions.
 
 **Massachusetts** (covered in full)
 
-- State legislators by chamber, with a party chart of each chamber.
+- State legislators, searchable by name or district, with a party chart of each chamber.
 - State bills, with their own pages for bills that are advancing, and links to the
   full text on malegislature.gov.
 
-**Boston City Council**
+**Boston** (tabs: Overview, Council, Neighborhoods, Budget)
 
 - All 13 councilors, with a clickable map of the nine council districts.
-- Ordinances, orders, resolutions and hearing orders, with sponsors and history.
+- Ordinances, orders and hearing orders, with sponsors and history; consent-agenda
+  resolutions (congratulations and commendations) are hidden until asked for.
 - Upcoming and recent council meetings, with agendas and minutes.
+- 311 requests by council district: how many, the share closed on time, typical
+  time to close and the most common requests (summaries only).
+- Zoning Board of Appeal hearings and decisions, searchable by address.
+- The five-year Capital Plan by department, neighborhood and project.
 
 **Every state**
 
@@ -112,6 +117,9 @@ automatically.
 | State legislators and bills | [Open States](https://openstates.org/) (CC0) | nightly, Massachusetts first |
 | Boston City Council | [Boston Legistar](https://boston.legistar.com/) | every 15 minutes |
 | Boston council districts | [Analyze Boston](https://data.boston.gov/) | on redistricting |
+| Boston 311 request summaries | [Analyze Boston](https://data.boston.gov/dataset/311-service-requests) (both 311 systems) | daily |
+| Boston Zoning Board of Appeal | [Analyze Boston](https://data.boston.gov/dataset/zoning-board-of-appeal-tracker) | daily |
+| Boston Capital Plan | [Analyze Boston](https://data.boston.gov/dataset/capital-budget) | weekly |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 
@@ -122,7 +130,7 @@ Congresses load on demand.
 ## How it works
 
 ```
-Congress.gov · senate.gov · congress-legislators · Open States · Census · Boston Legistar
+Congress.gov · senate.gov · congress-legislators · Open States · Census · Boston Legistar · Analyze Boston
                                    │
           Scheduled jobs (Supabase Edge Functions, run by pg_cron)
                                    │  API keys stay here

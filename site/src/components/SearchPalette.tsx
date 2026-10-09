@@ -54,7 +54,14 @@ const QUICK: Searchable[] = [
   { k: 'page', t: 'Bills', s: 'Search and filter every bill', h: href('bills/') },
   { k: 'page', t: 'Votes', s: 'Every House and Senate roll call', h: href('votes/') },
   { k: 'page', t: 'Massachusetts', s: 'Legislature and state bills', h: href('states/ma/') },
-  { k: 'page', t: 'Boston City Council', s: 'Councilors, district map, meetings', h: href('boston/') },
+  { k: 'page', t: 'Boston', s: 'City Council, councilors, district map, meetings', h: href('boston/') },
+  {
+    k: 'page',
+    t: 'Boston 311 and zoning',
+    s: '311 requests by district, zoning hearings',
+    h: href('boston/neighborhoods/'),
+  },
+  { k: 'page', t: 'Boston Capital Plan', s: 'What the city plans to build, by project', h: href('boston/budget/') },
   { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
 ];
 

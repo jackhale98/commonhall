@@ -109,7 +109,14 @@ export async function GET() {
         h: href(`committees/${c.code}/`),
       };
     }),
-    { k: 'page', t: 'Boston City Council', s: 'Councilors, district map, meetings', h: href('boston/') },
+    { k: 'page', t: 'Boston', s: 'City Council, councilors, district map, meetings', h: href('boston/') },
+    {
+      k: 'page',
+      t: 'Boston 311 and zoning',
+      s: '311 requests by district, zoning hearings',
+      h: href('boston/neighborhoods/'),
+    },
+    { k: 'page', t: 'Boston Capital Plan', s: 'What the city plans to build, by project', h: href('boston/budget/') },
     { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
     ...STATE_CODES.map((code) => ({
       k: 'state' as const,
