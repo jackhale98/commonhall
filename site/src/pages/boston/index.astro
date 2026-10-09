@@ -13,16 +13,20 @@ import {
   loadLocalMeetings,
   loadLocalOfficials,
   loadRecentLocalMatters,
+  loadZbaAppeals,
 } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
+import { formatDate } from '../../lib/format';
+import { streetAddress } from '../../lib/local';
 import { href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts] = await Promise.all([
+const [officials, matters, meetings, discussions, districts, appeals] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
   loadDiscussions(),
   loadCouncilDistricts(),
+  loadZbaAppeals(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -41,6 +45,10 @@ const upcoming = meetings
   .reverse()
   .slice(0, 2);
 const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 2);
+const hearings = appeals
+  .filter((z) => z.hearing_date && z.hearing_date >= today)
+  .sort((a, b) => a.hearing_date!.localeCompare(b.hearing_date!))
+  .slice(0, 3);
 const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' && d.status === 'open');
 ---
 
@@ -123,6 +131,30 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     </div>
   </section>
 
+  {hearings.length > 0 && (
+    <section aria-labelledby="zoning-h">
+      <div class="section-head">
+        <h2 id="zoning-h">Upcoming zoning hearings</h2>
+        <a class="see-all" href={href('boston/neighborhoods/')}>
+          All hearings
+        </a>
+      </div>
+      <div class="panel">
+        <ul class="list hearings">
+          {hearings.map((z) => (
+            <li>
+              <p class="meta">{[formatDate(z.hearing_date), z.neighborhood].filter(Boolean).join(' · ')}</p>
+              <p class="hearing-addr">
+                <strong>{streetAddress(z.address, z.neighborhood) ?? z.boa_apno}</strong>
+              </p>
+              {z.description && <p class="small hearing-desc">{z.description}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
   <section aria-labelledby="disc-h">
     <h2 id="disc-h">Have your say on Boston</h2>
     <LiveDiscussions
@@ -168,6 +200,17 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     margin-top: var(--space-3);
     border-top: 1px solid var(--border);
     padding-top: var(--space-2);
+  }
+  .hearings .meta,
+  .hearing-addr,
+  .hearing-desc {
+    margin: 0;
+  }
+  .hearing-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .by-address summary {
     color: var(--link);

@@ -22,7 +22,14 @@ import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type 
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
-import { CAPITAL_COLUMNS, HIDDEN_MATTER_TYPES, hiddenTypesFilter, type CapitalProject } from './local';
+import {
+  CAPITAL_COLUMNS,
+  HIDDEN_MATTER_TYPES,
+  ZBA_COLUMNS,
+  hiddenTypesFilter,
+  type CapitalProject,
+  type ZbaAppeal,
+} from './local';
 import {
   RestError,
   inList,
@@ -469,6 +476,14 @@ export const loadScotusOutcomeMap = memo(async () =>
 );
 
 // ---- Boston -----------------------------------------------------------------
+
+/** Zoning Board of Appeal cases (open, or heard in the last year), latest hearing first. */
+export const loadZbaAppeals = memo(async () =>
+  selectAllOptional<ZbaAppeal>('zba_appeals', {
+    select: ZBA_COLUMNS,
+    order: 'hearing_date.desc.nullslast,boa_apno.asc',
+  }),
+);
 
 /** Boston Capital Plan projects, largest budget first. */
 export const loadCapitalProjects = memo(async () =>
