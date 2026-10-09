@@ -7,7 +7,6 @@ import Hemicycle from '../components/viz/Hemicycle';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
-  CURRENT_CONGRESS,
   loadBills,
   loadCommitteeMeetings,
   loadDiscussions,
@@ -19,7 +18,7 @@ import {
 } from '../lib/build-data';
 import { chamberGroups, voteSegments } from '../lib/charts';
 import { DEMO } from '../lib/config';
-import { congressLabel, formatDate } from '../lib/format';
+import { formatDate } from '../lib/format';
 import { billHref, href, voteHref } from '../lib/paths';
 
 const [bills, votes, members, discussions, meetings, orders, cases, hearings] = await Promise.all([
@@ -41,7 +40,6 @@ const senate = chamberGroups(members.values(), 'senate');
 const openDiscussions = discussions.filter((d) => d.status === 'open');
 const today = new Date().toISOString().slice(0, 10);
 const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
-const congress = congressLabel(CURRENT_CONGRESS);
 
 // Executive orders in the current presidential term (terms start January 20 after a leap-year election).
 const latestOrder = orders.find((o) => o.signing_date);
