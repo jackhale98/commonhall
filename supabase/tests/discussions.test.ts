@@ -215,6 +215,22 @@ describe('prerender views', () => {
     );
     expect(matters.map((r) => r.id)).toEqual(['boston-1']);
 
+    // The views run with the caller's rights; follows reach them only as "followed by someone".
+    const options = await sql`
+      select c.relname, c.reloptions from pg_class c
+       where c.relname in ('bills_prerender', 'state_bills_prerender', 'local_matters_prerender') order by 1`;
+    expect(options.map((r) => r.reloptions)).toEqual([
+      ['security_invoker=true'],
+      ['security_invoker=true'],
+      ['security_invoker=true'],
+    ]);
+    await expect(asAnon(sql, (tx) => tx`select * from public.follows`)).rejects.toThrow(/permission denied/);
+
+    // Unfollowing removes the item once nobody follows it.
+    await sql`delete from public.follows where user_id = ${user} and target_id = '119-hr-99003'`;
+    const after = await asAnon(sql, (tx) => tx`select id from public.bills_prerender where id like '119-hr-9900%'`);
+    expect(after.map((r) => r.id)).toEqual(['119-hr-99001', '119-hr-99002']);
+
     await sql`delete from public.bills where id like '119-hr-9900%'`;
     await sql`delete from public.local_matters where id in ('boston-1', 'boston-2')`;
   });

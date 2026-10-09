@@ -1,5 +1,6 @@
 ---
 import BillListItem from '../components/BillListItem';
+import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
 import FindMyReps from '../components/FindMyReps';
 import StackedBar from '../components/viz/StackedBar';
@@ -201,6 +202,33 @@ const stats = [
       <p class="muted">No bills loaded yet.</p>
     )}
   </section>
+  <section class="discuss-band" aria-labelledby="disc-h">
+    <div class="discuss-intro">
+      <p class="kicker">Discussions</p>
+      <h2 id="disc-h">Have your say, and see where people agree</h2>
+      <ol class="steps">
+        <li>
+          <strong>Vote</strong> agree or disagree on short statements.
+        </li>
+        <li>
+          <strong>Add</strong> your own point of view in a sentence.
+        </li>
+        <li>
+          <strong>See</strong> where opinion divides and where it comes together.
+        </li>
+      </ol>
+      <a class="button large discuss-cta" href={href('discussions/')}>
+        Browse discussions →
+      </a>
+    </div>
+    {openDiscussions.length > 1 && (
+      <ul class="list discuss-list">
+        {openDiscussions.slice(1, 4).map((d) => (
+          <DiscussionCard discussion={d} />
+        ))}
+      </ul>
+    )}
+  </section>
 </Base>
 
 <script>
@@ -316,6 +344,68 @@ const stats = [
     gap: var(--space-2);
     font-weight: 600;
   }
+  .discuss-band {
+    display: grid;
+    gap: var(--space-5);
+    align-items: start;
+    margin: var(--space-7) calc(-1 * var(--space-4));
+    padding: var(--space-6) var(--space-5);
+    border-radius: 28px;
+    background:
+      radial-gradient(70% 90% at 0% 0%, rgb(123 92 255 / 55%), transparent 70%),
+      radial-gradient(60% 80% at 100% 100%, rgb(31 181 211 / 45%), transparent 70%), #14123a;
+    color: #f3f2ff;
+  }
+  @media (min-width: 60rem) {
+    .discuss-band {
+      grid-template-columns: 1fr 1.3fr;
+      margin-inline: 0;
+      padding: var(--space-7);
+    }
+  }
+  .discuss-band h2 {
+    font-size: clamp(1.8rem, 1.3rem + 2vw, 2.6rem);
+    margin-top: 0;
+    color: #fff;
+  }
+  .discuss-band .kicker {
+    color: #c9c3ff;
+  }
+  .steps {
+    padding-left: 1.2rem;
+    display: grid;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    color: #dcd9ff;
+  }
+  .steps strong {
+    color: #fff;
+  }
+  .discuss-cta {
+    background: #fff;
+    color: #2b2380;
+    border: 0;
+  }
+  .discuss-cta:hover {
+    background: #ecebff;
+  }
+  .discuss-list :global(li) {
+    background: rgb(255 255 255 / 8%);
+    border-color: rgb(255 255 255 / 14%);
+    box-shadow: none;
+    color: #f3f2ff;
+  }
+  .discuss-list :global(.bill-title a),
+  .discuss-list :global(.meta) {
+    color: #fff;
+  }
+  .discuss-list :global(.join) {
+    color: #c9c3ff;
+  }
+  .discuss-list :global(.status-chip) {
+    background: rgb(255 255 255 / 16%);
+    color: #fff;
+  }
   .pulse-discuss {
     background: var(--grad);
     border: 0;
@@ -404,6 +494,18 @@ const stats = [
   /* Phones: fewer bills and discussions, so the page doesn't scroll forever. */
   @media (max-width: 40rem) {
     .moving > :global(li:nth-child(n + 4)) {
+      display: none;
+    }
+    .discuss-list :global(li:nth-child(n + 3)) {
+      display: none;
+    }
+    .discuss-list :global(.small) {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .steps {
       display: none;
     }
     /* An odd number of stat tiles: the last one spans the row. */

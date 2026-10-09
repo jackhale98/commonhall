@@ -669,3 +669,17 @@ prerenders the first page and loads a compact list built with the site
 separate nominee or position, both are read from the description ("Keith Heffern,
 of Virginia, …, to be Ambassador … to the Gabonese Republic."); the header search
 uses the same split.
+
+## 60. Prerender views run with the caller's rights
+
+The three prerender views (`bills_prerender`, `state_bills_prerender`,
+`local_matters_prerender`) ran as their owner (SECURITY DEFINER) so they could see
+every user's follows, which RLS limits to their owner. Supabase's security linter
+flags such views because they bypass RLS for anyone who queries them. Now a trigger
+on `follows` keeps `followed_targets` (target type and id only, never a user id),
+the views read that table, and they run with `security_invoker = true`. What the
+public can learn is unchanged: that an item has at least one follower. Anonymous
+callers still cannot read `follows` at all.
+
+The discussions band returned to the bottom of the home page; it lists the open
+discussions after the one shown in "Latest".
