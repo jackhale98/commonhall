@@ -205,6 +205,11 @@ export class LegistarClient {
 }
 
 /** Public web page for a matter. */
-export function legistarMatterUrl(client: string, matterId: number, guid: string): string {
-  return `https://${client}.legistar.com/LegislationDetail.aspx?ID=${matterId}&GUID=${guid}`;
+/**
+ * Public page for a matter. Legistar's website uses its own page ids and GUIDs,
+ * which differ from the API's MatterId/MatterGuid ("Invalid parameters!"), so link
+ * through the gateway, which redirects from the API's MatterId.
+ */
+export function legistarMatterUrl(client: string, matterId: number): string {
+  return `https://${client}.legistar.com/gateway.aspx?M=L&ID=${matterId}`;
 }

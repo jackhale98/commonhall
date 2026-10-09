@@ -11,9 +11,8 @@ describe('Legistar helpers', () => {
   });
 
   it('builds public matter links', () => {
-    expect(legistarMatterUrl('boston', 43547, 'ABC')).toBe(
-      'https://boston.legistar.com/LegislationDetail.aspx?ID=43547&GUID=ABC',
-    );
+    // The API's MatterGuid is not the website's GUID; the gateway redirects from MatterId.
+    expect(legistarMatterUrl('boston', 43547)).toBe('https://boston.legistar.com/gateway.aspx?M=L&ID=43547');
   });
 });
 

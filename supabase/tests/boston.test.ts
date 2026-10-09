@@ -97,7 +97,7 @@ describe('sync-boston', () => {
       status: 'Passed',
       latest_action_text: 'The rules were suspended; the resolution was adopted.',
     });
-    expect(matter!.legistar_url).toMatch(/^https:\/\/boston\.legistar\.com\/LegislationDetail\.aspx\?ID=43547&GUID=/);
+    expect(matter!.legistar_url).toBe('https://boston.legistar.com/gateway.aspx?M=L&ID=43547');
     const sponsors =
       await sql`select official_id from public.local_matter_sponsors where matter_id = 'boston-43547' order by sequence`;
     expect(sponsors.map((s) => s.official_id)).toContain('boston-p256');

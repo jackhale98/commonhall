@@ -87,7 +87,7 @@ export function matterRow(m: LegistarMatter, latest?: { date: string | null; tex
     intro_date: toDate(m.MatterIntroDate),
     agenda_date: toDate(m.MatterAgendaDate),
     passed_date: toDate(m.MatterPassedDate),
-    legistar_url: legistarMatterUrl(CITY, m.MatterId, m.MatterGuid),
+    legistar_url: legistarMatterUrl(CITY, m.MatterId),
     last_modified: legistarUtc(m.MatterLastModifiedUtc),
     latest_action_date: latest?.date ?? null,
     latest_action_text: latest?.text ?? null,

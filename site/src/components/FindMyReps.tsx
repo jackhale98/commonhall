@@ -157,6 +157,14 @@ export default function FindMyReps({ saved = false }: Props) {
       setState('error');
       return;
     }
+    // The Census geocoder matches street addresses only, and a ZIP code can span districts.
+    if (!/\d+\s+\S/.test(address.replace(/\b\d{5}(-\d{4})?\b/g, '').trim())) {
+      setMessage(
+        'A ZIP code alone isn’t enough: one ZIP can cover several districts. Enter your street address, for example “123 Main St, Boston, MA”.',
+      );
+      setState('error');
+      return;
+    }
     setState('loading');
     setMessage('');
     setStatus('');
@@ -268,7 +276,7 @@ export default function FindMyReps({ saved = false }: Props) {
             id="reps-address"
             type="text"
             autocomplete="street-address"
-            placeholder="Street address, city, state or ZIP"
+            placeholder="Street address with city and state or ZIP"
             required
             minLength={5}
             maxLength={200}

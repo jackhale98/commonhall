@@ -36,6 +36,16 @@ Deno.serve(async (req) => {
   if (address.length < 5 || address.length > 200) {
     return respond({ error: 'Enter a street address, city and state (or ZIP code).' }, 400);
   }
+  // The Census geocoder needs a house number and street; a ZIP code can span several districts.
+  if (!/\d+\s+\S/.test(address.replace(/\b\d{5}(-\d{4})?\b/g, '').trim())) {
+    return respond(
+      {
+        error:
+          'A ZIP code alone isn’t enough: one ZIP can cover several districts. Enter your street address, for example “123 Main St, Boston, MA”.',
+      },
+      400,
+    );
+  }
 
   const key = Deno.env.get('OPENSTATES_API_KEY');
   const sql = connect();
@@ -52,7 +62,13 @@ Deno.serve(async (req) => {
       congressForDate(new Date()),
     );
     if (!result)
-      return respond({ error: 'We couldn’t find that address. Try adding the city and state or ZIP code.' }, 404);
+      return respond(
+        {
+          error:
+            'We couldn’t find that address. Check the house number and street, and include the city and state or ZIP code.',
+        },
+        404,
+      );
     return respond(result);
   } catch (error) {
     logger('failed', { error: error instanceof Error ? error.message : String(error) });
