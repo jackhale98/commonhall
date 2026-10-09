@@ -3,9 +3,9 @@ import { docketUrl, type CaseRow } from '../lib/court';
 import { formatDate } from '../lib/format';
 import { href, scotusCaseHref } from '../lib/paths';
 
-const PAGE = 30;
+const PAGE = 10;
 /** Phones start with fewer, so the page's other sections stay close. */
-const PHONE_PAGE = 8;
+const PHONE_PAGE = 5;
 const pageSize = () =>
   typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? PHONE_PAGE : PAGE;
 

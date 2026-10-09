@@ -3,9 +3,9 @@ import type { OrderRow, OrderTerm } from '../lib/executive';
 import { formatDate } from '../lib/format';
 import { executiveOrderHref, href } from '../lib/paths';
 
-const PAGE = 30;
+const PAGE = 10;
 /** Phones start with fewer, so the page's other sections stay close. */
-const PHONE_PAGE = 8;
+const PHONE_PAGE = 5;
 const pageSize = () =>
   typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? PHONE_PAGE : PAGE;
 

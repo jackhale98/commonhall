@@ -2082,12 +2082,12 @@ summary:has(.inline-h) {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-/* Explorer lists prerender 30 rows; phones show 8 until the component takes over. */
+/* Explorer lists prerender 10 rows; phones show 5 until the component takes over. */
 @media (max-width: 40rem) {
-  .trimmable > li:nth-child(n + 9) {
+  .trimmable > li:nth-child(n + 6) {
     display: none;
   }
-  .trimmable.is-live > li:nth-child(n + 9) {
+  .trimmable.is-live > li:nth-child(n + 6) {
     display: revert;
   }
 }

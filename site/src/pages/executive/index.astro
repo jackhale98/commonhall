@@ -36,7 +36,7 @@ const currentTerm = terms[terms.length - 1];
 const currentName = currentTerm?.term.name ?? null;
 const currentOrders = [...(currentTerm?.orders ?? [])].reverse();
 const rows = orderRows(orders, (doc) => discussions.has(`executive_order:${doc}`));
-const initialRows = rows.filter((r) => r.g === currentTerm?.term.key).slice(0, 30);
+const initialRows = rows.filter((r) => r.g === currentTerm?.term.key).slice(0, 10);
 
 // Nominations: civilian positions (military promotions come in long lists and are counted separately).
 const civilian = nominations.filter((n) => !n.is_military);
@@ -61,7 +61,7 @@ const nomRows = nominationRows(civilian, (n) => {
   const v = votesByNomination.get(n.id)?.find((x) => /nomination/i.test(x.question ?? ''));
   return v ? { href: voteHref(v.id), yea: v.yea_total, nay: v.nay_total } : undefined;
 });
-const initialNominations = nomRows.filter((n) => NOMINATION_STATUS[n.s].pending).slice(0, 30);
+const initialNominations = nomRows.filter((n) => NOMINATION_STATUS[n.s].pending).slice(0, 10);
 const agencies = [
   ...Map.groupBy(
     civilian.filter((n) => n.organization),
