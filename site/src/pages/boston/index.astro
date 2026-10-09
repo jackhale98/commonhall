@@ -8,6 +8,7 @@ import LocalMeetingRow from '../../components/LocalMeetingRow.astro';
 import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
 import {
+  loadCapitalProjects,
   loadCouncilDistricts,
   loadBoston311,
   loadDiscussions,
@@ -17,11 +18,12 @@ import {
   loadZbaAppeals,
 } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
+import { formatMoney } from '../../lib/finance';
 import { formatDate } from '../../lib/format';
 import { change311, closeTime, streetAddress } from '../../lib/local';
-import { href, localOfficialHref } from '../../lib/paths';
+import { capitalProjectHref, href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts, appeals, report] = await Promise.all([
+const [officials, matters, meetings, discussions, districts, appeals, report, projects] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
@@ -29,6 +31,7 @@ const [officials, matters, meetings, discussions, districts, appeals, report] = 
   loadCouncilDistricts(),
   loadZbaAppeals(),
   loadBoston311(),
+  loadCapitalProjects(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -47,6 +50,13 @@ const upcoming = meetings
   .reverse()
   .slice(0, 2);
 const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 2);
+// Capital Plan at a glance: the whole plan, its first year, and where that year's money goes.
+const planTotal = projects.reduce((n, p) => n + p.total_budget, 0);
+const planYear = projects.reduce((n, p) => n + p.year1, 0);
+const planLabel = projects[0]?.plan.replace('-', '–') ?? '';
+const planFy = projects[0]?.first_year ? `FY${String(projects[0].first_year).slice(2)}` : 'the first year';
+const building = projects.filter((p) => /construction/i.test(p.status ?? '')).length;
+const biggestThisYear = [...projects].sort((a, b) => b.year1 - a.year1).slice(0, 3);
 const hearings = appeals
   .filter((z) => z.hearing_date && z.hearing_date >= today)
   .sort((a, b) => a.hearing_date!.localeCompare(b.hearing_date!))
@@ -166,6 +176,48 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     </section>
   )}
 
+  {projects.length > 0 && (
+    <section aria-labelledby="budget-h">
+      <div class="section-head">
+        <h2 id="budget-h">What the city is building</h2>
+        <a class="see-all" href={href('boston/budget/')}>
+          The Capital Plan
+        </a>
+      </div>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>{planLabel} Capital Plan</dt>
+          <dd>{formatMoney(planTotal)}</dd>
+          <p class="small muted stat-note">
+            {projects.length} projects, {building} under construction
+          </p>
+        </div>
+        <div class="stat">
+          <dt>Planned for {planFy}</dt>
+          <dd>{formatMoney(planYear)}</dd>
+        </div>
+      </dl>
+      <div class="panel budget-top">
+        <h3 class="h-small">Most money in {planFy}</h3>
+        <ul class="list phone-two">
+          {biggestThisYear.map((p) => (
+            <li>
+              <p class="meta">{[p.department, p.neighborhood].filter(Boolean).join(' · ')}</p>
+              <p class="hearing-addr">
+                <a href={capitalProjectHref(p.proj_id)}>
+                  <strong>{p.name}</strong>
+                </a>
+              </p>
+              <p class="small muted hearing-addr">
+                {formatMoney(p.year1)} in {planFy} · {formatMoney(p.total_budget)} in all
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
   {hearings.length > 0 && (
     <section aria-labelledby="zoning-h">
       <div class="section-head">
@@ -241,6 +293,19 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     .phone-two > :global(li:nth-child(n + 3)) {
       display: none;
     }
+    .phone-two > :global(li:nth-child(2)) {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
+  .budget-top {
+    margin-top: var(--space-3);
+  }
+  .budget-top .h-small {
+    margin: 0;
+  }
+  .budget-top .meta {
+    margin: 0;
   }
   .top-requests {
     margin-top: var(--space-2);
