@@ -35,9 +35,29 @@ const LOST_LIGATURE = /\b(?:suffcient|affrm|fnd|benefts?|offcial|signifcant|spec
 /** Words that follow a compound's hyphen but never end a split word ("state-by-state"). */
 const SMALL_WORDS = new Set(['and', 'or', 'by', 'to', 'the', 'in', 'of', 'for', 'a', 'an', 'on', 'at']);
 
+/**
+ * Every word in the opinion, and every hyphenated pair ("coordinated-expenditure"),
+ * from one pass. A long opinion (Students for Fair Admissions runs past 200 pages)
+ * is about a megabyte of text, too much to search again for each line-end hyphen
+ * within an Edge Function's CPU limit.
+ */
+function wordIndex(text: string): { words: Set<string>; compounds: Set<string> } {
+  const words = new Set<string>();
+  const compounds = new Set<string>();
+  for (const [token] of text.matchAll(/[A-Za-z]+(?:-[A-Za-z]+)*/g)) {
+    const parts = token.split('-');
+    for (let i = 0; i < parts.length; i++) {
+      words.add(parts[i]!);
+      if (i > 0) compounds.add(`${parts[i - 1]}-${parts[i]}`);
+    }
+  }
+  return { words, compounds };
+}
+
 export function syllabusBackground(text: string | null | undefined): string | null {
   if (!text) return null;
-  const all = text.replace(/\r\n?/g, '\n').replace(/\f/g, '\n');
+  // NUL bytes can't be stored in a Postgres text column.
+  const all = text.replace(/\r\n?/g, '\n').replace(/\f/g, '\n').replace(/\0/g, '');
   if (LOST_LIGATURE.test(all)) return null;
   const docket = /Decided\s+[A-Z][a-z]+\s+\d{1,2},\s+\d{4}\*?/.exec(all);
   if (!docket || !/Syllabus/.test(all.slice(0, docket.index))) return null;
@@ -63,7 +83,7 @@ export function syllabusBackground(text: string | null | undefined): string | nu
   }
   // A line-end hyphen is either typesetting ("nec-" / "essary") or a real compound
   // ("coordinated-" / "expenditure"): whichever form the rest of the opinion uses wins.
-  const flat = all.replace(/\s+/g, ' ');
+  const { words, compounds } = wordIndex(all);
   let out = '';
   for (const line of lines) {
     const end = /([A-Za-z]+)-$/.exec(out);
@@ -73,8 +93,8 @@ export function syllabusBackground(text: string | null | undefined): string | nu
       const compound =
         next[2] === '-' || // "track-" / "and-field"
         SMALL_WORDS.has(next[1]!) ||
-        new RegExp(`\\b${end[1]}-${next[1]}\\b`).test(flat);
-      const plain = new RegExp(`\\b${joined}\\b`).test(flat);
+        compounds.has(`${end[1]}-${next[1]}`);
+      const plain = words.has(joined);
       out = compound && !plain ? out + line : out.slice(0, -1) + line;
     } else if (/[–—]$/.test(out) && /^[\d(]/.test(line))
       out += line; // "§33–" / "6202(11)"

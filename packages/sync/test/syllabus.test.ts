@@ -30,6 +30,22 @@ describe('syllabus background', () => {
     expect(syllabusBackground(fixture('23-929-preliminary-print-layout.txt'))).toBeNull();
   });
 
+  it('reads a very long opinion quickly and drops NUL bytes', () => {
+    const para = 'The admissions program was unconstitu-\ntional, the race-\nconscious respondents said.\u0000';
+    const text =
+      'Syllabus\nNo. 20–1199. Argued October 31, 2022—Decided June 29, 2023\n' +
+      Array.from({ length: 150 }, () => para).join('\n') +
+      '\nHeld: x.\n' +
+      'The race-conscious program was unconstitutional. '.repeat(25_000);
+    const started = performance.now();
+    const out = syllabusBackground(text)!;
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect(out.startsWith('The admissions program was unconstitutional, the race-conscious respondents said.')).toBe(
+      true,
+    );
+    expect(out).not.toContain('\u0000');
+  });
+
   it('returns null without a syllabus', () => {
     expect(syllabusBackground('PER CURIAM. The petition for a writ of certiorari is granted.')).toBeNull();
     expect(syllabusBackground(null)).toBeNull();

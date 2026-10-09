@@ -141,12 +141,21 @@ export async function fillSyllabi(
     if (run.outOfTime() || Date.now() > until) break;
     const id = syllabusOpinionId(c.opinion_ids, c.opinion_types);
     if (id === null) continue;
-    const opinion = await client.opinionText(id);
-    const text = opinion.plain_text?.trim() || htmlText(opinion.html_with_citations ?? '');
-    const syllabus = syllabusBackground(text);
-    await run.sql`
-      update public.scotus_cases set syllabus_text = ${syllabus}, syllabus_checked_at = now()
-       where cluster_id = ${c.cluster_id}`;
+    let syllabus: string | null;
+    try {
+      const opinion = await client.opinionText(id);
+      const text = opinion.plain_text?.trim() || htmlText(opinion.html_with_citations ?? '');
+      syllabus = syllabusBackground(text);
+      await run.sql`
+        update public.scotus_cases set syllabus_text = ${syllabus}, syllabus_checked_at = now()
+         where cluster_id = ${c.cluster_id}`;
+    } catch (error) {
+      if (error instanceof BudgetExhaustedError) throw error;
+      // One case's failure (an upstream error, text the database refuses) must not
+      // stop the rest; it stays unchecked and is tried again next run.
+      run.log('scotus: syllabus failed', { cluster: c.cluster_id, error: String(error) });
+      continue;
+    }
     if (syllabus) {
       found++;
       run.rowsWritten++;
