@@ -1,0 +1,26 @@
+{
+ "success": true,
+ "result": {
+  "name": "capital-budget",
+  "title": "Capital Plan",
+  "metadata_modified": "2026-08-03T14:41:18.802346",
+  "resources": [
+   {
+    "id": "c62d666e-27ea-4c03-9cb1-d3a81a1fb641",
+    "name": null,
+    "format": "CSV",
+    "datastore_active": true,
+    "last_modified": "2026-08-03T14:40:44.190443",
+    "url": "https://data.boston.gov/dataset/bb903d90-eacb-4c42-8c03-e25ede06317a/resource/c62d666e-27ea-4c03-9cb1-d3a81a1fb641/download/fy27-31-adopted-capital-plan-open-data-portal.csv"
+   },
+   {
+    "id": "6dc98699-e7fe-454b-8d52-9afb38e31809",
+    "name": null,
+    "format": "PDF",
+    "datastore_active": false,
+    "last_modified": "2026-04-08T14:26:35.497304",
+    "url": "https://data.boston.gov/dataset/bb903d90-eacb-4c42-8c03-e25ede06317a/resource/6dc98699-e7fe-454b-8d52-9afb38e31809/download/fy27-31-capital-plan-data-dictionary.pdf"
+   }
+  ]
+ }
+}

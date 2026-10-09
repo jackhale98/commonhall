@@ -27,11 +27,12 @@ export interface MemberFinance {
 export const FINANCE_COLUMNS =
   'member_id,candidate_id,committee_name,election_year,period,coverage_end,receipts,disbursements,cash_on_hand,debts,individual_small,individual_large,pacs,party,self_funding,transfers,by_size,in_state,out_of_state,top_states,top_employers,top_committees';
 
-/** $4.4M, $512K, $950. */
+/** $4.47B, $4.4M, $512K, $950. */
 export function formatMoney(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return '—';
   const n = Number(value);
   const abs = Math.abs(n);
+  if (abs >= 1e9) return `$${(n / 1e9).toFixed(abs >= 1e10 ? 1 : 2)}B`;
   if (abs >= 1e6) return `$${(n / 1e6).toFixed(abs >= 1e7 ? 0 : 1)}M`;
   if (abs >= 1e3) return `$${Math.round(n / 1e3)}K`;
   return `$${Math.round(n)}`;

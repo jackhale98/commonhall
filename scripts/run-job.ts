@@ -4,18 +4,21 @@
  *
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts boston [--minutes 60] [--since 2024-01-01]
  *   SUPABASE_DB_URL=… OPENSTATES_API_KEY=… npx tsx scripts/run-job.ts state [--minutes 60]
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
-import { LegistarClient, OpenStatesClient } from '@civic/congress-client';
+import { AnalyzeBostonClient, LegistarClient, OpenStatesClient } from '@civic/congress-client';
 import {
   BOSTON_JOB,
+  CAPITAL_PLAN_JOB,
   OPENSTATES_API,
   STATE_JOB,
   dailyBudget,
   runJob,
   syncBoston,
+  syncCapitalPlan,
   syncStates,
   type BostonCursor,
   type SeatMap,
@@ -65,8 +68,18 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'capital-plan') {
+      const result = await runJob({
+        sql,
+        job: CAPITAL_PLAN_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) => syncCapitalPlan(ctx, { client: new AnalyzeBostonClient() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else {
-      throw new Error('Usage: run-job.ts <boston|state> [--minutes N] [--since YYYY-MM-DD]');
+      throw new Error('Usage: run-job.ts <boston|state|capital-plan> [--minutes N] [--since YYYY-MM-DD]');
     }
   } finally {
     await sql.end();

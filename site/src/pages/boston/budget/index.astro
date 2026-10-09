@@ -1,0 +1,137 @@
+---
+import BostonHeader from '../../../components/BostonHeader.astro';
+import CapitalExplorer from '../../../components/CapitalExplorer';
+import BarList from '../../../components/viz/BarList';
+import Base from '../../../layouts/Base.astro';
+import { loadCapitalProjects } from '../../../lib/build-data';
+import { formatMoney } from '../../../lib/finance';
+import { capitalRow } from '../../../lib/local';
+
+const projects = await loadCapitalProjects();
+const plan = projects[0]?.plan ?? 'Capital Plan';
+const firstYear = projects[0]?.first_year;
+const yearLabel = firstYear ? `FY${String(firstYear).slice(2)}` : 'the first year';
+const sum = (list: typeof projects, key: 'total_budget' | 'year1' | 'spent') =>
+  list.reduce((n, p) => n + Number(p[key]), 0);
+const total = sum(projects, 'total_budget');
+const thisYear = sum(projects, 'year1');
+const inConstruction = projects.filter((p) => /construction|implementation/i.test(p.status ?? '')).length;
+
+// Totals by a column, largest first; the long tail folds into "Other".
+const totalsBy = (key: 'department' | 'neighborhood', top = 8) => {
+  const all = [...Map.groupBy(projects, (p) => p[key] ?? 'Not given')]
+    .map(([label, list]) => ({ label, value: sum(list, 'total_budget'), note: `(${list.length})` }))
+    .sort((a, b) => b.value - a.value);
+  const rest = all.slice(top);
+  return rest.length
+    ? [
+        ...all.slice(0, top),
+        { label: 'Everything else', value: rest.reduce((n, r) => n + r.value, 0), note: `(${rest.length} more)` },
+      ]
+    : all;
+};
+const byDepartment = totalsBy('department');
+const byNeighborhood = totalsBy('neighborhood');
+const distinct = (key: 'department' | 'neighborhood' | 'status') =>
+  [...new Set(projects.map((p) => p[key]).filter((v): v is string => !!v))].sort();
+const shortPlan = plan.replace('-', '–');
+---
+
+<Base
+  title="Boston budget: the Capital Plan"
+  description={`Boston’s ${shortPlan} Capital Plan: where the city plans to build and repair, by department, neighborhood and project.`}
+  section="states"
+>
+  <BostonHeader current="budget" lede={`The ${shortPlan} Capital Plan: what the city plans to build and repair.`} />
+
+  {projects.length === 0 ? (
+    <p class="muted">The Capital Plan has not loaded yet.</p>
+  ) : (
+    <>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Total, all projects</dt>
+          <dd>{formatMoney(total)}</dd>
+        </div>
+        <div class="stat">
+          <dt>Planned in {yearLabel}</dt>
+          <dd>{formatMoney(thisYear)}</dd>
+        </div>
+        <div class="stat">
+          <dt>Projects</dt>
+          <dd>{projects.length}</dd>
+        </div>
+        <div class="stat">
+          <dt>Being built now</dt>
+          <dd>{inConstruction}</dd>
+        </div>
+      </dl>
+
+      <div class="budget-charts">
+        <section class="panel" aria-labelledby="dept-h">
+          <h2 id="dept-h" class="h-small">
+            By department
+          </h2>
+          <BarList items={byDepartment} label="Capital Plan total by department" format={formatMoney} />
+        </section>
+        <section class="panel" aria-labelledby="hood-h">
+          <h2 id="hood-h" class="h-small">
+            By neighborhood
+          </h2>
+          <BarList
+            items={byNeighborhood}
+            label="Capital Plan total by neighborhood"
+            tone="fill-sky"
+            format={formatMoney}
+          />
+        </section>
+      </div>
+
+      <section aria-labelledby="proj-h">
+        <h2 id="proj-h">Projects</h2>
+        <CapitalExplorer
+          client:visible
+          initial={projects.slice(0, 10).map(capitalRow)}
+          departments={distinct('department')}
+          neighborhoods={distinct('neighborhood')}
+          statuses={distinct('status')}
+          yearLabel={yearLabel}
+        />
+      </section>
+    </>
+  )}
+
+  <p class="small muted">
+    From the City of Boston’s <a href="https://data.boston.gov/dataset/capital-budget">Capital Plan</a> on Analyze
+    Boston, checked weekly. Totals are each project’s whole budget, including money spent before this plan and outside
+    funds; “planned in {yearLabel}” is the plan’s first year. Many projects are citywide or span several neighborhoods.
+  </p>
+</Base>
+
+<style>
+  .stat-grid {
+    margin-bottom: var(--space-5);
+  }
+  .budget-charts {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .budget-charts {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .budget-charts .h-small {
+    margin-top: 0;
+  }
+  :global(.capital-list p) {
+    margin: 0;
+  }
+  :global(.capital-scope) {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

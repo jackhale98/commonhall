@@ -22,7 +22,7 @@ import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type 
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
-import { HIDDEN_MATTER_TYPES, hiddenTypesFilter } from './local';
+import { CAPITAL_COLUMNS, HIDDEN_MATTER_TYPES, hiddenTypesFilter, type CapitalProject } from './local';
 import {
   RestError,
   inList,
@@ -469,6 +469,16 @@ export const loadScotusOutcomeMap = memo(async () =>
 );
 
 // ---- Boston -----------------------------------------------------------------
+
+/** Boston Capital Plan projects, largest budget first. */
+export const loadCapitalProjects = memo(async () =>
+  (
+    await selectAllOptional<CapitalProject>('capital_projects', {
+      select: CAPITAL_COLUMNS,
+      order: 'total_budget.desc,proj_id.asc',
+    })
+  ).map((p) => ({ ...p, total_budget: Number(p.total_budget), year1: Number(p.year1), spent: Number(p.spent) })),
+);
 
 export const loadLocalOfficials = memo(async () =>
   selectAll<LocalOfficial>('local_officials', {

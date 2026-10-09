@@ -471,6 +471,11 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
 
+[functions.sync-capital-plan]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+
 [functions.sync-scotus]
 enabled = true
 verify_jwt = false

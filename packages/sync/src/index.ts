@@ -11,6 +11,7 @@ export * from './federal/votes.ts';
 export * from './state/sync-state.ts';
 export * from './state/reps.ts';
 export * from './local/boston.ts';
+export * from './local/capital-plan.ts';
 export * from './federal/finance.ts';
 export * from './federal/executive.ts';
 export * from './federal/court.ts';
