@@ -9,6 +9,7 @@ import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
 import {
   loadCouncilDistricts,
+  loadBoston311,
   loadDiscussions,
   loadLocalMeetings,
   loadLocalOfficials,
@@ -17,16 +18,17 @@ import {
 } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
 import { formatDate } from '../../lib/format';
-import { streetAddress } from '../../lib/local';
+import { change311, closeTime, streetAddress } from '../../lib/local';
 import { href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts, appeals] = await Promise.all([
+const [officials, matters, meetings, discussions, districts, appeals, report] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
   loadDiscussions(),
   loadCouncilDistricts(),
   loadZbaAppeals(),
+  loadBoston311(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -123,13 +125,46 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
       </a>
     </div>
     <div class="panel">
-      <ul class="list">
+      <ul class="list phone-two">
         {matters.slice(0, 3).map((m) => (
           <LocalMatterItem matter={m} />
         ))}
       </ul>
     </div>
   </section>
+
+  {report && (
+    <section aria-labelledby="h311">
+      <div class="section-head">
+        <h2 id="h311">311 in the last 30 days</h2>
+        <a class="see-all" href={href('boston/neighborhoods/')}>
+          By district
+        </a>
+      </div>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Requests</dt>
+          <dd>{report.city.opened.toLocaleString()}</dd>
+          {change311(report.city) && <p class="small muted stat-note">{change311(report.city)} prior 30 days</p>}
+        </div>
+        <div class="stat">
+          <dt>Closed on time</dt>
+          <dd>{report.city.closed ? `${Math.round((report.city.closedOnTime / report.city.closed) * 100)}%` : '—'}</dd>
+          {report.city.typicalHours !== null && (
+            <p class="small muted stat-note">typically in {closeTime(report.city.typicalHours)}</p>
+          )}
+        </div>
+      </dl>
+      <p class="small muted top-requests">
+        Most asked for:{' '}
+        {report.city.top
+          .slice(0, 3)
+          .map((t) => t.type.toLowerCase())
+          .join(', ')}
+        .
+      </p>
+    </section>
+  )}
 
   {hearings.length > 0 && (
     <section aria-labelledby="zoning-h">
@@ -140,7 +175,7 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
         </a>
       </div>
       <div class="panel">
-        <ul class="list hearings">
+        <ul class="list hearings phone-two">
           {hearings.map((z) => (
             <li>
               <p class="meta">{[formatDate(z.hearing_date), z.neighborhood].filter(Boolean).join(' · ')}</p>
@@ -200,6 +235,15 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     margin-top: var(--space-3);
     border-top: 1px solid var(--border);
     padding-top: var(--space-2);
+  }
+  /* Phones show two of the three latest matters and hearings. */
+  @media (max-width: 40rem) {
+    .phone-two > :global(li:nth-child(n + 3)) {
+      display: none;
+    }
+  }
+  .top-requests {
+    margin-top: var(--space-2);
   }
   .hearings .meta,
   .hearing-addr,

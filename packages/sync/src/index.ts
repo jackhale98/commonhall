@@ -18,3 +18,4 @@ export * from './federal/executive.ts';
 export * from './federal/court.ts';
 export * from './federal/scdb.ts';
 export * from './federal/committees.ts';
+export * from './local/boston-311.ts';

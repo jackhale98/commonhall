@@ -4,13 +4,14 @@
  *
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts boston [--minutes 60] [--since 2024-01-01]
  *   SUPABASE_DB_URL=… OPENSTATES_API_KEY=… npx tsx scripts/run-job.ts state [--minutes 60]
- *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba | boston-311
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import { AnalyzeBostonClient, LegistarClient, OpenStatesClient } from '@civic/congress-client';
 import {
+  BOSTON_311_JOB,
   BOSTON_JOB,
   CAPITAL_PLAN_JOB,
   ZBA_JOB,
@@ -20,6 +21,7 @@ import {
   runJob,
   syncBoston,
   syncCapitalPlan,
+  syncBoston311,
   syncZoningAppeals,
   syncStates,
   type BostonCursor,
@@ -90,8 +92,20 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'boston-311') {
+      const result = await runJob({
+        sql,
+        job: BOSTON_311_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) => syncBoston311(ctx, { client: new AnalyzeBostonClient() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else {
-      throw new Error('Usage: run-job.ts <boston|state|capital-plan|boston-zba> [--minutes N] [--since YYYY-MM-DD]');
+      throw new Error(
+        'Usage: run-job.ts <boston|state|capital-plan|boston-zba|boston-311> [--minutes N] [--since YYYY-MM-DD]',
+      );
     }
   } finally {
     await sql.end();

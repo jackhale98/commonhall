@@ -1,11 +1,16 @@
 ---
 import BostonHeader from '../../../components/BostonHeader.astro';
+import District311 from '../../../components/District311';
 import ZoningExplorer from '../../../components/ZoningExplorer';
 import Base from '../../../layouts/Base.astro';
-import { loadZbaAppeals } from '../../../lib/build-data';
+import { loadBoston311, loadLocalOfficials, loadZbaAppeals } from '../../../lib/build-data';
 import { zbaRow } from '../../../lib/local';
 
-const appeals = await loadZbaAppeals();
+const [appeals, report, officials] = await Promise.all([loadZbaAppeals(), loadBoston311(), loadLocalOfficials()]);
+const districtLabels = Array.from({ length: 9 }, (_, i) => {
+  const o = officials.find((x) => x.district === i + 1);
+  return { district: i + 1, label: `District ${i + 1}${o ? ` · ${o.name}` : ''}` };
+});
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 const upcoming = appeals
   .filter((z) => z.hearing_date && z.hearing_date >= today)
@@ -14,11 +19,23 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
 ---
 
 <Base
-  title="Boston neighborhoods: zoning appeals"
-  description="Boston’s Zoning Board of Appeal: upcoming hearings and recent decisions, searchable by address and neighborhood."
+  title="Boston neighborhoods: 311 and zoning"
+  description="Boston by district: 311 requests and how fast the city closes them, and Zoning Board of Appeal hearings and decisions."
   section="states"
 >
-  <BostonHeader current="neighborhoods" lede="What is changing on your street: zoning hearings and decisions." />
+  <BostonHeader
+    current="neighborhoods"
+    lede="Your street: what neighbors ask the city to fix, and what is being built."
+  />
+
+  <section aria-labelledby="h311">
+    <h2 id="h311">311 requests, last 30 days</h2>
+    {report ? (
+      <District311 client:visible report={report} districts={districtLabels} />
+    ) : (
+      <p class="muted">311 requests have not loaded yet.</p>
+    )}
+  </section>
 
   <section aria-labelledby="zba-h">
     <h2 id="zba-h">Zoning Board of Appeal</h2>
@@ -39,9 +56,11 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
   </section>
 
   <p class="small muted">
-    From the City of Boston’s{' '}
-    <a href="https://data.boston.gov/dataset/zoning-board-of-appeal-tracker">Zoning Board of Appeal tracker</a> on
-    Analyze Boston, checked daily. Hearing times, documents and how to comment are on the{' '}
+    From the City of Boston on Analyze Boston, checked daily:
+    <a href="https://data.boston.gov/dataset/311-service-requests">311 requests</a> (summaries only; the city runs two
+    311 systems for different departments, counted together here) and the
+    <a href="https://data.boston.gov/dataset/zoning-board-of-appeal-tracker">Zoning Board of Appeal tracker</a>. Hearing
+    times, documents and how to comment are on the{' '}
     <a href="https://www.boston.gov/departments/inspectional-services/zoning-board-appeal">board’s page</a>.
   </p>
 </Base>

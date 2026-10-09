@@ -23,10 +23,13 @@ import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
+  BOSTON_311_COLUMNS,
   CAPITAL_COLUMNS,
   HIDDEN_MATTER_TYPES,
   ZBA_COLUMNS,
   hiddenTypesFilter,
+  report311,
+  type Boston311Day,
   type CapitalProject,
   type ZbaAppeal,
 } from './local';
@@ -476,6 +479,22 @@ export const loadScotusOutcomeMap = memo(async () =>
 );
 
 // ---- Boston -----------------------------------------------------------------
+
+/** Boston 311 for the last 30 days and the 30 before, citywide and per district (null before the first sync). */
+export const loadBoston311 = memo(async () => {
+  const since = new Date(Date.now() - 62 * 86_400_000).toISOString().slice(0, 10);
+  const rows = await selectAllOptional<Boston311Day>('boston_311_daily', {
+    select: BOSTON_311_COLUMNS,
+    day: `gte.${since}`,
+    order: 'day.asc,district.asc,request_type.asc,source.asc',
+  });
+  return report311(
+    rows.map((r) => ({
+      ...r,
+      median_close_hours: r.median_close_hours === null ? null : Number(r.median_close_hours),
+    })),
+  );
+});
 
 /** Zoning Board of Appeal cases (open, or heard in the last year), latest hearing first. */
 export const loadZbaAppeals = memo(async () =>

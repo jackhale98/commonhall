@@ -1,10 +1,11 @@
 ---
+import District311 from '../../../components/District311';
 import FollowButton from '../../../components/FollowButton';
 import LocalMatters from '../../../components/LocalMatters';
 import MemberPhoto from '../../../components/MemberPhoto';
 import DistrictMap from '../../../components/viz/DistrictMap';
 import Base from '../../../layouts/Base.astro';
-import { loadCouncilDistricts, loadLocalOfficials, loadSponsoredMatters } from '../../../lib/build-data';
+import { loadBoston311, loadCouncilDistricts, loadLocalOfficials, loadSponsoredMatters } from '../../../lib/build-data';
 import { DEMO } from '../../../lib/config';
 import { HIDDEN_MATTER_TYPES } from '../../../lib/local';
 import { href, localOfficialHref } from '../../../lib/paths';
@@ -20,10 +21,11 @@ interface Props {
 }
 
 const { official } = Astro.props;
-const [sponsored, districts, officials] = await Promise.all([
+const [sponsored, districts, officials, report] = await Promise.all([
   loadSponsoredMatters(official.id),
   loadCouncilDistricts(),
   loadLocalOfficials(),
+  loadBoston311(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -127,6 +129,22 @@ const seat = official.seat ?? 'Councilor';
       </div>
     )}
   </section>
+  {report && (
+    <section aria-labelledby="h311">
+      <div class="section-head">
+        <h2 id="h311">{official.district ? `311 in District ${official.district}` : '311 across Boston'}</h2>
+        <a
+          class="see-all"
+          href={href(`boston/neighborhoods/${official.district ? `?district=${official.district}` : ''}`)}
+        >
+          Every district
+        </a>
+      </div>
+      <p class="small muted">Requests to the city in the last 30 days.</p>
+      <District311 report={report} fixed={official.district ?? 0} top={5} />
+    </section>
+  )}
+
   <p class="small muted">
     Boston records roll-call votes in meeting minutes rather than in Legistar, so votes are not listed here.
   </p>

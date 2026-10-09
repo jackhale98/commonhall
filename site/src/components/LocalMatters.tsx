@@ -5,6 +5,8 @@ import { LOCAL_MATTER_COLUMNS, type LocalMatter } from '../lib/types';
 import LocalMatterItem from './LocalMatterItem';
 
 const PAGE = 10;
+/** Phones get five a page. */
+const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? 5 : PAGE);
 
 export interface MatterFacets {
   types: { value: string; count: number }[];
@@ -49,6 +51,8 @@ export default function LocalMatters({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState<number | null>(initialTotal ?? null);
   const [loading, setLoading] = useState(false);
+  const [size, setSize] = useState(PAGE);
+  const [mounted, setMounted] = useState(false);
   // Counts given the other filters; starts from the build's overall counts.
   const [counts, setCounts] = useState({ types: facets.types, statuses: facets.statuses });
   const first = useRef(true);
@@ -56,6 +60,11 @@ export default function LocalMatters({
     filters.q || filters.type || filters.status || filters.all || filters.sponsor !== base.sponsor,
   );
   const hiding = !filters.type && !filters.all;
+
+  useEffect(() => {
+    setSize(pageSize());
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (first.current) {
@@ -73,7 +82,7 @@ export default function LocalMatters({
           (!hiding || !HIDDEN_MATTER_TYPES.includes(m.type ?? '')) &&
           (!filters.status || m.status === filters.status),
       );
-      setMatters(hits.slice((page - 1) * PAGE, page * PAGE));
+      setMatters(hits.slice((page - 1) * size, page * size));
       setTotal(hits.length);
       return;
     }
@@ -92,14 +101,14 @@ export default function LocalMatters({
           'search_local_matters',
           { p_city: 'boston', q: term, max_results: 200 },
           { select, ...where },
-        ).then((rows) => ({ rows: rows.slice((page - 1) * PAGE, page * PAGE), count: rows.length }))
+        ).then((rows) => ({ rows: rows.slice((page - 1) * size, page * size), count: rows.length }))
       : selectWithCount<LocalMatter>('local_matters', {
           select,
           city: 'eq.boston',
           ...where,
           order: 'latest_action_date.desc.nullslast,last_modified.desc',
-          limit: PAGE,
-          offset: (page - 1) * PAGE,
+          limit: size,
+          offset: (page - 1) * size,
         });
     request
       .then(({ rows, count }) => {
@@ -258,21 +267,21 @@ export default function LocalMatters({
       {matters.length === 0 ? (
         <p class="muted">{loading ? 'Loading…' : 'No matters match these filters.'}</p>
       ) : (
-        <ul class="list" aria-busy={loading}>
-          {matters.map((m) => (
+        <ul class={`list trimmable${mounted ? ' is-live' : ''}`} aria-busy={loading}>
+          {matters.slice(0, size).map((m) => (
             <LocalMatterItem matter={m} />
           ))}
         </ul>
       )}
-      {total !== null && total > PAGE && (
+      {total !== null && total > size && (
         <nav class="pager" aria-label="Pages">
           <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>
-            Page {page} of {Math.ceil(total / PAGE)}
+            Page {page} of {Math.ceil(total / size)}
           </span>
-          <button type="button" disabled={page >= Math.ceil(total / PAGE)} onClick={() => setPage(page + 1)}>
+          <button type="button" disabled={page >= Math.ceil(total / size)} onClick={() => setPage(page + 1)}>
             Next
           </button>
         </nav>

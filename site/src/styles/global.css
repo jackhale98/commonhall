@@ -1182,6 +1182,9 @@ button.danger {
   font-size: var(--step--1);
   color: var(--text-muted);
 }
+.stat .stat-note {
+  margin: var(--space-1) 0 0;
+}
 .stat dd,
 .stat .stat-value {
   margin: 0;
@@ -2228,4 +2231,15 @@ html {
 /* The footer's admin link renders nothing for most visitors; hide its empty list item. */
 .admin-item:has(> astro-island:empty) {
   display: none;
+}
+
+/* Boston 311 at a glance (Neighborhoods tab, councilor pages). */
+.district-311 .explorer-filters {
+  margin-bottom: var(--space-3);
+}
+.district-311 .top-311 {
+  margin-top: var(--space-4);
+}
+.district-311 .top-311 .h-small {
+  margin-top: 0;
 }
