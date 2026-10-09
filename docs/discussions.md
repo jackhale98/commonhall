@@ -6,8 +6,16 @@ matter. Participants vote agree, disagree or pass on short statements and can ad
 their own; Pol.is groups people by how they vote and reports where opinion divides
 and where it agrees.
 
-Maintainers create discussions. Anyone signed in can ask for one on a bill, state
-bill or council matter page; request counts are public, requesters are not.
+Maintainers create discussions. Anyone, signed in or not, can ask for one on a
+council matter, bill, Massachusetts bill, executive order or Supreme Court decision
+page; request counts are public, requesters are not.
+
+**Open participation (the current setting).** Anyone may vote and add statements
+without an account. Signed-out visitors take part as anonymous Pol.is participants
+(Pol.is's own cookie; no identifier from this site), and "residents only" becomes
+a request shown above the embed rather than a check. To require sign-in and
+enforce residency again, set the repository variable
+`PUBLIC_OPEN_PARTICIPATION=false` and redeploy the site.
 
 ## One-time setup
 
@@ -30,7 +38,8 @@ bill or council matter page; request counts are public, requesters are not.
 
 ## Creating a discussion
 
-1. Sign in and open `/admin/discussions/`.
+1. Sign in and open `/admin/discussions/` (maintainers see an **Admin: discussions**
+   link in the footer and on the Account page).
 2. Fill in the form. The **id** is a short slug (`boston-bike-lanes-2026`); it
    becomes the URL (`/discussions/<id>/`) and the Pol.is `page_id`, so it cannot
    change later. Keep the **title** a neutral question and use the same prompt
@@ -39,10 +48,12 @@ bill or council matter page; request counts are public, requesters are not.
 3. Choose the jurisdiction (United States, Massachusetts or Boston, optionally one
    council district) and whether only residents may vote and write.
 4. Save as **draft**. Drafts are visible only to maintainers.
-5. Open the draft's page while signed in to your Pol.is account. With a `site_id`
+5. Open the draft's page (`/discussion/?id=<id>`, linked from the admin list)
+   while signed in to the site and to your Pol.is account. With a `site_id`
    and a new `page_id`, Pol.is creates the conversation on first load and makes
    the site owner its moderator.
-6. In the Pol.is moderation view, set the topic and description, turn on
+6. In the Pol.is moderation view (the embed hides Pol.is's own topic and
+   description, since the page shows the title and prompt), turn on
    **strict moderation** (statements need approval before others see them) and add
    6–10 **seed statements** covering the main positions evenly. Write seeds for
    every side before opening.
@@ -60,6 +71,15 @@ accept or reject statements, never edit them, and judge only the rules, never th
 view expressed. Check open discussions at least daily. To stop new input, set
 the status to **closed** in `/admin/discussions/`: the embed then lets everyone
 read results but not vote or write.
+
+## Requests
+
+Signed-in requests are stored against the account. Signed-out requests use a
+random id kept in the browser's local storage (`civic.request-client`), stored with
+the item and nothing else, through `set_anonymous_discussion_request`; the table
+is not readable by anyone. At most 300 new anonymous requests an hour are
+accepted site-wide, so a script cannot flood the counts. The admin page's
+**Requests** list combines both.
 
 ## Residency
 

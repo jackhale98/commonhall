@@ -1,4 +1,5 @@
 ---
+import { OPEN_PARTICIPATION } from '../../lib/config';
 import Base from '../../layouts/Base.astro';
 import { href } from '../../lib/paths';
 ---
@@ -45,6 +46,16 @@ import { href } from '../../lib/paths';
   <p>
     We never send Pol.is your email, account id, address or districts. Your residency is checked on this site, and
     Pol.is is told only whether you can vote and write.
+  </p>
+  {OPEN_PARTICIPATION && (
+    <p>
+      You can also take part without an account. Then we send Pol.is no identifier at all, and Pol.is keeps your votes
+      together with its own cookie in your browser.
+    </p>
+  )}
+  <p>
+    If you ask for a discussion without signing in, your browser keeps a random number (in its local storage) so your
+    request counts once and you can take it back. We store that number with the item you asked about and nothing else.
   </p>
   <p>
     What you write in a discussion is public and anonymous. Pol.is publishes the votes and statements of every

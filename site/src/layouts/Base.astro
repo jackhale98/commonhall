@@ -6,6 +6,7 @@ import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/brico
 import '../styles/global.css';
 import SearchPalette from '../components/SearchPalette';
 import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
+import AdminLink from '../components/AdminLink';
 import NavStatus from '../components/NavStatus';
 import { href } from '../lib/paths';
 
@@ -307,6 +308,7 @@ const nav = [
             <li>
               <a href="https://github.com/jackhale98/opencongress">Source code</a>
             </li>
+            {!DEMO && <AdminLink client:idle />}
           </ul>
         </nav>
         <div class="footer-col">

@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { followMany, getClient, safeNext, takePendingFollow } from '../lib/auth';
 import { SUPABASE_URL, hasSupabase } from '../lib/config';
 import { href } from '../lib/paths';
+import AdminLink from './AdminLink';
 import FindMyReps from './FindMyReps';
 
 type Phase = 'loading' | 'signed-out' | 'sent' | 'signed-in' | 'deleted' | 'unconfigured';
@@ -92,6 +93,11 @@ export default function AccountPanel() {
   async function signOut() {
     const client = await getClient();
     await client.auth.signOut();
+    try {
+      sessionStorage.removeItem('civic.is-admin');
+    } catch {
+      // Ignore.
+    }
     setPhase('signed-out');
   }
 
@@ -187,6 +193,7 @@ export default function AccountPanel() {
           <a class="button" href={href('following/')}>
             Manage follows
           </a>
+          <AdminLink variant="button" />
           <button type="button" onClick={signOut}>
             Sign out
           </button>

@@ -139,6 +139,7 @@ now**; the others can be set any time:
 | `PUBLIC_SUPABASE_ANON_KEY` | the publishable (anon) key from Project Settings → API Keys | Yes for the live site |
 | `PUBLIC_SITE_NAME` | the name in the header and page titles | No (default "Civic Tracker") |
 | `PUBLIC_POLIS_SITE_ID` | your Pol.is site id (`polis_…`) | No; turns on discussions (in the demo, the examples are an open preview without sign-in) |
+| `PUBLIC_OPEN_PARTICIPATION` | `false` to require sign-in for discussions | No; leave unset for open participation |
 
 **Never put these in GitHub:** the Supabase `service_role`/secret key, the Open
 States key and `SYNC_SECRET`. They live only in Supabase function secrets (step 5).

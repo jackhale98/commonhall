@@ -1,4 +1,5 @@
 ---
+import { OPEN_PARTICIPATION } from '../../lib/config';
 import Base from '../../layouts/Base.astro';
 import { href } from '../../lib/paths';
 ---
@@ -29,17 +30,25 @@ import { href } from '../../lib/paths';
 
   <h2>Who chooses topics</h2>
   <p>
-    The site’s maintainers open discussions, starting with a short pilot list. Anyone signed in can ask for a discussion
-    on a bill or council matter; the number of requests is shown publicly and helps us choose. We do not open
-    discussions on candidates or elections.
+    The site’s maintainers open discussions. Anyone can ask for a discussion on a council matter, bill, executive order
+    or Supreme Court decision; the number of requests is shown publicly and helps us choose. We do not open discussions
+    on candidates or elections.
   </p>
 
   <h2>Who can take part</h2>
-  <p>
-    Anyone can read. To vote or write you must be signed in, and some discussions are limited to residents of a state,
-    the city or a council district, based on the address you saved. This is an honor system, not identity verification,
-    so results describe the people who took part, not a scientific sample.
-  </p>
+  {OPEN_PARTICIPATION ? (
+    <p>
+      Anyone can read, vote and write; you don’t need an account. Some discussions are meant for residents of a state,
+      the city or a council district, and we ask you to take part only where you live. This is an honor system, not
+      identity verification, so results describe the people who took part, not a scientific sample.
+    </p>
+  ) : (
+    <p>
+      Anyone can read. To vote or write you must be signed in, and some discussions are limited to residents of a state,
+      the city or a council district, based on the address you saved. This is an honor system, not identity
+      verification, so results describe the people who took part, not a scientific sample.
+    </p>
+  )}
 
   <p class="small">
     <a href={href('privacy/')}>Privacy</a> · <a href={href('discussions/')}>All discussions</a>

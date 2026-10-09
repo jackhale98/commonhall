@@ -45,6 +45,7 @@ jobs:
           PUBLIC_SITE_NAME: ${{ vars.PUBLIC_SITE_NAME }}
           # Pol.is site id for discussions (public; from the Pol.is admin integrate page).
           PUBLIC_POLIS_SITE_ID: ${{ vars.PUBLIC_POLIS_SITE_ID }}
+          PUBLIC_OPEN_PARTICIPATION: ${{ vars.PUBLIC_OPEN_PARTICIPATION }}
           # No Supabase project configured yet: build the demo from site/src/data/demo.json.
           PUBLIC_DEMO: ${{ vars.PUBLIC_SUPABASE_URL == '' && 'true' || 'false' }}
       - name: Check site size

@@ -100,6 +100,38 @@ describe('discussions', () => {
     expect(count!.n).toBe(1);
   });
 
+  it('takes anonymous requests once per browser, counts them, and never exposes them', async () => {
+    const browser = '00000000-0000-4000-8000-000000000001';
+    await sql`delete from public.discussion_requests_anon where target_id = '119-hr-77001'`;
+    for (let i = 0; i < 2; i++) {
+      await asAnon(
+        sql,
+        (tx) => tx`select public.set_anonymous_discussion_request(${browser}, 'bill', '119-hr-77001', true)`,
+      );
+    }
+    const [mine] = await asAnon(
+      sql,
+      (tx) => tx`select public.has_anonymous_discussion_request(${browser}, 'bill', '119-hr-77001') as yes`,
+    );
+    expect(mine!.yes).toBe(true);
+    const [count] = await asAnon(sql, (tx) => tx`select public.discussion_request_count('bill', '119-hr-77001') as n`);
+    expect(count!.n).toBe(1);
+    const read = await asAnon(sql, (tx) => tx`select * from public.discussion_requests_anon`).catch((e: Error) => e);
+    expect(String(read)).toMatch(/permission denied/);
+
+    const admin = await createUser(sql);
+    await sql`insert into public.admins (user_id) values (${admin})`;
+    const summary = await asUser(sql, admin, (tx) => tx`select * from public.discussion_request_summary()`);
+    expect(summary.find((r) => r.target_id === '119-hr-77001')).toMatchObject({ requests: 1 });
+
+    await asAnon(
+      sql,
+      (tx) => tx`select public.set_anonymous_discussion_request(${browser}, 'bill', '119-hr-77001', false)`,
+    );
+    const [after] = await asAnon(sql, (tx) => tx`select public.discussion_request_count('bill', '119-hr-77001') as n`);
+    expect(after!.n).toBe(0);
+  });
+
   it('keeps requests private but publishes their count', async () => {
     const [a, b, admin] = [await createUser(sql), await createUser(sql), await createUser(sql)];
     await sql`insert into public.admins (user_id) values (${admin})`;

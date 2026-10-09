@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { getClient, hasStoredSession } from '../lib/auth';
 import { DISCUSSION_COLUMNS, jurisdictionLabel, targetHref, targetLabel } from '../lib/discussions';
 import { paragraphs } from '../lib/format';
 import { discussionHref } from '../lib/paths';
@@ -17,7 +18,13 @@ export default function DiscussionFallback() {
     if (!/^[a-z0-9][a-z0-9-]{2,59}$/.test(id)) return setState('missing');
     (async () => {
       if (await redirectIfPrerendered((i) => (i.discussions.includes(id) ? discussionHref(id) : null))) return;
-      const [row] = await select<Discussion>('discussions', { id: `eq.${id}`, select: DISCUSSION_COLUMNS });
+      let [row] = await select<Discussion>('discussions', { id: `eq.${id}`, select: DISCUSSION_COLUMNS });
+      // Drafts are visible only to maintainers: retry with the signed-in session.
+      if (!row && hasStoredSession()) {
+        const client = await getClient();
+        const { data } = await client.from('discussions').select(DISCUSSION_COLUMNS).eq('id', id).maybeSingle();
+        row = (data as Discussion | null) ?? undefined;
+      }
       if (!row) return setState('missing');
       setD(row);
       setState('ready');

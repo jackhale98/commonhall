@@ -4,6 +4,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL?: string;
   readonly PUBLIC_SUPABASE_ANON_KEY?: string;
   readonly PUBLIC_POLIS_SITE_ID?: string;
+  readonly PUBLIC_OPEN_PARTICIPATION?: string;
   readonly PUBLIC_SITE_NAME?: string;
 }
 

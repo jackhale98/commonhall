@@ -31,6 +31,7 @@ the site.
 | `PUBLIC_SUPABASE_URL` | for the live site | `deploy.yml` (build) | Empty: the site builds in demo mode |
 | `PUBLIC_SUPABASE_ANON_KEY` | for the live site | `deploy.yml` (build) | Publishable (anon) key; safe only because RLS is on everywhere |
 | `PUBLIC_SITE_NAME` | no | `deploy.yml` (build) | Default "Civic Tracker" |
+| `PUBLIC_OPEN_PARTICIPATION` | no | `deploy.yml` (build) | Open (anyone may vote and write); `false` requires sign-in and enforces residency |
 | `PUBLIC_POLIS_SITE_ID` | no | `deploy.yml` (build) | Turns on the discussion embed |
 
 Set automatically by the deploy workflow from GitHub Pages (do not set them):

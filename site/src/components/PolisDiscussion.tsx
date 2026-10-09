@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { accountUrl, hasStoredSession, polisProfile, type PolisProfile } from '../lib/auth';
-import { DEMO, POLIS_EMBED_URL, POLIS_SITE_ID, hasSupabase } from '../lib/config';
+import { DEMO, OPEN_PARTICIPATION, POLIS_EMBED_URL, POLIS_SITE_ID, hasSupabase } from '../lib/config';
 import { isAcceptingInput, jurisdictionLabel, meetsResidency } from '../lib/discussions';
 import { href } from '../lib/paths';
 import type { Discussion } from '../lib/types';
@@ -39,7 +39,8 @@ export default function PolisDiscussion(props: Props) {
   const open = isAcceptingInput(props);
   const profile = viewer.kind === 'signed-in' ? viewer.profile : null;
   const resident = meetsResidency(props, profile);
-  const canParticipate = open && (preview || (profile !== null && resident));
+  // Signed-out visitors take part as anonymous Pol.is participants (Pol.is's own cookie, no xid).
+  const canParticipate = open && (preview || OPEN_PARTICIPATION || (profile !== null && resident));
 
   useEffect(() => {
     if (!enabled || viewer.kind === 'loading' || !container.current) return;
@@ -53,6 +54,9 @@ export default function PolisDiscussion(props: Props) {
       ucv: String(canParticipate),
       ucw: String(canParticipate),
       ucsf: 'false',
+      // The page already shows the title and prompt; don't repeat Pol.is's topic and description.
+      ucst: 'false',
+      ucsd: 'false',
       show_vis: 'true',
       auth_needed_to_vote: 'false',
       auth_needed_to_write: 'false',
@@ -82,6 +86,7 @@ export default function PolisDiscussion(props: Props) {
     if (preview) return 'preview';
     if (viewer.kind === 'loading') return null;
     if (viewer.kind === 'error') return 'Couldn’t check your account. You can read along; reload to take part.';
+    if (OPEN_PARTICIPATION) return props.residency_required ? 'residents-asked' : null;
     if (!profile) return hasSupabase ? 'signed-out' : null;
     if (!resident) return 'not-resident';
     return null;
@@ -99,6 +104,10 @@ export default function PolisDiscussion(props: Props) {
         <p class="notice">
           <a href={accountUrl(window.location.pathname)}>Sign in</a> to vote and add statements.
           {props.residency_required && ` Open to residents of ${jurisdictionLabel(props)}.`}
+        </p>
+      ) : notice === 'residents-asked' ? (
+        <p class="notice">
+          This discussion is meant for residents of {jurisdictionLabel(props)}. Please take part only if you live there.
         </p>
       ) : notice === 'not-resident' ? (
         <p class="notice">

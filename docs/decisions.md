@@ -489,3 +489,18 @@ to Congress.gov system codes (`HSAG` → `hsag00`, subcommittee `15` → `hsag15
   rosters refresh once a day and are not replaced if the upstream file shrinks
   by more than half. Committees have no top-level menu item (the menu is full);
   they are linked from Members, member and bill pages, the footer and search.
+
+## 47. Open participation in discussions, for now
+
+Requested by the owner. Until the site has a following, anyone may vote and add
+statements without an account, and anyone may ask for a discussion. Signed-out
+participants are anonymous to this site: no identifier is sent to Pol.is, which
+keeps their votes together with its own cookie. "Residents only" is shown as a
+request. Signed-out discussion requests use a random per-browser id and a
+site-wide cap of 300 an hour. `PUBLIC_OPEN_PARTICIPATION=false` restores sign-in
+and residency checks without a code change.
+
+Draft discussions are visible only to maintainers, so the client-rendered
+discussion page retries with the signed-in session when the public lookup finds
+nothing; that lets maintainers preview a draft (and create its Pol.is
+conversation) before opening it.

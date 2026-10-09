@@ -79,7 +79,9 @@ export async function rpc<T>(fn: string, args: Record<string, unknown>, params: 
       body: JSON.stringify(args),
     }),
   );
-  return (await response.json()) as T;
+  // Functions returning void answer 204 with no body.
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
 
 /** Quote a value for a PostgREST `in.(…)` filter. */
