@@ -37,7 +37,6 @@ export default function LocalMatters({
   const [loading, setLoading] = useState(false);
   // Counts given the other filters; starts from the build's overall counts.
   const [counts, setCounts] = useState({ types: facets.types, statuses: facets.statuses });
-  const [allTypes, setAllTypes] = useState(false);
   const first = useRef(true);
   const active = Boolean(filters.q || filters.type || filters.status || filters.sponsor);
 
@@ -121,58 +120,66 @@ export default function LocalMatters({
     chosen && !list.some((x) => x.value === chosen) ? [...list, { value: chosen, count: 0 }] : list;
   const types = withChosen(counts.types, filters.type);
   const statuses = withChosen(counts.statuses, filters.status);
-  const TYPE_LIMIT = 8;
-  const shownTypes =
-    allTypes || types.length <= TYPE_LIMIT + 1
-      ? types
-      : types.filter((t, i) => i < TYPE_LIMIT || t.value === filters.type);
-
   const set = (patch: Partial<Filters>) => {
     setPage(1);
     setFilters((f) => ({ ...f, ...patch }));
   };
 
-  // Council types read "Council Legislative Resolution"; the chips drop the prefix.
+  // Council types read "Council Legislative Resolution"; the menu drops the prefix.
   const short = (t: string) => t.replace(/^Council /, '');
   return (
     <div>
-      {types.length > 0 && (
-        <div class="type-chips" role="group" aria-label="Filter by type">
-          <button type="button" class="chip-button" aria-pressed={!filters.type} onClick={() => set({ type: '' })}>
-            All
-          </button>
-          {shownTypes.map((t) => (
-            <button
-              type="button"
-              class="chip-button"
-              aria-pressed={filters.type === t.value}
-              onClick={() => set({ type: filters.type === t.value ? '' : t.value })}
-            >
-              {short(t.value)} <span class="muted">{t.count.toLocaleString()}</span>
-            </button>
-          ))}
-          {shownTypes.length < types.length && (
-            <button type="button" class="link-button" onClick={() => setAllTypes(true)}>
-              {types.length - shownTypes.length} more types
-            </button>
-          )}
-        </div>
-      )}
       <form
-        class="toolbar matter-filters"
+        class="explorer-search"
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
           set({ q: String(new FormData(e.currentTarget as HTMLFormElement).get('q') ?? '') });
         }}
       >
-        <div class="field" style={{ flexBasis: '16rem' }}>
-          <label for="lm-q">Search</label>
-          <input id="lm-q" name="q" type="search" placeholder="Words or docket number, e.g. bike lanes" />
+        <div class="explorer-query">
+          <label for="lm-q" class="visually-hidden">
+            Search council matters
+          </label>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <input id="lm-q" name="q" type="search" placeholder="Search matters" />
+          <button type="submit" class="primary">
+            Search
+          </button>
         </div>
-        <div class="field">
-          <label for="lm-status">Status</label>
-          <select id="lm-status" value={filters.status} onChange={(e) => set({ status: e.currentTarget.value })}>
+        <div class="explorer-filters matter-filters" role="group" aria-label="Filters">
+          {types.length > 0 && (
+            <>
+              <label for="lm-type" class="visually-hidden">
+                Type
+              </label>
+              <select
+                id="lm-type"
+                value={filters.type}
+                class={filters.type ? 'is-set' : ''}
+                onChange={(e) => set({ type: e.currentTarget.value })}
+              >
+                <option value="">All types</option>
+                {types.map((t) => (
+                  <option value={t.value}>
+                    {short(t.value)} ({t.count.toLocaleString()})
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <label for="lm-status" class="visually-hidden">
+            Status
+          </label>
+          <select
+            id="lm-status"
+            value={filters.status}
+            class={filters.status ? 'is-set' : ''}
+            onChange={(e) => set({ status: e.currentTarget.value })}
+          >
             <option value="">Any status</option>
             {statuses.map((s) => (
               <option value={s.value}>
@@ -180,31 +187,37 @@ export default function LocalMatters({
               </option>
             ))}
           </select>
+          {!local && facets.sponsors.length > 0 && (
+            <>
+              <label for="lm-sponsor" class="visually-hidden">
+                Sponsor
+              </label>
+              <select
+                id="lm-sponsor"
+                value={filters.sponsor}
+                class={filters.sponsor ? 'is-set' : ''}
+                onChange={(e) => set({ sponsor: e.currentTarget.value })}
+              >
+                <option value="">Any councilor</option>
+                {facets.sponsors.map((s) => (
+                  <option value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </>
+          )}
+          {active && (
+            <button
+              type="button"
+              class="link-button clear-filters"
+              onClick={(e) => {
+                (e.currentTarget.form as HTMLFormElement).reset();
+                set(NONE);
+              }}
+            >
+              Clear
+            </button>
+          )}
         </div>
-        {!local && facets.sponsors.length > 0 && (
-          <div class="field">
-            <label for="lm-sponsor">Sponsor</label>
-            <select id="lm-sponsor" value={filters.sponsor} onChange={(e) => set({ sponsor: e.currentTarget.value })}>
-              <option value="">Any councilor</option>
-              {facets.sponsors.map((s) => (
-                <option value={s.id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-        <button type="submit">Search</button>
-        {active && (
-          <button
-            type="button"
-            class="link-button"
-            onClick={(e) => {
-              (e.currentTarget.form as HTMLFormElement).reset();
-              set(NONE);
-            }}
-          >
-            Clear filters
-          </button>
-        )}
       </form>
       {total !== null && (
         <p class="small muted" aria-live="polite">

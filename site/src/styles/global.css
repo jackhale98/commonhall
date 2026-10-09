@@ -2056,6 +2056,29 @@ summary:has(.inline-h) {
 .meeting .meta .swatch {
   margin-right: 0.4em;
 }
+/* Council matter titles can run to a paragraph; lists show three lines (the full text is on the matter's page). */
+.matter-title a {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Boston matters sit in a panel: on phones the filters wrap in two columns instead of scrolling. */
+@media (max-width: 40rem) {
+  .matter-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    margin-inline: 0;
+    padding: 0;
+  }
+  .matter-filters select {
+    width: 100%;
+  }
+  .matter-filters select:first-of-type {
+    grid-column: 1 / -1;
+  }
+}
 /* The committees explorer uses labelled fields in a grid rather than filter pills. */
 .committee-explorer .explorer-filters {
   display: grid;

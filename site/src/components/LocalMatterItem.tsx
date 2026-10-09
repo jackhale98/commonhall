@@ -16,7 +16,7 @@ export default function LocalMatterItem({ matter, href }: { matter: LocalMatter;
           </>
         )}
       </p>
-      <h3 class="bill-title">
+      <h3 class="bill-title matter-title">
         <a href={href ?? localMatterHref(matter.id)}>{matter.title}</a>
       </h3>
       {matter.latest_action_text && (
