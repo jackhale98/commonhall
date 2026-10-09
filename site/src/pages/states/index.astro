@@ -44,43 +44,55 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
     <a class="card feature" href={href('boston/')}>
       <span class="kicker">Local government</span>
       <strong>Boston City Council</strong>
-      <span class="small muted">Councilors, district map, meetings, ordinances, orders and resolutions.</span>
+      <span class="small muted">City Council: councilors, meetings, ordinances and orders.</span>
     </a>
   </div>
 
   <section aria-labelledby="map-h">
-    <h2 id="map-h" class="h-small">
-      Map
-    </h2>
+    <div class="section-head">
+      <h2 id="map-h" class="h-small">
+        Pick a state
+      </h2>
+      <form class="state-jump" action={href('states/')} onsubmit="return false">
+        <label for="state-pick" class="visually-hidden">
+          Go to a state
+        </label>
+        <select id="state-pick" data-base={href('states/')}>
+          <option value="">Go to a state…</option>
+          {states.map((s) => (
+            <option value={s.toLowerCase()}>{stateName(s)}</option>
+          ))}
+          <optgroup label="Territories">
+            {territories.map((s) => (
+              <option value={s.toLowerCase()}>{stateName(s)}</option>
+            ))}
+          </optgroup>
+        </select>
+      </form>
+    </div>
     <div class="panel">
       <StateTiles tiles={tiles} label="States, arranged roughly by location" />
       <p class="small muted legend-note">
-        <span class="swatch fill-present"></span> Full coverage. Numbers are House seats.
+        <span class="swatch fill-present"></span> Full coverage. Numbers are House seats. Territories:{' '}
+        {territories.map((t, i) => (
+          <>
+            {i > 0 && ', '}
+            <a href={stateHref(t)}>{stateName(t)}</a>
+          </>
+        ))}
+        .
       </p>
     </div>
   </section>
-
-  <section aria-labelledby="list-h">
-    <h2 id="list-h" class="h-small">
-      All states
-    </h2>
-    <ul class="state-grid">
-      {states.map((s) => (
-        <li>
-          <a href={stateHref(s)}>{stateName(s)}</a>
-        </li>
-      ))}
-    </ul>
-    <h2 class="h-small">Territories</h2>
-    <ul class="state-grid">
-      {territories.map((s) => (
-        <li>
-          <a href={stateHref(s)}>{stateName(s)}</a>
-        </li>
-      ))}
-    </ul>
-  </section>
 </Base>
+
+<script>
+  // The menu jumps straight to the chosen state's page.
+  const pick = document.getElementById('state-pick') as HTMLSelectElement | null;
+  pick?.addEventListener('change', () => {
+    if (pick.value) window.location.href = `${pick.dataset.base}${pick.value}/`;
+  });
+</script>
 
 <style>
   .featured-row {
@@ -100,16 +112,12 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
   .legend-note {
     margin: var(--space-3) 0 0;
   }
-  .state-grid {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 var(--space-5);
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-    gap: var(--space-1) var(--space-4);
-  }
-  .state-grid a {
-    display: inline-block;
-    padding-block: var(--space-2);
+  .state-jump select {
+    width: auto;
+    min-height: 40px;
+    border-radius: 999px;
+    padding: 0 2rem 0 0.9rem;
+    font-size: var(--step--1);
+    font-weight: 560;
   }
 </style>

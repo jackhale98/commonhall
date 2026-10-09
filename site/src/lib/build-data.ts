@@ -23,7 +23,15 @@ import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import { HIDDEN_MATTER_TYPES, hiddenTypesFilter } from './local';
-import { RestError, inList, rpc, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
+import {
+  RestError,
+  inList,
+  rpc,
+  select as restSelect,
+  selectAll as restSelectAll,
+  selectWithCount,
+  type Params,
+} from './rest';
 import {
   BILL_PAGE_COLUMNS,
   LOCAL_MATTER_COLUMNS,
@@ -321,15 +329,20 @@ export const loadStateLegislators = memo(async () => {
   return groupBy(rows, (r) => r.state);
 });
 
-/** The 20 most recently active bills for a state (one request per state page). */
-export async function loadRecentStateBills(state: string): Promise<{ bills: StateBill[] }> {
-  const bills = await select<StateBill>('state_bills', {
+/** The 10 most recently active bills for a state, and how many it has (one request per state page). */
+export async function loadRecentStateBills(state: string): Promise<{ bills: StateBill[]; total: number }> {
+  const params = {
     select: STATE_BILL_COLUMNS,
     state: `eq.${state}`,
     order: 'latest_action_date.desc.nullslast,id.asc',
-    limit: 20,
-  });
-  return { bills };
+    limit: 10,
+  };
+  if (DEMO) {
+    const bills = await select<StateBill>('state_bills', params);
+    return { bills, total: bills.length };
+  }
+  const { rows, count } = await selectWithCount<StateBill>('state_bills', params);
+  return { bills: rows, total: count };
 }
 
 export interface VotePositionWithMember {
