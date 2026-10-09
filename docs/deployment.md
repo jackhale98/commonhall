@@ -245,13 +245,61 @@ A `401` in `net._http_response` means the Vault `sync_secret` and the function
    `https://<user>.github.io/<repo>/` and add
    `https://<user>.github.io/<repo>/account/` to **Redirect URLs** (plus your custom
    domain's `/account/` if you have one).
-2. Authentication → Emails → SMTP Settings: enable custom SMTP with your provider.
-   Supabase's built-in sender allows only a few emails an hour and is meant for
-   testing.
+2. Authentication → Emails → SMTP Settings: enable custom SMTP with your provider
+   (see [Email for sign-in (SMTP)](#email-for-sign-in-smtp) below). Supabase's
+   built-in sender allows only a few emails an hour and is meant for testing.
 3. Authentication → Emails → Templates → Magic Link: paste
    `supabase/templates/magic_link.html`.
 4. Authentication → Sign In / Providers: keep **Email** on; password sign-in and
    other providers are not used.
+
+### Email for sign-in (SMTP)
+
+Sign-in is by emailed link, so the site needs a mail provider. Both of these have
+free tiers that cover a small site:
+
+| Provider | Free tier | Host | Port | Username | Password |
+| --- | --- | --- | --- | --- | --- |
+| [Resend](https://resend.com) | 3,000 emails a month (100 a day) | `smtp.resend.com` | `465` | `resend` | an API key |
+| [Brevo](https://www.brevo.com) | 300 emails a day | `smtp-relay.brevo.com` | `587` | your SMTP login | an SMTP key |
+
+1. **Create an account** with the provider.
+2. **Verify where mail comes from.** Add a domain you own (for example
+   `mail.example.org`) and create the DNS records the provider shows: SPF and
+   DKIM, plus a DMARC record (`_dmarc`, `v=DMARC1; p=none`) if you have none.
+   Wait until the provider marks the domain verified. Without your own domain,
+   Brevo can verify a single sender address instead; Resend's shared test domain
+   only delivers to your own address, so it is not enough for real users.
+3. **Get the SMTP credentials.** Resend: API Keys → create a key with sending
+   access; the username is `resend` and the key is the password. Brevo: SMTP &
+   API → SMTP → generate an SMTP key; use the login shown there as the username.
+   The password is shown once; paste it straight into Supabase and keep it
+   nowhere else (never in this repo or a GitHub secret; only Supabase needs it).
+4. **Enter them in Supabase.** Authentication → Emails → SMTP Settings → enable
+   **Custom SMTP**:
+   - Sender email: an address on the verified domain, e.g. `no-reply@mail.example.org`
+   - Sender name: `Civic Tracker`
+   - Host, port, username and password from the table above
+   - Minimum interval between emails: keep the default (60 seconds per user)
+5. **Raise the email rate limit.** Authentication → Rate Limits → emails sent per
+   hour: about 30 to start (custom SMTP lifts the built-in cap of 2). Raise it
+   if sign-ins grow, staying within the provider's daily limit.
+6. **Use the site's email template** (step 3 above) so the message names the
+   site and explains why it was sent.
+7. **Test.** Sign in on the live site with your own address. The email should
+   arrive within a minute, and the link should land on `/account/` signed in.
+   If it does not arrive, check the provider's logs first, then Supabase →
+   Logs → Auth.
+
+Common problems:
+
+| Symptom | Fix |
+| --- | --- |
+| "Error sending magic link email" | Wrong host, port or password; port `465` needs SSL, `587` uses STARTTLS. Re-enter the password. |
+| Provider log says the sender is not verified | The sender email must be on the verified domain. |
+| Emails land in spam | Check SPF, DKIM and DMARC are all verified; avoid a free-mail sender address (gmail.com and so on). |
+| The link opens the home page, not signed in | Add `https://<user>.github.io/<repo>/account/` to Redirect URLs (step 1). |
+| "Email rate limit exceeded" | Raise the limit in step 5. |
 
 ## 8. Load data
 
@@ -314,7 +362,7 @@ select id, 'admin' from auth.users where email = 'you@example.org';
 | Backfill cannot connect | `SUPABASE_DB_URL` is the direct (IPv6) string; use the session pooler string |
 | Nothing syncs | Vault secrets missing or unnamed (the `name` column is empty), or `SYNC_SECRET` mismatch (step 6 queries) |
 | Sign-in link opens the wrong page or errors | The `/account/` URL is not in Redirect URLs |
-| Sign-in emails never arrive | Built-in email rate limit; configure SMTP |
+| Sign-in emails never arrive | Built-in email rate limit; configure SMTP ([Email for sign-in](#email-for-sign-in-smtp)) |
 | Find my reps fails with a CORS error | `SITE_ORIGINS` does not include the site's origin |
 | Bill pages are missing for most bills | Expected: only notable bills are prerendered; others load at `/bill/?id=…` |
 

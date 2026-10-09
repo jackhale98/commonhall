@@ -82,7 +82,7 @@ SQL editor. Read by `private.invoke_sync()` when pg_cron fires.
 | --- | --- |
 | Authentication → URL Configuration → Site URL | `https://<user>.github.io/<repo>/` |
 | Authentication → URL Configuration → Redirect URLs | `https://<user>.github.io/<repo>/account/` (and a custom domain's) |
-| Authentication → Emails → SMTP Settings | your SMTP provider |
+| Authentication → Emails → SMTP Settings | your SMTP provider (step-by-step: [deployment guide](deployment.md#email-for-sign-in-smtp)) |
 | Authentication → Emails → Templates → Magic Link | `supabase/templates/magic_link.html` |
 
 ## Local development and scripts
