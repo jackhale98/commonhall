@@ -61,16 +61,27 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     </p>
   </header>
 
-  {bostonDiscussions.length > 0 && (
-    <section aria-labelledby="disc-h">
-      <h2 id="disc-h">Open discussions</h2>
+  <section aria-labelledby="disc-h">
+    <div class="section-head">
+      <h2 id="disc-h">Have your say on Boston</h2>
+      <a class="see-all" href={href('discussions/')}>
+        All discussions
+      </a>
+    </div>
+    {bostonDiscussions.length > 0 ? (
       <ul class="list">
         {bostonDiscussions.map((d) => (
           <DiscussionCard discussion={d} />
         ))}
       </ul>
-    </section>
-  )}
+    ) : (
+      <p class="muted">No Boston discussion is open right now.</p>
+    )}
+    <p class="small muted">
+      Want residents to weigh in on an ordinance, hearing or order? Open it under Council matters below and choose “Ask
+      for a public discussion”. Maintainers open discussions on the most requested items.
+    </p>
+  </section>
 
   <section aria-labelledby="council-h">
     <h2 id="council-h">Councilors</h2>

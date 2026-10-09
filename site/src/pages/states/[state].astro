@@ -1,4 +1,5 @@
 ---
+import DiscussionCard from '../../components/DiscussionCard.astro';
 import FollowButton from '../../components/FollowButton';
 import MemberChip from '../../components/MemberChip';
 import MemberPhoto from '../../components/MemberPhoto';
@@ -7,6 +8,7 @@ import DistrictMap from '../../components/viz/DistrictMap';
 import Hemicycle from '../../components/viz/Hemicycle';
 import Base from '../../layouts/Base.astro';
 import {
+  loadDiscussions,
   loadCouncilDistricts,
   loadLocalOfficials,
   loadMembers,
@@ -58,6 +60,13 @@ const partyGroups = (people: { party: string | null }[]) => {
 // Massachusetts: the Boston City Council is covered too.
 const [districts, officials] =
   code === 'MA' ? await Promise.all([loadCouncilDistricts(), loadLocalOfficials()]) : [[], []];
+// Massachusetts and Boston discussions, on the Massachusetts page.
+const localDiscussions =
+  code === 'MA'
+    ? (await loadDiscussions()).filter(
+        (d) => d.status === 'open' && (d.jurisdiction === 'ma' || d.jurisdiction === 'boston'),
+      )
+    : [];
 const districtFeatures = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
   return {
@@ -110,6 +119,19 @@ const districtFeatures = districts.map((d) => {
           </div>
         )}
       </a>
+      <h3>Have your say</h3>
+      {localDiscussions.length > 0 ? (
+        <ul class="list">
+          {localDiscussions.map((d) => (
+            <DiscussionCard discussion={d} />
+          ))}
+        </ul>
+      ) : (
+        <p class="muted">No Massachusetts or Boston discussion is open right now.</p>
+      )}
+      <p class="small muted">
+        You can ask for a public discussion on any Massachusetts bill or Boston council matter from its page.
+      </p>
     </section>
   )}
 

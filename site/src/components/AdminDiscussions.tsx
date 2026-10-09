@@ -186,11 +186,16 @@ export default function AdminDiscussions() {
                 <option value="bill">Federal bill</option>
                 <option value="state_bill">State bill</option>
                 <option value="local_matter">Boston council matter</option>
+                <option value="executive_order">Executive order</option>
+                <option value="scotus_case">Supreme Court decision</option>
               </select>
             </div>
             {draft.target_type && (
               <div class="field">
-                <label for="d-tid">Item id (e.g. 119-hr-1, boston-43547)</label>
+                <label for="d-tid">
+                  Item id (e.g. 119-hr-1, boston-43547; an order's document number, 2026-20321; a decision's id from its
+                  page address)
+                </label>
                 <input
                   id="d-tid"
                   required
@@ -298,7 +303,7 @@ export default function AdminDiscussions() {
                     target_type: r.target_type,
                     target_id: r.target_id,
                     jurisdiction:
-                      r.target_type === 'bill' ? 'federal' : r.target_type === 'state_bill' ? 'ma' : 'boston',
+                      r.target_type === 'state_bill' ? 'ma' : r.target_type === 'local_matter' ? 'boston' : 'federal',
                   });
                   window.scrollTo({ top: 0 });
                 }}

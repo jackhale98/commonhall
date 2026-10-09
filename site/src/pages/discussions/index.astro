@@ -6,20 +6,26 @@ import { href } from '../../lib/paths';
 
 const discussions = await loadDiscussions();
 const open = discussions.filter((d) => d.status === 'open');
+// Local first: decisions closest to home are where a few voices count most.
+const levels = [
+  { key: 'boston', title: 'Boston', list: open.filter((d) => d.jurisdiction === 'boston') },
+  { key: 'ma', title: 'Massachusetts', list: open.filter((d) => d.jurisdiction === 'ma') },
+  { key: 'federal', title: 'National', list: open.filter((d) => d.jurisdiction === 'federal') },
+].filter((l) => l.list.length > 0);
 const closed = discussions.filter((d) => d.status === 'closed');
 ---
 
 <Base
   title="Discussions"
-  description="Structured public discussions on bills and Boston City Council matters, powered by Pol.is."
+  description="Public discussions on Boston council matters, Massachusetts and federal bills, executive orders and Supreme Court decisions, powered by Pol.is."
   section="discussions"
 >
   <header class="page-head wash">
     <p class="kicker">Discussions</p>
     <h1>Have your say</h1>
     <p class="lede">
-      Each discussion asks one question about a bill or council matter. It takes a minute: vote on short statements, add
-      your own, and see where people agree and where opinion splits.
+      Each discussion asks one question about a council matter, a bill, an executive order or a Supreme Court decision.
+      It takes a minute: vote on short statements, add your own, and see where people agree and where opinion splits.
     </p>
     <ol class="how">
       <li>
@@ -42,7 +48,7 @@ const closed = discussions.filter((d) => d.status === 'closed');
       </li>
     </ol>
     <p class="small muted">
-      Maintainers choose topics; you can ask for one on any bill or council matter page.{' '}
+      Maintainers choose topics; you can ask for one from any council matter, bill, executive order or decision page.{' '}
       <a href={href('moderation/')}>Discussion rules</a> · <a href={href('privacy/')}>Privacy</a>
     </p>
   </header>
@@ -50,11 +56,16 @@ const closed = discussions.filter((d) => d.status === 'closed');
   <section aria-labelledby="open-h">
     <h2 id="open-h">Open</h2>
     {open.length === 0 && <p class="muted">No open discussions right now.</p>}
-    <ul class="list card-grid">
-      {open.map((d) => (
-        <DiscussionCard discussion={d} />
-      ))}
-    </ul>
+    {levels.map((l) => (
+      <section aria-labelledby={`open-${l.key}-h`} class="level">
+        <h3 id={`open-${l.key}-h`}>{l.title}</h3>
+        <ul class="list card-grid">
+          {l.list.map((d) => (
+            <DiscussionCard discussion={d} />
+          ))}
+        </ul>
+      </section>
+    ))}
   </section>
   {closed.length > 0 && (
     <section aria-labelledby="closed-h">
@@ -69,6 +80,9 @@ const closed = discussions.filter((d) => d.status === 'closed');
 </Base>
 
 <style>
+  .level + .level {
+    margin-top: var(--space-5);
+  }
   .how {
     list-style: none;
     padding: 0;

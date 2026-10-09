@@ -8,13 +8,16 @@ export interface ExecutiveOrder {
   signing_date: string | null;
   publication_date: string;
   html_url: string;
+  pdf_url: string | null;
+  citation: string | null;
+  abstract: string | null;
   notes: string | null;
   revokes: number[];
   revoked_by: number[];
 }
 
 export const EXECUTIVE_ORDER_COLUMNS =
-  'document_number,eo_number,title,president,president_name,signing_date,publication_date,html_url,notes,revokes,revoked_by';
+  'document_number,eo_number,title,president,president_name,signing_date,publication_date,html_url,pdf_url,citation,abstract,notes,revokes,revoked_by';
 
 export type NominationStatus =
   | 'received'

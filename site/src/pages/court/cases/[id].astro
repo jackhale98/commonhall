@@ -1,0 +1,98 @@
+---
+import DiscussionLink from '../../../components/DiscussionLink.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadDiscussionsByTarget, loadScotusCases } from '../../../lib/build-data';
+import { docketUrl, type ScotusCase } from '../../../lib/court';
+import { formatDate } from '../../../lib/format';
+import { href } from '../../../lib/paths';
+
+export async function getStaticPaths() {
+  return (await loadScotusCases()).map((c) => ({ params: { id: String(c.cluster_id) }, props: { c } }));
+}
+
+interface Props {
+  c: ScotusCase;
+}
+
+const { c } = Astro.props;
+const discussion = (await loadDiscussionsByTarget()).get(`scotus_case:${c.cluster_id}`);
+const opinions = [
+  c.per_curiam ? 'Decided per curiam (an unsigned opinion of the Court)' : null,
+  c.concurrences > 0 ? `${c.concurrences} concurring opinion${c.concurrences > 1 ? 's' : ''}` : null,
+  c.dissents > 0 ? `${c.dissents} dissenting opinion${c.dissents > 1 ? 's' : ''}` : null,
+].filter(Boolean);
+---
+
+<Base
+  title={c.case_name}
+  description={`Supreme Court decision in ${c.case_name}, ${formatDate(c.date_filed)}.`}
+  section="court"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('court/')}>Supreme Court</a> › {c.case_name}
+  </nav>
+  <header class="page-head">
+    <p class="kicker">Supreme Court · October Term {c.term}</p>
+    <h1>{c.case_name}</h1>
+    <p class="lede">
+      Decided {formatDate(c.date_filed)}
+      {c.date_argued && `, argued ${formatDate(c.date_argued)}`}.
+    </p>
+  </header>
+
+  <DiscussionLink discussion={discussion} targetType="scotus_case" targetId={String(c.cluster_id)} />
+
+  <dl class="facts">
+    {c.docket_number && (
+      <div>
+        <dt>Docket</dt>
+        <dd>
+          <a href={docketUrl(c.docket_number)} rel="noopener">
+            No. {c.docket_number}
+          </a>{' '}
+          <span class="small muted">on supremecourt.gov: filings, briefs and the argument calendar</span>
+        </dd>
+      </div>
+    )}
+    {c.citations.length > 0 && (
+      <div>
+        <dt>Citation</dt>
+        <dd>{c.citations.join('; ')}</dd>
+      </div>
+    )}
+    {opinions.length > 0 && (
+      <div>
+        <dt>Opinions</dt>
+        <dd>{opinions.join(' · ')}</dd>
+      </div>
+    )}
+  </dl>
+
+  <p class="cluster">
+    <a class="button" href={c.url} rel="noopener">
+      Read the opinions
+    </a>
+  </p>
+  <p class="small muted">
+    Opinions are hosted by{' '}
+    <a href="https://www.courtlistener.com/" rel="noopener">
+      CourtListener
+    </a>{' '}
+    (Free Law Project). Separate concurrences and dissents are listed when CourtListener records them separately.
+  </p>
+</Base>
+
+<style>
+  .facts {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+  }
+  .facts dt {
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .facts dd {
+    margin: 0;
+  }
+</style>

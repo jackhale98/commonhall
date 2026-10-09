@@ -80,6 +80,26 @@ describe('discussions', () => {
     expect(feed[0]!.payload).toMatchObject({ discussion_id: 'test-hr1' });
   });
 
+  it('can be about an executive order or a Supreme Court decision', async () => {
+    const user = await createUser(sql);
+    await sql`insert into public.discussions ${sql(discussion('test-eo', 'open', { target_type: 'executive_order', target_id: '2026-20321' }) as never)}`;
+    await sql`insert into public.discussions ${sql(discussion('test-scotus', 'open', { target_type: 'scotus_case', target_id: '10000001' }) as never)}`;
+    const events =
+      await sql`select target_type from public.feed_events where dedupe_key in ('discussion_opened:test-eo', 'discussion_opened:test-scotus') order by target_type`;
+    expect(events.map((e) => e.target_type)).toEqual(['executive_order', 'scotus_case']);
+    await asUser(
+      sql,
+      user,
+      (tx) =>
+        tx`insert into public.discussion_requests (user_id, target_type, target_id) values (${user}, 'scotus_case', '10000002')`,
+    );
+    const [count] = await asAnon(
+      sql,
+      (tx) => tx`select public.discussion_request_count('scotus_case', '10000002') as n`,
+    );
+    expect(count!.n).toBe(1);
+  });
+
   it('keeps requests private but publishes their count', async () => {
     const [a, b, admin] = [await createUser(sql), await createUser(sql), await createUser(sql)];
     await sql`insert into public.admins (user_id) values (${admin})`;

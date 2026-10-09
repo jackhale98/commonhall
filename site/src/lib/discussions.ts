@@ -1,7 +1,14 @@
 import { billLabel, parseBillId } from '@civic/congress-client/ids';
 import type { PolisProfile } from './auth';
 import { congressLabel, stateName } from './format';
-import { billFallbackHref, billHref, localMatterHref, stateBillFallbackHref } from './paths';
+import {
+  billFallbackHref,
+  billHref,
+  executiveOrderHref,
+  localMatterHref,
+  scotusCaseHref,
+  stateBillFallbackHref,
+} from './paths';
 import type { Discussion } from './types';
 
 export const DISCUSSION_COLUMNS =
@@ -45,6 +52,8 @@ export function targetHref(type: Discussion['target_type'], id: string | null): 
     return ref ? billHref(ref.congress, ref.type, ref.number) : billFallbackHref(id);
   }
   if (type === 'state_bill') return stateBillFallbackHref(id);
+  if (type === 'executive_order') return executiveOrderHref(id);
+  if (type === 'scotus_case') return scotusCaseHref(id);
   return localMatterHref(id);
 }
 
@@ -55,5 +64,7 @@ export function targetLabel(type: Discussion['target_type'], id: string | null):
     return ref ? `${billLabel(ref.type, ref.number)}, ${congressLabel(ref.congress)}` : id;
   }
   if (type === 'state_bill') return 'the state bill';
+  if (type === 'executive_order') return 'the executive order';
+  if (type === 'scotus_case') return 'the Supreme Court decision';
   return `Boston council matter ${id.replace(/^boston-/, '')}`;
 }

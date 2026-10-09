@@ -1,0 +1,125 @@
+---
+import DiscussionLink from '../../../components/DiscussionLink.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadDiscussionsByTarget, loadExecutiveOrders } from '../../../lib/build-data';
+import type { ExecutiveOrder } from '../../../lib/executive';
+import { formatDate } from '../../../lib/format';
+import { executiveOrderHref, href } from '../../../lib/paths';
+
+export async function getStaticPaths() {
+  const orders = await loadExecutiveOrders();
+  const byNumber = new Map(orders.filter((o) => o.eo_number).map((o) => [o.eo_number!, o]));
+  // "Revoked by" also comes from later orders' own "Revokes" notes.
+  const revokedBy = new Map<number, Set<number>>();
+  for (const o of orders) {
+    if (!o.eo_number) continue;
+    for (const n of o.revokes ?? []) (revokedBy.get(n) ?? revokedBy.set(n, new Set()).get(n)!).add(o.eo_number);
+    for (const n of o.revoked_by ?? [])
+      (revokedBy.get(o.eo_number) ?? revokedBy.set(o.eo_number, new Set()).get(o.eo_number)!).add(n);
+  }
+  return orders.map((order) => ({
+    params: { doc: order.document_number },
+    props: {
+      order,
+      revokes: (order.revokes ?? []).map((n) => ({ n, order: byNumber.get(n) ?? null })),
+      revokedBy: [...(revokedBy.get(order.eo_number ?? -1) ?? [])].map((n) => ({ n, order: byNumber.get(n) ?? null })),
+    },
+  }));
+}
+
+interface Related {
+  n: number;
+  order: ExecutiveOrder | null;
+}
+
+interface Props {
+  order: ExecutiveOrder;
+  revokes: Related[];
+  revokedBy: Related[];
+}
+
+const { order, revokes, revokedBy } = Astro.props;
+const discussion = (await loadDiscussionsByTarget()).get(`executive_order:${order.document_number}`);
+const label = order.eo_number ? `Executive Order ${order.eo_number}` : 'Executive order';
+---
+
+<Base title={`${label}: ${order.title.slice(0, 80)}`} description={`${label}: ${order.title}`} section="executive">
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('executive/')}>Executive branch</a> › {label}
+  </nav>
+  <header class="page-head">
+    <p class="kicker">{label}</p>
+    <h1>{order.title}</h1>
+    <p class="lede">
+      Signed{order.president_name && ` by ${order.president_name}`}
+      {order.signing_date && ` on ${formatDate(order.signing_date)}`}. Published in the Federal Register on{' '}
+      {formatDate(order.publication_date)}
+      {order.citation && ` (${order.citation})`}.
+    </p>
+  </header>
+
+  <DiscussionLink discussion={discussion} targetType="executive_order" targetId={order.document_number} />
+
+  {revokedBy.length > 0 && (
+    <p class="notice">
+      <strong>No longer in effect:</strong> revoked by{' '}
+      {revokedBy.map((r, i) => (
+        <>
+          {i > 0 && ', '}
+          {r.order ? <a href={executiveOrderHref(r.order.document_number)}>EO {r.n}</a> : `EO ${r.n}`}
+        </>
+      ))}
+      .
+    </p>
+  )}
+
+  {order.abstract && <p>{order.abstract}</p>}
+
+  <dl class="facts">
+    {revokes.length > 0 && (
+      <div>
+        <dt>Revokes</dt>
+        <dd>
+          {revokes.map((r, i) => (
+            <>
+              {i > 0 && ', '}
+              {r.order ? <a href={executiveOrderHref(r.order.document_number)}>EO {r.n}</a> : `EO ${r.n}`}
+            </>
+          ))}
+        </dd>
+      </div>
+    )}
+    {order.notes && (
+      <div>
+        <dt>Federal Register notes</dt>
+        <dd>{order.notes}</dd>
+      </div>
+    )}
+  </dl>
+
+  <p class="cluster">
+    <a class="button" href={order.html_url} rel="noopener">
+      Read the order
+    </a>
+    {order.pdf_url && (
+      <a href={order.pdf_url} rel="noopener">
+        Official PDF
+      </a>
+    )}
+  </p>
+</Base>
+
+<style>
+  .facts {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+  }
+  .facts dt {
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+  .facts dd {
+    margin: 0;
+  }
+</style>

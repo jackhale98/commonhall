@@ -454,3 +454,17 @@ Supabase secret and is sent in a header, never in the URL.
   never labels a decision unanimous.
 - Nominations to the Court come from the nominations table, so a vacancy and its
   confirmation show up on the Court page too.
+
+## 45. Discussions on orders and rulings; local first
+
+Approved by the owner. Discussions and discussion requests can target an
+executive order (Federal Register document number) or a Supreme Court decision
+(CourtListener cluster id), alongside bills, Massachusetts bills and Boston council
+matters. Each order and decision has its own page (`/executive/orders/{doc}/`,
+`/court/cases/{id}/`) carrying the usual "Ask for a public discussion" control, and
+the executive and court lists mark items with a discussion. Both are national
+(`federal` jurisdiction).
+
+Local discussions come first: the discussions page groups open discussions as
+Boston, Massachusetts, then national; the Boston page always has a "Have your say"
+section, and the Massachusetts page lists open state and Boston discussions.

@@ -30,6 +30,16 @@ export function stateHref(state: string): string {
 }
 
 /** Boston council matters use the Legistar MatterId in their URL. */
+/** An executive order's page, by Federal Register document number. */
+export function executiveOrderHref(documentNumber: string): string {
+  return href(`executive/orders/${documentNumber}/`);
+}
+
+/** A Supreme Court decision's page, by CourtListener cluster id. */
+export function scotusCaseHref(clusterId: string | number): string {
+  return href(`court/cases/${clusterId}/`);
+}
+
 export function localMatterHref(id: string): string {
   const matterId = id.replace(/^boston-/, '');
   return href(`boston/matters/${matterId}/`);

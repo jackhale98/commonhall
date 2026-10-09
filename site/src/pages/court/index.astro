@@ -1,12 +1,17 @@
 ---
 import BarList from '../../components/viz/BarList';
 import Base from '../../layouts/Base.astro';
-import { loadNominations, loadScotusCases } from '../../lib/build-data';
+import { loadDiscussionsByTarget, loadNominations, loadScotusCases } from '../../lib/build-data';
+import { scotusCaseHref } from '../../lib/paths';
 import { docketUrl, supremeCourtTerm, type ScotusCase } from '../../lib/court';
 import { NOMINATION_STATUS, nominationUrl } from '../../lib/executive';
 import { formatDate } from '../../lib/format';
 
-const [cases, nominations] = await Promise.all([loadScotusCases(), loadNominations()]);
+const [cases, nominations, discussions] = await Promise.all([
+  loadScotusCases(),
+  loadNominations(),
+  loadDiscussionsByTarget(),
+]);
 const term = supremeCourtTerm(new Date());
 const termLabel = (t: number) => `October Term ${t}`;
 const thisTerm = cases.filter((c) => c.term === term);
@@ -80,9 +85,8 @@ const tags = (c: ScotusCase) =>
                   {c.citations[0] && <> · {c.citations[0]}</>}
                 </p>
                 <p class="case-name">
-                  <a href={c.url} rel="noopener">
-                    {c.case_name}
-                  </a>
+                  <a href={scotusCaseHref(c.cluster_id)}>{c.case_name}</a>
+                  {discussions.has(`scotus_case:${c.cluster_id}`) && <span class="chip">Discussion</span>}
                 </p>
                 {tags(c).length > 0 && <p class="small muted">{tags(c).join(' · ')}</p>}
               </li>

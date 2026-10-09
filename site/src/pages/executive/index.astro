@@ -2,15 +2,22 @@
 import BarList from '../../components/viz/BarList';
 import StackedBar from '../../components/viz/StackedBar';
 import Base from '../../layouts/Base.astro';
-import { CURRENT_CONGRESS, loadExecutiveOrders, loadNominations, loadVotesByNomination } from '../../lib/build-data';
+import {
+  CURRENT_CONGRESS,
+  loadDiscussionsByTarget,
+  loadExecutiveOrders,
+  loadNominations,
+  loadVotesByNomination,
+} from '../../lib/build-data';
 import { NOMINATION_STATUS, nominationUrl, type Nomination, type NominationStatus } from '../../lib/executive';
 import { congressLabel, formatDate } from '../../lib/format';
-import { voteHref } from '../../lib/paths';
+import { executiveOrderHref, voteHref } from '../../lib/paths';
 
-const [orders, nominations, votesByNomination] = await Promise.all([
+const [orders, nominations, votesByNomination, discussions] = await Promise.all([
   loadExecutiveOrders(),
   loadNominations(),
   loadVotesByNomination(),
+  loadDiscussionsByTarget(),
 ]);
 const congress = congressLabel(CURRENT_CONGRESS);
 
@@ -130,9 +137,8 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
                     {o.eo_number ? `EO ${o.eo_number}` : 'Executive order'} · signed {formatDate(o.signing_date)}
                   </p>
                   <p class="eo-title">
-                    <a href={o.html_url} rel="noopener">
-                      {o.title}
-                    </a>
+                    <a href={executiveOrderHref(o.document_number)}>{o.title}</a>
+                    {discussions.has(`executive_order:${o.document_number}`) && <span class="chip">Discussion</span>}
                   </p>
                   {(revokes.length > 0 || revoked.length > 0) && (
                     <p class="small muted">
@@ -142,7 +148,11 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
                           {revokes.map((n, i) => (
                             <>
                               {i > 0 && ', '}
-                              {byNumber.get(n) ? <a href={byNumber.get(n)!.html_url}>EO {n}</a> : `EO ${n}`}
+                              {byNumber.get(n) ? (
+                                <a href={executiveOrderHref(byNumber.get(n)!.document_number)}>EO {n}</a>
+                              ) : (
+                                `EO ${n}`
+                              )}
                             </>
                           ))}
                           {revoked.length > 0 && ' · '}
@@ -154,7 +164,11 @@ const nomineeLabel = (n: Nomination) => n.nominee ?? n.description ?? n.citation
                           {revoked.map((n, i) => (
                             <>
                               {i > 0 && ', '}
-                              {byNumber.get(n) ? <a href={byNumber.get(n)!.html_url}>EO {n}</a> : `EO ${n}`}
+                              {byNumber.get(n) ? (
+                                <a href={executiveOrderHref(byNumber.get(n)!.document_number)}>EO {n}</a>
+                              ) : (
+                                `EO ${n}`
+                              )}
                             </>
                           ))}
                         </strong>

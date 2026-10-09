@@ -78,9 +78,10 @@ about, and take part in moderated public discussions.
 - **Follow** any bill, council matter, legislator or discussion and see everything
   that changed in one **feed**. Sign-in is by emailed link; there are no passwords.
 - **Discussions:** structured public conversations (powered by
-  [Pol.is](https://pol.is)) on selected bills and council matters. You vote on short
-  statements and add your own; the results show where people agree and where
-  they divide. You can ask for a discussion on any bill or matter.
+  [Pol.is](https://pol.is)) on Boston council matters, Massachusetts and federal
+  bills, executive orders and Supreme Court decisions, listed local first. You vote
+  on short statements and add your own; the results show where people agree and
+  where they divide. You can ask for a discussion from any of those pages.
 
 **At a glance:** charts throughout the site show the make-up of each chamber,
 where bills stand, the most active topics, and how votes split.
