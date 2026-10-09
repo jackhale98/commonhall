@@ -15,6 +15,21 @@ interface RequestRow {
 
 type Draft = Omit<Discussion, 'created_at'>;
 
+const TYPE_LABEL: Record<DiscussionTargetType, string> = {
+  bill: 'Bill',
+  state_bill: 'MA bill',
+  local_matter: 'Boston matter',
+  executive_order: 'Executive order',
+  scotus_case: 'Supreme Court decision',
+};
+
+/** Discussions grouped by status; closed ones are folded away. */
+const GROUPS: { status: Discussion['status']; title: string; collapsed: boolean }[] = [
+  { status: 'draft', title: 'Drafts', collapsed: false },
+  { status: 'open', title: 'Open', collapsed: false },
+  { status: 'closed', title: 'Closed', collapsed: true },
+];
+
 const EMPTY: Draft = {
   id: '',
   title: '',
@@ -70,6 +85,30 @@ export default function AdminDiscussions() {
   if (state === 'denied') return <p class="notice">This page is for maintainers. Ask the site owner for access.</p>;
   if (state === 'error') return <p class="notice error">Couldn’t load discussions.</p>;
 
+  // A request is covered once any discussion (draft, open or closed) exists for its item.
+  const byTarget = new Map(rows.filter((d) => d.target_type).map((d) => [`${d.target_type}:${d.target_id}`, d]));
+  const waiting = requests.filter((r) => !byTarget.has(`${r.target_type}:${r.target_id}`));
+  const covered = requests
+    .map((r) => ({ r, d: byTarget.get(`${r.target_type}:${r.target_id}`) }))
+    .filter((x): x is { r: RequestRow; d: Discussion } => Boolean(x.d));
+  const requestCount = (d: Discussion) =>
+    requests.find((r) => r.target_type === d.target_type && r.target_id === d.target_id)?.requests ?? 0;
+  const edit = (d: Discussion) => {
+    setEditing(d.id);
+    setDraft({ ...d });
+    window.scrollTo({ top: 0 });
+  };
+  const startFrom = (r: RequestRow) => {
+    setEditing(null);
+    setDraft({
+      ...EMPTY,
+      target_type: r.target_type,
+      target_id: r.target_id,
+      jurisdiction: r.target_type === 'state_bill' ? 'ma' : r.target_type === 'local_matter' ? 'boston' : 'federal',
+    });
+    window.scrollTo({ top: 0 });
+  };
+
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
   const save = async (e: Event) => {
     e.preventDefault();
@@ -96,6 +135,30 @@ export default function AdminDiscussions() {
 
   return (
     <div class="stack">
+      <section>
+        <h2>
+          Waiting for a discussion <span class="muted">({waiting.length})</span>
+        </h2>
+        <p class="small muted">Requested items with no discussion yet, most requested first.</p>
+        {waiting.length === 0 && <p class="muted">Nothing waiting.</p>}
+        <ul class="list">
+          {waiting.map((r) => (
+            <li class="cluster admin-row">
+              <span>
+                <strong>{r.requests}</strong> {r.requests === 1 ? 'request' : 'requests'} ·{' '}
+                <a href={targetHref(r.target_type, r.target_id) ?? '#'}>
+                  {TYPE_LABEL[r.target_type]} {r.target_id}
+                </a>{' '}
+                <span class="small muted">latest {formatDate(r.latest)}</span>
+              </span>
+              <button type="button" class="link-button" onClick={() => startFrom(r)}>
+                Start a discussion
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section>
         <h2>{editing ? `Edit “${editing}”` : 'New discussion'}</h2>
         <p class="small muted">
@@ -253,67 +316,77 @@ export default function AdminDiscussions() {
         </form>
       </section>
 
-      <section>
-        <h2>All discussions</h2>
-        <ul class="list">
-          {rows.map((d) => (
-            <li class="cluster admin-row">
-              <span>
-                <strong>{d.status}</strong> · <a href={discussionHref(d.id)}>{d.title}</a>{' '}
-                <span class="small muted">
-                  ({d.id}, created {formatDate(d.created_at)})
+      {GROUPS.map(({ status, title, collapsed }) => {
+        const list = rows.filter((d) => d.status === status);
+        if (list.length === 0) return null;
+        const items = (
+          <ul class="list">
+            {list.map((d) => (
+              <li class="cluster admin-row">
+                <span>
+                  <a href={discussionHref(d.id)}>{d.title}</a>{' '}
+                  <span class="small muted">
+                    ({d.id}
+                    {d.target_type && `, about ${TYPE_LABEL[d.target_type]} ${d.target_id}`}
+                    {requestCount(d) > 0 && `, ${requestCount(d)} requested`}, created {formatDate(d.created_at)})
+                  </span>
                 </span>
-              </span>
-              <button
-                type="button"
-                class="link-button"
-                onClick={() => {
-                  setEditing(d.id);
-                  setDraft({ ...d });
-                  window.scrollTo({ top: 0 });
-                }}
-              >
-                Edit
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+                <button type="button" class="link-button" onClick={() => edit(d)}>
+                  Edit
+                </button>
+              </li>
+            ))}
+          </ul>
+        );
+        return (
+          <section>
+            {collapsed ? (
+              <details>
+                <summary>
+                  <h2 class="inline-h">
+                    {title} <span class="muted">({list.length})</span>
+                  </h2>
+                </summary>
+                {items}
+              </details>
+            ) : (
+              <>
+                <h2>
+                  {title} <span class="muted">({list.length})</span>
+                </h2>
+                {items}
+              </>
+            )}
+          </section>
+        );
+      })}
 
-      <section>
-        <h2>Requests</h2>
-        {requests.length === 0 && <p class="muted">No requests yet.</p>}
-        <ul class="list">
-          {requests.map((r) => (
-            <li class="cluster admin-row">
-              <span>
-                <strong>{r.requests}</strong> ·{' '}
-                <a href={targetHref(r.target_type, r.target_id) ?? '#'}>
-                  {r.target_type} {r.target_id}
-                </a>{' '}
-                <span class="small muted">latest {formatDate(r.latest)}</span>
-              </span>
-              <button
-                type="button"
-                class="link-button"
-                onClick={() => {
-                  setEditing(null);
-                  setDraft({
-                    ...EMPTY,
-                    target_type: r.target_type,
-                    target_id: r.target_id,
-                    jurisdiction:
-                      r.target_type === 'state_bill' ? 'ma' : r.target_type === 'local_matter' ? 'boston' : 'federal',
-                  });
-                  window.scrollTo({ top: 0 });
-                }}
-              >
-                Start a discussion
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {covered.length > 0 && (
+        <section>
+          <details>
+            <summary>
+              <h2 class="inline-h">
+                Requests already covered <span class="muted">({covered.length})</span>
+              </h2>
+            </summary>
+            <ul class="list">
+              {covered.map(({ r, d }) => (
+                <li class="cluster admin-row">
+                  <span>
+                    <strong>{r.requests}</strong> ·{' '}
+                    <a href={targetHref(r.target_type, r.target_id) ?? '#'}>
+                      {TYPE_LABEL[r.target_type]} {r.target_id}
+                    </a>{' '}
+                    <span class="small muted">
+                      → <a href={discussionHref(d.id)}>{d.title}</a> ({d.status})
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
     </div>
   );
 }

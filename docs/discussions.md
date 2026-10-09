@@ -79,7 +79,8 @@ random id kept in the browser's local storage (`civic.request-client`), stored w
 the item and nothing else, through `set_anonymous_discussion_request`; the table
 is not readable by anyone. At most 300 new anonymous requests an hour are
 accepted site-wide, so a script cannot flood the counts. The admin page's
-**Requests** list combines both.
+**Waiting for a discussion** list combines both and leaves out items that already
+have a discussion (those are folded under **Requests already covered**).
 
 ## Residency
 

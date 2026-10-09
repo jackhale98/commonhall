@@ -206,8 +206,11 @@ create them from the site; Pol.is creates the poll the first time its page loads
 **When someone asks for one**
 
 Anyone can press "Ask for a public discussion" on an item's page, signed in or
-not. The admin page's **Requests** list shows the most-requested items (never who
-asked); **Create discussion** next to one fills in the form for it.
+not. The admin page opens with **Waiting for a discussion**: requested items that
+have no discussion yet, most requested first (never who asked). **Start a
+discussion** fills in the form for one. Once a discussion exists for an item (even
+a draft), its requests move to the folded **Requests already covered** list, and
+closed discussions are folded away too.
 
 **While it runs**
 

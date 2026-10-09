@@ -1973,3 +1973,13 @@ body {
 .chip-button[aria-pressed='true'] .muted {
   color: inherit;
 }
+
+/* A heading used as a <summary> label. */
+summary .inline-h {
+  display: inline;
+  font-size: var(--step-1);
+}
+summary:has(.inline-h) {
+  cursor: pointer;
+  margin-block: var(--space-4) var(--space-2);
+}
