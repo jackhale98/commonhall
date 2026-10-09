@@ -38,6 +38,47 @@ export interface CapitalProject {
 export const CAPITAL_COLUMNS =
   'proj_id,plan,first_year,department,name,scope,status,neighborhood,total_budget,spent,year0,year1,years_2_5,external_funds';
 
+/** The stages a capital project moves through, in order. */
+export const CAPITAL_STAGES = ['Planned', 'Study', 'Design', 'Construction', 'Complete'] as const;
+
+/**
+ * Where a project stands among CAPITAL_STAGES (0–4), from the city's status; null
+ * for annual programs (recurring work with no stages) and statuses not known here.
+ */
+export function capitalStage(status: string | null): number | null {
+  const s = (status ?? '').toLowerCase();
+  if (/new project|to be scheduled/.test(s)) return 0;
+  if (/study/.test(s)) return 1;
+  if (/design/.test(s)) return 2;
+  if (/construction|implementation/.test(s)) return 3;
+  if (/complete/.test(s)) return 4;
+  return null;
+}
+
+/** The plan's money for one project, in time order, as shares of its total budget. */
+export function fundingSegments(p: CapitalProject) {
+  const fy = (offset: number) => (p.first_year ? `FY${String(p.first_year + offset).slice(2)}` : null);
+  const segments = [
+    { key: 'spent', label: 'Spent so far', value: p.spent, tone: 'fund-1' },
+    { key: 'year0', label: `Planned for ${fy(-1) ?? 'last year'}`, value: p.year0, tone: 'fund-2' },
+    { key: 'year1', label: `Planned for ${fy(0) ?? 'this year'}`, value: p.year1, tone: 'fund-3' },
+    {
+      key: 'later',
+      label: `Planned for ${fy(1) && fy(4) ? `${fy(1)}–${fy(4)}` : 'later years'}`,
+      value: p.years_2_5,
+      tone: 'fund-4',
+    },
+  ];
+  const scheduled = segments.reduce((n, s) => n + s.value, 0);
+  segments.push({
+    key: 'rest',
+    label: 'Not yet scheduled',
+    value: Math.max(0, p.total_budget - scheduled),
+    tone: 'fund-rest',
+  });
+  return segments.filter((s) => s.value > 0);
+}
+
 /** Compact project row for the projects explorer (boston/capital.json). */
 export interface CapitalRow {
   i: string;
@@ -47,9 +88,10 @@ export interface CapitalRow {
   h: string | null;
   s: string | null;
   w: string | null;
-  /** Total budget and planned spending in the plan's first year. */
+  /** Total budget, planned spending in the plan's first year, and spent so far. */
   t: number;
   y: number;
+  p: number;
 }
 
 export const capitalRow = (p: CapitalProject): CapitalRow => ({
@@ -61,6 +103,7 @@ export const capitalRow = (p: CapitalProject): CapitalRow => ({
   w: p.scope,
   t: Number(p.total_budget),
   y: Number(p.year1),
+  p: Number(p.spent),
 });
 
 /** A Zoning Board of Appeal case with a hearing still to come (zba_appeals). */

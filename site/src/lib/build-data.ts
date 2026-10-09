@@ -520,7 +520,15 @@ export const loadCapitalProjects = memo(async () =>
       select: CAPITAL_COLUMNS,
       order: 'total_budget.desc,proj_id.asc',
     })
-  ).map((p) => ({ ...p, total_budget: Number(p.total_budget), year1: Number(p.year1), spent: Number(p.spent) })),
+  ).map((p) => ({
+    ...p,
+    total_budget: Number(p.total_budget),
+    spent: Number(p.spent),
+    year0: Number(p.year0),
+    year1: Number(p.year1),
+    years_2_5: Number(p.years_2_5),
+    external_funds: Number(p.external_funds),
+  })),
 );
 
 export const loadLocalOfficials = memo(async () =>

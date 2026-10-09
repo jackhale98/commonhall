@@ -1,0 +1,50 @@
+---
+import { formatMoney } from '../../lib/finance';
+
+interface Props {
+  segments: { key: string; label: string; value: number; tone: string }[];
+  total: number;
+  label: string;
+}
+
+/**
+ * A project's total budget as one bar split in time order: spent, then each planned
+ * year, then what is not yet scheduled. The legend under it gives every amount and
+ * share, so nothing depends on colour or hover.
+ */
+const { segments, total, label } = Astro.props;
+const share = (v: number) => (total > 0 ? (v / total) * 100 : 0);
+const pct = (v: number) => {
+  const p = share(v);
+  return p > 0 && p < 1 ? '<1%' : `${Math.round(p)}%`;
+};
+---
+
+<figure class="funding">
+  <div class="funding-bar" role="img" aria-label={label}>
+    {segments.map((s) => (
+      <span
+        class={s.tone}
+        style={{ flex: `${share(s.value)} 1 0` }}
+        title={`${s.label}: ${formatMoney(s.value)} (${pct(s.value)})`}
+      />
+    ))}
+  </div>
+  <ul class="funding-legend">
+    {segments.map((s) => (
+      <li>
+        <span class={`swatch ${s.tone}`} aria-hidden="true" />
+        <span>{s.label}</span>
+        <span class="amount">
+          <strong>{formatMoney(s.value)}</strong> <span class="muted">{pct(s.value)}</span>
+        </span>
+      </li>
+    ))}
+  </ul>
+</figure>
+
+<style>
+  .funding {
+    margin: 0;
+  }
+</style>

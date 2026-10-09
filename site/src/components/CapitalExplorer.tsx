@@ -1,9 +1,22 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { formatMoney } from '../lib/finance';
-import type { CapitalRow } from '../lib/local';
+import { CAPITAL_STAGES, capitalStage, type CapitalRow } from '../lib/local';
 import { capitalProjectHref, href } from '../lib/paths';
 
 const PAGE = 10;
+
+/** Five dots, filled up to the project's stage (none for annual programs). */
+function StageDots({ status }: { status: string | null }) {
+  const stage = capitalStage(status);
+  if (stage === null) return null;
+  return (
+    <span class="stage-dots" aria-hidden="true">
+      {CAPITAL_STAGES.map((_, i) => (
+        <span class={i <= stage ? 'on' : ''} />
+      ))}
+    </span>
+  );
+}
 const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? 5 : PAGE);
 
 interface Props {
@@ -100,8 +113,8 @@ export default function CapitalExplorer({ initial, departments, neighborhoods, s
         </div>
         <div class="explorer-filters matter-filters" role="group" aria-label="Filters">
           {select('cap-dept', 'Any department', dept, departments, set(setDept))}
-          {select('cap-hood', 'Any neighborhood', hood, neighborhoods, set(setHood))}
-          {select('cap-status', 'Any status', status, statuses, set(setStatus))}
+          {select('cap-hood', 'Any area', hood, neighborhoods, set(setHood))}
+          {select('cap-status', 'Any stage', status, statuses, set(setStatus))}
           {active && (
             <button type="button" class="link-button clear-filters" onClick={reset}>
               Clear
@@ -117,15 +130,23 @@ export default function CapitalExplorer({ initial, departments, neighborhoods, s
           <ul class={`list capital-list trimmable${mounted ? ' is-live' : ''}`}>
             {hits.slice(0, shown).map((p) => (
               <li key={p.i}>
-                <p class="meta">{[p.d, p.h, p.s].filter(Boolean).join(' · ')}</p>
+                <p class="meta">{[p.d, p.h].filter(Boolean).join(' · ')}</p>
                 <p class="capital-name">
                   <a href={capitalProjectHref(p.i)}>
                     <strong>{p.n}</strong>
                   </a>
                 </p>
                 {p.w && <p class="small capital-scope">{p.w}</p>}
+                <p class="small capital-stage">
+                  <StageDots status={p.s} />
+                  {p.s}
+                </p>
+                <div class="funding-bar compact" aria-hidden="true">
+                  {p.p > 0 && <span class="fund-1" style={{ flex: `${p.p} 1 0` }} />}
+                  <span class="fund-rest" style={{ flex: `${Math.max(0, p.t - p.p)} 1 0` }} />
+                </div>
                 <p class="small muted">
-                  Total budget <strong>{formatMoney(p.t)}</strong>
+                  <strong>{formatMoney(p.p)}</strong> spent of {formatMoney(p.t)}
                   {p.y > 0 && (
                     <>
                       {' '}

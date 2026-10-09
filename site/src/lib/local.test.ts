@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { change311, closeTime, report311, streetAddress, type Boston311Day } from './local';
+import {
+  capitalStage,
+  change311,
+  closeTime,
+  fundingSegments,
+  report311,
+  streetAddress,
+  type Boston311Day,
+} from './local';
 
 const row = (day: string, district: number, type: string, opened: number, extra: Partial<Boston311Day> = {}) => ({
   day,
@@ -55,5 +63,41 @@ describe('streetAddress', () => {
     expect(streetAddress('68 Theodore Parker RD West Roxbury 02132', 'West Roxbury')).toBe('68 Theodore Parker Rd');
     expect(streetAddress('85 Chandler ST Boston 02116', 'Boston')).toBe('85 Chandler St');
     expect(streetAddress(null, 'Boston')).toBeNull();
+  });
+});
+
+describe('capital projects', () => {
+  it('places the city’s statuses on the stage timeline', () => {
+    expect(capitalStage('To Be Scheduled')).toBe(0);
+    expect(capitalStage('Study Underway')).toBe(1);
+    expect(capitalStage('In Design')).toBe(2);
+    expect(capitalStage('Implementation Underway')).toBe(3);
+    expect(capitalStage('Completed')).toBe(4);
+    expect(capitalStage('Annual Program')).toBeNull();
+  });
+
+  it('splits the total budget in time order, with the unscheduled rest last', () => {
+    const p = {
+      proj_id: 'X',
+      plan: 'FY27-31',
+      first_year: 2027,
+      department: null,
+      name: 'X',
+      scope: null,
+      status: null,
+      neighborhood: null,
+      total_budget: 100,
+      spent: 10,
+      year0: 0,
+      year1: 20,
+      years_2_5: 30,
+      external_funds: 0,
+    };
+    expect(fundingSegments(p).map((s) => [s.label, s.value])).toEqual([
+      ['Spent so far', 10],
+      ['Planned for FY27', 20],
+      ['Planned for FY28–FY31', 30],
+      ['Not yet scheduled', 40],
+    ]);
   });
 });

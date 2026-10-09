@@ -20,7 +20,7 @@ import {
 import { DEMO } from '../../lib/config';
 import { formatMoney } from '../../lib/finance';
 import { formatDate } from '../../lib/format';
-import { change311, closeTime, streetAddress } from '../../lib/local';
+import { CAPITAL_STAGES, capitalStage, change311, closeTime, streetAddress } from '../../lib/local';
 import { capitalProjectHref, href, localOfficialHref } from '../../lib/paths';
 
 const [officials, matters, meetings, discussions, districts, appeals, report, projects] = await Promise.all([
@@ -208,8 +208,24 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
                   <strong>{p.name}</strong>
                 </a>
               </p>
+              {p.status && (
+                <p class="small hearing-addr">
+                  {capitalStage(p.status) !== null && (
+                    <span class="stage-dots" aria-hidden="true">
+                      {CAPITAL_STAGES.map((_, i) => (
+                        <span class={i <= capitalStage(p.status)! ? 'on' : ''} />
+                      ))}
+                    </span>
+                  )}
+                  {p.status}
+                </p>
+              )}
+              <div class="funding-bar compact" aria-hidden="true">
+                {p.spent > 0 && <span class="fund-1" style={{ flex: `${p.spent} 1 0` }} />}
+                <span class="fund-rest" style={{ flex: `${Math.max(0, p.total_budget - p.spent)} 1 0` }} />
+              </div>
               <p class="small muted hearing-addr">
-                {formatMoney(p.year1)} in {planFy} · {formatMoney(p.total_budget)} in all
+                {formatMoney(p.year1)} in {planFy} · {formatMoney(p.spent)} spent of {formatMoney(p.total_budget)}
               </p>
             </li>
           ))}

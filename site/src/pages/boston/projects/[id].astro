@@ -1,9 +1,11 @@
 ---
+import CapitalStages from '../../../components/CapitalStages.astro';
 import DiscussionLink from '../../../components/DiscussionLink.astro';
+import FundingBar from '../../../components/viz/FundingBar.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadCapitalProjects, loadDiscussionsByTarget } from '../../../lib/build-data';
 import { formatMoney } from '../../../lib/finance';
-import type { CapitalProject } from '../../../lib/local';
+import { fundingSegments, type CapitalProject } from '../../../lib/local';
 import { href } from '../../../lib/paths';
 
 export async function getStaticPaths() {
@@ -16,22 +18,9 @@ interface Props {
 
 const { p } = Astro.props;
 const discussion = (await loadDiscussionsByTarget()).get(`capital_project:${p.proj_id}`);
-const fy = (offset: number) => (p.first_year ? `FY${String(p.first_year + offset).slice(2)}` : null);
 const plan = p.plan.replace('-', '–');
-// Money rows: the plan's own columns, left out when zero.
-const money = [
-  {
-    label: 'Total budget',
-    value: p.total_budget,
-    note: 'the whole project, including earlier years and outside funds',
-  },
-  { label: 'Spent so far', value: p.spent, note: null },
-  // The city's "year 0" is the year before the plan; "year 1" is its first year (first_year).
-  { label: `Planned for ${fy(-1) ?? 'last year'}`, value: p.year0, note: 'the year before the plan' },
-  { label: `Planned for ${fy(0) ?? 'the first plan year'}`, value: p.year1, note: 'the plan’s first year' },
-  { label: `Planned for ${fy(1) && fy(4) ? `${fy(1)}–${fy(4)}` : 'later years'}`, value: p.years_2_5, note: null },
-  { label: 'From outside funds', value: p.external_funds, note: 'state, federal and other grants' },
-].filter((m) => m.value > 0 || m.label === 'Total budget');
+const segments = fundingSegments(p);
+const spentPct = p.total_budget > 0 ? Math.round((p.spent / p.total_budget) * 100) : 0;
 ---
 
 <Base
@@ -45,45 +34,76 @@ const money = [
   <header class="page-head">
     <p class="kicker">{[p.department, p.neighborhood].filter(Boolean).join(' · ')}</p>
     <h1>{p.name}</h1>
-    {p.status && <p class="lede">{p.status}.</p>}
+    {p.scope && <p class="lede scope">{p.scope}</p>}
   </header>
 
   <DiscussionLink discussion={discussion} targetType="capital_project" targetId={p.proj_id} />
 
-  {p.scope && (
-    <section aria-labelledby="scope-h">
-      <h2 id="scope-h" class="h-small">
-        What the project is
+  <div class="project-grid">
+    <section class="panel" aria-labelledby="stage-h">
+      <h2 id="stage-h" class="h-small">
+        Where it stands
       </h2>
-      <p class="scope">{p.scope}</p>
+      <CapitalStages status={p.status} />
     </section>
-  )}
 
-  <section aria-labelledby="money-h">
-    <h2 id="money-h" class="h-small">
-      Money
-    </h2>
-    <dl class="facts">
-      {money.map((m) => (
-        <div>
-          <dt>{m.label}</dt>
-          <dd>
-            <strong>{formatMoney(m.value)}</strong>
-            {m.note && <span class="small muted"> · {m.note}</span>}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  </section>
+    <section class="panel" aria-labelledby="money-h">
+      <h2 id="money-h" class="h-small">
+        Money
+      </h2>
+      <p class="money-head">
+        <span class="money-big">{formatMoney(p.spent)}</span>
+        <span class="muted">
+          spent of <strong>{formatMoney(p.total_budget)}</strong>
+          {p.total_budget > 0 && ` (${spentPct < 1 && p.spent > 0 ? '<1' : spentPct}%)`}
+        </span>
+      </p>
+      <FundingBar
+        segments={segments}
+        total={p.total_budget}
+        label={`${p.name}: ${formatMoney(p.spent)} spent of a ${formatMoney(p.total_budget)} total budget`}
+      />
+      {p.external_funds > 0 && (
+        <p class="small muted">
+          {formatMoney(p.external_funds)} of the total comes from outside funds (state, federal and other grants).
+        </p>
+      )}
+    </section>
+  </div>
 
   <p class="small muted">
     From the City of Boston’s <a href="https://data.boston.gov/dataset/capital-budget">{plan} Capital Plan</a> on
-    Analyze Boston (project {p.proj_id}). <a href={href('boston/budget/')}>All projects</a>.
+    Analyze Boston (project {p.proj_id}). The total is the whole project’s budget, including years before this plan.{' '}
+    <a href={href('boston/budget/')}>All projects</a>.
   </p>
 </Base>
 
 <style>
   .scope {
     max-width: 65ch;
+  }
+  .project-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-4) 0;
+  }
+  @media (min-width: 60rem) {
+    .project-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .money-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-3);
+  }
+  .money-big {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
   }
 </style>

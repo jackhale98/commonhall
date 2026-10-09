@@ -1,0 +1,49 @@
+---
+import { CAPITAL_STAGES, capitalStage } from '../lib/local';
+
+interface Props {
+  status: string | null;
+}
+
+/** Planned → study → design → construction → complete, with the project's stage marked. */
+const { status } = Astro.props;
+const current = capitalStage(status);
+---
+
+{current === null ? (
+  <p class="small muted">
+    {status ? `${status}: ` : ''}
+    {/annual/i.test(status ?? '')
+      ? 'recurring work funded every year (repairs, replacements), not one project moving through stages.'
+      : 'the city gives no stage for this project.'}
+  </p>
+) : (
+  <div class="tracker">
+    <p class="tracker-label">
+      Stage: <strong>{status}</strong>
+    </p>
+    <ol class="tracker-steps" aria-label="Project stages">
+      {CAPITAL_STAGES.map((step, i) => {
+        const state =
+          i < current || (i === current && i === CAPITAL_STAGES.length - 1)
+            ? 'done'
+            : i === current
+              ? 'current'
+              : 'todo';
+        return (
+          <li class={`step step-${state}`} aria-current={i === current ? 'step' : undefined}>
+            <span class="step-dot" aria-hidden="true">
+              {i <= current ? '✓' : ''}
+            </span>
+            <span class="step-name">
+              {step}
+              <span class="visually-hidden">
+                {state === 'done' ? ' (done)' : state === 'current' ? ' (current)' : ''}
+              </span>
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+)}
