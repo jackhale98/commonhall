@@ -67,7 +67,10 @@ const stats = [
   { value: termOrders.length, label: 'executive orders this term', href: href('executive/') },
   {
     value: termCases.length,
-    label: courtTerm === undefined ? 'court decisions' : `court decisions, ${courtTerm} term`,
+    label:
+      courtTerm === undefined
+        ? 'court decisions'
+        : `court decisions, ${courtTerm}–${String(courtTerm + 1).slice(2)} term`,
     href: href('court/'),
   },
   { value: recentHearings.length, label: 'hearings in the last 30 days', href: href('committees/') },
