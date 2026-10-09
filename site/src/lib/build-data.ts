@@ -7,6 +7,7 @@
  */
 import { congressForDate } from '@civic/congress-client/ids';
 import demoData from '../data/demo.json';
+import { SCOTUS_COLUMNS, type ScotusCase } from './court';
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
@@ -368,6 +369,16 @@ export const loadVotesByNomination = memo(async () =>
     }),
     (v) => v.nomination_id,
   ),
+);
+
+// ---- Supreme Court ----------------------------------------------------------
+
+/** Supreme Court decisions (the last five terms), newest first. */
+export const loadScotusCases = memo(async () =>
+  selectAllOptional<ScotusCase>('scotus_cases', {
+    select: SCOTUS_COLUMNS,
+    order: 'date_filed.desc,cluster_id.desc',
+  }),
 );
 
 // ---- Boston -----------------------------------------------------------------

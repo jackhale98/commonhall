@@ -38,6 +38,8 @@ export const HOURLY_LIMITS: Record<string, number> = {
   congress: 4800,
   // api.data.gov personal keys allow 1,000 an hour on OpenFEC.
   fec: 900,
+  // CourtListener allows 5,000 an hour with a token.
+  courtlistener: 4500,
 };
 
 /**

@@ -438,3 +438,19 @@ hourly by `sync-executive`.
 - New tables are read with a fallback at build time: when a migration has not
   reached the database yet, the section shows as not loaded instead of failing
   the build. The site also rebuilds after each Supabase deploy.
+
+## 44. The Supreme Court has its own page
+
+Approved by the owner. The Court is a separate branch, so it has its own page and
+menu item ("Court"), not a section of the executive page. Decisions come from
+CourtListener's v4 search API (`court_id:scotus`), one row per opinion cluster,
+the last five October Terms, refreshed hourly; each run re-reads the last month
+because citations and separate opinions are added after release. The token is a
+Supabase secret and is sent in a header, never in the URL.
+
+- Opinion types come from CourtListener's index (`lead-opinion`, `dissent`, …).
+  Many Supreme Court decisions are stored as one `combined-opinion` document, so
+  dissents and concurrences are shown only when listed separately, and the site
+  never labels a decision unanimous.
+- Nominations to the Court come from the nominations table, so a vacancy and its
+  confirmation show up on the Court page too.

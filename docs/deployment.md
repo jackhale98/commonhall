@@ -198,6 +198,9 @@ npx supabase secrets set \
   `x-sync-secret` header, so nobody else can trigger a sync. Keep a copy for step 6.
 - `SITE_ORIGINS`: comma-separated origins allowed to call the public functions
   (CORS). Add your custom domain if you use one.
+- `COURTLISTENER_TOKEN`: a free [CourtListener](https://www.courtlistener.com/)
+  API token (sign up, then copy it from your profile's API section). Without it
+  `sync-scotus` fails and the Supreme Court page stays empty; everything else works.
 - `FEC_API_KEY` (optional): an [api.data.gov key](https://api.data.gov/signup/)
   for campaign finance. Without it `sync-finance` uses `CONGRESS_API_KEY`, which
   is also an api.data.gov key and works the same; a separate key only keeps the

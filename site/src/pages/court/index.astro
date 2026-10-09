@@ -1,0 +1,162 @@
+---
+import BarList from '../../components/viz/BarList';
+import Base from '../../layouts/Base.astro';
+import { loadNominations, loadScotusCases } from '../../lib/build-data';
+import { docketUrl, supremeCourtTerm, type ScotusCase } from '../../lib/court';
+import { NOMINATION_STATUS, nominationUrl } from '../../lib/executive';
+import { formatDate } from '../../lib/format';
+
+const [cases, nominations] = await Promise.all([loadScotusCases(), loadNominations()]);
+const term = supremeCourtTerm(new Date());
+const termLabel = (t: number) => `October Term ${t}`;
+const thisTerm = cases.filter((c) => c.term === term);
+const lastTerm = cases.filter((c) => c.term === term - 1);
+const perTerm = [...Map.groupBy(cases, (c) => c.term)]
+  .sort((a, b) => b[0] - a[0])
+  .map(([t, list]) => ({ label: `${t}–${String(t + 1).slice(2)}`, value: list.length }));
+// Early in a term few decisions are out yet, so the list leads with the newest across terms.
+const latest = cases.slice(0, 40);
+const courtNominations = nominations.filter((n) =>
+  /supreme court of the united states|justice of the supreme/i.test(n.position ?? n.description ?? ''),
+);
+const tags = (c: ScotusCase) =>
+  [
+    c.per_curiam ? 'Per curiam' : null,
+    c.concurrences > 0 ? `${c.concurrences} concurring opinion${c.concurrences > 1 ? 's' : ''}` : null,
+    c.dissents > 0 ? `${c.dissents} dissent${c.dissents > 1 ? 's' : ''}` : null,
+  ].filter(Boolean);
+---
+
+<Base
+  title="Supreme Court"
+  description="Recent Supreme Court decisions, with links to the opinions and the Court's docket."
+  section="court"
+>
+  <header class="page-head wash">
+    <p class="kicker">Judicial branch</p>
+    <h1>The Supreme Court</h1>
+    <p class="lede">
+      Every decision the Court has released in the last five terms, newest first, with the full opinions and the Court’s
+      own docket a click away.
+    </p>
+  </header>
+
+  <dl class="stat-grid">
+    <div class="stat">
+      <dt>Decisions this term ({termLabel(term)})</dt>
+      <dd>{thisTerm.length.toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Decisions last term</dt>
+      <dd>{lastTerm.length.toLocaleString()}</dd>
+    </div>
+  </dl>
+
+  {cases.length === 0 ? (
+    <p class="muted">Supreme Court decisions have not loaded yet.</p>
+  ) : (
+    <div class="court-layout">
+      <section aria-labelledby="latest-h">
+        <div class="section-head">
+          <h2 id="latest-h">Latest decisions</h2>
+          <a class="see-all" href="https://www.supremecourt.gov/opinions/opinions.aspx" rel="noopener">
+            supremecourt.gov
+          </a>
+        </div>
+        <div class="panel">
+          <ul class="list case-list">
+            {latest.map((c) => (
+              <li>
+                <p class="meta">
+                  Decided {formatDate(c.date_filed)}
+                  {c.docket_number && (
+                    <>
+                      {' · '}
+                      <a href={docketUrl(c.docket_number)} rel="noopener">
+                        No. {c.docket_number}
+                      </a>
+                    </>
+                  )}
+                  {c.citations[0] && <> · {c.citations[0]}</>}
+                </p>
+                <p class="case-name">
+                  <a href={c.url} rel="noopener">
+                    {c.case_name}
+                  </a>
+                </p>
+                {tags(c).length > 0 && <p class="small muted">{tags(c).join(' · ')}</p>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+      <aside>
+        <div class="panel side-panel">
+          <h3 class="h-small">Decisions per term</h3>
+          <BarList items={perTerm} label="Supreme Court decisions per October Term" tone="fill-sky" />
+          <p class="small muted">
+            A term starts on the first Monday in October; most decisions come out from spring through June.
+          </p>
+        </div>
+        {courtNominations.length > 0 && (
+          <div class="panel side-panel">
+            <h3 class="h-small">Nominations to the Court</h3>
+            <ul class="plain-list">
+              {courtNominations.map((n) => (
+                <li>
+                  <a href={nominationUrl(n)} rel="noopener">
+                    {n.nominee ?? n.citation}
+                  </a>
+                  <span class="small muted">
+                    {' '}
+                    · {NOMINATION_STATUS[n.status].label}, {formatDate(n.latest_action_date)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </aside>
+    </div>
+  )}
+  <p class="small muted">
+    Decisions and opinions from{' '}
+    <a href="https://www.courtlistener.com/" rel="noopener">
+      CourtListener
+    </a>{' '}
+    (Free Law Project), refreshed hourly. Concurring and dissenting opinions are counted when CourtListener lists them
+    separately; some decisions arrive as a single combined document.
+  </p>
+</Base>
+
+<style>
+  .stat-grid {
+    margin-top: var(--space-5);
+  }
+  .court-layout {
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 60rem) {
+    .court-layout {
+      grid-template-columns: 2fr 1fr;
+      align-items: start;
+    }
+  }
+  .side-panel {
+    margin-bottom: var(--space-4);
+  }
+  .case-list p {
+    margin: 0;
+  }
+  .case-name {
+    font-weight: 650;
+  }
+  .plain-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+</style>

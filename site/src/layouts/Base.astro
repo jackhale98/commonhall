@@ -14,7 +14,17 @@ interface Props {
   description?: string;
   /** Path of the current section, used to mark the active nav item. */
   section?:
-    'home' | 'bills' | 'members' | 'votes' | 'executive' | 'states' | 'discussions' | 'feed' | 'following' | 'account';
+    | 'home'
+    | 'bills'
+    | 'members'
+    | 'votes'
+    | 'executive'
+    | 'court'
+    | 'states'
+    | 'discussions'
+    | 'feed'
+    | 'following'
+    | 'account';
   noindex?: boolean;
 }
 
@@ -33,11 +43,16 @@ const sources = [
   { name: 'Open States', url: 'https://openstates.org/' },
   { name: 'Boston Legistar', url: 'https://boston.legistar.com/' },
   { name: 'the Census Geocoder', url: 'https://geocoding.geo.census.gov/' },
+  { name: 'the Federal Register', url: 'https://www.federalregister.gov/' },
+  { name: 'OpenFEC', url: 'https://api.open.fec.gov/developers/' },
+  { name: 'CourtListener', url: 'https://www.courtlistener.com/' },
 ];
 const explore = [
   { label: 'Bills', path: 'bills/' },
   { label: 'Members of Congress', path: 'members/' },
   { label: 'Votes', path: 'votes/' },
+  { label: 'Executive orders and nominations', path: 'executive/' },
+  { label: 'Supreme Court', path: 'court/' },
   { label: 'States', path: 'states/' },
   { label: 'Massachusetts', path: 'states/ma/' },
   { label: 'Boston City Council', path: 'boston/' },
@@ -48,6 +63,7 @@ const nav = [
   { key: 'members', label: 'Members', path: 'members/' },
   { key: 'votes', label: 'Votes', path: 'votes/' },
   { key: 'executive', label: 'Executive', path: 'executive/' },
+  { key: 'court', label: 'Court', path: 'court/' },
   { key: 'states', label: 'States & local', path: 'states/' },
   { key: 'discussions', label: 'Discuss', path: 'discussions/' },
   { key: 'feed', label: 'Feed', path: 'feed/' },

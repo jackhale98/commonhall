@@ -48,6 +48,12 @@ about, and take part in moderated public discussions.
 - Every nomination the President sends to the Senate and where it stands, from
   committee to confirmation, linked to the Senate's recorded vote.
 
+**The Supreme Court**
+
+- Decisions from the last five terms, newest first, with the full opinions on
+  CourtListener, the case's docket on supremecourt.gov, concurring and dissenting
+  opinions where they are listed separately, and decisions per term.
+
 **Massachusetts** (covered in full)
 
 - State legislators by chamber, with a party chart of each chamber.
@@ -91,6 +97,7 @@ automatically.
 | Member contact details and IDs | [congress-legislators](https://github.com/unitedstates/congress-legislators) (public domain) | daily |
 | Executive orders | [Federal Register API](https://www.federalregister.gov/developers/documentation/api/v1) | hourly |
 | Nominations | Congress.gov | hourly |
+| Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
 | State legislators and bills | [Open States](https://openstates.org/) (CC0) | nightly, Massachusetts first |
@@ -170,7 +177,7 @@ and [discussion rules](https://jackhale98.github.io/opencongress/moderation/).
 | Massachusetts bills | Arriving with the nightly Open States sync |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
 | Executive orders and nominations | Ready; load on the first hourly run after deploy |
-| Supreme Court | In progress |
+| Supreme Court | Ready; loads on the first hourly run after deploy (needs `COURTLISTENER_TOKEN`) |
 
 The site is static and rebuilds nightly (and on every deploy), so new data shows
 up on pages the next morning; bill pages also fetch their latest status live.
