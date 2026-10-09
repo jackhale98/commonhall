@@ -1,0 +1,200 @@
+---
+/**
+ * Hearings, markups and other committee meetings per week: stacked columns, one
+ * per week, upcoming weeks marked. Hover or focus a column for its counts; the
+ * same numbers are in the table below the chart.
+ */
+import { KIND_FILL, KIND_LABEL, KINDS, type MeetingKind } from '../../lib/meetings';
+import MeetingLegend from './MeetingLegend.astro';
+
+export interface WeekCount {
+  /** Monday of the week, YYYY-MM-DD. */
+  week: string;
+  counts: Record<MeetingKind, number>;
+  upcoming: boolean;
+}
+
+interface Props {
+  weeks: WeekCount[];
+  label: string;
+}
+
+const { weeks, label } = Astro.props;
+const total = (w: WeekCount) => KINDS.reduce((n, k) => n + w.counts[k], 0);
+const max = Math.max(1, ...weeks.map(total));
+const fmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+const day = (iso: string) => fmt.format(new Date(`${iso}T00:00:00Z`));
+const describe = (w: WeekCount) =>
+  `Week of ${day(w.week)}${w.upcoming ? ' (scheduled)' : ''}: ${total(w)} meetings — ` +
+  KINDS.map((k) => `${w.counts[k]} ${KIND_LABEL[k].toLowerCase()}`).join(', ');
+---
+
+<figure class="weekly">
+  <MeetingLegend />
+  <div class="weekly-plot" role="list" aria-label={label}>
+    <span class="weekly-max" aria-hidden="true">
+      {max}
+    </span>
+    {weeks.map((w, i) => (
+      <div
+        class={`weekly-col${w.upcoming ? ' is-upcoming' : ''}`}
+        role="listitem"
+        tabindex="0"
+        aria-label={describe(w)}
+      >
+        <div class="weekly-stack" style={`height:${(total(w) / max) * 100}%`}>
+          {KINDS.filter((k) => w.counts[k] > 0).map((k) => (
+            <span class={`weekly-seg ${KIND_FILL[k]}`} style={`flex-grow:${w.counts[k]}`} />
+          ))}
+        </div>
+        <span class="weekly-tip" aria-hidden="true">
+          <strong>
+            Week of {day(w.week)}
+            {w.upcoming && ' · scheduled'}
+          </strong>
+          {KINDS.map((k) => (
+            <span>
+              <i class={`swatch ${KIND_FILL[k]}`} />
+              {KIND_LABEL[k]} {w.counts[k]}
+            </span>
+          ))}
+        </span>
+        {i % 4 === 0 && (
+          <span class="weekly-x" aria-hidden="true">
+            {day(w.week)}
+          </span>
+        )}
+      </div>
+    ))}
+  </div>
+  <figcaption class="small muted">
+    Each column is one week (Monday to Sunday); lighter columns are scheduled weeks still to come.
+  </figcaption>
+  <details class="more">
+    <summary>Show as a table</summary>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Week of</th>
+            {KINDS.map((k) => (
+              <th scope="col">{KIND_LABEL[k]}</th>
+            ))}
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {weeks.map((w) => (
+            <tr>
+              <th scope="row">
+                {day(w.week)}
+                {w.upcoming && ' (scheduled)'}
+              </th>
+              {KINDS.map((k) => (
+                <td>{w.counts[k]}</td>
+              ))}
+              <td>{total(w)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<style>
+  .weekly {
+    margin: 0;
+  }
+  .weekly-plot {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 180px;
+    margin: var(--space-4) 0 var(--space-6);
+    padding-left: 1.75rem;
+    border-bottom: 1px solid var(--border);
+    background-image: linear-gradient(var(--border) 1px, transparent 1px);
+    background-size: 100% 50%;
+    background-position: 0 0;
+  }
+  .weekly-max {
+    position: absolute;
+    left: 0;
+    top: -0.6em;
+    font-size: var(--step--2, 0.75rem);
+    color: var(--text-muted);
+  }
+  .weekly-col {
+    position: relative;
+    flex: 1 1 0;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    outline: none;
+    border-radius: 4px 4px 0 0;
+  }
+  .weekly-col:hover,
+  .weekly-col:focus-visible {
+    background: var(--bg-subtle);
+  }
+  .weekly-col:focus-visible {
+    box-shadow: 0 0 0 2px var(--brand);
+  }
+  .weekly-stack {
+    width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+    min-height: 0;
+  }
+  .weekly-seg {
+    display: block;
+    flex-basis: 0;
+    min-height: 2px;
+  }
+  .weekly-stack .weekly-seg:last-child {
+    border-radius: 4px 4px 0 0;
+  }
+  .is-upcoming .weekly-seg {
+    opacity: 0.5;
+  }
+  .weekly-x {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .weekly-tip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    min-width: 11rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow);
+    font-size: var(--step--1);
+    flex-direction: column;
+    gap: 2px;
+    pointer-events: none;
+  }
+  .weekly-col:hover .weekly-tip,
+  .weekly-col:focus-visible .weekly-tip {
+    display: flex;
+  }
+  .weekly-col:first-of-type .weekly-tip {
+    left: 0;
+    transform: none;
+  }
+  .weekly-tip .swatch {
+    font-style: normal;
+  }
+</style>

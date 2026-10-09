@@ -1,0 +1,12 @@
+---
+import { KIND_FILL, KIND_LABEL, KINDS } from '../../lib/meetings';
+---
+
+<ul class="legend meeting-legend">
+  {KINDS.map((k) => (
+    <li>
+      <span class={`swatch ${KIND_FILL[k]}`} />
+      {KIND_LABEL[k]}
+    </li>
+  ))}
+</ul>

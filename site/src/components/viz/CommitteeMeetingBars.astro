@@ -1,0 +1,163 @@
+---
+/**
+ * Busiest committees: one horizontal stacked bar per committee (its subcommittees
+ * included), split into hearings, markups and other meetings.
+ */
+import { KIND_FILL, KIND_LABEL, KINDS, type MeetingKind } from '../../lib/meetings';
+import MeetingLegend from './MeetingLegend.astro';
+
+export interface CommitteeCount {
+  label: string;
+  href: string;
+  counts: Record<MeetingKind, number>;
+}
+
+interface Props {
+  rows: CommitteeCount[];
+  label: string;
+}
+
+const { rows, label } = Astro.props;
+const total = (r: CommitteeCount) => KINDS.reduce((n, k) => n + r.counts[k], 0);
+const max = Math.max(1, ...rows.map(total));
+const describe = (r: CommitteeCount) =>
+  `${r.label}: ${total(r)} meetings — ${KINDS.map((k) => `${r.counts[k]} ${KIND_LABEL[k].toLowerCase()}`).join(', ')}`;
+---
+
+<figure class="cbars">
+  <MeetingLegend />
+  <ul class="cbars-list" aria-label={label}>
+    {rows.map((r) => (
+      <li class="cbars-row" tabindex="0" aria-label={describe(r)}>
+        <a class="cbars-label" href={r.href}>
+          {r.label}
+        </a>
+        <span class="cbars-track" aria-hidden="true">
+          <span class="cbars-bar" style={`width:${(total(r) / max) * 100}%`}>
+            {KINDS.filter((k) => r.counts[k] > 0).map((k) => (
+              <span class={`cbars-seg ${KIND_FILL[k]}`} style={`flex-grow:${r.counts[k]}`} />
+            ))}
+          </span>
+        </span>
+        <span class="cbars-value">{total(r)}</span>
+        <span class="cbars-tip" aria-hidden="true">
+          {KINDS.map((k) => (
+            <span>
+              <i class={`swatch ${KIND_FILL[k]}`} />
+              {KIND_LABEL[k]} {r.counts[k]}
+            </span>
+          ))}
+        </span>
+      </li>
+    ))}
+  </ul>
+  <details class="more">
+    <summary>Show as a table</summary>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Committee</th>
+            {KINDS.map((k) => (
+              <th scope="col">{KIND_LABEL[k]}</th>
+            ))}
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">{r.label}</th>
+              {KINDS.map((k) => (
+                <td>{r.counts[k]}</td>
+              ))}
+              <td>{total(r)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<style>
+  .cbars {
+    margin: 0;
+  }
+  .cbars-list {
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .cbars-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(8rem, 15rem) 1fr 2.5rem;
+    gap: var(--space-3);
+    align-items: center;
+    font-size: var(--step--1);
+    border-radius: var(--radius);
+    outline: none;
+  }
+  .cbars-row:hover,
+  .cbars-row:focus-visible {
+    background: var(--bg-subtle);
+  }
+  .cbars-row:focus-visible {
+    box-shadow: 0 0 0 2px var(--brand);
+  }
+  .cbars-track {
+    height: 14px;
+  }
+  .cbars-bar {
+    display: flex;
+    gap: 2px;
+    height: 100%;
+    min-width: 4px;
+  }
+  .cbars-seg {
+    display: block;
+    flex-basis: 0;
+    min-width: 2px;
+  }
+  .cbars-bar .cbars-seg:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+  .cbars-value {
+    text-align: right;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .cbars-tip {
+    display: none;
+    position: absolute;
+    right: 3rem;
+    bottom: calc(100% + 0.25rem);
+    z-index: 5;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow);
+    flex-direction: column;
+    gap: 2px;
+    pointer-events: none;
+  }
+  .cbars-row:hover .cbars-tip,
+  .cbars-row:focus-visible .cbars-tip {
+    display: flex;
+  }
+  .cbars-tip .swatch {
+    font-style: normal;
+  }
+  @media (max-width: 40rem) {
+    .cbars-row {
+      grid-template-columns: 1fr 2.5rem;
+    }
+    .cbars-label {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

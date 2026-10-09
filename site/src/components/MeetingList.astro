@@ -1,6 +1,7 @@
 ---
 import type { CommitteeMeeting } from '../lib/committees';
-import { formatDateTime } from '../lib/format';
+import { meetingRow } from '../lib/meetings';
+import MeetingItem from './MeetingItem';
 
 interface Props {
   meetings: CommitteeMeeting[];
@@ -9,56 +10,10 @@ interface Props {
 }
 
 const { meetings, hideCommittees = false } = Astro.props;
-const off = (m: CommitteeMeeting) => /cancel|postpon/i.test(m.status ?? '');
 ---
 
 <ul class="list meeting-list">
   {meetings.map((m) => (
-    <li class={off(m) ? 'is-off' : undefined}>
-      <p class="meta">
-        {m.meeting_type ?? 'Meeting'} · {formatDateTime(m.date)}
-        {m.status && m.status !== 'Scheduled' && <span class="chip">{m.status}</span>}
-      </p>
-      <p class="meeting-title">
-        <a href={m.url} rel="noopener">
-          {m.title ?? 'Committee meeting'}
-        </a>
-      </p>
-      <p class="small muted">
-        {!hideCommittees && m.committee_names.length > 0 && <>{m.committee_names.join(', ')} · </>}
-        {m.location}
-        {m.witnesses.length > 0 && (
-          <>
-            {' '}
-            · {m.witnesses.length} witness{m.witnesses.length > 1 ? 'es' : ''}
-          </>
-        )}
-        {m.video_url && (
-          <>
-            {' '}
-            ·{' '}
-            <a href={m.video_url} rel="noopener">
-              Video
-            </a>
-          </>
-        )}
-      </p>
-    </li>
+    <MeetingItem m={meetingRow(m)} hideCommittees={hideCommittees} />
   ))}
 </ul>
-
-<style>
-  .meeting-list p {
-    margin: 0;
-  }
-  .meeting-title {
-    font-weight: 650;
-  }
-  .is-off .meeting-title a {
-    text-decoration: line-through;
-    color: var(--text-muted);
-  }
-  .meta .chip {
-    margin-left: var(--space-2);
-  }
-</style>

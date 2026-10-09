@@ -1,5 +1,7 @@
 ---
-import MeetingList from '../../components/MeetingList.astro';
+import CommitteeExplorer, { type CommitteeCard } from '../../components/CommitteeExplorer';
+import CommitteeMeetingBars from '../../components/viz/CommitteeMeetingBars.astro';
+import WeeklyMeetings, { type WeekCount } from '../../components/viz/WeeklyMeetings.astro';
 import Base from '../../layouts/Base.astro';
 import {
   CURRENT_CONGRESS,
@@ -9,9 +11,10 @@ import {
   loadCommittees,
   loadMembers,
 } from '../../lib/build-data';
-import { chamberLabel, shortCommitteeName, type Committee } from '../../lib/committees';
+import { shortCommitteeName } from '../../lib/committees';
 import { congressLabel } from '../../lib/format';
-import { href, memberHref } from '../../lib/paths';
+import { href } from '../../lib/paths';
+import { isCanceled, KINDS, meetingKind, meetingRow, weekOf, type MeetingKind } from '../../lib/meetings';
 
 const [committees, roster, referrals, meetings, members] = await Promise.all([
   loadCommittees(),
@@ -20,33 +23,96 @@ const [committees, roster, referrals, meetings, members] = await Promise.all([
   loadCommitteeMeetings(),
   loadMembers(),
 ]);
-const now = new Date().toISOString();
-const upcoming = meetings
-  .filter((m) => m.date && m.date >= now && !/cancel/i.test(m.status ?? ''))
-  .reverse()
-  .slice(0, 12);
-const recent = meetings.filter((m) => m.date && m.date < now).slice(0, 8);
-const parents = [...committees.values()].filter((c) => !c.parent_code);
+const now = new Date();
+const nowIso = now.toISOString();
+const held = meetings.filter((m) => m.date && !isCanceled(m));
+const parentOf = (code: string) => committees.get(code)?.parent_code ?? code;
+const zero = (): Record<MeetingKind, number> => ({ hearing: 0, markup: 0, other: 0 });
+
+// Weekly activity: the last 16 weeks and the next 3.
+const thisWeek = weekOf(nowIso);
+const weekStarts: string[] = [];
+for (let i = -15; i <= 3; i++) {
+  const d = new Date(`${thisWeek}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + i * 7);
+  weekStarts.push(d.toISOString().slice(0, 10));
+}
+const weeks: WeekCount[] = weekStarts.map((week) => ({ week, counts: zero(), upcoming: week > thisWeek }));
+const weekIndex = new Map(weeks.map((w) => [w.week, w]));
+for (const m of held) {
+  const w = weekIndex.get(weekOf(m.date!));
+  if (w) w.counts[meetingKind(m)] += 1;
+}
+
+// Busiest committees this Congress (subcommittee meetings count toward their committee).
+const perCommittee = new Map<string, Record<MeetingKind, number>>();
+for (const m of held) {
+  for (const code of new Set(m.committee_codes.map(parentOf))) {
+    if (!committees.has(code)) continue;
+    const c = perCommittee.get(code) ?? zero();
+    c[meetingKind(m)]++;
+    perCommittee.set(code, c);
+  }
+}
+const busiest = [...perCommittee]
+  .map(([code, counts]) => ({ code, counts, total: KINDS.reduce((n, k) => n + counts[k], 0) }))
+  .sort((a, b) => b.total - a.total)
+  .slice(0, 12)
+  .map(({ code, counts }) => {
+    const c = committees.get(code)!;
+    return {
+      label: `${c.chamber === 'house' ? 'House' : c.chamber === 'senate' ? 'Senate' : 'Joint'} ${shortCommitteeName(c.name)}`,
+      href: href(`committees/${code}/`),
+      counts,
+    };
+  });
+
+// Cards for the explorer.
 const leader = (code: string, re: RegExp) => {
-  const m = roster.find((r) => r.committee_code === code && r.title && re.test(r.title));
-  return m ? members.get(m.member_id) : undefined;
+  const seat = roster.find((r) => r.committee_code === code && r.title && re.test(r.title));
+  return seat ? (members.get(seat.member_id)?.name ?? null) : null;
 };
-const stats = (c: Committee) => {
-  const codes = [c.code, ...[...committees.values()].filter((s) => s.parent_code === c.code).map((s) => s.code)];
-  const rows = codes.flatMap((code) => referrals.byCommittee.get(code) ?? []);
-  const bills = new Set(rows.map((r) => r.bill_id));
-  const reported = new Set(rows.filter((r) => r.reported_date).map((r) => r.bill_id));
-  return { bills: bills.size, reported: reported.size, subs: codes.length - 1 };
-};
-const chambers = (['house', 'senate', 'joint'] as const).map((chamber) => ({
-  chamber,
-  list: parents.filter((c) => c.chamber === chamber).sort((a, b) => a.name.localeCompare(b.name)),
+const meetingCount = new Map<string, { all: number; upcoming: number }>();
+for (const m of held) {
+  for (const code of new Set([...m.committee_codes, ...m.committee_codes.map(parentOf)])) {
+    const c = meetingCount.get(code) ?? { all: 0, upcoming: 0 };
+    c.all++;
+    if (m.date! >= nowIso) c.upcoming++;
+    meetingCount.set(code, c);
+  }
+}
+const cards: CommitteeCard[] = [...committees.values()].map((c) => ({
+  code: c.code,
+  parent: c.parent_code,
+  chamber: c.chamber,
+  name: c.name,
+  short: c.parent_code ? c.name : shortCommitteeName(c.name),
+  chair: leader(c.code, /^chair/i),
+  ranking: leader(c.code, /ranking/i),
+  subs: [...committees.values()].filter((s) => s.parent_code === c.code).length,
+  meetings: meetingCount.get(c.code)?.all ?? 0,
+  upcoming: meetingCount.get(c.code)?.upcoming ?? 0,
+  bills: new Set((referrals.byCommittee.get(c.code) ?? []).map((r) => r.bill_id)).size,
 }));
+
+// Stats.
+const upcoming14 = held.filter(
+  (m) => m.date! >= nowIso && m.date! <= new Date(now.getTime() + 14 * 86_400_000).toISOString(),
+).length;
+const count = (k: MeetingKind) => held.filter((m) => meetingKind(m) === k).length;
+const monthAgo = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+const initialWhen = held.some((m) => m.date! >= nowIso)
+  ? 'upcoming'
+  : held.some((m) => m.date! >= monthAgo)
+    ? 'month'
+    : 'all';
+const parentsCount = [...committees.values()].filter((c) => !c.parent_code).length;
+const subsCount = committees.size - parentsCount;
 ---
 
 <Base
   title="Committees"
-  description="Every committee of Congress: who sits on it, the bills sent to it, and its hearings and markups."
+  description="Every committee of Congress: who sits on it, its hearings and markups, and the bills sent to it."
   section="members"
 >
   <header class="page-head wash">
@@ -54,108 +120,81 @@ const chambers = (['house', 'senate', 'joint'] as const).map((chamber) => ({
     <h1>Committees</h1>
     <p class="lede">
       Most bills are decided in committee: they hold hearings, amend bills in markups, and choose which ones reach the
-      floor. See who sits on each committee and what it is working on.
+      floor. See what each committee is working on and who sits on it.
     </p>
   </header>
 
   {committees.size === 0 && <p class="muted">Committees have not loaded yet.</p>}
 
-  {(upcoming.length > 0 || recent.length > 0) && (
-    <div class="meeting-columns">
-      {upcoming.length > 0 && (
-        <section aria-labelledby="upcoming-h">
-          <h2 id="upcoming-h">Coming up</h2>
-          <div class="panel">
-            <MeetingList meetings={upcoming} />
-          </div>
-        </section>
-      )}
-      {recent.length > 0 && (
-        <section aria-labelledby="recent-h">
-          <h2 id="recent-h">Recent hearings and markups</h2>
-          <div class="panel">
-            <MeetingList meetings={recent} />
-          </div>
-        </section>
-      )}
+  <dl class="stat-grid">
+    <div class="stat">
+      <dt>Coming up in the next two weeks</dt>
+      <dd>{upcoming14.toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Hearings this Congress</dt>
+      <dd>{count('hearing').toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Markups this Congress</dt>
+      <dd>{count('markup').toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Committees and subcommittees</dt>
+      <dd>
+        {parentsCount} <span class="muted small">+ {subsCount}</span>
+      </dd>
+    </div>
+  </dl>
+
+  {held.length > 0 && (
+    <div class="activity-grid">
+      <section class="panel" aria-labelledby="weekly-h">
+        <h2 id="weekly-h" class="h-small">
+          Committee meetings per week
+        </h2>
+        <WeeklyMeetings weeks={weeks} label="Committee meetings per week, by type" />
+      </section>
+      <section class="panel" aria-labelledby="busiest-h">
+        <h2 id="busiest-h" class="h-small">
+          Busiest committees this Congress
+        </h2>
+        <CommitteeMeetingBars rows={busiest} label="Committees with the most meetings this Congress, by type" />
+      </section>
     </div>
   )}
 
-  {chambers
-    .filter((c) => c.list.length > 0)
-    .map(({ chamber, list }) => (
-      <section aria-labelledby={`${chamber}-h`}>
-        <h2 id={`${chamber}-h`}>
-          {chamberLabel(chamber)} committees <span class="muted">({list.length})</span>
-        </h2>
-        <ul class="grid committee-grid">
-          {list.map((c) => {
-            const s = stats(c);
-            const chair = leader(c.code, /^chair/i);
-            const ranking = leader(c.code, /ranking/i);
-            return (
-              <li class="card">
-                <a class="committee-name" href={href(`committees/${c.code}/`)}>
-                  {shortCommitteeName(c.name)}
-                </a>
-                <p class="small muted">
-                  {chair && (
-                    <>
-                      Chair <a href={memberHref(chair.bioguide_id)}>{chair.name}</a>
-                    </>
-                  )}
-                  {chair && ranking && ' · '}
-                  {ranking && (
-                    <>
-                      Ranking <a href={memberHref(ranking.bioguide_id)}>{ranking.name}</a>
-                    </>
-                  )}
-                </p>
-                <p class="small">
-                  {s.bills > 0 && (
-                    <>
-                      {s.bills.toLocaleString()} bills referred · {s.reported.toLocaleString()} reported
-                    </>
-                  )}
-                  {s.bills > 0 && s.subs > 0 && ' · '}
-                  {s.subs > 0 && `${s.subs} subcommittees`}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-    ))}
+  <CommitteeExplorer
+    client:load
+    committees={cards}
+    meetings={held.map(meetingRow)}
+    now={nowIso}
+    initialWhen={initialWhen}
+  />
+
   <p class="small muted">
     Rosters from{' '}
     <a href="https://github.com/unitedstates/congress-legislators" rel="noopener">
       congress-legislators
     </a>
-    ; referrals, hearings and markups from Congress.gov. Bill counts cover bills loaded so far this Congress.
+    ; hearings, markups and referrals from Congress.gov. Meeting counts cover meetings loaded so far this Congress;
+    canceled and postponed meetings are left out of the charts.
   </p>
 </Base>
 
 <style>
-  .meeting-columns {
+  .stat-grid {
+    margin: var(--space-5) 0;
+  }
+  .activity-grid {
     display: grid;
     gap: var(--space-4);
-    margin-top: var(--space-5);
+    margin-bottom: var(--space-6);
   }
-  @media (min-width: 60rem) {
-    .meeting-columns {
-      grid-template-columns: 1fr 1fr;
+  @media (min-width: 64rem) {
+    .activity-grid {
+      grid-template-columns: 1.1fr 1fr;
       align-items: start;
     }
-  }
-  .committee-grid {
-    list-style: none;
-    padding: 0;
-  }
-  .committee-grid p {
-    margin: var(--space-1) 0 0;
-  }
-  .committee-name {
-    font-weight: 700;
-    font-size: var(--step-1);
   }
 </style>

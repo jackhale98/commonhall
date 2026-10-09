@@ -6,6 +6,7 @@ import {
   committeeMeetingRow,
   committeeMemberRows,
   committeeRows,
+  meetingLocation,
   meetingPageUrl,
 } from '../src/federal/committees.ts';
 
@@ -91,6 +92,16 @@ describe('committees', () => {
       organization: 'Community Oncology Alliance',
       position: 'Executive Director',
     });
+    // Field hearing: the address arrives as JSON text.
+    expect(
+      meetingLocation({
+        address:
+          '{"building_name": "Orgill Innovation Center", "street-address": "4027 Bailey Station Rd", "city": "Collierville", "state": "TN"}',
+      }),
+    ).toBe('Orgill Innovation Center, Collierville, TN');
+    expect(meetingLocation({ room: '2154', building: 'Rayburn House Office Building' })).toBe(
+      '2154, Rayburn House Office Building',
+    );
     expect(meetingPageUrl(119, 'Senate', '336000')).toBe(
       'https://www.congress.gov/event/119th-Congress/senate-event/336000',
     );

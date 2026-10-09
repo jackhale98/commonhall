@@ -1997,3 +1997,94 @@ summary:has(.inline-h) {
 .card-grid + p {
   margin-top: var(--space-3);
 }
+
+/*
+ * Meeting-type colours for committee charts (hearing, markup, other). Validated
+ * with the dataviz palette checks: lightness band, chroma, colour-blind and
+ * normal-vision separation, and 3:1 contrast, in light and in dark mode.
+ */
+:root {
+  --cat-hearing: #5b4cf0;
+  --cat-markup: #0f8a6f;
+  --cat-other: #d9761a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --cat-hearing: #8b80ff;
+    --cat-markup: #22a183;
+    --cat-other: #c9742a;
+  }
+}
+:root[data-theme='dark'] {
+  --cat-hearing: #8b80ff;
+  --cat-markup: #22a183;
+  --cat-other: #c9742a;
+}
+.fill-hearing {
+  background: var(--cat-hearing);
+}
+.fill-markup {
+  background: var(--cat-markup);
+}
+.fill-other-meeting {
+  background: var(--cat-other);
+}
+
+/* Committee meetings (lists and the committees explorer). */
+.meeting-list p {
+  margin: 0;
+}
+.meeting-title {
+  font-weight: 650;
+}
+.meeting.is-off .meeting-title a {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+.meeting .meta .chip {
+  margin-left: var(--space-2);
+}
+.meeting .meta .swatch {
+  margin-right: 0.4em;
+}
+.explorer-filters {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 50rem) {
+  .explorer-filters {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: end;
+  }
+}
+.explorer-filters .field {
+  margin: 0;
+  min-width: 0;
+}
+.explorer-filters input,
+.explorer-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.explorer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  align-items: center;
+  margin: var(--space-3) 0 var(--space-5);
+}
+.explorer-chips .type-chips {
+  margin: 0;
+}
+.committee-grid {
+  list-style: none;
+  padding: 0;
+}
+.committee-grid p {
+  margin: var(--space-1) 0 0;
+}
+.committee-name {
+  font-weight: 700;
+  font-size: var(--step-1);
+}

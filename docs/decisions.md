@@ -533,3 +533,21 @@ first matters load walks only matters *introduced* since the start date, newest
 first, one page of 100 at a time (about 3,000 legislative matters); afterwards it
 follows changes since the load began and ignores older matters that were only
 touched. The job runs every 15 minutes; a quiet run costs two list requests.
+
+## 50. The committees page is an explorer with activity charts
+
+The committees page leads with what committees are doing: stat tiles, a weekly
+column chart of hearings, markups and other meetings (16 weeks back, 3 ahead,
+scheduled weeks lighter), and the busiest committees as stacked bars (subcommittee
+meetings counted toward their committee). Both charts are static HTML/CSS with
+hover and keyboard tooltips, a legend, and a "Show as a table" view. Meeting types
+use their own three colours (`--cat-hearing`, `--cat-markup`, `--cat-other`),
+validated for colour-blind separation, lightness, chroma and contrast in light and
+dark mode; the site's brand colours failed those checks for this job.
+
+Below the charts, an explorer filters committees and meetings together by search
+(committee names, hearing titles, witnesses), chamber, committee (with its
+subcommittees), meeting type and time (coming up, last 30 days, this Congress). It
+opens on "coming up" only when something is scheduled, otherwise on the last 30
+days. Field hearings' addresses arrive from Congress.gov as JSON; they are now
+shown as "building, city, state".

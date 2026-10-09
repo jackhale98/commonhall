@@ -204,7 +204,7 @@ export interface CommitteeMeetingDetail {
   type?: string;
   meetingStatus?: 'Canceled' | 'Draft' | 'Postponed' | 'Rescheduled' | 'Scheduled' | string;
   updateDate?: string;
-  location?: { building?: string; room?: string; address?: string };
+  location?: { building?: string; room?: string; address?: string | Record<string, unknown> };
   committees?: { name?: string; systemCode?: string; url?: string }[];
   witnesses?: { name?: string; organization?: string; position?: string }[];
   videos?: { name?: string; url?: string }[];

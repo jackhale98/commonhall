@@ -236,6 +236,34 @@ export interface CommitteeMeetingRow extends Record<string, unknown> {
   source_updated_at: string | null;
 }
 
+/**
+ * "2154, Rayburn House Office Building", or for a field hearing "Orgill Innovation
+ * Center, Collierville, TN". Field hearings' address arrives as an object or as a
+ * JSON string ({"building_name", "street-address", "city", "state", ...}).
+ */
+export function meetingLocation(loc: CommitteeMeetingDetail['location']): string | null {
+  if (!loc) return null;
+  let address: unknown = loc.address;
+  if (typeof address === 'string' && address.trim().startsWith('{')) {
+    try {
+      address = JSON.parse(address);
+    } catch {
+      // Leave it as text.
+    }
+  }
+  const place =
+    address && typeof address === 'object'
+      ? (() => {
+          const a = address as Record<string, unknown>;
+          const text = (k: string) => (typeof a[k] === 'string' && (a[k] as string).trim()) || null;
+          return [text('building_name'), text('city'), text('state')].filter(Boolean).join(', ') || null;
+        })()
+      : typeof address === 'string'
+        ? address.trim() || null
+        : null;
+  return [loc.room, loc.building, place].filter(Boolean).join(', ') || null;
+}
+
 /** congress.gov page for a meeting, e.g. /event/119th-Congress/house-event/119557. */
 export function meetingPageUrl(congress: number, chamber: string, eventId: string): string {
   return `https://www.congress.gov/event/${congress}th-Congress/${chamber.toLowerCase()}-event/${eventId}`;
@@ -247,7 +275,7 @@ export function committeeMeetingRow(m: CommitteeMeetingDetail, fallbackChamber: 
   const chamber = chamberText.startsWith('senate') ? 'senate' : chamberText.startsWith('house') ? 'house' : 'joint';
   const related = Array.isArray(m.relatedItems) ? m.relatedItems : m.relatedItems ? [m.relatedItems] : [];
   const bills = related.flatMap((r) => r.bills ?? []);
-  const location = [m.location?.room, m.location?.building, m.location?.address].filter(Boolean).join(', ') || null;
+  const location = meetingLocation(m.location);
   const videos = m.videos ?? [];
   return {
     id: `${m.congress}-${chamber}-${m.eventId}`,
