@@ -6,7 +6,9 @@ import { billHref } from '../lib/paths';
 import { redirectIfPrerendered } from '../lib/prerendered';
 import { select } from '../lib/rest';
 import { BILL_PAGE_COLUMNS, type Bill, type BillAction, type Member } from '../lib/types';
+import { BILL_COMMITTEE_COLUMNS, type BillCommittee } from '../lib/committees';
 import ActionTimeline from './ActionTimeline';
+import BillCommittees from './BillCommittees';
 import FollowButton from './FollowButton';
 import MemberChip from './MemberChip';
 import StatusTracker from './StatusTracker';
@@ -19,6 +21,7 @@ interface View {
   actions: Pick<BillAction, 'seq' | 'action_date' | 'text' | 'chamber' | 'source_system'>[];
   cosponsors: { member_id: string; withdrawn_date: string | null; is_original: boolean; member: MemberRef | null }[];
   subjects: string[];
+  committees?: BillCommittee[];
   source: 'database' | 'archive';
 }
 
@@ -27,7 +30,7 @@ const MEMBER_REF = 'bioguide_id,name,party,state,district,chamber';
 async function loadFromDatabase(id: string): Promise<View | null> {
   const [bill] = await select<Bill>('bills', { id: `eq.${id}`, select: BILL_PAGE_COLUMNS });
   if (!bill) return null;
-  const [actions, cosponsors, subjects, sponsor] = await Promise.all([
+  const [actions, cosponsors, subjects, sponsor, committees] = await Promise.all([
     select<View['actions'][number]>('bill_actions', {
       bill_id: `eq.${id}`,
       select: 'seq,action_date,text,chamber,source_system',
@@ -42,6 +45,8 @@ async function loadFromDatabase(id: string): Promise<View | null> {
     bill.sponsor_id
       ? select<MemberRef>('members', { bioguide_id: `eq.${bill.sponsor_id}`, select: MEMBER_REF })
       : Promise.resolve([]),
+    // Optional: older deployments may not have the table yet.
+    select<BillCommittee>('bill_committees', { bill_id: `eq.${id}`, select: BILL_COMMITTEE_COLUMNS }).catch(() => []),
   ]);
   return {
     bill,
@@ -49,6 +54,7 @@ async function loadFromDatabase(id: string): Promise<View | null> {
     actions,
     cosponsors,
     subjects: subjects.map((s) => s.subject),
+    committees,
     source: 'database',
   };
 }
@@ -180,6 +186,13 @@ export default function BillFallback() {
         <h2>Actions</h2>
         <ActionTimeline actions={view.actions} />
       </section>
+
+      {(view.committees?.length ?? 0) > 0 && (
+        <section>
+          <h2>Committees</h2>
+          <BillCommittees rows={view.committees!} />
+        </section>
+      )}
 
       {view.subjects.length > 0 && (
         <section>

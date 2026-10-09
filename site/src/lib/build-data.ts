@@ -7,6 +7,16 @@
  */
 import { congressForDate } from '@civic/congress-client/ids';
 import demoData from '../data/demo.json';
+import {
+  BILL_COMMITTEE_COLUMNS,
+  COMMITTEE_COLUMNS,
+  COMMITTEE_MEETING_COLUMNS,
+  COMMITTEE_MEMBER_COLUMNS,
+  type BillCommittee,
+  type Committee,
+  type CommitteeMeeting,
+  type CommitteeMember,
+} from './committees';
 import { SCOTUS_COLUMNS, type ScotusCase } from './court';
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
@@ -369,6 +379,48 @@ export const loadVotesByNomination = memo(async () =>
     }),
     (v) => v.nomination_id,
   ),
+);
+
+// ---- Committees ----------------------------------------------------------------
+
+/** Current committees and subcommittees, by code. */
+export const loadCommittees = memo(
+  async () =>
+    new Map(
+      (
+        await selectAllOptional<Committee>('committees', {
+          select: COMMITTEE_COLUMNS,
+          current: 'eq.true',
+          order: 'code.asc',
+        })
+      ).map((c) => [c.code, c]),
+    ),
+);
+
+export const loadCommitteeMembers = memo(async () =>
+  selectAllOptional<CommitteeMember>('committee_members', {
+    select: COMMITTEE_MEMBER_COLUMNS,
+    order: 'committee_code.asc,rank.asc',
+  }),
+);
+
+/** Referrals of current-Congress bills, grouped by committee and by bill. */
+export const loadBillCommittees = memo(async () => {
+  const rows = await selectAllOptional<BillCommittee>('bill_committees', {
+    select: BILL_COMMITTEE_COLUMNS,
+    bill_id: `like.${CURRENT_CONGRESS}-*`,
+    order: 'bill_id.asc,committee_code.asc',
+  });
+  return { byCommittee: groupBy(rows, (r) => r.committee_code), byBill: groupBy(rows, (r) => r.bill_id) };
+});
+
+/** Hearings and markups this Congress, newest first. */
+export const loadCommitteeMeetings = memo(async () =>
+  selectAllOptional<CommitteeMeeting>('committee_meetings', {
+    select: COMMITTEE_MEETING_COLUMNS,
+    congress: `eq.${CURRENT_CONGRESS}`,
+    order: 'date.desc.nullslast,id.desc',
+  }),
 );
 
 // ---- Supreme Court ----------------------------------------------------------

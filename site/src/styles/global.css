@@ -1549,7 +1549,7 @@ nav[aria-label='Breadcrumb'] {
   color: var(--text-muted);
 }
 /* The full search box only where the whole menu fits beside it. */
-@media (max-width: 79.99rem) {
+@media (max-width: 89.99rem) {
   .search-trigger {
     width: 44px;
     padding: 0;

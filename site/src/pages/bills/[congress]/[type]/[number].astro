@@ -1,4 +1,5 @@
 ---
+import BillCommittees from '../../../../components/BillCommittees';
 import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
@@ -14,6 +15,8 @@ import {
   loadCosponsors,
   loadMembers,
   loadSubjects,
+  loadBillCommittees,
+  loadCommittees,
   loadVotesByBill,
 } from '../../../../lib/build-data';
 import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraphs } from '../../../../lib/format';
@@ -41,6 +44,8 @@ const [members, actionsByBill, cosponsorsByBill, subjectsByBill, votesByBill] = 
   loadVotesByBill(),
 ]);
 const votes = votesByBill.get(bill.id) ?? [];
+const [{ byBill: committeesByBill }, committeeIndex] = await Promise.all([loadBillCommittees(), loadCommittees()]);
+const billCommittees = committeesByBill.get(bill.id) ?? [];
 const discussion = (await loadDiscussionsByTarget()).get(`bill:${bill.id}`);
 const actions = actionsByBill.get(bill.id) ?? [];
 const cosponsors = (cosponsorsByBill.get(bill.id) ?? [])
@@ -203,6 +208,15 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
         )}
         {withdrawn.length > 0 && <p class="small muted">{withdrawn.length} withdrew their cosponsorship.</p>}
       </section>
+
+      {billCommittees.length > 0 && (
+        <section aria-labelledby="committees-h" class="card">
+          <h2 id="committees-h" class="h-small">
+            Committees
+          </h2>
+          <BillCommittees rows={billCommittees} known={new Set(committeeIndex.keys())} />
+        </section>
+      )}
 
       {subjects.length > 0 && (
         <section aria-labelledby="subjects-h" class="card">

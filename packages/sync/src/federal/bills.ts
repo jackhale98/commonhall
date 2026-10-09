@@ -20,6 +20,7 @@ import {
   type TextVersion,
 } from '@civic/congress-client';
 import { insertMany, upsertIfChanged, type AnySql, type Sql } from '../db.ts';
+import { writeBillCommittees } from './committees.ts';
 import { chamberFromText, htmlToText, nameFromFullName, partyCode, stateCode, toDate, toTimestamp } from '../text.ts';
 
 export interface StoredCounts {
@@ -290,6 +291,8 @@ export async function syncBill(
         await tx`delete from public.bill_actions where bill_id = ${id}`;
         written += await insertMany(tx, 'public.bill_actions', actionList as unknown as Record<string, unknown>[]);
       }
+      // The committees each action names: referrals, reports, hearings and markups.
+      written += await writeBillCommittees(tx, id, actions!);
     }
 
     if (cosponsors) {

@@ -37,6 +37,11 @@ about, and take part in moderated public discussions.
   member voted. The votes page highlights the closest votes.
 - Look up any member of Congress: photo, contact details, sponsored bills, recent
   votes, and how often they vote and vote with their party.
+- Browse every committee and subcommittee: chair and ranking member, the full
+  roster by party, the bills sent to it (still in committee or reported out),
+  and upcoming and recent hearings and markups with witnesses and video. Member
+  pages list each member's committee seats; bill pages list the committees a bill
+  went to.
 - See where each member's campaign money comes from: totals raised and spent,
   small versus large donors, PACs, in-state versus out-of-state money, and the
   employers of their largest donors.
@@ -95,6 +100,8 @@ automatically.
 | --- | --- | --- |
 | Federal bills, actions, summaries, members | [Congress.gov API](https://api.congress.gov/) | every 10 minutes |
 | House and Senate roll-call votes | Congress.gov and [senate.gov](https://www.senate.gov/legislative/votes.htm) | every 10 minutes |
+| Committees and rosters | congress-legislators | daily |
+| Bill referrals, hearings and markups | Congress.gov | hourly |
 | Member contact details and IDs | [congress-legislators](https://github.com/unitedstates/congress-legislators) (public domain) | daily |
 | Executive orders | [Federal Register API](https://www.federalregister.gov/developers/documentation/api/v1) | hourly |
 | Nominations | Congress.gov | hourly |
@@ -177,6 +184,7 @@ and [discussion rules](https://jackhale98.github.io/opencongress/moderation/).
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
 | Massachusetts bills | Arriving with the nightly Open States sync |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
+| Committees, rosters, hearings | Ready; rosters load on the first hourly run, referrals fill in as bills load |
 | Executive orders and nominations | Ready; load on the first hourly run after deploy |
 | Supreme Court | Ready; loads on the first hourly run after deploy (needs `COURTLISTENER_TOKEN`) |
 

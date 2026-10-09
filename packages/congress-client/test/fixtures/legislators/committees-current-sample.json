@@ -1,0 +1,69 @@
+[
+  {
+    "type": "house",
+    "name": "House Committee on Agriculture",
+    "url": "https://agriculture.house.gov/",
+    "minority_url": "https://republicans-agriculture.house.gov",
+    "thomas_id": "HSAG",
+    "house_committee_id": "AG",
+    "subcommittees": [
+      {
+        "name": "Forestry and Horticulture",
+        "thomas_id": "15",
+        "address": "1301 LHOB; Washington, DC 20515",
+        "phone": "(202) 225-2171"
+      },
+      {
+        "name": "Commodity Markets, Digital Assets, and Rural Development",
+        "thomas_id": "22",
+        "address": "1301 LHOB; Washington, DC 20515",
+        "phone": "(202) 225-2171"
+      }
+    ],
+    "address": "1301 LHOB; Washington, DC 20515-6001",
+    "phone": "(202) 225-2171",
+    "rss_url": "https://agriculture.house.gov/Rss.aspx?GroupID=1",
+    "jurisdiction": "The House Committee on Agriculture has legislative jurisdiction over agriculture, food, rural development, and forestry.",
+    "youtube_id": "UCOWh2WJxPywHIaccDWb8Mvg"
+  },
+  {
+    "type": "joint",
+    "name": "Joint Economic Committee",
+    "url": "http://www.jec.senate.gov/",
+    "thomas_id": "JSEC",
+    "house_committee_id": "EC",
+    "senate_committee_id": "JSEC",
+    "rss_url": "http://www.jec.senate.gov/republicans/public/?a=RSS.Feed",
+    "minority_rss_url": "http://www.jec.senate.gov/public/?a=RSS.Feed",
+    "wikipedia": "Joint Economic Committee",
+    "youtube_id": "UCbNWSrKyYBP5iIZKT35LSGA",
+    "address": "SD-G01 DSOB; Washington, DC 20510-6432",
+    "phone": "(202) 224-5171",
+    "subcommittees": []
+  },
+  {
+    "type": "senate",
+    "name": "Senate Committee on Finance",
+    "url": "http://www.finance.senate.gov/",
+    "thomas_id": "SSFI",
+    "senate_committee_id": "SSFI",
+    "subcommittees": [
+      {
+        "name": "Energy, Natural Resources, and Infrastructure",
+        "thomas_id": "12",
+        "wikipedia": "United States Senate Finance Subcommittee on Energy, Natural Resources, and Infrastructure"
+      },
+      {
+        "name": "Health Care",
+        "thomas_id": "10",
+        "wikipedia": "United States Senate Finance Subcommittee on Health Care"
+      }
+    ],
+    "rss_url": "http://www.finance.senate.gov/rss/feed/chair/",
+    "minority_rss_url": "http://www.finance.senate.gov/rss/feed/ranking/",
+    "wikipedia": "United States Senate Committee on Finance",
+    "jurisdiction": "The Senate Committee on Finance has legislative jurisdiction on matters relating to taxation, debt, customs, foreign trade, and health programs under the Social Security Act such as Medicare, Medicaid, the Children's Health Insurance Program (CHIP), Temporary Assistance to Needy Families (TANF) and ",
+    "jurisdiction_source": "https://www.ethics.senate.gov/public/index.cfm/jurisdiction",
+    "youtube_id": "UCqy51oGHjollKBBWV4_iRgQ"
+  }
+]

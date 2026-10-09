@@ -59,6 +59,7 @@ Dashboard → Edge Functions → Secrets, or `supabase secrets set NAME=value`.
 | `COURTLISTENER_TOKEN` | yes for the Supreme Court page | `sync-scotus` | free token from courtlistener.com (profile → API) |
 | `FEC_API_KEY` | recommended | `sync-finance` | falls back to `CONGRESS_API_KEY` (same api.data.gov key) |
 | `FEC_HOURLY_CAP` | no | `sync-finance` | 300 requests per hour |
+| `COMMITTEES_RUN_CAP` | no | `sync-committees` | 150 Congress.gov requests per run |
 | `SYNC_FEDERAL_RUN_CAP` | no | `sync-federal` | 580 requests per run |
 | `SYNC_TIME_LIMIT_MS` | no | sync functions | 120000 |
 | `OPENSTATES_DAILY_BUDGET` | no | `sync-state` | 450 requests per UTC day |

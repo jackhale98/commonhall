@@ -468,3 +468,24 @@ the executive and court lists mark items with a discussion. Both are national
 Local discussions come first: the discussions page groups open discussions as
 Boston, Massachusetts, then national; the Boston page always has a "Have your say"
 section, and the Massachusetts page lists open state and Boston discussions.
+
+## 46. Committees
+
+Approved by the owner. Committees, subcommittees and rosters (with chair and
+ranking member) come from congress-legislators, the public-domain source we already
+use for member details; the Congress.gov API has no membership data. Its codes map
+to Congress.gov system codes (`HSAG` → `hsag00`, subcommittee `15` → `hsag15`).
+
+- Which committees a bill went to is read from the bill's own actions, which name
+  their committees, so it costs no extra requests for bills synced from now on.
+  Bills loaded earlier are caught up 60 an hour (one actions request each),
+  most recently active first. "Reported" is the first action naming the committee
+  whose text says it reported the bill.
+- Hearings and markups come from Congress.gov's committee-meeting endpoints: the
+  list (newest updates first) and one detail request per new or changed meeting.
+  The first run reads the last 60 days of updates, which includes everything
+  upcoming. The live API names the id `eventId` (the spec says `eventid`).
+- `sync-committees` runs hourly within its own cap of Congress.gov requests;
+  rosters refresh once a day and are not replaced if the upstream file shrinks
+  by more than half. Committees have no top-level menu item (the menu is full);
+  they are linked from Members, member and bill pages, the footer and search.

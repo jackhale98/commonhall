@@ -102,6 +102,31 @@ export function lisToBioguideMap(legislators: Legislator[]): Map<string, string>
   return map;
 }
 
+/** committees-current.json: one entry per full committee, subcommittees nested. */
+export interface LegislatorCommittee {
+  type: 'house' | 'senate' | 'joint';
+  name: string;
+  /** e.g. "HSAG"; Congress.gov's system code is this lower-cased plus "00". */
+  thomas_id: string;
+  url?: string;
+  minority_url?: string;
+  address?: string;
+  phone?: string;
+  jurisdiction?: string;
+  subcommittees?: { name: string; thomas_id: string; address?: string; phone?: string }[];
+}
+
+/** committee-membership-current.json: committee or subcommittee id (HSAG, HSAG15) → members. */
+export type CommitteeMembership = Record<
+  string,
+  { name: string; party: 'majority' | 'minority'; rank: number; title?: string; bioguide?: string }[]
+>;
+
+/** Congress.gov system code for a committee ("HSAG" → "hsag00") or subcommittee ("HSAG", "15" → "hsag15"). */
+export function committeeSystemCode(thomasId: string, sub?: string): string {
+  return `${thomasId.toLowerCase()}${sub ?? '00'}`;
+}
+
 export class LegislatorsClient {
   readonly http: HttpClient;
   private readonly baseUrl: string;
@@ -122,5 +147,13 @@ export class LegislatorsClient {
 
   social(): Promise<LegislatorSocial[]> {
     return this.http.getJson<LegislatorSocial[]>(`${this.baseUrl}/legislators-social-media.json`);
+  }
+
+  committees(): Promise<LegislatorCommittee[]> {
+    return this.http.getJson<LegislatorCommittee[]>(`${this.baseUrl}/committees-current.json`);
+  }
+
+  committeeMembership(): Promise<CommitteeMembership> {
+    return this.http.getJson<CommitteeMembership>(`${this.baseUrl}/committee-membership-current.json`);
   }
 }

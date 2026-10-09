@@ -6,7 +6,7 @@ import { chamberGroups } from '../../lib/charts';
 import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadMembers } from '../../lib/build-data';
 import { congressLabel, stateName } from '../../lib/format';
-import { stateHref } from '../../lib/paths';
+import { href, stateHref } from '../../lib/paths';
 
 const members = [...(await loadMembers()).values()].filter((m) => m.current && m.state);
 const byState = new Map<string, typeof members>();
@@ -33,6 +33,11 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
       <p class="lede">
         {counts.senate} senators and {counts.house} representatives and delegates. Find anyone by name or state, see how
         they vote and what they sponsor.
+      </p>
+      <p>
+        <a class="see-all" href={href('committees/')}>
+          Committees and hearings
+        </a>
       </p>
     </div>
     <div class="panel chambers">

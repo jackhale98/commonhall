@@ -178,3 +178,36 @@ export interface SponsoredItem {
 
 /** /nomination/{congress} list item. One row per nomination part (PN615-1, PN615-2, …). */
 export type NominationListItem = Schemas['nomination'];
+
+/** /committee-meeting/{congress}/{chamber} list item. The live API uses `eventId` (the spec says `eventid`). */
+export interface CommitteeMeetingListItem {
+  chamber?: string;
+  congress?: number;
+  eventId?: string;
+  updateDate?: string;
+  url?: string;
+}
+
+interface MeetingBillRef {
+  congress?: number;
+  number?: string;
+  type?: string;
+}
+
+/** /committee-meeting/{congress}/{chamber}/{eventId} → `committeeMeeting` (checked against a recorded response). */
+export interface CommitteeMeetingDetail {
+  chamber?: string;
+  congress?: number;
+  eventId?: string;
+  date?: string;
+  title?: string;
+  type?: string;
+  meetingStatus?: 'Canceled' | 'Draft' | 'Postponed' | 'Rescheduled' | 'Scheduled' | string;
+  updateDate?: string;
+  location?: { building?: string; room?: string; address?: string };
+  committees?: { name?: string; systemCode?: string; url?: string }[];
+  witnesses?: { name?: string; organization?: string; position?: string }[];
+  videos?: { name?: string; url?: string }[];
+  /** An array of groups in the spec; accept a single object too. */
+  relatedItems?: { bills?: MeetingBillRef[] }[] | { bills?: MeetingBillRef[] } | null;
+}

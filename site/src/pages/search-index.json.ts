@@ -1,4 +1,5 @@
 import {
+  loadCommittees,
   loadDiscussions,
   loadLocalOfficials,
   loadMembers,
@@ -18,7 +19,7 @@ import { billHref, discussionHref, href, localOfficialHref, memberHref, stateBil
 /** One entry in the search palette's index. Short keys keep the file small. */
 export interface SearchEntry {
   /** kind */
-  k: 'page' | 'member' | 'state' | 'councilor' | 'discussion' | 'bill' | 'state-bill';
+  k: 'page' | 'member' | 'committee' | 'state' | 'councilor' | 'discussion' | 'bill' | 'state-bill';
   /** title */
   t: string;
   /** subtitle */
@@ -32,17 +33,32 @@ const clip = (text: string, n = 110) => (text.length > n ? `${text.slice(0, n - 
 
 /** Everything the header search can find instantly; full bill search goes to /bills/?q=. */
 export async function GET() {
-  const [members, officials, discussions, bills, stateBills] = await Promise.all([
+  const [members, officials, discussions, bills, stateBills, committees] = await Promise.all([
     loadMembers(),
     loadLocalOfficials(),
     loadDiscussions(),
     loadPrerenderBills(),
     loadPrerenderStateBills(),
+    loadCommittees(),
   ]);
   const entries: SearchEntry[] = [
     { k: 'page', t: 'Bills', s: 'Search and filter every bill', h: href('bills/') },
     { k: 'page', t: 'Votes', s: 'Every House and Senate roll call', h: href('votes/') },
     { k: 'page', t: 'Members of Congress', s: 'Senators and representatives', h: href('members/') },
+    { k: 'page', t: 'Committees', s: 'Committees, hearings and markups', h: href('committees/') },
+    { k: 'page', t: 'Executive orders and nominations', s: 'The executive branch', h: href('executive/') },
+    { k: 'page', t: 'Supreme Court', s: 'Decisions of the last five terms', h: href('court/') },
+    ...[...committees.values()].map((c) => {
+      const parent = c.parent_code ? committees.get(c.parent_code) : undefined;
+      return {
+        k: 'committee' as const,
+        t: parent ? `Subcommittee on ${c.name}` : c.name,
+        s: parent
+          ? parent.name
+          : `${c.chamber === 'joint' ? 'Joint' : c.chamber === 'house' ? 'House' : 'Senate'} committee`,
+        h: href(`committees/${c.code}/`),
+      };
+    }),
     { k: 'page', t: 'Boston City Council', s: 'Councilors, district map, meetings', h: href('boston/') },
     { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
     ...STATE_CODES.map((code) => ({

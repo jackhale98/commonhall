@@ -1,0 +1,161 @@
+---
+import MeetingList from '../../components/MeetingList.astro';
+import Base from '../../layouts/Base.astro';
+import {
+  CURRENT_CONGRESS,
+  loadBillCommittees,
+  loadCommitteeMeetings,
+  loadCommitteeMembers,
+  loadCommittees,
+  loadMembers,
+} from '../../lib/build-data';
+import { chamberLabel, shortCommitteeName, type Committee } from '../../lib/committees';
+import { congressLabel } from '../../lib/format';
+import { href, memberHref } from '../../lib/paths';
+
+const [committees, roster, referrals, meetings, members] = await Promise.all([
+  loadCommittees(),
+  loadCommitteeMembers(),
+  loadBillCommittees(),
+  loadCommitteeMeetings(),
+  loadMembers(),
+]);
+const now = new Date().toISOString();
+const upcoming = meetings
+  .filter((m) => m.date && m.date >= now && !/cancel/i.test(m.status ?? ''))
+  .reverse()
+  .slice(0, 12);
+const recent = meetings.filter((m) => m.date && m.date < now).slice(0, 8);
+const parents = [...committees.values()].filter((c) => !c.parent_code);
+const leader = (code: string, re: RegExp) => {
+  const m = roster.find((r) => r.committee_code === code && r.title && re.test(r.title));
+  return m ? members.get(m.member_id) : undefined;
+};
+const stats = (c: Committee) => {
+  const codes = [c.code, ...[...committees.values()].filter((s) => s.parent_code === c.code).map((s) => s.code)];
+  const rows = codes.flatMap((code) => referrals.byCommittee.get(code) ?? []);
+  const bills = new Set(rows.map((r) => r.bill_id));
+  const reported = new Set(rows.filter((r) => r.reported_date).map((r) => r.bill_id));
+  return { bills: bills.size, reported: reported.size, subs: codes.length - 1 };
+};
+const chambers = (['house', 'senate', 'joint'] as const).map((chamber) => ({
+  chamber,
+  list: parents.filter((c) => c.chamber === chamber).sort((a, b) => a.name.localeCompare(b.name)),
+}));
+---
+
+<Base
+  title="Committees"
+  description="Every committee of Congress: who sits on it, the bills sent to it, and its hearings and markups."
+  section="members"
+>
+  <header class="page-head wash">
+    <p class="kicker">{congressLabel(CURRENT_CONGRESS)}</p>
+    <h1>Committees</h1>
+    <p class="lede">
+      Most bills are decided in committee: they hold hearings, amend bills in markups, and choose which ones reach the
+      floor. See who sits on each committee and what it is working on.
+    </p>
+  </header>
+
+  {committees.size === 0 && <p class="muted">Committees have not loaded yet.</p>}
+
+  {(upcoming.length > 0 || recent.length > 0) && (
+    <div class="meeting-columns">
+      {upcoming.length > 0 && (
+        <section aria-labelledby="upcoming-h">
+          <h2 id="upcoming-h">Coming up</h2>
+          <div class="panel">
+            <MeetingList meetings={upcoming} />
+          </div>
+        </section>
+      )}
+      {recent.length > 0 && (
+        <section aria-labelledby="recent-h">
+          <h2 id="recent-h">Recent hearings and markups</h2>
+          <div class="panel">
+            <MeetingList meetings={recent} />
+          </div>
+        </section>
+      )}
+    </div>
+  )}
+
+  {chambers
+    .filter((c) => c.list.length > 0)
+    .map(({ chamber, list }) => (
+      <section aria-labelledby={`${chamber}-h`}>
+        <h2 id={`${chamber}-h`}>
+          {chamberLabel(chamber)} committees <span class="muted">({list.length})</span>
+        </h2>
+        <ul class="grid committee-grid">
+          {list.map((c) => {
+            const s = stats(c);
+            const chair = leader(c.code, /^chair/i);
+            const ranking = leader(c.code, /ranking/i);
+            return (
+              <li class="card">
+                <a class="committee-name" href={href(`committees/${c.code}/`)}>
+                  {shortCommitteeName(c.name)}
+                </a>
+                <p class="small muted">
+                  {chair && (
+                    <>
+                      Chair <a href={memberHref(chair.bioguide_id)}>{chair.name}</a>
+                    </>
+                  )}
+                  {chair && ranking && ' · '}
+                  {ranking && (
+                    <>
+                      Ranking <a href={memberHref(ranking.bioguide_id)}>{ranking.name}</a>
+                    </>
+                  )}
+                </p>
+                <p class="small">
+                  {s.bills > 0 && (
+                    <>
+                      {s.bills.toLocaleString()} bills referred · {s.reported.toLocaleString()} reported
+                    </>
+                  )}
+                  {s.bills > 0 && s.subs > 0 && ' · '}
+                  {s.subs > 0 && `${s.subs} subcommittees`}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    ))}
+  <p class="small muted">
+    Rosters from{' '}
+    <a href="https://github.com/unitedstates/congress-legislators" rel="noopener">
+      congress-legislators
+    </a>
+    ; referrals, hearings and markups from Congress.gov. Bill counts cover bills loaded so far this Congress.
+  </p>
+</Base>
+
+<style>
+  .meeting-columns {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .meeting-columns {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .committee-grid {
+    list-style: none;
+    padding: 0;
+  }
+  .committee-grid p {
+    margin: var(--space-1) 0 0;
+  }
+  .committee-name {
+    font-weight: 700;
+    font-size: var(--step-1);
+  }
+</style>

@@ -1,0 +1,1084 @@
+{
+  "SSFI": [
+    {
+      "name": "Mike Crapo",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chairman",
+      "bioguide": "C000880"
+    },
+    {
+      "name": "Chuck Grassley",
+      "party": "majority",
+      "rank": 2,
+      "bioguide": "G000386"
+    },
+    {
+      "name": "John Cornyn",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "C001056"
+    },
+    {
+      "name": "John Thune",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "T000250"
+    },
+    {
+      "name": "Tim Scott",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "S001184"
+    },
+    {
+      "name": "Bill Cassidy",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "C001075"
+    },
+    {
+      "name": "James Lankford",
+      "party": "majority",
+      "rank": 7,
+      "bioguide": "L000575"
+    },
+    {
+      "name": "Steve Daines",
+      "party": "majority",
+      "rank": 8,
+      "bioguide": "D000618"
+    },
+    {
+      "name": "Todd Young",
+      "party": "majority",
+      "rank": 9,
+      "bioguide": "Y000064"
+    },
+    {
+      "name": "John Barrasso",
+      "party": "majority",
+      "rank": 10,
+      "bioguide": "B001261"
+    },
+    {
+      "name": "Ron Johnson",
+      "party": "majority",
+      "rank": 11,
+      "bioguide": "J000293"
+    },
+    {
+      "name": "Thom Tillis",
+      "party": "majority",
+      "rank": 12,
+      "bioguide": "T000476"
+    },
+    {
+      "name": "Marsha Blackburn",
+      "party": "majority",
+      "rank": 13,
+      "bioguide": "B001243"
+    },
+    {
+      "name": "Roger Marshall",
+      "party": "majority",
+      "rank": 14,
+      "bioguide": "M001198"
+    },
+    {
+      "name": "Ron Wyden",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "W000779"
+    },
+    {
+      "name": "Maria Cantwell",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "C000127"
+    },
+    {
+      "name": "Michael F. Bennet",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "B001267"
+    },
+    {
+      "name": "Mark R. Warner",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "W000805"
+    },
+    {
+      "name": "Sheldon Whitehouse",
+      "party": "minority",
+      "rank": 5,
+      "bioguide": "W000802"
+    },
+    {
+      "name": "Margaret Wood Hassan",
+      "party": "minority",
+      "rank": 6,
+      "bioguide": "H001076"
+    },
+    {
+      "name": "Catherine Cortez Masto",
+      "party": "minority",
+      "rank": 7,
+      "bioguide": "C001113"
+    },
+    {
+      "name": "Elizabeth Warren",
+      "party": "minority",
+      "rank": 8,
+      "bioguide": "W000817"
+    },
+    {
+      "name": "Bernard Sanders",
+      "party": "minority",
+      "rank": 9,
+      "bioguide": "S000033"
+    },
+    {
+      "name": "Tina Smith",
+      "party": "minority",
+      "rank": 10,
+      "bioguide": "S001203"
+    },
+    {
+      "name": "Ben Ray Luján",
+      "party": "minority",
+      "rank": 11,
+      "bioguide": "L000570"
+    },
+    {
+      "name": "Raphael G. Warnock",
+      "party": "minority",
+      "rank": 12,
+      "bioguide": "W000790"
+    },
+    {
+      "name": "Peter Welch",
+      "party": "minority",
+      "rank": 13,
+      "bioguide": "W000800"
+    }
+  ],
+  "SSFI12": [
+    {
+      "name": "James Lankford",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chairman",
+      "bioguide": "L000575"
+    },
+    {
+      "name": "John Cornyn",
+      "party": "majority",
+      "rank": 2,
+      "bioguide": "C001056"
+    },
+    {
+      "name": "Tim Scott",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "S001184"
+    },
+    {
+      "name": "Steve Daines",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "D000618"
+    },
+    {
+      "name": "John Barrasso",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "B001261"
+    },
+    {
+      "name": "Roger Marshall",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "M001198"
+    },
+    {
+      "name": "Mike Crapo",
+      "party": "majority",
+      "rank": 7,
+      "title": "Ex Officio",
+      "bioguide": "C000880"
+    },
+    {
+      "name": "Maria Cantwell",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "C000127"
+    },
+    {
+      "name": "Michael F. Bennet",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "B001267"
+    },
+    {
+      "name": "Margaret Wood Hassan",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "H001076"
+    },
+    {
+      "name": "Ben Ray Luján",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "L000570"
+    },
+    {
+      "name": "Peter Welch",
+      "party": "minority",
+      "rank": 5,
+      "bioguide": "W000800"
+    },
+    {
+      "name": "Ron Wyden",
+      "party": "minority",
+      "rank": 6,
+      "title": "Ex Officio",
+      "bioguide": "W000779"
+    }
+  ],
+  "SSFI10": [
+    {
+      "name": "Todd Young",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chairman",
+      "bioguide": "Y000064"
+    },
+    {
+      "name": "John Thune",
+      "party": "majority",
+      "rank": 2,
+      "bioguide": "T000250"
+    },
+    {
+      "name": "Tim Scott",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "S001184"
+    },
+    {
+      "name": "Bill Cassidy",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "C001075"
+    },
+    {
+      "name": "James Lankford",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "L000575"
+    },
+    {
+      "name": "Steve Daines",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "D000618"
+    },
+    {
+      "name": "John Barrasso",
+      "party": "majority",
+      "rank": 7,
+      "bioguide": "B001261"
+    },
+    {
+      "name": "Ron Johnson",
+      "party": "majority",
+      "rank": 8,
+      "bioguide": "J000293"
+    },
+    {
+      "name": "Thom Tillis",
+      "party": "majority",
+      "rank": 9,
+      "bioguide": "T000476"
+    },
+    {
+      "name": "Marsha Blackburn",
+      "party": "majority",
+      "rank": 10,
+      "bioguide": "B001243"
+    },
+    {
+      "name": "Roger Marshall",
+      "party": "majority",
+      "rank": 11,
+      "bioguide": "M001198"
+    },
+    {
+      "name": "Mike Crapo",
+      "party": "majority",
+      "rank": 12,
+      "title": "Ex Officio",
+      "bioguide": "C000880"
+    },
+    {
+      "name": "Margaret Wood Hassan",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "H001076"
+    },
+    {
+      "name": "Mark R. Warner",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "W000805"
+    },
+    {
+      "name": "Sheldon Whitehouse",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "W000802"
+    },
+    {
+      "name": "Catherine Cortez Masto",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "C001113"
+    },
+    {
+      "name": "Elizabeth Warren",
+      "party": "minority",
+      "rank": 5,
+      "bioguide": "W000817"
+    },
+    {
+      "name": "Bernard Sanders",
+      "party": "minority",
+      "rank": 6,
+      "bioguide": "S000033"
+    },
+    {
+      "name": "Tina Smith",
+      "party": "minority",
+      "rank": 7,
+      "bioguide": "S001203"
+    },
+    {
+      "name": "Ben Ray Luján",
+      "party": "minority",
+      "rank": 8,
+      "bioguide": "L000570"
+    },
+    {
+      "name": "Raphael G. Warnock",
+      "party": "minority",
+      "rank": 9,
+      "bioguide": "W000790"
+    },
+    {
+      "name": "Peter Welch",
+      "party": "minority",
+      "rank": 10,
+      "bioguide": "W000800"
+    },
+    {
+      "name": "Ron Wyden",
+      "party": "minority",
+      "rank": 11,
+      "title": "Ex Officio",
+      "bioguide": "W000779"
+    }
+  ],
+  "JSEC": [
+    {
+      "name": "Eric Schmitt",
+      "party": "majority",
+      "rank": 1,
+      "title": "Vice Chairman",
+      "bioguide": "S001227",
+      "chamber": "senate"
+    },
+    {
+      "name": "David Schweikert",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chairman",
+      "bioguide": "S001183",
+      "chamber": "house"
+    },
+    {
+      "name": "Tom Cotton",
+      "party": "majority",
+      "rank": 2,
+      "bioguide": "C001095",
+      "chamber": "senate"
+    },
+    {
+      "name": "Jodey C. Arrington",
+      "party": "majority",
+      "rank": 2,
+      "bioguide": "A000375",
+      "chamber": "house"
+    },
+    {
+      "name": "Ted Budd",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "B001305",
+      "chamber": "senate"
+    },
+    {
+      "name": "Ron Estes",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "E000298",
+      "chamber": "house"
+    },
+    {
+      "name": "David McCormick",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "M001243",
+      "chamber": "senate"
+    },
+    {
+      "name": "Lloyd Smucker",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "S001199",
+      "chamber": "house"
+    },
+    {
+      "name": "Marsha Blackburn",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "B001243",
+      "chamber": "senate"
+    },
+    {
+      "name": "Nicole Malliotakis",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "M000317",
+      "chamber": "house"
+    },
+    {
+      "name": "Ashley Moody",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "M001244",
+      "chamber": "senate"
+    },
+    {
+      "name": "Victoria Spartz",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "S000929",
+      "chamber": "house"
+    },
+    {
+      "name": "Margaret Wood Hassan",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "H001076",
+      "chamber": "senate"
+    },
+    {
+      "name": "Amy Klobuchar",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "K000367",
+      "chamber": "senate"
+    },
+    {
+      "name": "Martin Heinrich",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "H001046",
+      "chamber": "senate"
+    },
+    {
+      "name": "Mark Kelly",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "K000377",
+      "chamber": "senate"
+    },
+    {
+      "name": "Donald S. Beyer, Jr.",
+      "party": "minority",
+      "rank": 7,
+      "bioguide": "B001292",
+      "chamber": "house"
+    },
+    {
+      "name": "Gwen Moore",
+      "party": "minority",
+      "rank": 8,
+      "bioguide": "M001160",
+      "chamber": "house"
+    },
+    {
+      "name": "Sean Casten",
+      "party": "minority",
+      "rank": 9,
+      "bioguide": "C001117",
+      "chamber": "house"
+    },
+    {
+      "name": "Dave Min",
+      "party": "minority",
+      "rank": 10,
+      "bioguide": "M001241",
+      "chamber": "house"
+    }
+  ],
+  "HSAG": [
+    {
+      "name": "Glenn Thompson",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chair",
+      "bioguide": "T000467"
+    },
+    {
+      "name": "Angie Craig",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "C001119"
+    },
+    {
+      "name": "Frank D. Lucas",
+      "party": "majority",
+      "rank": 2,
+      "bioguide": "L000491"
+    },
+    {
+      "name": "Jim Costa",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "C001059"
+    },
+    {
+      "name": "Austin Scott",
+      "party": "majority",
+      "rank": 3,
+      "title": "Vice Chair",
+      "bioguide": "S001189"
+    },
+    {
+      "name": "James P. McGovern",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "M000312"
+    },
+    {
+      "name": "Eric A. \"Rick\" Crawford",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "C001087"
+    },
+    {
+      "name": "Alma S. Adams",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "A000370"
+    },
+    {
+      "name": "Scott DesJarlais",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "D000616"
+    },
+    {
+      "name": "Jahana Hayes",
+      "party": "minority",
+      "rank": 5,
+      "bioguide": "H001081"
+    },
+    {
+      "name": "David Rouzer",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "R000603"
+    },
+    {
+      "name": "Shontel M. Brown",
+      "party": "minority",
+      "rank": 6,
+      "bioguide": "B001313"
+    },
+    {
+      "name": "Trent Kelly",
+      "party": "majority",
+      "rank": 7,
+      "bioguide": "K000388"
+    },
+    {
+      "name": "Sharice Davids",
+      "party": "minority",
+      "rank": 7,
+      "bioguide": "D000629"
+    },
+    {
+      "name": "Don Bacon",
+      "party": "majority",
+      "rank": 8,
+      "bioguide": "B001298"
+    },
+    {
+      "name": "Andrea Salinas",
+      "party": "minority",
+      "rank": 8,
+      "bioguide": "S001226"
+    },
+    {
+      "name": "Mike Bost",
+      "party": "majority",
+      "rank": 9,
+      "bioguide": "B001295"
+    },
+    {
+      "name": "Donald G. Davis",
+      "party": "minority",
+      "rank": 9,
+      "bioguide": "D000230"
+    },
+    {
+      "name": "Dusty Johnson",
+      "party": "majority",
+      "rank": 10,
+      "bioguide": "J000301"
+    },
+    {
+      "name": "Jill N. Tokuda",
+      "party": "minority",
+      "rank": 10,
+      "bioguide": "T000487"
+    },
+    {
+      "name": "James R. Baird",
+      "party": "majority",
+      "rank": 11,
+      "bioguide": "B001307"
+    },
+    {
+      "name": "Nikki Budzinski",
+      "party": "minority",
+      "rank": 11,
+      "bioguide": "B001315"
+    },
+    {
+      "name": "Tracey Mann",
+      "party": "majority",
+      "rank": 12,
+      "bioguide": "M000871"
+    },
+    {
+      "name": "Eric Sorensen",
+      "party": "minority",
+      "rank": 12,
+      "bioguide": "S001225"
+    },
+    {
+      "name": "Randy Feenstra",
+      "party": "majority",
+      "rank": 13,
+      "bioguide": "F000446"
+    },
+    {
+      "name": "Gabe Vasquez",
+      "party": "minority",
+      "rank": 13,
+      "bioguide": "V000136"
+    },
+    {
+      "name": "Mary E. Miller",
+      "party": "majority",
+      "rank": 14,
+      "bioguide": "M001211"
+    },
+    {
+      "name": "Jonathan L. Jackson",
+      "party": "minority",
+      "rank": 14,
+      "bioguide": "J000309"
+    },
+    {
+      "name": "Barry Moore",
+      "party": "majority",
+      "rank": 15,
+      "bioguide": "M001212"
+    },
+    {
+      "name": "Shri Thanedar",
+      "party": "minority",
+      "rank": 15,
+      "bioguide": "T000488"
+    },
+    {
+      "name": "Kat Cammack",
+      "party": "majority",
+      "rank": 16,
+      "bioguide": "C001039"
+    },
+    {
+      "name": "Adam Gray",
+      "party": "minority",
+      "rank": 16,
+      "bioguide": "G000605"
+    },
+    {
+      "name": "Brad Finstad",
+      "party": "majority",
+      "rank": 17,
+      "bioguide": "F000475"
+    },
+    {
+      "name": "Kristen McDonald Rivet",
+      "party": "minority",
+      "rank": 17,
+      "bioguide": "M001237"
+    },
+    {
+      "name": "John W. Rose",
+      "party": "majority",
+      "rank": 18,
+      "bioguide": "R000612"
+    },
+    {
+      "name": "Shomari Figures",
+      "party": "minority",
+      "rank": 18,
+      "bioguide": "F000481"
+    },
+    {
+      "name": "Ronny Jackson",
+      "party": "majority",
+      "rank": 19,
+      "bioguide": "J000304"
+    },
+    {
+      "name": "Eugene Simon Vindman",
+      "party": "minority",
+      "rank": 19,
+      "bioguide": "V000138"
+    },
+    {
+      "name": "Monica De La Cruz",
+      "party": "majority",
+      "rank": 20,
+      "bioguide": "D000594"
+    },
+    {
+      "name": "Josh Riley",
+      "party": "minority",
+      "rank": 20,
+      "bioguide": "R000622"
+    },
+    {
+      "name": "Zachary Nunn",
+      "party": "majority",
+      "rank": 21,
+      "bioguide": "N000193"
+    },
+    {
+      "name": "John W. Mannion",
+      "party": "minority",
+      "rank": 21,
+      "bioguide": "M001231"
+    },
+    {
+      "name": "Derrick Van Orden",
+      "party": "majority",
+      "rank": 22,
+      "bioguide": "V000135"
+    },
+    {
+      "name": "April McClain Delaney",
+      "party": "minority",
+      "rank": 22,
+      "bioguide": "M001232"
+    },
+    {
+      "name": "Dan Newhouse",
+      "party": "majority",
+      "rank": 23,
+      "bioguide": "N000189"
+    },
+    {
+      "name": "Chellie Pingree",
+      "party": "minority",
+      "rank": 23,
+      "bioguide": "P000597"
+    },
+    {
+      "name": "Tony Wied",
+      "party": "majority",
+      "rank": 24,
+      "bioguide": "W000829"
+    },
+    {
+      "name": "Salud O. Carbajal",
+      "party": "minority",
+      "rank": 24,
+      "bioguide": "C001112"
+    },
+    {
+      "name": "Robert P. Bresnahan, Jr.",
+      "party": "majority",
+      "rank": 25,
+      "bioguide": "B001327"
+    },
+    {
+      "name": "Mark B. Messmer",
+      "party": "majority",
+      "rank": 26,
+      "bioguide": "M001233"
+    },
+    {
+      "name": "Mark Harris",
+      "party": "majority",
+      "rank": 27,
+      "bioguide": "H001102"
+    },
+    {
+      "name": "David J. Taylor",
+      "party": "majority",
+      "rank": 28,
+      "bioguide": "T000490"
+    },
+    {
+      "name": "David G. Valadao",
+      "party": "majority",
+      "rank": 29,
+      "bioguide": "V000129"
+    }
+  ],
+  "HSAG15": [
+    {
+      "name": "Dan Newhouse",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chair",
+      "bioguide": "N000189"
+    },
+    {
+      "name": "Andrea Salinas",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "S001226"
+    },
+    {
+      "name": "Barry Moore",
+      "party": "majority",
+      "rank": 2,
+      "title": "Vice Chair",
+      "bioguide": "M001212"
+    },
+    {
+      "name": "Jim Costa",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "C001059"
+    },
+    {
+      "name": "David Rouzer",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "R000603"
+    },
+    {
+      "name": "Gabe Vasquez",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "V000136"
+    },
+    {
+      "name": "Trent Kelly",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "K000388"
+    },
+    {
+      "name": "Adam Gray",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "G000605"
+    },
+    {
+      "name": "James R. Baird",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "B001307"
+    },
+    {
+      "name": "Josh Riley",
+      "party": "minority",
+      "rank": 5,
+      "bioguide": "R000622"
+    },
+    {
+      "name": "Tony Wied",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "W000829"
+    },
+    {
+      "name": "Chellie Pingree",
+      "party": "minority",
+      "rank": 6,
+      "bioguide": "P000597"
+    },
+    {
+      "name": "David G. Valadao",
+      "party": "majority",
+      "rank": 7,
+      "bioguide": "V000129"
+    }
+  ],
+  "HSAG22": [
+    {
+      "name": "Dusty Johnson",
+      "party": "majority",
+      "rank": 1,
+      "title": "Chair",
+      "bioguide": "J000301"
+    },
+    {
+      "name": "Donald G. Davis",
+      "party": "minority",
+      "rank": 1,
+      "title": "Ranking Member",
+      "bioguide": "D000230"
+    },
+    {
+      "name": "John W. Rose",
+      "party": "majority",
+      "rank": 2,
+      "title": "Vice Chair",
+      "bioguide": "R000612"
+    },
+    {
+      "name": "Nikki Budzinski",
+      "party": "minority",
+      "rank": 2,
+      "bioguide": "B001315"
+    },
+    {
+      "name": "Frank D. Lucas",
+      "party": "majority",
+      "rank": 3,
+      "bioguide": "L000491"
+    },
+    {
+      "name": "Jonathan L. Jackson",
+      "party": "minority",
+      "rank": 3,
+      "bioguide": "J000309"
+    },
+    {
+      "name": "Austin Scott",
+      "party": "majority",
+      "rank": 4,
+      "bioguide": "S001189"
+    },
+    {
+      "name": "Shri Thanedar",
+      "party": "minority",
+      "rank": 4,
+      "bioguide": "T000488"
+    },
+    {
+      "name": "David Rouzer",
+      "party": "majority",
+      "rank": 5,
+      "bioguide": "R000603"
+    },
+    {
+      "name": "Adam Gray",
+      "party": "minority",
+      "rank": 5,
+      "bioguide": "G000605"
+    },
+    {
+      "name": "Tracey Mann",
+      "party": "majority",
+      "rank": 6,
+      "bioguide": "M000871"
+    },
+    {
+      "name": "Kristen McDonald Rivet",
+      "party": "minority",
+      "rank": 6,
+      "bioguide": "M001237"
+    },
+    {
+      "name": "Kat Cammack",
+      "party": "majority",
+      "rank": 7,
+      "bioguide": "C001039"
+    },
+    {
+      "name": "Shomari Figures",
+      "party": "minority",
+      "rank": 7,
+      "bioguide": "F000481"
+    },
+    {
+      "name": "Brad Finstad",
+      "party": "majority",
+      "rank": 8,
+      "bioguide": "F000475"
+    },
+    {
+      "name": "Eugene Simon Vindman",
+      "party": "minority",
+      "rank": 8,
+      "bioguide": "V000138"
+    },
+    {
+      "name": "Zachary Nunn",
+      "party": "majority",
+      "rank": 9,
+      "bioguide": "N000193"
+    },
+    {
+      "name": "John W. Mannion",
+      "party": "minority",
+      "rank": 9,
+      "bioguide": "M001231"
+    },
+    {
+      "name": "Robert P. Bresnahan, Jr.",
+      "party": "majority",
+      "rank": 10,
+      "bioguide": "B001327"
+    },
+    {
+      "name": "April McClain Delaney",
+      "party": "minority",
+      "rank": 10,
+      "bioguide": "M001232"
+    },
+    {
+      "name": "Mark B. Messmer",
+      "party": "majority",
+      "rank": 11,
+      "bioguide": "M001233"
+    },
+    {
+      "name": "David J. Taylor",
+      "party": "majority",
+      "rank": 12,
+      "bioguide": "T000490"
+    }
+  ]
+}

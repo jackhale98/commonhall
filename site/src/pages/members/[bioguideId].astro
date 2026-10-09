@@ -15,7 +15,10 @@ import {
   loadSponsored,
   loadVoteStats,
   loadVotes,
+  loadCommitteeMembers,
+  loadCommittees,
 } from '../../lib/build-data';
+import { shortCommitteeName } from '../../lib/committees';
 import { DEMO } from '../../lib/config';
 import { congressLabel, memberRole, partyClass, partyLabel } from '../../lib/format';
 import { href } from '../../lib/paths';
@@ -38,6 +41,19 @@ const [sponsoredBy, cosponsorCounts, voteStats, financeByMember] = await Promise
   loadMemberFinance(),
 ]);
 const finance = financeByMember.get(member.bioguide_id);
+// Committee assignments: full committees, each with this member's subcommittees under it.
+const [committees, roster] = await Promise.all([loadCommittees(), loadCommitteeMembers()]);
+const seats = roster.filter((r) => r.member_id === member.bioguide_id && committees.has(r.committee_code));
+const assignments = seats
+  .filter((s) => !committees.get(s.committee_code)!.parent_code)
+  .map((s) => ({
+    seat: s,
+    committee: committees.get(s.committee_code)!,
+    subs: seats
+      .filter((x) => committees.get(x.committee_code)!.parent_code === s.committee_code)
+      .map((x) => ({ seat: x, committee: committees.get(x.committee_code)! })),
+  }))
+  .sort((a, b) => a.committee.name.localeCompare(b.committee.name));
 const stats = voteStats.get(member.bioguide_id);
 // Demo mode has no live database, so the member's votes are rendered from the bundled data.
 let demoVotes: import('../../components/VoteList').VoteListItemData[] | undefined;
@@ -159,45 +175,72 @@ const SOCIAL_LABELS: Record<string, string> = {
       {finance && <CampaignFinance finance={finance} memberName={member.name} />}
     </div>
 
-    <aside class="card contact">
-      <h2 class="h-small">Contact</h2>
-      <ul class="plain">
-        {member.website && (
-          <li>
-            <a href={member.website} rel="noopener">
-              Official website
-            </a>
-          </li>
-        )}
-        {member.contact_form && (
-          <li>
-            <a href={member.contact_form} rel="noopener">
-              Contact form
-            </a>
-          </li>
-        )}
-        {member.phone && (
-          <li>
-            Phone: <a href={`tel:${member.phone.replace(/[^\d+]/g, '')}`}>{member.phone}</a>
-          </li>
-        )}
-        {member.office && <li>{member.office}</li>}
-        {social.map(([k, url]) => (
-          <li>
-            <a href={url} rel="noopener">
-              {SOCIAL_LABELS[k] ?? k}
-            </a>
-          </li>
-        ))}
-        {!member.website && !member.phone && !member.office && social.length === 0 && (
-          <li class="muted">No contact details on file.</li>
-        )}
-      </ul>
-      <p class="small">
-        <a href={`https://www.congress.gov/member/${member.bioguide_id}`} rel="noopener">
-          Profile on Congress.gov
-        </a>
-      </p>
+    <aside class="member-side">
+      {assignments.length > 0 && (
+        <section class="card" aria-labelledby="committees-h">
+          <h2 id="committees-h" class="h-small">
+            Committees
+          </h2>
+          <ul class="plain committee-seats">
+            {assignments.map((a) => (
+              <li>
+                <a href={href(`committees/${a.committee.code}/`)}>{shortCommitteeName(a.committee.name)}</a>
+                {a.seat.title && <strong class="small"> · {a.seat.title}</strong>}
+                {a.subs.length > 0 && (
+                  <ul class="plain small">
+                    {a.subs.map((s) => (
+                      <li>
+                        <a href={href(`committees/${s.committee.code}/`)}>{s.committee.name}</a>
+                        {s.seat.title && <span class="muted"> · {s.seat.title}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <div class="card contact">
+        <h2 class="h-small">Contact</h2>
+        <ul class="plain">
+          {member.website && (
+            <li>
+              <a href={member.website} rel="noopener">
+                Official website
+              </a>
+            </li>
+          )}
+          {member.contact_form && (
+            <li>
+              <a href={member.contact_form} rel="noopener">
+                Contact form
+              </a>
+            </li>
+          )}
+          {member.phone && (
+            <li>
+              Phone: <a href={`tel:${member.phone.replace(/[^\d+]/g, '')}`}>{member.phone}</a>
+            </li>
+          )}
+          {member.office && <li>{member.office}</li>}
+          {social.map(([k, url]) => (
+            <li>
+              <a href={url} rel="noopener">
+                {SOCIAL_LABELS[k] ?? k}
+              </a>
+            </li>
+          ))}
+          {!member.website && !member.phone && !member.office && social.length === 0 && (
+            <li class="muted">No contact details on file.</li>
+          )}
+        </ul>
+        <p class="small">
+          <a href={`https://www.congress.gov/member/${member.bioguide_id}`} rel="noopener">
+            Profile on Congress.gov
+          </a>
+        </p>
+      </div>
     </aside>
   </div>
 </Base>
@@ -230,8 +273,13 @@ const SOCIAL_LABELS: Record<string, string> = {
     gap: var(--space-5);
     margin-top: var(--space-4);
   }
-  .contact {
+  .member-side {
     align-self: start;
+    display: grid;
+    gap: var(--space-4);
+  }
+  .committee-seats ul {
+    margin: var(--space-1) 0 0 var(--space-3);
   }
   .plain {
     list-style: none;

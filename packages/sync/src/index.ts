@@ -14,3 +14,4 @@ export * from './local/boston.ts';
 export * from './federal/finance.ts';
 export * from './federal/executive.ts';
 export * from './federal/court.ts';
+export * from './federal/committees.ts';

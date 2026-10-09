@@ -1,0 +1,250 @@
+---
+import MeetingList from '../../components/MeetingList.astro';
+import MemberChip from '../../components/MemberChip';
+import Base from '../../layouts/Base.astro';
+import {
+  loadBillCommittees,
+  loadBills,
+  loadCommitteeMeetings,
+  loadCommitteeMembers,
+  loadCommittees,
+  loadMembers,
+} from '../../lib/build-data';
+import { chamberLabel, rosterOrder, type Committee } from '../../lib/committees';
+import { billDisplayTitle, billNumberLabel, formatDate } from '../../lib/format';
+import { billHref, href } from '../../lib/paths';
+
+export async function getStaticPaths() {
+  const committees = await loadCommittees();
+  return [...committees.values()].map((committee) => ({ params: { code: committee.code }, props: { committee } }));
+}
+
+interface Props {
+  committee: Committee;
+}
+
+const { committee: c } = Astro.props;
+const [committees, roster, referrals, meetings, members, bills] = await Promise.all([
+  loadCommittees(),
+  loadCommitteeMembers(),
+  loadBillCommittees(),
+  loadCommitteeMeetings(),
+  loadMembers(),
+  loadBills(),
+]);
+const parent = c.parent_code ? committees.get(c.parent_code) : undefined;
+const subs = [...committees.values()]
+  .filter((s) => s.parent_code === c.code)
+  .sort((a, b) => a.name.localeCompare(b.name));
+const codes = new Set([c.code, ...subs.map((s) => s.code)]);
+const seats = roster.filter((r) => r.committee_code === c.code).sort(rosterOrder);
+const sides = (['majority', 'minority'] as const).map((side) => ({
+  side,
+  list: seats.filter((s) => s.side === side),
+}));
+const leaders = seats.filter((s) => s.title);
+
+// Bills: this committee's own referrals (a parent's subcommittee referrals are usually also the parent's).
+const billById = new Map(bills.map((b) => [b.id, b]));
+const refs = (referrals.byCommittee.get(c.code) ?? [])
+  .slice()
+  .sort((a, b) => (b.last_action_date ?? '').localeCompare(a.last_action_date ?? ''));
+const reported = refs.filter((r) => r.reported_date);
+const pending = refs.filter((r) => !r.reported_date);
+const now = new Date().toISOString();
+const mine = meetings.filter((m) => m.committee_codes.some((code) => codes.has(code)));
+const upcoming = mine.filter((m) => m.date && m.date >= now).reverse();
+const recent = mine.filter((m) => m.date && m.date < now).slice(0, 10);
+const title = parent ? `${parent.name}: Subcommittee on ${c.name}` : c.name;
+const billRow = (id: string) => billById.get(id);
+---
+
+<Base title={title} description={`${title}: members, bills and hearings.`} section="members">
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('committees/')}>Committees</a> ›{' '}
+    {parent && (
+      <>
+        <a href={href(`committees/${parent.code}/`)}>{parent.name}</a> ›{' '}
+      </>
+    )}
+    {c.name}
+  </nav>
+  <header class="page-head">
+    <p class="kicker">
+      {chamberLabel(c.chamber)}
+      {parent ? ' subcommittee' : ' committee'}
+    </p>
+    <h1>{parent ? `Subcommittee on ${c.name}` : c.name}</h1>
+    {c.jurisdiction && <p class="lede">{c.jurisdiction}</p>}
+    <p class="cluster small">
+      {c.url && (
+        <a class="button" href={c.url} rel="noopener">
+          Committee website
+        </a>
+      )}
+      {c.phone && <span class="muted">{c.phone}</span>}
+    </p>
+  </header>
+
+  <dl class="stat-grid">
+    <div class="stat">
+      <dt>Members</dt>
+      <dd>{seats.length}</dd>
+    </div>
+    <div class="stat">
+      <dt>Bills referred this Congress</dt>
+      <dd>{refs.length.toLocaleString()}</dd>
+    </div>
+    <div class="stat">
+      <dt>Reported out</dt>
+      <dd>{reported.length.toLocaleString()}</dd>
+    </div>
+  </dl>
+
+  <div class="committee-layout">
+    <div>
+      {upcoming.length > 0 && (
+        <section aria-labelledby="up-h">
+          <h2 id="up-h">Coming up</h2>
+          <div class="panel">
+            <MeetingList meetings={upcoming} hideCommittees={subs.length === 0} />
+          </div>
+        </section>
+      )}
+
+      <section aria-labelledby="bills-h">
+        <h2 id="bills-h">Bills</h2>
+        {refs.length === 0 && <p class="muted">No bills recorded for this committee yet.</p>}
+        {refs.length > 0 && (
+          <div class="panel">
+            <ul class="list committee-bills">
+              {refs.slice(0, 30).map((r) => {
+                const b = billRow(r.bill_id);
+                const [congress, type, number] = r.bill_id.split('-');
+                return (
+                  <li>
+                    <p class="meta">
+                      {b ? billNumberLabel(b) : r.bill_id}
+                      {' · '}
+                      {r.reported_date ? (
+                        <strong>Reported {formatDate(r.reported_date)}</strong>
+                      ) : (
+                        <>In committee since {formatDate(r.referred_date)}</>
+                      )}
+                    </p>
+                    <p class="bill-name">
+                      <a href={billHref(Number(congress), type!, number!)}>{b ? billDisplayTitle(b) : r.bill_id}</a>
+                    </p>
+                    {r.last_action_text && (
+                      <p class="small muted">
+                        {formatDate(r.last_action_date)}: {r.last_action_text}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            {refs.length > 30 && (
+              <p class="small muted">
+                The 30 most recently active of {refs.length.toLocaleString()} ({pending.length.toLocaleString()} still
+                in committee).
+              </p>
+            )}
+          </div>
+        )}
+      </section>
+
+      {recent.length > 0 && (
+        <section aria-labelledby="past-h">
+          <h2 id="past-h">Recent hearings and markups</h2>
+          <div class="panel">
+            <MeetingList meetings={recent} hideCommittees={subs.length === 0} />
+          </div>
+        </section>
+      )}
+    </div>
+
+    <aside>
+      {leaders.length > 0 && (
+        <section class="card" aria-labelledby="lead-h">
+          <h2 id="lead-h" class="h-small">
+            Leadership
+          </h2>
+          <ul class="plain-list">
+            {leaders.map((s) => {
+              const m = members.get(s.member_id);
+              return (
+                <li>
+                  <span class="small muted">{s.title}</span>
+                  <br />
+                  {m ? <MemberChip member={m} /> : s.member_id}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+      {sides.map(({ side, list }) =>
+        list.length > 0 ? (
+          <section class="card" aria-labelledby={`${side}-h`}>
+            <h2 id={`${side}-h`} class="h-small">
+              {side === 'majority' ? 'Majority' : 'Minority'} <span class="muted">({list.length})</span>
+            </h2>
+            <ul class="plain-list">
+              {list.map((s) => {
+                const m = members.get(s.member_id);
+                return <li>{m ? <MemberChip member={m} /> : s.member_id}</li>;
+              })}
+            </ul>
+          </section>
+        ) : null,
+      )}
+      {subs.length > 0 && (
+        <section class="card" aria-labelledby="subs-h">
+          <h2 id="subs-h" class="h-small">
+            Subcommittees
+          </h2>
+          <ul class="plain-list">
+            {subs.map((s) => (
+              <li>
+                <a href={href(`committees/${s.code}/`)}>{s.name}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .stat-grid {
+    margin: var(--space-4) 0 var(--space-5);
+  }
+  .committee-layout {
+    display: grid;
+    gap: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .committee-layout {
+      grid-template-columns: 2fr 1fr;
+      align-items: start;
+    }
+  }
+  aside .card {
+    margin-bottom: var(--space-4);
+  }
+  .plain-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .committee-bills p {
+    margin: 0;
+  }
+  .bill-name {
+    font-weight: 650;
+  }
+</style>

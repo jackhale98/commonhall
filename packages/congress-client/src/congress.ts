@@ -12,6 +12,8 @@ import type {
   BillSubjects,
   BillSummary,
   BillTitle,
+  CommitteeMeetingDetail,
+  CommitteeMeetingListItem,
   CongressInfo,
   Cosponsor,
   Envelope,
@@ -226,6 +228,29 @@ export class CongressClient {
   }
 
   // ---- House votes -------------------------------------------------------
+
+  // ---- Committee meetings --------------------------------------------------
+
+  /** Hearings and markups in one chamber, most recently updated first; fromDateTime limits to updates since. */
+  listCommitteeMeetings(
+    congress: number,
+    chamber: 'house' | 'senate' | 'nochamber',
+    options: { fromDateTime?: string } = {},
+  ): AsyncGenerator<CommitteeMeetingListItem> {
+    return this.paginate<'committeeMeetings', CommitteeMeetingListItem>(
+      `/committee-meeting/${congress}/${chamber}`,
+      'committeeMeetings',
+      { fromDateTime: options.fromDateTime ? toApiDateTime(options.fromDateTime) : undefined, limit: MAX_PAGE_SIZE },
+    );
+  }
+
+  async getCommitteeMeeting(congress: number, chamber: string, eventId: string): Promise<CommitteeMeetingDetail> {
+    const body = await this.get<{ committeeMeeting?: CommitteeMeetingDetail }>(
+      `/committee-meeting/${congress}/${chamber}/${eventId}`,
+    );
+    if (!body.committeeMeeting) throw new Error(`Unexpected committee meeting response for ${eventId}`);
+    return body.committeeMeeting;
+  }
 
   // ---- Nominations ---------------------------------------------------------
 

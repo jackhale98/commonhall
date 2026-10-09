@@ -8,6 +8,7 @@ const KIND_LABEL: Record<string, string> = {
   state: 'State',
   member: 'Congress',
   councilor: 'Boston',
+  committee: 'Committee',
   discussion: 'Discussion',
   bill: 'Bill',
   'state-bill': 'State bill',
