@@ -1,8 +1,10 @@
 /**
  * Supreme Court opinions from CourtListener: one row per decided case (opinion
- * cluster), the last five terms, refreshed hourly. Each run re-reads the last
- * month of decisions (citations and opinions are filled in after release), so a
- * quiet hour costs one request.
+ * cluster), the last five terms, refreshed hourly. The first load reads one
+ * calendar month per request, oldest first, so no single query is long enough
+ * to hit a paging limit. After that each run re-reads the last month of
+ * decisions (citations and opinions are filled in after release), so a quiet
+ * hour costs one request.
  */
 import { BudgetExhaustedError, type ClCluster, type CourtListenerClient } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
@@ -17,6 +19,22 @@ export interface ScotusCursor {
   [key: string]: unknown;
   /** Newest decision date seen (YYYY-MM-DD). */
   newest?: string;
+  /** Last day of the newest month the first load has finished (YYYY-MM-DD). */
+  filledThrough?: string;
+}
+
+/** The first and last day of each calendar month from `since`'s month to `today`'s. */
+export function monthWindows(since: string, today: string): [string, string][] {
+  const out: [string, string][] = [];
+  let [y, m] = since.split('-').map(Number) as [number, number];
+  const end = today.slice(0, 7);
+  while (`${y}-${String(m).padStart(2, '0')}` <= end) {
+    const first = `${y}-${String(m).padStart(2, '0')}-01`;
+    const last = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+    out.push([first, last]);
+    [y, m] = m === 12 ? [y + 1, 1] : [y, m + 1];
+  }
+  return out;
 }
 
 export interface ScotusCaseRow extends Record<string, unknown> {
@@ -69,28 +87,40 @@ export function scotusCaseRow(c: ClCluster): ScotusCaseRow {
 
 export async function syncSupremeCourt(
   run: JobRun<ScotusCursor>,
-  options: { client: CourtListenerClient },
+  options: { client: CourtListenerClient; now?: () => Date },
 ): Promise<ScotusCursor> {
-  const since = run.cursor.newest
-    ? new Date(Date.parse(run.cursor.newest) - 30 * 86_400_000).toISOString().slice(0, 10)
-    : SCOTUS_SINCE;
-  let newest = run.cursor.newest;
-  let seen = 0;
-  try {
-    for await (const cluster of options.client.supremeCourtOpinions(since)) {
-      if (run.outOfTime()) break;
+  const today = (options.now?.() ?? new Date()).toISOString().slice(0, 10);
+  const cursor = { ...run.cursor };
+  const read = async (since: string, until?: string) => {
+    let seen = 0;
+    for await (const cluster of options.client.supremeCourtOpinions(since, until)) {
       seen++;
       const row = scotusCaseRow(cluster);
       if (await upsertIfChanged(run.sql, 'public.scotus_cases', ['cluster_id'], row)) run.rowsWritten++;
-      if (!newest || row.date_filed > newest) newest = row.date_filed;
+      if (!cursor.newest || row.date_filed > cursor.newest) cursor.newest = row.date_filed;
     }
+    return seen;
+  };
+  try {
+    if (!cursor.filledThrough || cursor.filledThrough < today) {
+      // First load, a month at a time; the cursor records each finished month.
+      for (const [first, last] of monthWindows(cursor.filledThrough ?? SCOTUS_SINCE, today)) {
+        if (cursor.filledThrough && last <= cursor.filledThrough) continue;
+        if (run.outOfTime()) return cursor;
+        const seen = await read(first, last);
+        run.log('scotus: month', { first, seen });
+        cursor.filledThrough = last;
+      }
+      return cursor;
+    }
+    const since = new Date(Date.parse(cursor.newest ?? today) - 30 * 86_400_000).toISOString().slice(0, 10);
+    const seen = await read(since);
+    run.log('scotus', { since, seen, written: run.rowsWritten });
+    return cursor;
   } catch (error) {
     if (!(error instanceof BudgetExhaustedError)) throw error;
     run.log('scotus: budget exhausted', {});
-    // Keep the old cursor so the next run re-reads the same window.
-    return run.cursor;
+    // Finished months stay recorded; the current one is read again next run.
+    return cursor;
   }
-  run.log('scotus', { since, seen, written: run.rowsWritten });
-  // Results come newest first, so an unfinished first load keeps the cursor empty and starts over.
-  return run.outOfTime() && !run.cursor.newest ? run.cursor : { newest };
 }

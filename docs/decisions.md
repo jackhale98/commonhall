@@ -561,3 +561,14 @@ and pages. It is about 66 KB gzipped. Bills are too many to prerender, so while
 you type the palette also asks `search_bills` for the top matches (debounced, two
 characters or more) and lists them after the instant hits, followed by "Search all
 bills".
+
+## 52. Supreme Court decisions load a month at a time
+
+The first load asked CourtListener for every decision since October 2020 in one
+paged query, and production stopped at 100 (June 2025 onward). The load now asks
+for one calendar month per request, oldest first, recording each finished month
+in the cursor (`filledThrough`), so it resumes where it stopped and no query
+comes near a paging limit. About 73 requests, well inside the 5,000 an hour a
+token allows. Existing installs have no `filledThrough` yet, so their next run
+fills the missing years. After the load, each run re-reads the last 30 days as
+before.

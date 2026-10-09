@@ -64,17 +64,17 @@ export class CourtListenerClient {
     return this.http.budget;
   }
 
-  supremeCourtUrl(since: string): string {
+  supremeCourtUrl(since: string, until?: string): string {
     const url = new URL(`${this.baseUrl}/search/`);
     url.searchParams.set('type', 'o');
-    url.searchParams.set('q', `court_id:scotus AND dateFiled:[${since} TO *]`);
+    url.searchParams.set('q', `court_id:scotus AND dateFiled:[${since} TO ${until ?? '*'}]`);
     url.searchParams.set('order_by', 'dateFiled desc');
     return url.toString();
   }
 
-  /** Supreme Court opinion clusters filed on or after `since` (YYYY-MM-DD), newest first. */
-  async *supremeCourtOpinions(since: string): AsyncGenerator<ClCluster> {
-    let next: string | null = this.supremeCourtUrl(since);
+  /** Supreme Court opinion clusters filed from `since` to `until` (YYYY-MM-DD, inclusive), newest first. */
+  async *supremeCourtOpinions(since: string, until?: string): AsyncGenerator<ClCluster> {
+    let next: string | null = this.supremeCourtUrl(since, until);
     while (next) {
       const page: ClPage = await this.http.getJson<ClPage>(next);
       for (const c of page.results ?? []) yield c;
