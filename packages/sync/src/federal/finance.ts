@@ -26,6 +26,12 @@ export const FINANCE_JOB = 'finance';
 export const FEC_API = 'fec';
 /** Refresh a member's row when it is older than this. */
 export const FINANCE_MAX_AGE_DAYS = 7;
+/**
+ * PACs and employers kept per member. Member pages show 8; the donor leaderboards
+ * on /members/insights/ add these up across Congress, so keeping more makes their
+ * totals closer to complete at no extra request cost.
+ */
+export const TOP_DONORS = 25;
 
 export interface FinanceCursor {
   [key: string]: unknown;
@@ -85,7 +91,7 @@ export function financeRow(input: {
   const allStates = input.states.reduce((n, s) => n + s.total, 0);
   const employers = input.employers
     .filter((e) => isOrganisationEmployer(e.employer))
-    .slice(0, 10)
+    .slice(0, TOP_DONORS)
     .map((e) => ({ name: e.employer!.trim(), total: money(e.total)!, count: e.count ?? null }));
   const byCommittee = new Map<string, { name: string; id: string | null; total: number; type: string | null }>();
   for (const r of input.committees) {
@@ -131,7 +137,7 @@ export function financeRow(input: {
     top_employers: employers,
     top_committees: [...byCommittee.values()]
       .sort((a, b) => b.total - a.total)
-      .slice(0, 10)
+      .slice(0, TOP_DONORS)
       .map((c) => ({ ...c, total: money(c.total)! })),
   };
 }

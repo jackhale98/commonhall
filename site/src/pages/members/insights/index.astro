@@ -110,9 +110,10 @@ const splitText = (d: DonorEntry) =>
     <h2 id="money-h">Campaign money</h2>
     <p class="small muted section-note">
       From the Federal Election Commission, for the {withFinance.length} of {current.length} members whose campaign
-      reports have loaded so far. Each member’s report lists their 10 largest PAC contributors and the 10 employers
-      whose workers gave the most; totals here add those up across members, so they are a floor, not everything a PAC
-      gave. Employer totals are money from people who work there, not from the company.
+      reports have loaded so far. For each member we keep their 25 largest PAC contributors and the 25 employers whose
+      workers gave the most (10 for reports not yet refreshed since this changed); totals here add those up across
+      members, so they are a floor, not everything a PAC gave. Employer totals are money from people who work there, not
+      from the company.
     </p>
     <p class="split-legend small" aria-hidden="true">
       <span>

@@ -883,10 +883,13 @@ member who joined late or missed many votes doesn't top or bottom a list on a ha
 votes. Independents have no party majority to measure against and aren't ranked. The
 score describes how members voted, not their ideology.
 
-**Campaign money** adds up each member's FEC report. Every report lists the 10 largest
-PAC contributors and the 10 employers whose workers gave the most. Totals are summed
+**Campaign money** adds up each member's FEC report. For each member the finance sync
+keeps the 25 largest PAC contributors (built from the 100 largest PAC receipts) and the
+25 employers whose workers gave the most (from the top 40). Until 9 October 2026 it kept
+10 of each, and rows refresh weekly. It already fetched these rows, so keeping more costs
+no extra requests. Totals are summed
 across members and split by the recipient's party. Because each member contributes only
-a top-10 list, every total is a floor. Employer totals are gifts from people who work
+a top-25 list, every total is a floor. Employer totals are gifts from people who work
 there, not from the company. Retired, self-employed and blank employers are skipped. The
 page states how many members' reports have loaded.
 
