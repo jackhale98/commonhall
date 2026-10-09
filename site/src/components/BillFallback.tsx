@@ -9,6 +9,7 @@ import { BILL_PAGE_COLUMNS, type Bill, type BillAction, type Member } from '../l
 import { BILL_COMMITTEE_COLUMNS, type BillCommittee } from '../lib/committees';
 import ActionTimeline from './ActionTimeline';
 import BillCommittees from './BillCommittees';
+import DiscussionRequest from './DiscussionRequest';
 import FollowButton from './FollowButton';
 import MemberChip from './MemberChip';
 import StatusTracker from './StatusTracker';
@@ -119,6 +120,7 @@ export default function BillFallback() {
 
   return (
     <article>
+      <DiscussionRequest targetType="bill" targetId={bill.id} />
       <header>
         <p class="eyebrow">
           {billNumberLabel(bill)} · {congressLabel(bill.congress)}
