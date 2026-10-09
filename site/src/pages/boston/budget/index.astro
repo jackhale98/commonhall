@@ -20,8 +20,6 @@ const topBars = (items: { label: string; value: number; note?: string }[], top: 
     : items;
 };
 const opChange = operating ? operating.total - operating.prevTotal : 0;
-// What links the two budgets: the operating budget's payments on the bonds that fund capital projects.
-const debtService = operating?.departments.find((d) => /^debt service$/i.test(d.label))?.value ?? 0;
 const share = (v: number, of: number) => (of > 0 ? `${Math.round((v / of) * 100)}%` : '');
 const revenueBars = operating
   ? topBars(
@@ -147,25 +145,6 @@ const shortPlan = plan.replace('-', '–');
     </section>
   )}
 
-  {operating && projects.length > 0 && (
-    <details class="panel two-budgets">
-      <summary class="h-small">Why the two totals aren’t a surplus</summary>
-      <p>
-        The <strong>operating budget</strong> is one year: {formatMoney(operating.revenueTotal)} comes in and{' '}
-        {formatMoney(operating.total)} is planned to go out, so it balances. The <strong>Capital Plan</strong> adds up
-        whole projects over many years, including money already spent, and is paid for mostly with borrowing (city
-        bonds) and grants, not with one year’s revenue. It is not extra money left over.
-      </p>
-      {debtService > 0 && (
-        <p>
-          The two meet in the operating budget’s debt service: {formatMoney(debtService)} in {fy(operating.year)} to
-          repay the bonds that pay for capital projects. The Capital Plan’s own spending planned for {yearLabel} is{' '}
-          {formatMoney(thisYear)}.
-        </p>
-      )}
-    </details>
-  )}
-
   <h2 id="cap-h">Capital Plan, {shortPlan}</h2>
   <p class="small muted section-note">
     What the city plans to build and repair over five years. Open a project to ask for a discussion on it.
@@ -269,24 +248,6 @@ const shortPlan = plan.replace('-', '–');
   }
   .stat-grid {
     margin-bottom: var(--space-5);
-  }
-  .two-budgets {
-    margin: var(--space-5) 0;
-    border-left: 4px solid var(--brand);
-  }
-  .two-budgets summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    margin: 0;
-    color: var(--link);
-  }
-  .two-budgets p {
-    max-width: 70ch;
-  }
-  .two-budgets p:last-child {
-    margin-bottom: 0;
   }
   .section-note {
     margin-top: 0;
