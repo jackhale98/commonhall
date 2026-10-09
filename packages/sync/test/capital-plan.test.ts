@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { capitalProjectRow, dollars, planFromUrl } from '../src/local/capital-plan.ts';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { capitalProjectRow, dollars, planFromUrl, unbalancedProjects } from '../src/local/capital-plan.ts';
 
 describe('Capital Plan', () => {
   it('reads the plan years from the file name', () => {
@@ -49,5 +51,22 @@ describe('Capital Plan', () => {
       years_2_5: 9_597_810,
     });
     expect(capitalProjectRow({ 'Proj ID': '', Project_Name: 'x' }, 'FY27-31', 2027)).toBeNull();
+  });
+
+  it('adds every part back up to the total budget for the recorded projects', () => {
+    const records = (
+      JSON.parse(
+        readFileSync(
+          fileURLToPath(
+            new URL('../../congress-client/test/fixtures/analyze-boston/capital-rows.json', import.meta.url),
+          ),
+          'utf8',
+        ),
+      ) as { result: { records: Record<string, unknown>[] } }
+    ).result.records;
+    const rows = records.map((r) => capitalProjectRow(r, 'FY27-31', 2027)!);
+    expect(rows).toHaveLength(3);
+    expect(unbalancedProjects(rows)).toEqual([]);
+    expect(unbalancedProjects([{ ...rows[0]!, total_budget: rows[0]!.total_budget + 5 }])).toEqual([rows[0]!.proj_id]);
   });
 });

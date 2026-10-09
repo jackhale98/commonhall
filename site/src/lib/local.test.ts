@@ -94,10 +94,27 @@ describe('capital projects', () => {
       external_funds: 0,
     };
     expect(fundingSegments(p).map((s) => [s.label, s.value])).toEqual([
-      ['Spent so far', 10],
+      ['Spent through FY25', 10],
       ['Planned for FY27', 20],
       ['Planned for FY28–FY31', 30],
-      ['Not yet scheduled', 40],
+      ['Not broken down by the city', 40],
+    ]);
+    // Outside grants are their own part; a reduction (negative) is kept, not dropped.
+    const q = {
+      ...p,
+      total_budget: 100_000,
+      spent: 10_000,
+      year0: 5_000,
+      year1: 30_000,
+      years_2_5: -5_000,
+      external_funds: 60_000,
+    };
+    expect(fundingSegments(q).map((s) => [s.key, s.value])).toEqual([
+      ['spent', 10_000],
+      ['year0', 5_000],
+      ['year1', 30_000],
+      ['later', -5_000],
+      ['external', 60_000],
     ]);
   });
 });

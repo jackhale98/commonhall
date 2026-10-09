@@ -5,7 +5,7 @@ import BarList from '../../../components/viz/BarList';
 import Base from '../../../layouts/Base.astro';
 import { loadCapitalProjects } from '../../../lib/build-data';
 import { formatMoney } from '../../../lib/finance';
-import { capitalRow } from '../../../lib/local';
+import { capitalRow, capitalStage, spentLabel } from '../../../lib/local';
 
 const projects = await loadCapitalProjects();
 const plan = projects[0]?.plan ?? 'Capital Plan';
@@ -15,7 +15,7 @@ const sum = (list: typeof projects, key: 'total_budget' | 'year1' | 'spent') =>
   list.reduce((n, p) => n + Number(p[key]), 0);
 const total = sum(projects, 'total_budget');
 const thisYear = sum(projects, 'year1');
-const inConstruction = projects.filter((p) => /construction|implementation/i.test(p.status ?? '')).length;
+const inConstruction = projects.filter((p) => capitalStage(p.status) === 3).length;
 
 // Totals by a column, largest first; the long tail folds into "Other".
 const totalsBy = (key: 'department' | 'neighborhood', top = 8) => {
@@ -53,11 +53,11 @@ const shortPlan = plan.replace('-', '–');
     <>
       <dl class="stat-grid">
         <div class="stat">
-          <dt>Total, all projects</dt>
+          <dt>Total budget, all projects</dt>
           <dd>{formatMoney(total)}</dd>
         </div>
         <div class="stat">
-          <dt>Planned in {yearLabel}</dt>
+          <dt>Planned spending, {yearLabel}</dt>
           <dd>{formatMoney(thisYear)}</dd>
         </div>
         <div class="stat">
@@ -65,7 +65,7 @@ const shortPlan = plan.replace('-', '–');
           <dd>{projects.length}</dd>
         </div>
         <div class="stat">
-          <dt>Being built now</dt>
+          <dt>Under construction or underway</dt>
           <dd>{inConstruction}</dd>
         </div>
       </dl>
@@ -99,15 +99,21 @@ const shortPlan = plan.replace('-', '–');
           neighborhoods={distinct('neighborhood')}
           statuses={distinct('status')}
           yearLabel={yearLabel}
+          spentText={spentLabel(firstYear ?? null)}
         />
       </section>
     </>
   )}
 
   <p class="small muted">
-    From the City of Boston’s <a href="https://data.boston.gov/dataset/capital-budget">Capital Plan</a> on Analyze
-    Boston, checked weekly. Totals are each project’s whole budget, including money spent before this plan and outside
-    funds; “planned in {yearLabel}” is the plan’s first year. Many projects are citywide or span several neighborhoods.
+    From the City of Boston’s adopted{' '}
+    <a href="https://data.boston.gov/dataset/capital-budget">{shortPlan} Capital Plan</a>
+    on Analyze Boston, checked weekly, with amounts as the city published them. A project’s total budget covers the
+    whole project: money spent in earlier years, what is budgeted for each year of the plan, and outside grants. Added
+    up, they give the plan’s total. The city’s announced figures come from its April
+    <a href="https://www.boston.gov/departments/budget">recommended plan</a>, so they can differ slightly from the
+    adopted plan here. “Planned spending, {yearLabel}” is the plan’s first year. Many projects are citywide or span
+    several neighborhoods.
   </p>
 </Base>
 

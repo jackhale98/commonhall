@@ -8,24 +8,29 @@ interface Props {
 }
 
 /**
- * A project's total budget as one bar split in time order: spent, then each planned
- * year, then what is not yet scheduled. The legend under it gives every amount and
- * share, so nothing depends on colour or hover.
+ * A project's total budget as one bar split in time order: spent, each planned
+ * year, then outside grants. The legend under it gives every amount and its share
+ * of the total, so nothing depends on colour or hover. Negative amounts (reductions
+ * in the city's file) are listed but cannot be drawn, so the bar scales to the
+ * positive parts and a note says so.
  */
 const { segments, total, label } = Astro.props;
-const share = (v: number) => (total > 0 ? (v / total) * 100 : 0);
+const drawn = segments.filter((s) => s.value > 0);
+const drawnTotal = drawn.reduce((n, s) => n + s.value, 0);
+const negative = segments.filter((s) => s.value < 0);
 const pct = (v: number) => {
-  const p = share(v);
+  if (total <= 0) return '';
+  const p = (v / total) * 100;
   return p > 0 && p < 1 ? '<1%' : `${Math.round(p)}%`;
 };
 ---
 
 <figure class="funding">
   <div class="funding-bar" role="img" aria-label={label}>
-    {segments.map((s) => (
+    {drawn.map((s) => (
       <span
         class={s.tone}
-        style={{ flex: `${share(s.value)} 1 0` }}
+        style={{ flex: `${drawnTotal > 0 ? (s.value / drawnTotal) * 100 : 0} 1 0` }}
         title={`${s.label}: ${formatMoney(s.value)} (${pct(s.value)})`}
       />
     ))}
@@ -36,15 +41,35 @@ const pct = (v: number) => {
         <span class={`swatch ${s.tone}`} aria-hidden="true" />
         <span>{s.label}</span>
         <span class="amount">
-          <strong>{formatMoney(s.value)}</strong> <span class="muted">{pct(s.value)}</span>
+          <strong>{formatMoney(s.value)}</strong> <span class="muted">{s.value > 0 ? pct(s.value) : ''}</span>
         </span>
       </li>
     ))}
+    <li class="funding-total">
+      <span aria-hidden="true" />
+      <span>Total budget</span>
+      <span class="amount">
+        <strong>{formatMoney(total)}</strong>
+      </span>
+    </li>
   </ul>
+  {negative.length > 0 && (
+    <figcaption class="small muted">
+      The city’s file lists a reduction ({negative.map((s) => `${s.label}: ${formatMoney(s.value)}`).join('; ')}), so
+      the bar shows the other amounts.
+    </figcaption>
+  )}
 </figure>
 
 <style>
   .funding {
     margin: 0;
+  }
+  .funding-total {
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-2);
+  }
+  figcaption {
+    margin-top: var(--space-2);
   }
 </style>

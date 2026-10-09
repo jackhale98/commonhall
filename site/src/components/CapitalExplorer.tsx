@@ -27,6 +27,8 @@ interface Props {
   statuses: string[];
   /** e.g. FY27, the plan's first year. */
   yearLabel: string;
+  /** e.g. "spent through FY25". */
+  spentText: string;
 }
 
 /**
@@ -34,7 +36,14 @@ interface Props {
  * neighbourhood, status), sorted by budget. Loads the full list (capital.json,
  * built with the site) when it comes into view.
  */
-export default function CapitalExplorer({ initial, departments, neighborhoods, statuses, yearLabel }: Props) {
+export default function CapitalExplorer({
+  initial,
+  departments,
+  neighborhoods,
+  statuses,
+  yearLabel,
+  spentText,
+}: Props) {
   const [rows, setRows] = useState<CapitalRow[] | null>(null);
   const [q, setQ] = useState('');
   const [dept, setDept] = useState('');
@@ -146,7 +155,7 @@ export default function CapitalExplorer({ initial, departments, neighborhoods, s
                   <span class="fund-rest" style={{ flex: `${Math.max(0, p.t - p.p)} 1 0` }} />
                 </div>
                 <p class="small muted">
-                  <strong>{formatMoney(p.p)}</strong> spent of {formatMoney(p.t)}
+                  <strong>{formatMoney(p.p)}</strong> {spentText} of {formatMoney(p.t)}
                   {p.y > 0 && (
                     <>
                       {' '}

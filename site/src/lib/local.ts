@@ -55,12 +55,25 @@ export function capitalStage(status: string | null): number | null {
   return null;
 }
 
-/** The plan's money for one project, in time order, as shares of its total budget. */
+/** "FY25" for the plan's first year plus `offset` (first_year 2027 → offset −2 is FY25). */
+export const planYear = (firstYear: number | null, offset: number) =>
+  firstYear ? `FY${String(firstYear + offset).slice(2)}` : null;
+
+/**
+ * The plan's money for one project, in time order. Per the city's data dictionary:
+ * "Expended" is actual spending before Year 0 (through FY25 in the FY27–31 plan),
+ * Year 0 is the budget for the year before the plan (FY26), Year 1 the plan's first
+ * year, Years 2–5 the rest; External Funds are grants not run through the city's
+ * capital fund. Together they add up to the project's total budget (checked for
+ * every project in the FY27–31 file); any difference shows as its own segment.
+ * A few amounts in the city's file are negative (reductions); they are kept, except
+ * leftovers under $1,000 (one project lists −$1), which are rounding in the city's file.
+ */
 export function fundingSegments(p: CapitalProject) {
-  const fy = (offset: number) => (p.first_year ? `FY${String(p.first_year + offset).slice(2)}` : null);
+  const fy = (offset: number) => planYear(p.first_year, offset);
   const segments = [
-    { key: 'spent', label: 'Spent so far', value: p.spent, tone: 'fund-1' },
-    { key: 'year0', label: `Planned for ${fy(-1) ?? 'last year'}`, value: p.year0, tone: 'fund-2' },
+    { key: 'spent', label: `Spent through ${fy(-2) ?? 'last year'}`, value: p.spent, tone: 'fund-1' },
+    { key: 'year0', label: `Budgeted for ${fy(-1) ?? 'last year'}`, value: p.year0, tone: 'fund-2' },
     { key: 'year1', label: `Planned for ${fy(0) ?? 'this year'}`, value: p.year1, tone: 'fund-3' },
     {
       key: 'later',
@@ -68,16 +81,22 @@ export function fundingSegments(p: CapitalProject) {
       value: p.years_2_5,
       tone: 'fund-4',
     },
+    {
+      key: 'external',
+      label: 'Outside grants (not through the city’s capital fund)',
+      value: p.external_funds,
+      tone: 'fund-rest',
+    },
   ];
-  const scheduled = segments.reduce((n, s) => n + s.value, 0);
-  segments.push({
-    key: 'rest',
-    label: 'Not yet scheduled',
-    value: Math.max(0, p.total_budget - scheduled),
-    tone: 'fund-rest',
-  });
-  return segments.filter((s) => s.value > 0);
+  const listed = segments.reduce((n, s) => n + s.value, 0);
+  const other = p.total_budget - listed;
+  if (Math.abs(other) >= 1)
+    segments.push({ key: 'other', label: 'Not broken down by the city', value: other, tone: 'fund-rest' });
+  return segments.filter((s) => s.value > 0 || s.value <= -1000);
 }
+
+/** "spent through FY25" for a plan whose first year is `firstYear`. */
+export const spentLabel = (firstYear: number | null) => `spent through ${planYear(firstYear, -2) ?? 'last year'}`;
 
 /** Compact project row for the projects explorer (boston/capital.json). */
 export interface CapitalRow {

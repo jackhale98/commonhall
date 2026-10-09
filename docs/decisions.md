@@ -763,3 +763,28 @@ and money by year) with the usual "Ask for a public discussion" button, and
 discussions can be about a project (`target_type = 'capital_project'`, target id the
 city's project id, e.g. CCC25057). Maintainers open them from the admin page like
 any other, usually with Boston (or the project's district) as the jurisdiction.
+
+## 66. Capital Plan figures are checked against the city's own definitions
+
+An audit of every published amount against the city's FY27–31 file and its data
+dictionary (October 2026) found the amounts right and four labels wrong, now fixed:
+
+- "Expended" is actual spending *before Year 0*, so it reads "spent through FY25",
+  not "spent so far"; Year 0 (FY26) is "budgeted", the plan's years are "planned".
+- What remained of a total after the spending columns is External Funds (grants not
+  run through the city's capital fund), not "not yet scheduled". For every project,
+  expended + year 0 + year 1 + years 2–5 + external funds equals the total budget;
+  the sync logs any project where that stops holding, and the page would show the
+  difference as "not broken down by the city".
+- Negative amounts (reductions) are listed, not dropped; the bar draws the positive
+  parts and says so. A −$1 leftover is treated as rounding.
+- Headline totals are the sum of total project budgets, which is how the city's own
+  Table 1 counts the plan. The city's announced $4.4 billion (322 projects) is the
+  April recommended plan; the adopted plan on Analyze Boston has 325 projects and
+  $4.47 billion. The Budget page says so. "Under construction" counts the same
+  statuses everywhere (In Construction and Implementation Underway: 104).
+
+Money is rounded half up from whole dollars ($2,150,000 → $2.2M); `toFixed` on a
+float had rounded some halves down. A script compared all 1,249 non-zero amounts on
+the 325 project pages, the Budget headlines and department totals, and the Overview
+with the city's CSV: no differences.

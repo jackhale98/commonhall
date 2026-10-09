@@ -20,7 +20,7 @@ import {
 import { DEMO } from '../../lib/config';
 import { formatMoney } from '../../lib/finance';
 import { formatDate } from '../../lib/format';
-import { CAPITAL_STAGES, capitalStage, change311, closeTime, streetAddress } from '../../lib/local';
+import { CAPITAL_STAGES, capitalStage, change311, closeTime, spentLabel, streetAddress } from '../../lib/local';
 import { capitalProjectHref, href, localOfficialHref } from '../../lib/paths';
 
 const [officials, matters, meetings, discussions, districts, appeals, report, projects] = await Promise.all([
@@ -55,7 +55,7 @@ const planTotal = projects.reduce((n, p) => n + p.total_budget, 0);
 const planYear = projects.reduce((n, p) => n + p.year1, 0);
 const planLabel = projects[0]?.plan.replace('-', '–') ?? '';
 const planFy = projects[0]?.first_year ? `FY${String(projects[0].first_year).slice(2)}` : 'the first year';
-const building = projects.filter((p) => /construction/i.test(p.status ?? '')).length;
+const building = projects.filter((p) => capitalStage(p.status) === 3).length;
 const biggestThisYear = [...projects].sort((a, b) => b.year1 - a.year1).slice(0, 3);
 const hearings = appeals
   .filter((z) => z.hearing_date && z.hearing_date >= today)
@@ -186,14 +186,14 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
       </div>
       <dl class="stat-grid">
         <div class="stat">
-          <dt>{planLabel} Capital Plan</dt>
+          <dt>Adopted {planLabel} Capital Plan</dt>
           <dd>{formatMoney(planTotal)}</dd>
           <p class="small muted stat-note">
-            {projects.length} projects, {building} under construction
+            {projects.length} projects, {building} under construction or underway
           </p>
         </div>
         <div class="stat">
-          <dt>Planned for {planFy}</dt>
+          <dt>Planned spending, {planFy}</dt>
           <dd>{formatMoney(planYear)}</dd>
         </div>
       </dl>
@@ -225,7 +225,8 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
                 <span class="fund-rest" style={{ flex: `${Math.max(0, p.total_budget - p.spent)} 1 0` }} />
               </div>
               <p class="small muted hearing-addr">
-                {formatMoney(p.year1)} in {planFy} · {formatMoney(p.spent)} spent of {formatMoney(p.total_budget)}
+                {formatMoney(p.year1)} in {planFy} · {formatMoney(p.spent)} {spentLabel(p.first_year)} of{' '}
+                {formatMoney(p.total_budget)}
               </p>
             </li>
           ))}

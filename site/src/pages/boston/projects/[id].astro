@@ -5,7 +5,7 @@ import FundingBar from '../../../components/viz/FundingBar.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadCapitalProjects, loadDiscussionsByTarget } from '../../../lib/build-data';
 import { formatMoney } from '../../../lib/finance';
-import { fundingSegments, type CapitalProject } from '../../../lib/local';
+import { fundingSegments, spentLabel, type CapitalProject } from '../../../lib/local';
 import { href } from '../../../lib/paths';
 
 export async function getStaticPaths() {
@@ -54,27 +54,22 @@ const spentPct = p.total_budget > 0 ? Math.round((p.spent / p.total_budget) * 10
       <p class="money-head">
         <span class="money-big">{formatMoney(p.spent)}</span>
         <span class="muted">
-          spent of <strong>{formatMoney(p.total_budget)}</strong>
+          {spentLabel(p.first_year)}, of a <strong>{formatMoney(p.total_budget)}</strong> total budget
           {p.total_budget > 0 && ` (${spentPct < 1 && p.spent > 0 ? '<1' : spentPct}%)`}
         </span>
       </p>
       <FundingBar
         segments={segments}
         total={p.total_budget}
-        label={`${p.name}: ${formatMoney(p.spent)} spent of a ${formatMoney(p.total_budget)} total budget`}
+        label={`${p.name}: ${formatMoney(p.spent)} ${spentLabel(p.first_year)} of a ${formatMoney(p.total_budget)} total budget`}
       />
-      {p.external_funds > 0 && (
-        <p class="small muted">
-          {formatMoney(p.external_funds)} of the total comes from outside funds (state, federal and other grants).
-        </p>
-      )}
     </section>
   </div>
 
   <p class="small muted">
     From the City of Boston’s <a href="https://data.boston.gov/dataset/capital-budget">{plan} Capital Plan</a> on
-    Analyze Boston (project {p.proj_id}). The total is the whole project’s budget, including years before this plan.{' '}
-    <a href={href('boston/budget/')}>All projects</a>.
+    Analyze Boston (project {p.proj_id}). The total budget covers the whole project, including years before this plan
+    and outside grants. Amounts are as the city published them. <a href={href('boston/budget/')}>All projects</a>.
   </p>
 </Base>
 

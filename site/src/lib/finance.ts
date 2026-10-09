@@ -32,8 +32,12 @@ export function formatMoney(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return '—';
   const n = Number(value);
   const abs = Math.abs(n);
-  if (abs >= 1e9) return `$${(n / 1e9).toFixed(abs >= 1e10 ? 1 : 2)}B`;
-  if (abs >= 1e6) return `$${(n / 1e6).toFixed(abs >= 1e7 ? 0 : 1)}M`;
-  if (abs >= 1e3) return `$${Math.round(n / 1e3)}K`;
-  return `$${Math.round(n)}`;
+  const sign = n < 0 ? '−' : '';
+  // Round half up from the whole amount (2,150,000 → 2.2M); toFixed on a float can round 2.15 down.
+  const scaled = (unit: number, digits: number) =>
+    (Math.round(abs / (unit / 10 ** digits)) / 10 ** digits).toFixed(digits);
+  if (abs >= 1e9) return `${sign}$${scaled(1e9, abs >= 1e10 ? 1 : 2)}B`;
+  if (abs >= 1e6) return `${sign}$${scaled(1e6, abs >= 1e7 ? 0 : 1)}M`;
+  if (abs >= 1e3) return `${sign}$${scaled(1e3, 0)}K`;
+  return `${sign}$${Math.round(abs)}`;
 }

@@ -81,6 +81,18 @@ export function capitalProjectRow(
   };
 }
 
+/**
+ * Projects whose parts do not add up to their total budget (expended + year 0 +
+ * year 1 + years 2–5 + external funds), per the city's data dictionary. The site
+ * shows any difference as "not broken down"; the sync logs them so a change in the
+ * city's columns is noticed.
+ */
+export function unbalancedProjects(rows: CapitalProjectRow[]): string[] {
+  return rows
+    .filter((r) => Math.abs(r.total_budget - (r.spent + r.year0 + r.year1 + r.years_2_5 + r.external_funds)) >= 1)
+    .map((r) => r.proj_id);
+}
+
 export async function syncCapitalPlan(
   run: JobRun<CapitalPlanCursor>,
   options: { client: AnalyzeBostonClient },
@@ -106,6 +118,13 @@ export async function syncCapitalPlan(
   const gone = await run.sql`
     delete from public.capital_projects where proj_id <> all(${rows.map((r) => r.proj_id)}::text[]) returning 1`;
   run.rowsWritten += gone.length;
-  run.log('capital-plan', { plan, projects: rows.length, written: run.rowsWritten });
+  const unbalanced = unbalancedProjects(rows);
+  run.log('capital-plan', {
+    plan,
+    projects: rows.length,
+    written: run.rowsWritten,
+    unbalanced: unbalanced.length,
+    ...(unbalanced.length ? { unbalancedIds: unbalanced.slice(0, 20) } : {}),
+  });
   return { plan, resourceModified: resource.last_modified ?? undefined };
 }
