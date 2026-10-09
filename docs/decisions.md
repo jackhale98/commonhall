@@ -865,3 +865,7 @@ state's page showed its oldest bills for weeks. Now `sync-state`:
 Open States' bulk downloads need a signed-in account and are monthly, so they are
 not used. A higher API limit, which Open States grants civic projects on request,
 would finish the first load in days.
+
+`sync-state` runs hourly at :07 (it ran ten times between 06:00 and 10:30 UTC). The
+daily budget resets at midnight UTC, so the 00:07 run starts each day's requests about
+six hours sooner; runs after the budget is spent stop at once.
