@@ -454,6 +454,21 @@ export const loadRecentLocalMatters = memo(async () =>
   }),
 );
 
+/** Type and status counts for the Boston matters filters. */
+export const loadLocalMatterFacets = memo(async () => {
+  const rows = await selectAll<{ type: string | null; status: string | null }>('local_matters', {
+    select: 'type,status',
+    city: 'eq.boston',
+    order: 'id.asc',
+  });
+  const count = (key: 'type' | 'status') => {
+    const map = new Map<string, number>();
+    for (const r of rows) if (r[key]) map.set(r[key]!, (map.get(r[key]!) ?? 0) + 1);
+    return [...map].map(([value, n]) => ({ value, count: n })).sort((a, b) => b.count - a.count);
+  };
+  return { types: count('type'), statuses: count('status') };
+});
+
 export const loadLocalMeetings = memo(async () =>
   select<LocalMeeting>('local_meetings', {
     select: 'id,event_id,body,starts_at,date,time,location,agenda_url,minutes_url,legistar_url',

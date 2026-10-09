@@ -11,18 +11,20 @@ import {
   loadDiscussions,
   loadLocalMeetings,
   loadLocalOfficials,
+  loadLocalMatterFacets,
   loadRecentLocalMatters,
 } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
 import { formatDate } from '../../lib/format';
 import { href, localOfficialHref } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts] = await Promise.all([
+const [officials, matters, meetings, discussions, districts, matterFacets] = await Promise.all([
   loadLocalOfficials(),
   loadRecentLocalMatters(),
   loadLocalMeetings(),
   loadDiscussions(),
   loadCouncilDistricts(),
+  loadLocalMatterFacets(),
 ]);
 const features = districts.map((d) => {
   const o = officials.find((x) => x.district === d.district);
@@ -168,7 +170,17 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
       </div>
     )}
     <div class="panel">
-      <LocalMatters client:visible initial={matters} local={DEMO} />
+      <LocalMatters
+        client:visible
+        initial={matters}
+        local={DEMO}
+        facets={{
+          ...matterFacets,
+          sponsors: [...officials]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((o) => ({ id: o.id, name: o.name })),
+        }}
+      />
     </div>
   </section>
 
