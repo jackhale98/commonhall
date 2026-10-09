@@ -1983,3 +1983,17 @@ summary:has(.inline-h) {
   cursor: pointer;
   margin-block: var(--space-4) var(--space-2);
 }
+
+/* Discussion lists (rendered by the LiveDiscussions island, so global). */
+.discussion-level + .discussion-level {
+  margin-top: var(--space-6);
+}
+.discussion-level > h3 {
+  margin: var(--space-4) 0 var(--space-3);
+}
+.have-your-say {
+  margin: var(--space-6) 0 var(--space-3);
+}
+.card-grid + p {
+  margin-top: var(--space-3);
+}

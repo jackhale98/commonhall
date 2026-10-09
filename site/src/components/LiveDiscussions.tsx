@@ -39,7 +39,7 @@ export default function LiveDiscussions({ initial, jurisdictions, grouped = fals
   const open = mine.filter((d) => d.status === 'open');
   if (!grouped) {
     return open.length > 0 ? (
-      <ul class="list">
+      <ul class="list card-grid">
         {open.map((d) => (
           <DiscussionCardView discussion={d} />
         ))}
@@ -57,7 +57,7 @@ export default function LiveDiscussions({ initial, jurisdictions, grouped = fals
         {LEVELS.map((l) => ({ ...l, list: open.filter((d) => d.jurisdiction === l.key) }))
           .filter((l) => l.list.length > 0)
           .map((l) => (
-            <section aria-labelledby={`open-${l.key}-h`} class="level">
+            <section aria-labelledby={`open-${l.key}-h`} class="discussion-level">
               <h3 id={`open-${l.key}-h`}>{l.title}</h3>
               <ul class="list card-grid">
                 {l.list.map((d) => (
