@@ -1,5 +1,5 @@
 ---
-import DiscussionCard from '../../components/DiscussionCard.astro';
+import LiveDiscussions from '../../components/LiveDiscussions';
 import FollowButton from '../../components/FollowButton';
 import LocalMatters from '../../components/LocalMatters';
 import MemberPhoto from '../../components/MemberPhoto';
@@ -68,15 +68,12 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
         All discussions
       </a>
     </div>
-    {bostonDiscussions.length > 0 ? (
-      <ul class="list">
-        {bostonDiscussions.map((d) => (
-          <DiscussionCard discussion={d} />
-        ))}
-      </ul>
-    ) : (
-      <p class="muted">No Boston discussion is open right now.</p>
-    )}
+    <LiveDiscussions
+      client:idle
+      initial={bostonDiscussions}
+      jurisdictions={['boston']}
+      empty="No Boston discussion is open right now."
+    />
     <p class="small muted">
       Want residents to weigh in on an ordinance, hearing or order? Open it under Council matters below and choose “Ask
       for a public discussion”. Maintainers open discussions on the most requested items.

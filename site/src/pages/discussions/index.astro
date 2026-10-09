@@ -1,18 +1,10 @@
 ---
-import DiscussionCard from '../../components/DiscussionCard.astro';
+import LiveDiscussions from '../../components/LiveDiscussions';
 import Base from '../../layouts/Base.astro';
 import { loadDiscussions } from '../../lib/build-data';
 import { href } from '../../lib/paths';
 
 const discussions = await loadDiscussions();
-const open = discussions.filter((d) => d.status === 'open');
-// Local first: decisions closest to home are where a few voices count most.
-const levels = [
-  { key: 'boston', title: 'Boston', list: open.filter((d) => d.jurisdiction === 'boston') },
-  { key: 'ma', title: 'Massachusetts', list: open.filter((d) => d.jurisdiction === 'ma') },
-  { key: 'federal', title: 'National', list: open.filter((d) => d.jurisdiction === 'federal') },
-].filter((l) => l.list.length > 0);
-const closed = discussions.filter((d) => d.status === 'closed');
 ---
 
 <Base
@@ -53,30 +45,7 @@ const closed = discussions.filter((d) => d.status === 'closed');
     </p>
   </header>
 
-  <section aria-labelledby="open-h">
-    <h2 id="open-h">Open</h2>
-    {open.length === 0 && <p class="muted">No open discussions right now.</p>}
-    {levels.map((l) => (
-      <section aria-labelledby={`open-${l.key}-h`} class="level">
-        <h3 id={`open-${l.key}-h`}>{l.title}</h3>
-        <ul class="list card-grid">
-          {l.list.map((d) => (
-            <DiscussionCard discussion={d} />
-          ))}
-        </ul>
-      </section>
-    ))}
-  </section>
-  {closed.length > 0 && (
-    <section aria-labelledby="closed-h">
-      <h2 id="closed-h">Closed</h2>
-      <ul class="list card-grid">
-        {closed.map((d) => (
-          <DiscussionCard discussion={d} />
-        ))}
-      </ul>
-    </section>
-  )}
+  <LiveDiscussions client:idle initial={discussions} grouped empty="No open discussions right now." />
 </Base>
 
 <style>

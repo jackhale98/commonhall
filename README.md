@@ -20,6 +20,7 @@ about, and take part in moderated public discussions.
 - [Coverage and data sources](#coverage-and-data-sources)
 - [How it works](#how-it-works)
 - [Privacy and principles](#privacy-and-principles)
+- [Running discussions](#running-discussions)
 - [Project status](#project-status)
 - [Development](#development)
 - [Documentation](#documentation)
@@ -171,6 +172,55 @@ The reasoning behind the main design choices is recorded in
 
 Full details are on the site's [privacy page](https://jackhale98.github.io/opencongress/privacy/)
 and [discussion rules](https://jackhale98.github.io/opencongress/moderation/).
+
+## Running discussions
+
+Discussions are [Pol.is](https://pol.is) polls embedded in the site. Maintainers
+create them from the site; Pol.is creates the poll the first time its page loads.
+
+**One-time setup**
+
+1. Set the repository variable `PUBLIC_POLIS_SITE_ID` (Pol.is → **Integrate**).
+2. Sign in to the site once, then make yourself a maintainer in the Supabase SQL
+   editor:
+
+   ```sql
+   insert into public.admins (user_id, role)
+   select id, 'admin' from auth.users where email = 'you@example.org';
+   ```
+
+**Create a discussion**
+
+1. Sign in and open **Admin: discussions** (in the footer and on the Account page).
+2. Fill in the form: a short **id** (it becomes the address and the Pol.is page
+   id, and cannot change), a neutral question as the **title**, a one-paragraph
+   **prompt**, the **jurisdiction**, and what it is **about** (a bill, Massachusetts
+   bill, council matter, executive order or Supreme Court decision).
+3. Save it as a **draft** and open its page from the admin list while signed in to
+   Pol.is. That first load creates the poll in your Pol.is account.
+4. In the Pol.is dashboard, turn on **strict moderation** and add 6–10 balanced
+   **seed statements**.
+5. Set the status to **open**. It appears in the discussion lists and on the
+   item's page straight away; the next build gives it its own prerendered page.
+
+**When someone asks for one**
+
+Anyone can press "Ask for a public discussion" on an item's page, signed in or
+not. The admin page's **Requests** list shows the most-requested items (never who
+asked); **Create discussion** next to one fills in the form for it.
+
+**While it runs**
+
+- Moderate new statements in Pol.is at least daily under the published
+  [discussion rules](https://jackhale98.github.io/opencongress/moderation/):
+  accept or reject, never edit.
+- Set the status to **closed** to stop voting; results stay readable. Pol.is's
+  **Report** and **Export** give a shareable report and CSV files.
+- Anyone can vote and add statements without an account for now. Set the
+  repository variable `PUBLIC_OPEN_PARTICIPATION=false` and redeploy to require
+  sign-in and enforce "residents only".
+
+The full guide is [docs/discussions.md](docs/discussions.md).
 
 ## Project status
 

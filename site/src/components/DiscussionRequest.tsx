@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { getSession, hasRequestedDiscussion, hasStoredSession, setDiscussionRequest } from '../lib/auth';
 import { hasSupabase } from '../lib/config';
-import { rpc } from '../lib/rest';
+import { discussionHref } from '../lib/paths';
+import { rpc, select } from '../lib/rest';
 import type { DiscussionTargetType } from '../lib/types';
 
 interface Props {
@@ -35,9 +36,20 @@ export default function DiscussionRequest({ targetType, targetId }: Props) {
   const [mine, setMine] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // A discussion opened since the last site build.
+  const [live, setLive] = useState<{ id: string; title: string; status: string } | null>(null);
 
   useEffect(() => {
     if (!hasSupabase) return;
+    select<{ id: string; title: string; status: string }>('discussions', {
+      select: 'id,title,status',
+      target_type: `eq.${targetType}`,
+      target_id: `eq.${targetId}`,
+      status: 'neq.draft',
+      limit: 1,
+    })
+      .then((rows) => setLive(rows[0] ?? null))
+      .catch(() => undefined);
     rpc<number>('discussion_request_count', { p_target_type: targetType, p_target_id: targetId })
       .then(setCount)
       .catch(() => undefined);
@@ -85,6 +97,15 @@ export default function DiscussionRequest({ targetType, targetId }: Props) {
       setBusy(false);
     }
   };
+
+  if (live) {
+    return (
+      <p class="notice discussion-callout">
+        <strong>{live.status === 'open' ? 'Discussion open:' : 'Discussion (closed):'}</strong>{' '}
+        <a href={discussionHref(live.id)}>{live.title}</a>
+      </p>
+    );
+  }
 
   return (
     <div class="discussion-request cluster small">
