@@ -17,7 +17,15 @@ import {
   type CommitteeMeeting,
   type CommitteeMember,
 } from './committees';
-import { SCOTUS_COLUMNS, SCOTUS_OUTCOME_COLUMNS, matchOutcomes, type ScotusCase, type ScotusOutcome } from './court';
+import {
+  SCOTUS_COLUMNS,
+  SCOTUS_OUTCOME_COLUMNS,
+  caseTopic,
+  matchOutcomes,
+  type CaseAbout,
+  type ScotusCase,
+  type ScotusOutcome,
+} from './court';
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
@@ -478,6 +486,33 @@ export const loadScotusOutcomes = memo(async () =>
 export const loadScotusOutcomeMap = memo(async () =>
   matchOutcomes(await loadScotusCases(), await loadScotusOutcomes()),
 );
+
+/**
+ * What each decision is about: the syllabus background (from CourtListener's opinion
+ * text) and SCDB's topic. Read separately from the main columns so a database
+ * without these columns yet still builds the court pages.
+ */
+export const loadCaseAbout = memo(async () => {
+  const [summaries, topics, outcomes] = await Promise.all([
+    selectAllOptional<{ cluster_id: number; syllabus_text: string }>('scotus_cases', {
+      select: 'cluster_id,syllabus_text',
+      syllabus_text: 'not.is.null',
+    }),
+    selectAllOptional<{ scdb_case_id: string; issue: number | null; issue_area: number | null }>('scotus_outcomes', {
+      select: 'scdb_case_id,issue,issue_area',
+      issue_area: 'not.is.null',
+    }),
+    loadScotusOutcomeMap(),
+  ]);
+  const topicById = new Map(topics.map((t) => [t.scdb_case_id, caseTopic(t.issue_area, t.issue)]));
+  const about = new Map<number, CaseAbout>();
+  for (const [clusterId, o] of outcomes) {
+    const t = topicById.get(o.scdb_case_id);
+    if (t && (t.area || t.issue)) about.set(clusterId, { ...t });
+  }
+  for (const s of summaries) about.set(s.cluster_id, { ...about.get(s.cluster_id), summary: s.syllabus_text });
+  return about;
+});
 
 // ---- Boston -----------------------------------------------------------------
 

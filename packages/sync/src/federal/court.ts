@@ -8,6 +8,7 @@
  */
 import { BudgetExhaustedError, type ClCluster, type CourtListenerClient } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
+import { syllabusBackground } from './syllabus.ts';
 import type { JobRun } from '../job.ts';
 
 export const SCOTUS_JOB = 'scotus';
@@ -54,6 +55,8 @@ export interface ScotusCaseRow extends Record<string, unknown> {
   concurrences: number;
   per_curiam: boolean;
   syllabus: string | null;
+  /** CourtListener opinion ids, to read the syllabus from the opinion text. */
+  opinion_ids: number[];
   /** A corrected opinion published as its own cluster ("… Revisions: 7/01/26"). */
   revision: boolean;
 }
@@ -86,8 +89,66 @@ export function scotusCaseRow(c: ClCluster): ScotusCaseRow {
     concurrences: types.filter((t) => t === 'concurrence-opinion' || t === 'in-part-opinion').length,
     per_curiam: c.opinions.some((o) => o.per_curiam),
     syllabus: c.syllabus?.trim() || null,
+    opinion_ids: c.opinions.map((o) => o.id),
     revision: REVISION.test(c.caseName),
   };
+}
+
+/** Opinions to read the syllabus from: a combined or lead opinion first. */
+export function syllabusOpinionId(ids: number[], types: string[]): number | null {
+  const pick = types.findIndex((t) => t === 'combined-opinion' || t === 'lead-opinion');
+  return ids[pick >= 0 ? pick : 0] ?? null;
+}
+
+/** HTML from CourtListener as text (its scraped opinions are usually one <pre> block). */
+export function htmlText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|pre)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&#x27;/g, "'");
+}
+
+/** How many cases one run reads the syllabus for (one request each). */
+const SYLLABI_PER_RUN = 80;
+
+/**
+ * Read the syllabus once for each case that has not been checked: the background
+ * of the Court's syllabus from the opinion text (null when there is none, e.g. most
+ * per curiam orders, or when the text is damaged). Recent decisions are checked again
+ * daily for a month, in case CourtListener adds the text later.
+ */
+export async function fillSyllabi(run: JobRun<ScotusCursor>, client: CourtListenerClient): Promise<number> {
+  const due = await run.sql<{ cluster_id: number; opinion_ids: number[]; opinion_types: string[] }[]>`
+    select cluster_id, opinion_ids, opinion_types from public.scotus_cases
+     where syllabus_text is null and not revision and cardinality(opinion_ids) > 0
+       and (syllabus_checked_at is null
+            or (date_filed > current_date - 30 and syllabus_checked_at < now() - interval '1 day'))
+     order by syllabus_checked_at nulls first, date_filed desc
+     limit ${SYLLABI_PER_RUN}`;
+  let found = 0;
+  for (const c of due) {
+    if (run.outOfTime()) break;
+    const id = syllabusOpinionId(c.opinion_ids, c.opinion_types);
+    if (id === null) continue;
+    const opinion = await client.opinionText(id);
+    const text = opinion.plain_text?.trim() || htmlText(opinion.html_with_citations ?? '');
+    const syllabus = syllabusBackground(text);
+    await run.sql`
+      update public.scotus_cases set syllabus_text = ${syllabus}, syllabus_checked_at = now()
+       where cluster_id = ${c.cluster_id}`;
+    if (syllabus) {
+      found++;
+      run.rowsWritten++;
+    }
+  }
+  run.log('scotus: syllabi', { checked: due.length, found });
+  return found;
 }
 
 async function hasOriginal(sql: JobRun<ScotusCursor>['sql'], row: ScotusCaseRow): Promise<boolean> {
@@ -135,11 +196,13 @@ export async function syncSupremeCourt(
         // Save each month: a run cut off by the platform's wall-clock limit keeps its progress.
         await run.checkpoint(cursor);
       }
+      await fillSyllabi(run, options.client);
       return cursor;
     }
     const since = new Date(Date.parse(cursor.newest ?? today) - 30 * 86_400_000).toISOString().slice(0, 10);
     const seen = await read(since);
     run.log('scotus', { since, seen, written: run.rowsWritten });
+    await fillSyllabi(run, options.client);
     return cursor;
   } catch (error) {
     if (!(error instanceof BudgetExhaustedError)) throw error;

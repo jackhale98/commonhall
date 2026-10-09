@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { caseCenteredCsvUrl, latestReleaseUrl, parseCsv, scdbOutcomeRows } from '../src/federal/scdb.ts';
 
 const CSV = [
-  '"caseId","term","docket","usCite","caseName","dateDecision","partyWinning","caseDisposition","decisionType","majVotes","minVotes"',
-  '"2008-001",2008,"07-1","555 U.S. 1","OLD v. CASE",10/14/2008,1,3,1,9,0',
-  '"2025-068",2025,"25-748","","MCCARTHY v. HERNANDEZ",6/22/2026,1,4,2,6,3',
-  '"2025-069",2025,"25-1","","SMITH, ""JR."" v. JONES",6/30/2026,0,2,1,5,4',
+  '"caseId","term","docket","usCite","caseName","dateDecision","partyWinning","caseDisposition","decisionType","majVotes","minVotes","issue","issueArea"',
+  '"2008-001",2008,"07-1","555 U.S. 1","OLD v. CASE",10/14/2008,1,3,1,9,0,10050,1',
+  '"2025-068",2025,"25-748","","MCCARTHY v. HERNANDEZ",6/22/2026,1,4,2,6,3,20040,2',
+  '"2025-069",2025,"25-1","","SMITH, ""JR."" v. JONES",6/30/2026,0,2,1,5,4,,',
 ].join('\r\n');
 
 describe('SCDB', () => {
@@ -28,9 +28,12 @@ describe('SCDB', () => {
       case_disposition: 4,
       maj_votes: 6,
       min_votes: 3,
+      issue: 20040,
+      issue_area: 2,
       release: '2026_01',
     });
     expect(rows[1]!.case_name).toBe('SMITH, "JR." v. JONES');
+    expect(rows[1]).toMatchObject({ issue: null, issue_area: null });
   });
 
   it('refuses a file without the case-centered columns', () => {

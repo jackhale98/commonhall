@@ -16,13 +16,29 @@ const sample = readFileSync(
   'utf8',
 );
 
+/** A slip opinion's text (supremecourt.gov PDF via pdftotext -layout), as CourtListener's plain_text. */
+const slipText = readFileSync(
+  fileURLToPath(new URL('../../packages/sync/test/fixtures/syllabus/24-621-slip-layout.txt', import.meta.url)),
+  'utf8',
+);
+
+/** CourtListener: search results from the sample; /opinions/{id}/ answers with the slip opinion text. */
 function fake() {
   const calls: URL[] = [];
+  const opinionCalls: URL[] = [];
   const fetch: FetchLike = async (input) => {
-    calls.push(new URL(input));
+    const url = new URL(input);
+    if (url.pathname.includes('/opinions/')) {
+      opinionCalls.push(url);
+      const id = Number(url.pathname.split('/').filter(Boolean).pop());
+      return new Response(JSON.stringify({ id, plain_text: slipText }), {
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    calls.push(url);
     return new Response(sample, { headers: { 'content-type': 'application/json' } });
   };
-  return { fetch, calls };
+  return { fetch, calls, opinionCalls };
 }
 
 const run = (fetch: FetchLike) =>
@@ -49,7 +65,8 @@ describe('sync-scotus', () => {
     const api = fake();
     const first = await run(api.fetch);
     expect(first.status).toBe('ok');
-    expect(first.rowsWritten).toBe(2);
+    // Two cases, and a syllabus read for each.
+    expect(first.rowsWritten).toBe(4);
     // October 2020 to August 2024: 47 months, each its own bounded query.
     expect(api.calls).toHaveLength(47);
     expect(api.calls[0]!.searchParams.get('q')).toContain('[2020-10-01 TO 2020-10-31]');
@@ -64,7 +81,9 @@ describe('sync-scotus', () => {
 
   it('keeps each finished month when a run is cut off part-way', async () => {
     let calls = 0;
-    const fetch: FetchLike = async () => {
+    const fetch: FetchLike = async (input) => {
+      if (String(input).includes('/opinions/'))
+        return new Response('{}', { headers: { 'content-type': 'application/json' } });
       if (++calls >= 5) throw new Error('killed by the wall-clock limit');
       return new Response(sample, { headers: { 'content-type': 'application/json' } });
     };
@@ -112,5 +131,26 @@ describe('sync-scotus', () => {
     await run(fake().fetch);
     const rows = await asAnon(sql, (tx) => tx`select case_name from public.scotus_cases order by date_filed desc`);
     expect(rows.map((r) => r.case_name)).toEqual(['Trump v. United States', 'Loper Bright Enterprises v. Raimondo']);
+  });
+
+  it('reads each case’s syllabus once from its opinion text', async () => {
+    const api = fake();
+    await run(api.fetch);
+    // Both sample cases were checked: one request per case, for a combined or lead opinion.
+    expect(api.opinionCalls).toHaveLength(2);
+    expect(api.opinionCalls[0]!.searchParams.get('fields')).toBe('id,plain_text,html_with_citations');
+    const rows = await asAnon(
+      sql,
+      (tx) => tx`select syllabus_text, syllabus_checked_at is not null as checked from public.scotus_cases`,
+    );
+    expect(rows).toHaveLength(2);
+    for (const r of rows) {
+      expect(r.checked).toBe(true);
+      expect(r.syllabus_text).toMatch(/^The Federal Election Campaign Act \(FECA\) restricts/);
+    }
+    // Checked cases (decided more than a month before "now") are not read again.
+    api.opinionCalls.length = 0;
+    await run(api.fetch);
+    expect(api.opinionCalls).toHaveLength(0);
   });
 });

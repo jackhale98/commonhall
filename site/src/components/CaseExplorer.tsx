@@ -20,6 +20,8 @@ interface Props {
   authors: string[];
   /** Outcomes (who won, vote split) are loaded: show their filters. */
   outcomes?: boolean;
+  /** Topics (SCDB issue areas) present, alphabetical. */
+  topics?: string[];
 }
 
 type Won = '' | 'p' | 'r';
@@ -43,12 +45,13 @@ const tags = (c: CaseRow) =>
  * (term, author, argued or not, has a discussion). Starts from the prerendered latest
  * decisions and loads the full list (cases.json, built with the site) on view.
  */
-export default function CaseExplorer({ initial, terms, authors, outcomes = false }: Props) {
+export default function CaseExplorer({ initial, terms, authors, outcomes = false, topics = [] }: Props) {
   const [rows, setRows] = useState<CaseRow[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [q, setQ] = useState('');
   const [term, setTerm] = useState('');
   const [author, setAuthor] = useState('');
+  const [topic, setTopic] = useState('');
   const [kind, setKind] = useState<Kind>('');
   const [won, setWon] = useState<Won>('');
   const [vote, setVote] = useState<Vote>('');
@@ -74,6 +77,7 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
     return all.filter((c) => {
       if (term && c.t !== Number(term)) return false;
       if (author && c.j !== author) return false;
+      if (topic && c.ta !== topic) return false;
       if (kind === 'argued' && !c.a) return false;
       if (kind === 'summary' && c.a) return false;
       if (won && c.w !== won) return false;
@@ -83,16 +87,18 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
       if (vote === 'close' && (d === null || d < 4)) return false;
       if (discussed && !c.x) return false;
       if (words.length === 0) return true;
-      const text = `${c.n} ${c.k ?? ''} ${c.c ?? ''} ${c.j ?? ''}`.toLowerCase();
+      const text =
+        `${c.n} ${c.k ?? ''} ${c.c ?? ''} ${c.j ?? ''} ${c.ta ?? ''} ${c.ti ?? ''} ${c.s ?? ''}`.toLowerCase();
       return words.every((w) => text.includes(w));
     });
-  }, [all, q, term, author, kind, won, vote, discussed]);
+  }, [all, q, term, author, topic, kind, won, vote, discussed]);
 
-  const active = q || term || author || kind || won || vote || discussed;
+  const active = q || term || author || topic || kind || won || vote || discussed;
   const reset = () => {
     setQ('');
     setTerm('');
     setAuthor('');
+    setTopic('');
     setKind('');
     setWon('');
     setVote('');
@@ -121,7 +127,7 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
             id="case-q"
             type="search"
             value={q}
-            placeholder="Case or Justice"
+            placeholder="Case, topic or Justice"
             onInput={(e) => set(setQ)(e.currentTarget.value)}
           />
         </div>
@@ -140,6 +146,24 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
               <option value={String(t)}>{termName(t)}</option>
             ))}
           </select>
+          {topics.length > 0 && (
+            <>
+              <label for="case-topic" class="visually-hidden">
+                Topic
+              </label>
+              <select
+                id="case-topic"
+                value={topic}
+                class={topic ? 'is-set' : ''}
+                onChange={(e) => set(setTopic)(e.currentTarget.value)}
+              >
+                <option value="">Any topic</option>
+                {topics.map((t) => (
+                  <option value={t}>{t}</option>
+                ))}
+              </select>
+            </>
+          )}
           <label for="case-author" class="visually-hidden">
             Opinion by
           </label>
@@ -249,6 +273,8 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
                   <a href={scotusCaseHref(c.i)}>{c.n}</a>
                   {c.x && <span class="chip">Discussion</span>}
                 </p>
+                {(c.ta || c.ti) && <p class="case-topic small">{[c.ta, c.ti].filter(Boolean).join(' · ')}</p>}
+                {c.s && <p class="small case-summary">{c.s}</p>}
                 {tags(c).length > 0 && <p class="small muted">{tags(c).join(' · ')}</p>}
               </li>
             ))}

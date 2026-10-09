@@ -24,6 +24,9 @@ export interface ScdbOutcomeRow extends Record<string, unknown> {
   decision_type: number | null;
   maj_votes: number | null;
   min_votes: number | null;
+  /** Topic codes (SCDB issue and issueArea); labels live in the site. */
+  issue: number | null;
+  issue_area: number | null;
   release: string;
 }
 
@@ -94,6 +97,8 @@ export function scdbOutcomeRows(csv: string, release: string, firstTerm = SCDB_F
       decision_type: int(get(r, 'decisionType')),
       maj_votes: int(get(r, 'majVotes')),
       min_votes: int(get(r, 'minVotes')),
+      issue: int(get(r, 'issue')),
+      issue_area: int(get(r, 'issueArea')),
       release,
     });
   }

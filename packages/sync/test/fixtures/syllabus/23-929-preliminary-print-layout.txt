@@ -1,0 +1,76 @@
+                   PRELIMINARY PRINT
+
+              Volume 604 U. S. Part 2
+                             Pages 712–760
+
+
+
+
+       OFFICIAL REPORTS
+                                     OF
+
+
+   THE SUPREME COURT
+                               April 22, 2025
+
+
+Page Proof Pending Publication
+
+
+                    REBECCA A. WOMELDORF
+                           reporter of decisions
+
+
+
+
+    NOTICE: This preliminary print is subject to formal revision before
+  the bound volume is published. Users are requested to notify the Reporter
+  of Decisions, Supreme Court of the United States, Washington, D. C. 20543,
+  pio@supremecourt.gov, of any typographical or other formal errors.
+712                     OCTOBER TERM, 2024
+
+                                 Syllabus
+
+
+      MONSALVO VELÁZQUEZ v. BONDI, ATTORNEY
+                   GENERAL
+
+certiorari to the united states court of appeals for
+                 the tenth circuit
+      No. 23–929. Argued November 12, 2024—Decided April 22, 2025
+The federal government initiated removal proceedings against petitioner
+  Monsalvo Velázquez, who asked the government to suspend its removal
+  efforts or, alternatively, to permit him to leave the United States volun-
+  tarily. The immigration judge concluded Monsalvo was removable but
+  granted him an opportunity to voluntarily depart within 60 days.
+  After the Board of Immigration Appeals rejected his appeal, it granted
+  Monsalvo a new 60-day voluntary departure period. The 60th day fell
+  on Saturday, December 11, 2021. Monsalvo fled a motion to reopen
+  proceedings on Monday, December 13. The Board rejected that motion,
+  concluding that the voluntary departure period had expired on Satur-
+  day, and Monsalvo's motion was therefore too late. Monsalvo asked the
+  Board to reconsider that conclusion, but the Board refused. Monsalvo
+Page Proof Pending Publication
+  then petitioned for judicial review in the Tenth Circuit. The Tenth Cir-
+  cuit agreed with the Board, holding that the voluntary departure dead-
+  line in 8 U. S. C. § 1229c(b)(2) refers to calendar days with no extension
+  for deadlines that fall on weekends or holidays.
+Held:
+    1. This Court has jurisdiction to review Monsalvo's petition. Under
+ § 1252, courts may review “fnal order[s] of removal” and “all questions
+ of law” arising from them. Monsalvo's petition sought judicial review
+ of a legal question about the meaning of a term in his fnal removal
+ order—specifcally, the meaning of “60 days” for voluntary departure.
+ Although Monsalvo did not challenge his removability, nothing in § 1252
+ requires an individual to press a challenge to one term in a fnal order
+ of removal just to secure judicial review of another. This Court rejects
+ the government's argument that a petition must include a challenge to
+ removability to secure judicial review. Such an interpretation would
+ force litigants to assert meritless claims simply to obtain jurisdiction.
+ Pp. 719–724.
+    2. Under § 1229c(b)(2), a voluntary-departure deadline that falls on a
+ weekend or legal holiday extends to the next business day. The Board
+ and the Tenth Circuit understood “days” to bear the ordinary meaning
+ of calendar days, no more or less. But evidence suggests a specialized
+ meaning in legal settings where the term “days” is often understood to
+

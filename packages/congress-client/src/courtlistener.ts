@@ -41,6 +41,13 @@ export interface ClCluster {
   scdb_id?: string;
 }
 
+/** An opinion's text, as /opinions/{id}/ returns it (only the fields asked for). */
+export interface ClOpinionText {
+  id: number;
+  plain_text?: string;
+  html_with_citations?: string;
+}
+
 interface ClPage {
   count?: number;
   next: string | null;
@@ -70,6 +77,11 @@ export class CourtListenerClient {
     url.searchParams.set('q', `court_id:scotus AND dateFiled:[${since} TO ${until ?? '*'}]`);
     url.searchParams.set('order_by', 'dateFiled desc');
     return url.toString();
+  }
+
+  /** One opinion's text: plain text when CourtListener has it, else its HTML. */
+  opinionText(id: number): Promise<ClOpinionText> {
+    return this.http.getJson<ClOpinionText>(`${this.baseUrl}/opinions/${id}/?fields=id,plain_text,html_with_citations`);
   }
 
   /** Supreme Court opinion clusters filed from `since` to `until` (YYYY-MM-DD, inclusive), newest first. */

@@ -788,3 +788,24 @@ Money is rounded half up from whole dollars ($2,150,000 → $2.2M); `toFixed` on
 float had rounded some halves down. A script compared all 1,249 non-zero amounts on
 the 325 project pages, the Budget headlines and department totals, and the Overview
 with the city's CSV: no differences.
+
+## 67. What a Supreme Court case is about: the syllabus and SCDB topics
+
+Two neutral, official sources describe each decision, and nothing is paraphrased:
+
+- **Topic**: the Supreme Court Database's issue area (14, e.g. Criminal Procedure)
+  and specific issue (e.g. search and seizure), from the file the SCDB loader already
+  reads. Labels are SCDB's codebook wording, cut to their first clause; "miscellaneous"
+  codes show no label. Recent decisions have none until SCDB's next release.
+- **Background**: the part of the Court's syllabus before "Held:" — prepared by the
+  Reporter of Decisions, "no part of the opinion of the Court" — word for word, read
+  once per case from the opinion text CourtListener stores (one request per case,
+  then re-checked daily for a month). Only re-flowed: page headers, footnotes and
+  line-end hyphens are removed (a hyphen is kept when the opinion spells the word
+  with one elsewhere). The holding is left out; the outcome line already says who won.
+
+The syllabus summarizes the majority opinion and uses its wording, so the page names
+its author and says it is not part of the opinion. Text with lost ligatures (some
+PDFs turn "filed" into "fled", "first" into "frst") is rejected rather than shown:
+those cases show their topic only. Lists show the first 180 characters; case pages
+show the opening sentences with the rest folded.

@@ -1,0 +1,146 @@
+(Slip Opinion)              OCTOBER TERM, 2025                                       1
+
+                                       Syllabus
+
+         NOTE: Where it is feasible, a syllabus (headnote) will be released, as is
+       being done in connection with this case, at the time the opinion is issued.
+       The syllabus constitutes no part of the opinion of the Court but has been
+       prepared by the Reporter of Decisions for the convenience of the reader.
+       See United States v. Detroit Timber & Lumber Co., 200 U. S. 321, 337.
+
+
+SUPREME COURT OF THE UNITED STATES
+
+                                       Syllabus
+
+      WEST VIRGINIA ET AL. v. B. P. J., BY HER NEXT
+      FRIEND AND MOTHER, HEATHER JACKSON
+
+CERTIORARI TO THE UNITED STATES COURT OF APPEALS FOR
+                THE FOURTH CIRCUIT
+
+     No. 24–43.     Argued January 13, 2026—Decided June 30, 2026*
+The question before the Court in these cases is whether, under Title IX
+  and the Equal Protection Clause of the Fourteenth Amendment,
+  schools may maintain women’s and girls’ sports teams for biological
+  females, i.e., may schools determine eligibility for female sports based
+  on biological sex? In the past six years, 27 States have enacted laws
+  that maintain female sports for biological females.
+     In 2021, West Virginia enacted the Save Women’s Sports Act, which
+  prohibits male students from playing on female teams. W. Va. Code
+  Ann. §§18–2–25d(c)(2)–(3). The law specifies that sex is determined
+  by biology. §§18–2–25d(a)(4), (b)(1). The legislature expressly found
+  that prohibiting biological male participation in female sports is nec-
+  essary to promote equal athletic opportunities for women and girls.
+  See §§18–2–25d(a)(1), (3), (5). Respondent B. P. J., who identifies as
+  female, is a biological male as defined by §§18–2–25d(a)(4), (b)(1).
+  B. P. J. has sought to participate on the girls’ cross-country and track-
+  and-field teams at school. B. P. J. sued West Virginia and relevant
+  officials for alleged violations of Title IX and the Equal Protection
+  Clause of the Fourteenth Amendment. The U. S. District Court for the
+  Southern District of West Virginia granted summary judgment for the
+  State on both claims. On appeal, the Fourth Circuit reversed on the
+  Title IX issue and remanded for further fact-finding on the Equal Pro-
+  tection Clause claim. 98 F. 4th 542.
+
+——————
+  *Together with No. 24–38, Little, Governor of Idaho, et al. v. Hecox et
+al., on certiorari to the United States Court of Appeals for the Ninth Cir-
+cuit.
+2                       WEST VIRGINIA v. B. P. J.
+
+                                  Syllabus
+
+       In 2020, Idaho enacted the Fairness in Women’s Sports Act, which
+    prohibits male students from participating on female teams. Idaho
+    Code Ann. §33–6203. The Idaho law states that sex is determined by
+    biology. Ibid. And the law declares that “separate sex-specific teams
+    furthers efforts to promote sex equality . . . by providing opportunities
+    for female athletes.” §33–6202(12). It also recognizes the physical dif-
+    ferences between biological males and biological females. §§33–
+    6202(1)–(5), (7), (8), (10)–(12). The law further found that the benefit
+    “that natural testosterone provides to male athletes is not diminished
+    through the use of puberty blockers and cross-sex hormones.” §33–
+    6202(11). Respondent Hecox, who identifies as female, is a biological
+    male as defined by §33–6203. Hecox competed for the women’s club
+    soccer team, and tried out for the women’s Division I track and cross-
+    country teams. Shortly after Idaho enacted the Fairness in Women’s
+    Sports Act, Hecox sued Idaho and relevant officials, alleging a violation
+    of the Equal Protection Clause. The U. S. District Court for the Dis-
+    trict of Idaho granted a preliminary injunction barring enforcement of
+    the Fairness in Women’s Sports Act, and the Ninth Circuit affirmed.
+    104 F. 4th 1061.
+Held:
+    1. Title IX allows schools to provide separate women’s and men’s
+ sports teams defined by biological sex, and West Virginia has permis-
+ sibly maintained female sports for biological females consistent with
+ Title IX. Pp. 8–14.
+    (a) Title IX provides: “No person in the United States shall, on the
+ basis of sex, be excluded from participation in, be denied the benefits
+ of, or be subjected to discrimination under any education program or
+ activity receiving Federal financial assistance.” 20 U. S. C. §1681(a).
+ Two years after Title IX became law in 1972, Congress passed the
+ Javits Amendment, which directed the then-Department of Health,
+ Education, and Welfare (HEW) to promptly issue “regulations imple-
+ menting the provisions of ” Title IX with respect to “the prohibition of
+ sex discrimination.” §844, 88 Stat. 612. The amendment further spec-
+ ified that the regulations “shall include with respect to” “athletic activ-
+ ities reasonable provisions considering the nature of particular sports.”
+ Ibid. (emphasis added). In 1975, HEW promulgated comprehensive
+ regulations requiring that schools provide “equal athletic opportunity
+ for members of both sexes” and authorizing “separate teams for mem-
+ bers of each sex where selection for such teams is based upon compet-
+ itive skill or the activity involved is a contact sport.” 34 CFR
+ §§106.41(b), (c). Pp. 8–10.
+    (b) The term “sex” in Title IX, the Javits Amendment, and the Title
+ IX regulations cannot plausibly be interpreted to refer to anything
+ other than biological sex. The ordinary meaning of the term “sex” at
+                     Cite as: 609 U. S. ___ (2026)                        3
+
+                                Syllabus
+
+the time of enactment in the early 1970s was biological sex and not
+gender identity, particularly in the sports context. See, e.g., Frontiero
+v. Richardson, 411 U. S. 677, 686 (“sex” is “an immutable characteris-
+tic”). In addition, the Title IX regulations allowed separate sports
+teams precisely because of the inherent physical differences between
+biological men and biological women.
+   While B. P. J. agrees that Title IX permits schools to maintain sep-
+arate female and male teams and to prohibit most biological males
+from playing on women’s and girls’ teams, B. P. J. argues that schools
+must make an exception to that general rule for biological males who
+identify as female and have taken puberty blockers or hormones. But
+the texts of Title IX, the Javits Amendment, and the Title IX regula-
+tions do not support that argument, and do not speak to that issue in
+a way that could properly be interpreted to require schools to allow
+biological males to participate in women’s and girls’ sports.
+   B. P. J. argues that if the regulations authorize a school to limit fe-
+male sports teams to biological females without exception, then the
+regulations are not “reasonable” as required by the Javits Amendment,
+§844, 88 Stat. 612. The Court concludes that separate sports teams for
+biological males and biological females are reasonable given the inher-
+ent physical differences between the sexes. In assessing the reasona-
+bleness of the regulations, the Court must recognize the distinctive-
+ness of competitive sports—and the safety and competitive fairness
+issues that can arise when females are forced to compete against
+males. In recent years, 27 States and various sports-governing bodies
+have all drawn the same line. Pp. 10–12.
+   (c) The Court rejects B. P. J.’s two other Title IX-related arguments.
+B. P. J. contends that the school’s policy violates Title IX because the
+policy effectively excludes B. P. J. from any competitive sports teams
+at the school. While it is an unhappy occasion whenever a student who
+wants to play school sports cannot do so, the Title IX regulations guar-
+antee only “equal athletic opportunity.”
+   B. P. J. relies on Title VII of the Civil Rights Act of 1964, 42 U. S. C.
+§2000e–2(a)(1), and Bostock v. Clayton County, 590 U. S. 644, as sup-
+port for interpreting Title IX to require that schools allow biological
+males on female teams. Title VII and Bostock are not relevant in this
+very different statutory and factual context of sports. Pp. 13–14.
+   2. West Virginia and Idaho did not violate the Equal Protection
+Clause of the Fourteenth Amendment by maintaining female sports
+teams for biological females. Pp. 14–25, 27–29.
+   (a) The challenged West Virginia and Idaho laws make sex-based
+classifications in limiting female teams to biological females. Under
+this Court’s equal protection precedents, sex-based classifications are
+permissible only when the classification is “substantially related” to
+

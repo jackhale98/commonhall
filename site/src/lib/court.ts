@@ -1,3 +1,4 @@
+import { SCDB_ISSUE_AREAS, SCDB_ISSUES } from './scdb-issues';
 /** Supreme Court decisions as stored by sync-scotus. */
 export interface ScotusCase {
   cluster_id: number;
@@ -55,6 +56,11 @@ export interface CaseRow {
   a?: 1;
   /** Has a discussion. */
   x?: 1;
+  /** Topic (SCDB issue area and specific issue). */
+  ta?: string;
+  ti?: string;
+  /** Start of the syllabus background. */
+  s?: string;
 }
 
 /** CourtListener spellings that differ from the Justices' names. */
@@ -72,6 +78,7 @@ export function caseRows(
   cases: ScotusCase[],
   hasDiscussion: (id: number) => boolean,
   outcomes: Map<number, ScotusOutcome> = new Map(),
+  about: Map<number, CaseAbout> = new Map(),
 ): CaseRow[] {
   return cases.map((c) => {
     const row: CaseRow = {
@@ -94,6 +101,10 @@ export function caseRows(
     const v = o && voteSplit(o);
     if (v) row.v = v;
     if (hasDiscussion(c.cluster_id)) row.x = 1;
+    const a = about.get(c.cluster_id);
+    if (a?.area) row.ta = a.area;
+    if (a?.issue) row.ti = a.issue;
+    if (a?.summary) row.s = summaryPreview(a.summary);
     return row;
   });
 }
@@ -110,6 +121,43 @@ export interface ScotusOutcome {
 }
 
 export const SCOTUS_OUTCOME_COLUMNS = 'scdb_case_id,term,docket,party_winning,case_disposition,maj_votes,min_votes';
+
+/** What a case is about: SCDB topic labels and the syllabus background (each may be missing). */
+export interface CaseAbout {
+  /** Issue area, e.g. "Criminal Procedure". */
+  area?: string;
+  /** Specific issue, e.g. "Search and seizure". */
+  issue?: string;
+  /** Background part of the Court's syllabus, word for word. */
+  summary?: string;
+}
+
+/** SCDB topic codes in words (unknown or "miscellaneous" codes give no label). */
+export function caseTopic(issueArea: number | null, issue: number | null): Pick<CaseAbout, 'area' | 'issue'> {
+  const area = issueArea === null ? undefined : SCDB_ISSUE_AREAS[issueArea];
+  const specific = issue === null ? undefined : SCDB_ISSUES[issue];
+  return { ...(area && area !== 'Miscellaneous' ? { area } : {}), ...(specific ? { issue: specific } : {}) };
+}
+
+/** The first `max` characters of a summary, cut at a word, for lists. */
+export function summaryPreview(text: string, max = 180): string {
+  if (text.length <= max) return text;
+  const cut = text.lastIndexOf(' ', max);
+  return `${text.slice(0, cut > max / 2 ? cut : max).replace(/[,;:(—–-]+$/, '')}…`;
+}
+
+/**
+ * A long summary split after the first sentence that ends past `min` characters, for
+ * "read more". Sentence ends follow a lowercase letter, digit or bracket, so
+ * abbreviations such as "U. S." or "W. Va." are not taken for one.
+ */
+export function splitSummary(text: string, min = 450): [string, string] {
+  const re = /[a-z0-9)\]”’]\.(?=\s+[A-Z“])/g;
+  re.lastIndex = min;
+  const m = re.exec(text);
+  if (!m || text.length - (m.index + 2) < 200) return [text, ''];
+  return [text.slice(0, m.index + 2), text.slice(m.index + 2).trim()];
+}
 
 /** Docket numbers in a field such as "23-719, 23-724" or "22A123". */
 const dockets = (s: string | null) => s?.match(/\d+-\d+|\d+A\d+/g) ?? [];

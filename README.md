@@ -59,6 +59,8 @@ about, and take part in moderated public discussions.
 - Decisions from the last five terms, newest first, with the full opinions on
   CourtListener, the case's docket on supremecourt.gov, concurring and dissenting
   opinions where they are listed separately, and decisions per term.
+- What each case is about: its topic (Supreme Court Database) and the background
+  from the Court's official syllabus, word for word; searchable and filterable.
 
 **Massachusetts** (covered in full)
 

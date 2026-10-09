@@ -4,6 +4,7 @@ import BarList from '../../components/viz/BarList';
 import CourtOutcomes from '../../components/viz/CourtOutcomes.astro';
 import Base from '../../layouts/Base.astro';
 import {
+  loadCaseAbout,
   loadDiscussionsByTarget,
   loadNominations,
   loadScotusCases,
@@ -14,19 +15,21 @@ import { caseRows, supremeCourtTerm } from '../../lib/court';
 import { NOMINATION_STATUS, nominationUrl } from '../../lib/executive';
 import { formatDate } from '../../lib/format';
 
-const [cases, nominations, discussions, outcomes, outcomeMap] = await Promise.all([
+const [cases, nominations, discussions, outcomes, outcomeMap, about] = await Promise.all([
   loadScotusCases(),
   loadNominations(),
   loadDiscussionsByTarget(),
   loadScotusOutcomes(),
   loadScotusOutcomeMap(),
+  loadCaseAbout(),
 ]);
 const term = supremeCourtTerm(new Date());
 const perTerm = [...Map.groupBy(cases, (c) => c.term)]
   .sort((a, b) => b[0] - a[0])
   .map(([t, list]) => ({ label: `${t}–${String(t + 1).slice(2)}`, value: list.length }));
 // Early in a term few decisions are out yet, so the list leads with the newest across terms.
-const rows = caseRows(cases, (id) => discussions.has(`scotus_case:${id}`), outcomeMap);
+const rows = caseRows(cases, (id) => discussions.has(`scotus_case:${id}`), outcomeMap, about);
+const topics = [...new Set(rows.map((r) => r.ta).filter((t): t is string => !!t))].sort();
 const termsWithCases = [...new Set(cases.map((c) => c.term))].sort((a, b) => b - a);
 // The newest term with decisions (a new term has none until the first opinions in the fall).
 const latestTermYear = cases[0]?.term ?? term;
@@ -108,6 +111,7 @@ const courtNominations = nominations.filter((n) =>
             terms={termsWithCases}
             authors={authors}
             outcomes={outcomes.length > 0}
+            topics={topics}
           />
         </section>
         <aside>
@@ -198,6 +202,18 @@ const courtNominations = nominations.filter((n) =>
   }
   .court-layout :global(.case-name a:hover) {
     text-decoration: underline;
+  }
+  .court-layout :global(.case-topic) {
+    color: var(--brand-strong);
+    font-weight: 600;
+  }
+  .court-layout :global(.case-summary) {
+    margin: var(--space-1) 0 !important;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .plain-list {
     list-style: none;

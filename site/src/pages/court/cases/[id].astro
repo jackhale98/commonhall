@@ -1,8 +1,15 @@
 ---
 import DiscussionLink from '../../../components/DiscussionLink.astro';
 import Base from '../../../layouts/Base.astro';
-import { loadDiscussionsByTarget, loadScotusCases, loadScotusOutcomeMap } from '../../../lib/build-data';
-import { DISPOSITION, docketUrl, opinionAuthor, outcomeSummary, type ScotusCase } from '../../../lib/court';
+import { loadCaseAbout, loadDiscussionsByTarget, loadScotusCases, loadScotusOutcomeMap } from '../../../lib/build-data';
+import {
+  DISPOSITION,
+  docketUrl,
+  opinionAuthor,
+  outcomeSummary,
+  splitSummary,
+  type ScotusCase,
+} from '../../../lib/court';
 import { formatDate } from '../../../lib/format';
 import { href } from '../../../lib/paths';
 
@@ -17,6 +24,8 @@ interface Props {
 const { c } = Astro.props;
 const discussion = (await loadDiscussionsByTarget()).get(`scotus_case:${c.cluster_id}`);
 const outcome = (await loadScotusOutcomeMap()).get(c.cluster_id);
+const about = (await loadCaseAbout()).get(c.cluster_id);
+const [aboutStart, aboutRest] = about?.summary ? splitSummary(about.summary) : ['', ''];
 const summary = outcome && outcomeSummary(c.case_name, outcome);
 const disposition = outcome?.case_disposition ? DISPOSITION[outcome.case_disposition] : undefined;
 const author = opinionAuthor(c);
@@ -40,7 +49,10 @@ const opinions = [
     <a href={href('court/')}>Supreme Court</a> › {c.case_name}
   </nav>
   <header class="page-head">
-    <p class="kicker">Supreme Court · October Term {c.term}</p>
+    <p class="kicker">
+      Supreme Court · October Term {c.term}
+      {about?.area && ` · ${about.area}`}
+    </p>
     <h1>{c.case_name}</h1>
     <p class="lede">
       Decided {formatDate(c.date_filed)}
@@ -49,6 +61,29 @@ const opinions = [
   </header>
 
   <DiscussionLink discussion={discussion} targetType="scotus_case" targetId={String(c.cluster_id)} />
+
+  {about?.summary && (
+    <section class="panel case-about" aria-labelledby="about-h">
+      <h2 id="about-h" class="h-small">
+        What the case is about
+      </h2>
+      <p class="about-text">{aboutStart}</p>
+      {aboutRest && (
+        <details class="about-more">
+          <summary>Read the full background</summary>
+          <p class="about-text">{aboutRest}</p>
+        </details>
+      )}
+      <p class="small muted">
+        From the Court’s syllabus, prepared by the Reporter of Decisions (not part of the opinion), word for word up to
+        the Court’s holding.
+        {about.issue && ` Topic (Supreme Court Database): ${about.area ? `${about.area}, ` : ''}${about.issue}.`}
+      </p>
+    </section>
+  )}
+  {!about?.summary && (about?.area || about?.issue) && (
+    <p class="small muted">Topic (Supreme Court Database): {[about.area, about.issue].filter(Boolean).join(', ')}.</p>
+  )}
 
   <dl class="facts">
     {summary && (
@@ -108,6 +143,23 @@ const opinions = [
 </Base>
 
 <style>
+  .case-about {
+    margin: var(--space-4) 0;
+  }
+  .case-about .h-small {
+    margin-top: 0;
+  }
+  .about-text {
+    max-width: 70ch;
+  }
+  .about-more summary {
+    cursor: pointer;
+    color: var(--link);
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
   .facts {
     display: grid;
     gap: var(--space-3);

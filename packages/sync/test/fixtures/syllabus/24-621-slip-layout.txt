@@ -1,0 +1,98 @@
+(Slip Opinion)              OCTOBER TERM, 2025                                       1
+
+                                       Syllabus
+
+         NOTE: Where it is feasible, a syllabus (headnote) will be released, as is
+       being done in connection with this case, at the time the opinion is issued.
+       The syllabus constitutes no part of the opinion of the Court but has been
+       prepared by the Reporter of Decisions for the convenience of the reader.
+       See United States v. Detroit Timber & Lumber Co., 200 U. S. 321, 337.
+
+
+SUPREME COURT OF THE UNITED STATES
+
+                                       Syllabus
+
+NATIONAL REPUBLICAN SENATORIAL COMMITTEE
+ ET AL. v. FEDERAL ELECTION COMMISSION ET AL.
+
+CERTIORARI TO THE UNITED STATES COURT OF APPEALS FOR
+                  THE SIXTH CIRCUIT
+
+    No. 24–621.      Argued December 9, 2025—Decided June 30, 2026
+
+The Federal Election Campaign Act (FECA) restricts a political party’s
+  spending on campaign activities in coordination with candidates. 52
+  U. S. C. §30116(d). In 2001, this Court upheld those coordinated-
+  expenditure limits as consistent with the First Amendment. See Fed-
+  eral Election Comm’n v. Colorado Republican Federal Campaign
+  Comm., 533 U. S. 431 (Colorado II ). Petitioners—a group of candi-
+  dates and political party committees—challenged FECA’s political-
+  party coordinated-expenditure limits under the First Amendment, ar-
+  guing that Colorado II is no longer good law. In light of Colorado II,
+  the en banc U. S. Court of Appeals for the Sixth Circuit rejected peti-
+  tioners’ First Amendment challenge. This Court granted certiorari.
+Held: FECA’s political-party coordinated-expenditure limits violate the
+ First Amendment. Pp. 6–26.
+     (a) The Court has jurisdiction under Article III. At the outset of the
+ litigation, at least one of the plaintiffs—then-candidate for Senate JD
+ Vance—undisputedly had standing. Vice President Vance still main-
+ tains an active “Statement of Candidacy” on file with the FEC indicat-
+ ing his intent to run for Senate in 2028, as well as a campaign commit-
+ tee that has raised money for a Senate race, establishing that this
+ dispute is justiciable. Pp. 5–6.
+     (b) The First Amendment provides that “Congress shall make no law
+ . . . abridging the freedom of speech.” This Court has determined that
+ political parties—as well as candidates, private individuals, and out-
+ side groups—may make unlimited independent expenditures during
+ political campaigns. See Buckley v. Valeo, 424 U. S. 1, 39–59 (per cu-
+ riam). This case concerns FECA’s limits on spending by political
+2      NATIONAL REPUBLICAN SENATORIAL COMMITTEE v.
+                FEDERAL ELECTION COMM’N
+                         Syllabus
+
+    parties in coordination with candidates. Pp. 6–21.
+         (1) FECA limits political-party coordinated expenditures. FECA’s
+    limits impair the party’s traditional forms of communication such as
+    advertisements; preclude parties from amplifying the voice of their ad-
+    herents; impose additional monetary costs and burdens on political
+    parties; and inflict a “stifling effect on the ability of the party to do
+    what it exists to do.” Colorado Republican Federal Campaign Comm.
+    v. Federal Election Comm’n, 518 U. S. 604, 630 (opinion of Kennedy,
+    J.). Pp. 7–8.
+       (2) Statutory limits on contributions to candidates or parties are
+    subject to “closely drawn” scrutiny. McCutcheon v. Federal Election
+    Comm’n, 572 U. S. 185, 197 (plurality opinion). To satisfy that stand-
+    ard, a regulation may not be “disproportionate” and must be “neces-
+    sary” and “narrowly tailored” to its asserted goal. Id., at 199, 218, 220;
+    Federal Election Comm’n v. Ted Cruz for Senate, 596 U. S. 289, 306.
+    The Court must assess: (i) the Government’s asserted interests in im-
+    posing the limits at issue and (ii) the fit between the limits and the
+    Government’s asserted interests. McCutcheon, 572 U. S., at 199.; see
+    also Cruz, 596 U. S., at 305. The political-party coordinated-expendi-
+    ture limits fail to satisfy the closely drawn test. Pp. 8–10.
+       (3) To analyze FECA’s limits on political-party coordinated expendi-
+    tures, the Court must first assess the asserted governmental interests
+    justifying those limits. The Court’s precedents recognize only one con-
+    stitutionally permissible government objective for campaign finance
+    restrictions: “preventing corruption or the appearance of corruption.”
+    McCutcheon, 572 U. S., at 206–207. And “Congress may target only a
+    specific type of corruption—‘quid pro quo’ corruption.” Id., at 207. Par-
+    ticularly relevant here, this Court has recognized the risk of quid pro
+    quo corruption or its appearance when a donor’s contributions to a po-
+    litical party are earmarked—that is, “are directed, in some manner, to
+    a candidate or officeholder.” Id., at 211 (quotation marks omitted).
+       Ultimately, the First Amendment question in this case boils down to
+    whether FECA’s limits on political-party coordinated expenditures are
+    permissible in order to prevent circumvention of the base limits on con-
+    tributions to candidates through earmarked contributions to parties.
+    In Colorado II, this Court said that they were. 533 U. S., at 462–463.
+    But Colorado II applied deferential scrutiny to Congress’s political-
+    party coordinated-expenditure limits. Id., at 463, n. 26, 465. Since
+    Colorado II, however, the Court has emphasized that under the closely
+    drawn test, judicial review must be “rigorous.” McCutcheon, 572 U. S.,
+    at 197. Under that more demanding standard, the Court agrees with
+    petitioners that the political-party coordinated-expenditure limits are
+    not proportionate, necessary, and narrowly tailored given the other
+    less-speech-restrictive tools available to the Government to prevent
+
