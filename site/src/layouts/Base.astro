@@ -308,7 +308,11 @@ const nav = [
             <li>
               <a href="https://github.com/jackhale98/opencongress">Source code</a>
             </li>
-            {!DEMO && <AdminLink client:idle />}
+            {!DEMO && (
+              <li class="admin-item">
+                <AdminLink client:idle />
+              </li>
+            )}
           </ul>
         </nav>
         <div class="footer-col">

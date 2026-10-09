@@ -2146,3 +2146,8 @@ a.chip-button {
 html {
   scroll-padding-top: 5rem;
 }
+
+/* The footer's admin link renders nothing for most visitors; hide its empty list item. */
+.admin-item:has(> astro-island:empty) {
+  display: none;
+}

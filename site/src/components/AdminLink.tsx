@@ -5,7 +5,7 @@ import { href } from '../lib/paths';
 const CACHE_KEY = 'civic.is-admin';
 
 /** A link to the discussions admin page, shown only to signed-in maintainers. */
-export default function AdminLink({ variant = 'item' }: { variant?: 'item' | 'button' }) {
+export default function AdminLink({ variant = 'link' }: { variant?: 'link' | 'button' }) {
   const [show, setShow] = useState(false);
   useEffect(() => {
     if (!hasStoredSession()) return;
@@ -27,10 +27,9 @@ export default function AdminLink({ variant = 'item' }: { variant?: 'item' | 'bu
       .catch(() => undefined);
   }, []);
   if (!show) return null;
-  const link = (
+  return (
     <a class={variant === 'button' ? 'button' : undefined} href={href('admin/discussions/')}>
       Admin: discussions
     </a>
   );
-  return variant === 'item' ? <li>{link}</li> : link;
 }
