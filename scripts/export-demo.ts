@@ -66,6 +66,12 @@ const discussions = await sql`
     from public.discussions where status <> 'draft' order by created_at desc`;
 
 const councilDistricts = await sql`select * from public.council_district_shapes('boston')`;
+const memberFinance = await sql`
+  select member_id, candidate_id, committee_name, election_year, period, to_char(coverage_end, 'YYYY-MM-DD') as coverage_end,
+         receipts::float8, disbursements::float8, cash_on_hand::float8, debts::float8, individual_small::float8,
+         individual_large::float8, pacs::float8, party::float8, self_funding::float8, transfers::float8, by_size,
+         in_state::float8, out_of_state::float8, top_states, top_employers, top_committees
+    from public.member_finance order by member_id`;
 
 const data = {
   generatedFrom: 'supabase/seed.sql',
@@ -86,6 +92,7 @@ const data = {
   localMeetings,
   discussions,
   councilDistricts,
+  memberFinance,
 };
 writeFileSync('site/src/data/demo.json', JSON.stringify(data));
 console.log(

@@ -198,7 +198,11 @@ npx supabase secrets set \
   `x-sync-secret` header, so nobody else can trigger a sync. Keep a copy for step 6.
 - `SITE_ORIGINS`: comma-separated origins allowed to call the public functions
   (CORS). Add your custom domain if you use one.
-- Optional tuning: `SYNC_FEDERAL_RUN_CAP`, `SYNC_TIME_LIMIT_MS`,
+- `FEC_API_KEY` (optional): an [api.data.gov key](https://api.data.gov/signup/)
+  for campaign finance. Without it `sync-finance` uses `CONGRESS_API_KEY`, which
+  is also an api.data.gov key and works the same; a separate key only keeps the
+  two hourly limits apart.
+- Optional tuning: `FEC_HOURLY_CAP`, `SYNC_FEDERAL_RUN_CAP`, `SYNC_TIME_LIMIT_MS`,
   `OPENSTATES_DAILY_BUDGET`, `OPENSTATES_MIN_INTERVAL_MS`.
 
 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_DB_URL` are provided to

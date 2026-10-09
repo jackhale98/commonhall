@@ -9,9 +9,10 @@ about, and take part in moderated public discussions.
 
 **Live site:** https://jackhale98.github.io/opencongress/
 
-> **Status:** the site is running as a **demo** built from a small sample of real
-> data while its database is being connected. Accounts, following, the feed and
-> Find my reps switch on once it is. See [Project status](#project-status).
+> **Status:** live data is loading. The database is connected and syncing on
+> schedule, and the first full load of the current Congress (about 15,000 bills
+> and every roll call) is still filling in, newest first. See
+> [Project status](#project-status).
 
 ## Contents
 
@@ -36,6 +37,9 @@ about, and take part in moderated public discussions.
   member voted. The votes page highlights the closest votes.
 - Look up any member of Congress: photo, contact details, sponsored bills, recent
   votes, and how often they vote and vote with their party.
+- See where each member's campaign money comes from: totals raised and spent,
+  small versus large donors, PACs, in-state versus out-of-state money, and the
+  employers of their largest donors.
 
 **Massachusetts** (covered in full)
 
@@ -78,6 +82,7 @@ automatically.
 | Federal bills, actions, summaries, members | [Congress.gov API](https://api.congress.gov/) | every 10 minutes |
 | House and Senate roll-call votes | Congress.gov and [senate.gov](https://www.senate.gov/legislative/votes.htm) | every 10 minutes |
 | Member contact details and IDs | [congress-legislators](https://github.com/unitedstates/congress-legislators) (public domain) | daily |
+| Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
 | State legislators and bills | [Open States](https://openstates.org/) (CC0) | nightly, Massachusetts first |
 | Boston City Council | [Boston Legistar](https://boston.legistar.com/) | nightly |
@@ -147,12 +152,20 @@ and [discussion rules](https://jackhale98.github.io/opencongress/moderation/).
 
 | Area | Status |
 | --- | --- |
-| Website, charts, Congress, states and Boston pages | Live (demo data) |
-| Database, accounts, following, feed, Find my reps | Ready; switches on when Supabase is connected |
-| Massachusetts bills | Ready; arrives with the first nightly sync once the Open States key is set |
+| Website, charts, Congress, states and Boston pages | Live |
+| Database and scheduled syncs | Live: bills and votes every 10 minutes, members daily, states and Boston nightly |
+| Federal bills and roll-call votes | Loading: the first full load of the current Congress takes about a day; recently active bills and the newest votes arrive first |
+| Boston council districts | Loaded |
+| Campaign finance (FEC) | Ready; fills in over the first week after deploy (about 535 members, refreshed weekly) |
+| Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
+| Massachusetts bills | Arriving with the nightly Open States sync |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
+| Executive orders, nominations, Supreme Court | In progress |
 
-To finish connecting the live site, follow the
+The site is static and rebuilds nightly (and on every deploy), so new data shows
+up on pages the next morning; bill pages also fetch their latest status live.
+
+To set up your own copy, follow the
 [deployment guide](docs/deployment.md).
 
 ## Development

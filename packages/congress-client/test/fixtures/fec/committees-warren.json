@@ -1,0 +1,29 @@
+{
+ "api_version": "1.0",
+ "pagination": {
+  "count": 1,
+  "is_count_exact": true,
+  "page": 1,
+  "pages": 1,
+  "per_page": 5
+ },
+ "results": [
+  {
+   "committee_id": "C00500843",
+   "name": "WARREN FOR SENATE, INC.",
+   "designation": "P",
+   "cycles": [
+    2012,
+    2014,
+    2016,
+    2018,
+    2020,
+    2022,
+    2024,
+    2026
+   ],
+   "committee_type": "S",
+   "party": "DEM"
+  }
+ ]
+}

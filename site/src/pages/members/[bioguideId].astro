@@ -1,5 +1,6 @@
 ---
 import BillListItem from '../../components/BillListItem';
+import CampaignFinance from '../../components/CampaignFinance.astro';
 import FollowButton from '../../components/FollowButton';
 import MemberPhoto from '../../components/MemberPhoto';
 import MemberVotes from '../../components/MemberVotes';
@@ -8,6 +9,7 @@ import Base from '../../layouts/Base.astro';
 import {
   CURRENT_CONGRESS,
   loadCosponsorCounts,
+  loadMemberFinance,
   loadMembers,
   loadPositionsByMember,
   loadSponsored,
@@ -29,11 +31,13 @@ interface Props {
 }
 
 const { member } = Astro.props;
-const [sponsoredBy, cosponsorCounts, voteStats] = await Promise.all([
+const [sponsoredBy, cosponsorCounts, voteStats, financeByMember] = await Promise.all([
   loadSponsored(),
   loadCosponsorCounts(),
   loadVoteStats(),
+  loadMemberFinance(),
 ]);
+const finance = financeByMember.get(member.bioguide_id);
 const stats = voteStats.get(member.bioguide_id);
 // Demo mode has no live database, so the member's votes are rendered from the bundled data.
 let demoVotes: import('../../components/VoteList').VoteListItemData[] | undefined;
@@ -151,6 +155,8 @@ const SOCIAL_LABELS: Record<string, string> = {
         )}
         <MemberVotes client:visible memberId={member.bioguide_id} initial={demoVotes} />
       </section>
+
+      {finance && <CampaignFinance finance={finance} memberName={member.name} />}
     </div>
 
     <aside class="card contact">
@@ -218,33 +224,11 @@ const SOCIAL_LABELS: Record<string, string> = {
       grid-template-columns: minmax(0, 1fr) 20rem;
     }
   }
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
-    gap: var(--space-3);
-    margin: 0;
-  }
-  .stats div {
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-3);
-    box-shadow: var(--shadow);
-  }
   .rings {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-5);
     margin-top: var(--space-4);
-  }
-  .stats dt {
-    font-size: var(--step--1);
-    color: var(--text-muted);
-  }
-  .stats dd {
-    margin: 0;
-    font-size: var(--step-2);
-    font-weight: 800;
   }
   .contact {
     align-self: start;

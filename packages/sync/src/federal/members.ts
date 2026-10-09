@@ -36,6 +36,8 @@ export interface MemberRow extends Record<string, unknown> {
   office: string | null;
   contact_form: string | null;
   social: Record<string, string>;
+  fec_candidate_id: string | null;
+  next_election: number | null;
   updated_at: string;
 }
 
@@ -98,6 +100,8 @@ export function buildMemberRows(
       office: leg?.office ?? null,
       contact_form: leg?.contactForm ?? null,
       social: socialLinks(socialById.get(id)),
+      fec_candidate_id: leg?.fecCandidateId ?? null,
+      next_election: leg?.nextElection ?? null,
       updated_at: toTimestamp(item.updateDate) ?? new Date(0).toISOString(),
     });
   }

@@ -1,0 +1,6 @@
+{"api_version":"1.0","pagination":{"count":5,"page":1,"pages":1,"per_page":20},"results":[
+{"candidate_id":"S2MA00170","count":null,"cycle":2030,"size":0,"total":2861352.85},
+{"candidate_id":"S2MA00170","count":1630,"cycle":2030,"size":200,"total":412300.0},
+{"candidate_id":"S2MA00170","count":610,"cycle":2030,"size":500,"total":330850.0},
+{"candidate_id":"S2MA00170","count":280,"cycle":2030,"size":1000,"total":300200.0},
+{"candidate_id":"S2MA00170","count":96,"cycle":2030,"size":2000,"total":329902.85}]}

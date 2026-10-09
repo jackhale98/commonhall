@@ -36,6 +36,8 @@ export interface JobResult<C extends Cursor = Cursor> {
 /** Hourly request ceilings per upstream API (a margin below the published limit). */
 export const HOURLY_LIMITS: Record<string, number> = {
   congress: 4800,
+  // api.data.gov personal keys allow 1,000 an hour on OpenFEC.
+  fec: 900,
 };
 
 /**

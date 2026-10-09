@@ -255,7 +255,8 @@ export async function syncHouseVotes(
 ): Promise<{ rowsWritten: number; votes: number; complete: boolean }> {
   let rowsWritten = 0;
   let votes = 0;
-  for (const session of options.sessions) {
+  // Newest first, so a partial load (backfill, a short run) already shows the latest roll calls.
+  for (const session of [...options.sessions].sort((a, b) => b - a)) {
     const stored = new Map(
       (
         await sql<{ roll_number: number; source_updated_at: string | null }[]>`
@@ -273,7 +274,7 @@ export async function syncHouseVotes(
         const upstream = v.updateDate ? new Date(v.updateDate).getTime() : 0;
         return upstream > have;
       })
-      .sort((a, b) => a.rollCallNumber! - b.rollCallNumber!);
+      .sort((a, b) => b.rollCallNumber! - a.rollCallNumber!);
     for (const item of todo) {
       if (options.outOfTime()) return { rowsWritten, votes, complete: false };
       const result = await syncHouseVote(sql, options.client, options.congress, session, item.rollCallNumber!, item);
@@ -363,7 +364,8 @@ export async function syncSenateVotes(
   let unmatched = 0;
   const limit = options.senateLimit ?? 50;
   const maps = await lisMap(sql);
-  for (const session of options.sessions) {
+  // Newest first, like the House. Roll calls already stored are skipped, so the order is free.
+  for (const session of [...options.sessions].sort((a, b) => b - a)) {
     const key = `${options.congress}-${session}`;
     let menu;
     try {
@@ -373,11 +375,17 @@ export async function syncSenateVotes(
       options.log('senate menu unavailable', { key, error: (error as Error).message });
       continue;
     }
-    const after = done[key] ?? 0;
+    const stored = new Set(
+      (
+        await sql<{ roll_number: number }[]>`
+          select roll_number from public.votes
+           where chamber = 'senate' and congress = ${options.congress} and session = ${session}`
+      ).map((r) => r.roll_number),
+    );
     const todo = menu.votes
       .map((v) => v.rollNumber)
-      .filter((n) => n > after)
-      .sort((a, b) => a - b);
+      .filter((n) => !stored.has(n))
+      .sort((a, b) => b - a);
     for (const roll of todo) {
       if (options.outOfTime() || votes >= limit) {
         return { rowsWritten, votes, cursor: { ...cursor, senate: done }, unmatched, complete: false };
@@ -388,7 +396,7 @@ export async function syncSenateVotes(
       rowsWritten += result.rowsWritten;
       unmatched += result.unmatched;
       votes += 1;
-      done[key] = roll;
+      done[key] = Math.max(done[key] ?? 0, roll);
     }
   }
   return { rowsWritten, votes, cursor: { ...cursor, senate: done }, unmatched, complete: true };
@@ -404,21 +412,25 @@ export function sessionsToSync(now: Date): number[] {
   return session === 2 && earlyInYear ? [1, 2] : [session];
 }
 
-/** One run of the votes job (House then Senate), used by sync-federal and the backfill. */
+/**
+ * One run of the votes job, used by sync-federal and the backfill. The Senate goes first because
+ * it is capped per run (senateLimit); the House then uses the rest of the time. Each chamber
+ * resumes where it stopped, so neither waits for the other to finish.
+ */
 export async function syncVotes(
   sql: Sql,
   cursor: VotesCursor,
   options: SyncVotesOptions,
 ): Promise<{ cursor: VotesCursor; rowsWritten: number; complete: boolean; house: number; senate: number }> {
-  const house = await syncHouseVotes(sql, options);
-  if (!house.complete)
-    return { cursor, rowsWritten: house.rowsWritten, complete: false, house: house.votes, senate: 0 };
   const senate = await syncSenateVotes(sql, cursor, options);
   if (senate.unmatched > 0) options.log('senate positions without a known senator', { count: senate.unmatched });
+  const house = options.outOfTime()
+    ? { rowsWritten: 0, votes: 0, complete: false }
+    : await syncHouseVotes(sql, options);
   return {
     cursor: senate.cursor,
     rowsWritten: house.rowsWritten + senate.rowsWritten,
-    complete: senate.complete,
+    complete: senate.complete && house.complete,
     house: house.votes,
     senate: senate.votes,
   };

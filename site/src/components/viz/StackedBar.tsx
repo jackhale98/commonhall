@@ -14,10 +14,12 @@ interface Props {
   /** Mark a threshold (0–1), e.g. the share needed to pass. */
   marker?: number;
   size?: 'sm' | 'md';
+  /** Shown before legend values, e.g. "$". */
+  prefix?: string;
 }
 
 /** A single horizontal bar split into segments. Plain HTML and CSS, no script. */
-export default function StackedBar({ segments, label, legend = false, marker, size = 'md' }: Props) {
+export default function StackedBar({ segments, label, legend = false, marker, size = 'md', prefix = '' }: Props) {
   const total = segments.reduce((n, s) => n + s.value, 0);
   const summary = label ?? segments.map((s) => `${s.label} ${s.value}`).join(', ');
   return (
@@ -42,7 +44,11 @@ export default function StackedBar({ segments, label, legend = false, marker, si
             .map((s) => (
               <li>
                 <span class={`swatch ${s.tone}`} />
-                {s.label} <strong>{s.value.toLocaleString()}</strong>
+                {s.label}{' '}
+                <strong>
+                  {prefix}
+                  {s.value.toLocaleString()}
+                </strong>
               </li>
             ))}
         </ul>

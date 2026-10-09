@@ -108,6 +108,8 @@ describe('buildMemberRows', () => {
           phone: '202-224-3441',
           office: '511 Hart Senate Office Building',
           contactForm: null,
+          fecCandidateId: 'S8WA00194',
+          nextElection: 2030,
         },
       ],
       [{ id: { bioguide: 'C000127' }, social: { twitter: 'SenatorCantwell' } }],
@@ -122,6 +124,8 @@ describe('buildMemberRows', () => {
       lis_id: 'S275',
       current: true,
       social: { twitter: 'https://x.com/SenatorCantwell' },
+      fec_candidate_id: 'S8WA00194',
+      next_election: 2030,
     });
     // At-large House member with no district in the list: stored as 0.
     expect(rows[1]).toMatchObject({ name: 'Pat Example', chamber: 'house', district: 0, current: false, party: 'I' });

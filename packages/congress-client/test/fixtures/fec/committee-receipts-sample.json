@@ -1,0 +1,6 @@
+{"api_version":"1.0","pagination":{"count":5,"pages":1,"per_page":100,"last_indexes":null},"results":[
+{"contributor_id":"C00000001","contributor_name":"EXAMPLE NURSES PAC","contribution_receipt_amount":5000.0,"contribution_receipt_date":"2026-03-01T00:00:00","entity_type":"PAC"},
+{"contributor_id":"C00000001","contributor_name":"EXAMPLE NURSES PAC","contribution_receipt_amount":2500.0,"contribution_receipt_date":"2026-05-01T00:00:00","entity_type":"PAC"},
+{"contributor_id":"C00000002","contributor_name":"EXAMPLE STATE PARTY","contribution_receipt_amount":4000.0,"contribution_receipt_date":"2026-04-01T00:00:00","entity_type":"PTY"},
+{"contributor_id":"C00000003","contributor_name":"EXAMPLE FOR CONGRESS","contribution_receipt_amount":90000.0,"contribution_receipt_date":"2026-04-01T00:00:00","entity_type":"CCM"},
+{"contributor_id":null,"contributor_name":"EXAMPLE TEACHERS PAC","contribution_receipt_amount":1000.0,"contribution_receipt_date":"2026-02-01T00:00:00","entity_type":"PAC"}]}

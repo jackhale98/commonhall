@@ -14,7 +14,15 @@ describe('congress-legislators', () => {
 
   it('summarises the current term', () => {
     const cantwell = summarizeLegislator(legislators.find((l) => l.id.bioguide === 'C000127')!);
-    expect(cantwell).toMatchObject({ chamber: 'senate', state: 'WA', district: null, lisId: 'S275' });
+    expect(cantwell).toMatchObject({
+      chamber: 'senate',
+      state: 'WA',
+      district: null,
+      lisId: 'S275',
+      // ['S8WA00194', 'H2WA01054']: the Senate id, not her old House one.
+      fecCandidateId: 'S8WA00194',
+      nextElection: 2030,
+    });
     const rep = summarizeLegislator(legislators.find((l) => l.terms.at(-1)!.type === 'rep')!);
     expect(rep?.chamber).toBe('house');
     expect(typeof rep?.district).toBe('number');

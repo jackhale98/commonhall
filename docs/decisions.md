@@ -387,3 +387,32 @@ cannot be changed. In dark mode the site inverts the frame with
 the site's own theme toggle. Text, buttons and the agree/disagree icons keep their
 meaning; any photos inside the embed would look inverted, but conversations here
 use Pol.is's generic avatars. If Pol.is adds a dark theme, switch to it.
+
+## 41. Campaign finance from OpenFEC, aggregates only
+
+Approved by the owner. Member pages show FEC data for the member's current
+campaign: totals (raised, spent, cash, debt), sources (small and large individual
+donations, PACs, party, the candidate's own money, transfers), donation sizes,
+in-state versus out-of-state itemized money, the employers donors list, and the
+largest PAC contributions. FEC candidate IDs come from congress-legislators
+(`id.fec`, matching the member's chamber); the election year is the last year of
+the current term.
+
+- Only aggregates and committees are stored and shown. Individual donors' names
+  and addresses are never stored, even though the FEC publishes them.
+- "Top donor employers" is labelled as personal donations grouped by employer,
+  because companies cannot give to candidates directly.
+- PAC contributions use itemized receipts on line 11(c) of Form 3 (other
+  political committees), summed per committee. ActBlue/WinRed conduit rows, the
+  candidate's own joint fundraising committees and bank interest are excluded.
+- `sync-finance` runs hourly, refreshes members whose data is over 7 days old
+  (never-fetched first, then followed members), 6 requests per member, under an
+  hourly cap well inside the 1,000/hour key limit. `updated_at` changes only when
+  the numbers do.
+
+## 42. Votes sync newest first
+
+Both chambers load the newest roll calls first, and the Senate (capped per run)
+runs before the House, so a partial load already shows recent votes and neither
+chamber waits for the other to finish. Stored roll calls are skipped by checking
+the database, so the order does not affect resuming.

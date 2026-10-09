@@ -56,6 +56,8 @@ Dashboard → Edge Functions → Secrets, or `supabase secrets set NAME=value`.
 | `OPENSTATES_API_KEY` | yes for state data | `sync-state`, `geocode` | |
 | `SYNC_SECRET` | yes | every scheduled function | Must equal the Vault `sync_secret` |
 | `SITE_ORIGINS` | recommended | public functions (CORS) | any origin |
+| `FEC_API_KEY` | recommended | `sync-finance` | falls back to `CONGRESS_API_KEY` (same api.data.gov key) |
+| `FEC_HOURLY_CAP` | no | `sync-finance` | 300 requests per hour |
 | `SYNC_FEDERAL_RUN_CAP` | no | `sync-federal` | 580 requests per run |
 | `SYNC_TIME_LIMIT_MS` | no | sync functions | 120000 |
 | `OPENSTATES_DAILY_BUDGET` | no | `sync-state` | 450 requests per UTC day |

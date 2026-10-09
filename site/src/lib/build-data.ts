@@ -7,6 +7,7 @@
  */
 import { congressForDate } from '@civic/congress-client/ids';
 import demoData from '../data/demo.json';
+import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import { inList, rpc, select as restSelect, selectAll as restSelectAll, type Params } from './rest';
@@ -51,6 +52,7 @@ const DEMO_TABLES: Record<string, Record<string, unknown>[]> = {
   local_meetings: demo.localMeetings ?? [],
   discussions: demo.discussions ?? [],
   council_districts: demo.councilDistricts ?? [],
+  member_finance: demo.memberFinance ?? [],
 };
 
 /** A tiny PostgREST stand-in for the filters build-data uses (eq., like.prefix*, limit). Rows come pre-sorted. */
@@ -304,6 +306,16 @@ export const loadPositionsByVote = memo(async () =>
 
 export const loadPositionsByMember = memo(async () =>
   groupBy(await selectAll<VotePositionWithMember & { vote_id: string }>('vote_positions'), (p) => p.member_id),
+);
+
+/** Campaign finance (FEC) per member, keyed by bioguide ID. */
+export const loadMemberFinance = memo(
+  async () =>
+    new Map(
+      (await selectAll<MemberFinance>('member_finance', { select: FINANCE_COLUMNS, order: 'member_id.asc' })).map(
+        (f) => [f.member_id, f],
+      ),
+    ),
 );
 
 // ---- Boston -----------------------------------------------------------------

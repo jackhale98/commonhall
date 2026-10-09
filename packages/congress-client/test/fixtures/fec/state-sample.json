@@ -1,0 +1,5 @@
+{"api_version":"1.0","pagination":{"count":4,"page":1,"pages":1,"per_page":100},"results":[
+{"candidate_id":"S2MA00170","count":2100,"cycle":2030,"state":"MA","state_full":"Massachusetts","total":402000.5},
+{"candidate_id":"S2MA00170","count":1800,"cycle":2030,"state":"CA","state_full":"California","total":310000.0},
+{"candidate_id":"S2MA00170","count":900,"cycle":2030,"state":"NY","state_full":"New York","total":190000.0},
+{"candidate_id":"S2MA00170","count":300,"cycle":2030,"state":null,"state_full":null,"total":1200.0}]}

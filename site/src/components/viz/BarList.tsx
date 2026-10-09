@@ -11,10 +11,13 @@ export default function BarList({
   items,
   label,
   tone = 'fill-brand',
+  prefix = '',
 }: {
   items: BarItem[];
   label: string;
   tone?: string;
+  /** Shown before each value, e.g. "$". */
+  prefix?: string;
 }) {
   const max = Math.max(1, ...items.map((i) => i.value));
   return (
@@ -26,6 +29,7 @@ export default function BarList({
             <span class={`barlist-fill ${tone}`} style={{ width: `${(item.value / max) * 100}%` }} />
           </span>
           <span class="barlist-value">
+            {prefix}
             {item.value.toLocaleString()}
             {item.note && <span class="muted"> {item.note}</span>}
           </span>

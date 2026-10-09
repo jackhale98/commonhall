@@ -51,6 +51,19 @@ export interface LegislatorSummary {
   phone: string | null;
   office: string | null;
   contactForm: string | null;
+  /** FEC candidate id for the current office (H… or S…), for campaign finance. */
+  fecCandidateId: string | null;
+  /** Year of the member's next general election (the last year of the current term). */
+  nextElection: number | null;
+}
+
+/** The FEC candidate id matching the current office: ids start with H (House) or S (Senate). */
+export function fecIdFor(legislator: Legislator, chamber: 'house' | 'senate'): string | null {
+  const ids = Array.isArray(legislator.id.fec) ? (legislator.id.fec as string[]) : [];
+  const prefix = chamber === 'senate' ? 'S' : 'H';
+  const matching = ids.filter((id) => id.startsWith(prefix));
+  // A member who changed districts or states can have several; the newest is listed last.
+  return matching.at(-1) ?? null;
 }
 
 export function currentTerm(legislator: Legislator): LegislatorTerm | undefined {
@@ -74,6 +87,9 @@ export function summarizeLegislator(legislator: Legislator): LegislatorSummary |
     phone: term.phone ?? null,
     office: term.office ?? term.address ?? null,
     contactForm: term.contact_form ?? null,
+    fecCandidateId: fecIdFor(legislator, term.type === 'sen' ? 'senate' : 'house'),
+    // Terms end on January 3 after the general election.
+    nextElection: term.end ? Number(term.end.slice(0, 4)) - 1 : null,
   };
 }
 

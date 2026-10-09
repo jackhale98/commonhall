@@ -1,0 +1,171 @@
+---
+import BarList from './viz/BarList';
+import StackedBar from './viz/StackedBar';
+import { formatDate } from '../lib/format';
+import { formatMoney, type MemberFinance } from '../lib/finance';
+
+interface Props {
+  finance: MemberFinance;
+  memberName: string;
+}
+
+const { finance: f, memberName } = Astro.props;
+const n = (v: number | string | null) => (v === null ? 0 : Number(v));
+const sources = [
+  { label: 'Small donors (under $200)', value: n(f.individual_small), tone: 'fill-brand' },
+  { label: 'Larger individual donations', value: n(f.individual_large), tone: 'fill-sky' },
+  { label: 'PACs', value: n(f.pacs), tone: 'fill-present' },
+  { label: 'Party committees', value: n(f.party), tone: 'fill-ok' },
+  { label: 'Candidate’s own money', value: n(f.self_funding), tone: 'fill-nv' },
+  { label: 'Transfers from other campaign committees', value: n(f.transfers), tone: 'fill-muted' },
+].filter((s) => s.value > 0);
+const sourceTotal = sources.reduce((a, s) => a + s.value, 0);
+const smallShare = sourceTotal ? Math.round((n(f.individual_small) / sourceTotal) * 100) : null;
+const SIZE_LABELS: Record<number, string> = {
+  0: '$200 and under',
+  200: '$200.01–$499',
+  500: '$500–$999',
+  1000: '$1,000–$1,999',
+  2000: '$2,000 and over',
+};
+const sizes = f.by_size.map((s) => ({ label: SIZE_LABELS[s.size] ?? `$${s.size}+`, value: Math.round(s.total) }));
+const inState = n(f.in_state);
+const outState = n(f.out_of_state);
+const employers = f.top_employers.slice(0, 8).map((e) => ({ label: e.name, value: Math.round(e.total) }));
+const pacs = f.top_committees.slice(0, 8).map((c) => ({ label: c.name, value: Math.round(c.total) }));
+const hasData = f.receipts !== null;
+const fecUrl = `https://www.fec.gov/data/candidate/${f.candidate_id}/`;
+---
+
+<section aria-labelledby="money-h" class="money">
+  <div class="section-head">
+    <h2 id="money-h">Campaign money</h2>
+    <a class="see-all" href={fecUrl} rel="noopener">
+      FEC filings
+    </a>
+  </div>
+  {!hasData ? (
+    <p class="muted">
+      The FEC has no campaign filings on record for {memberName}’s {f.election_year} race yet.
+    </p>
+  ) : (
+    <>
+      <p class="small muted">
+        Campaign for the {f.election_year} election
+        {f.coverage_end && <> · reported through {formatDate(f.coverage_end)}</>}
+        {f.committee_name && <> · {f.committee_name}</>}
+      </p>
+      <dl class="stats">
+        <div>
+          <dt>Raised</dt>
+          <dd>{formatMoney(f.receipts)}</dd>
+        </div>
+        <div>
+          <dt>Spent</dt>
+          <dd>{formatMoney(f.disbursements)}</dd>
+        </div>
+        <div>
+          <dt>Cash on hand</dt>
+          <dd>{formatMoney(f.cash_on_hand)}</dd>
+        </div>
+        {n(f.debts) > 0 && (
+          <div>
+            <dt>Debt</dt>
+            <dd>{formatMoney(f.debts)}</dd>
+          </div>
+        )}
+      </dl>
+
+      {sources.length > 0 && (
+        <div class="panel money-block">
+          <h3 class="h-small">Where the money came from</h3>
+          {smallShare !== null && <p class="small muted">{smallShare}% came from small donors giving $200 or less.</p>}
+          <StackedBar
+            segments={sources.map((s) => ({ ...s, value: Math.round(s.value) }))}
+            label={sources.map((s) => `${s.label} ${formatMoney(s.value)}`).join(', ')}
+          />
+          <ul class="legend money-legend">
+            {sources.map((s) => (
+              <li>
+                <span class={`swatch ${s.tone}`} />
+                {s.label} <strong>{formatMoney(s.value)}</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div class="money-grid">
+        {sizes.length > 0 && (
+          <div class="panel money-block">
+            <h3 class="h-small">Donation sizes</h3>
+            <BarList items={sizes} label="Individual contributions by size" tone="fill-brand" prefix="$" />
+          </div>
+        )}
+        {inState + outState > 0 && (
+          <div class="panel money-block">
+            <h3 class="h-small">From inside and outside the state</h3>
+            <StackedBar
+              segments={[
+                { label: 'In state', value: Math.round(inState), tone: 'fill-brand' },
+                { label: 'Out of state', value: Math.round(outState), tone: 'fill-sky' },
+              ]}
+              legend
+              prefix="$"
+            />
+            <p class="small muted">Itemized individual donations (over $200), by the donor’s address.</p>
+          </div>
+        )}
+        {employers.length > 0 && (
+          <div class="panel money-block">
+            <h3 class="h-small">Top donor employers</h3>
+            <p class="small muted">
+              Personal donations from people who work for each organisation. Companies cannot give to candidates
+              directly.
+            </p>
+            <BarList items={employers} label="Individual donations grouped by employer" tone="fill-sky" prefix="$" />
+          </div>
+        )}
+        {pacs.length > 0 && (
+          <div class="panel money-block">
+            <h3 class="h-small">Top PAC contributors</h3>
+            <BarList
+              items={pacs}
+              label="Largest political action committee contributions"
+              tone="fill-present"
+              prefix="$"
+            />
+          </div>
+        )}
+      </div>
+      <p class="small muted">
+        From the Federal Election Commission. Totals cover the whole campaign; employer and PAC lists cover the current
+        two-year period and itemized contributions only. Individual donors are never listed here.
+      </p>
+    </>
+  )}
+</section>
+
+<style>
+  .money .stats {
+    margin-bottom: var(--space-4);
+  }
+  .money-block {
+    margin-bottom: var(--space-4);
+  }
+  .money-block :global(.barlist li) {
+    grid-template-columns: minmax(7rem, 13rem) 1fr auto;
+  }
+  .money-grid {
+    display: grid;
+    gap: 0 var(--space-4);
+  }
+  @media (min-width: 50rem) {
+    .money-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .money-legend {
+    margin-top: var(--space-3);
+  }
+</style>
