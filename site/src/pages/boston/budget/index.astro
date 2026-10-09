@@ -148,10 +148,8 @@ const shortPlan = plan.replace('-', '–');
   )}
 
   {operating && projects.length > 0 && (
-    <aside class="panel two-budgets" aria-labelledby="two-h">
-      <h2 id="two-h" class="h-small">
-        Two budgets, paid for differently
-      </h2>
+    <details class="panel two-budgets">
+      <summary class="h-small">Why the two totals aren’t a surplus</summary>
       <p>
         The <strong>operating budget</strong> is one year: {formatMoney(operating.revenueTotal)} comes in and{' '}
         {formatMoney(operating.total)} is planned to go out, so it balances. The <strong>Capital Plan</strong> adds up
@@ -165,7 +163,7 @@ const shortPlan = plan.replace('-', '–');
           {formatMoney(thisYear)}.
         </p>
       )}
-    </aside>
+    </details>
   )}
 
   <h2 id="cap-h">Capital Plan, {shortPlan}</h2>
@@ -276,8 +274,13 @@ const shortPlan = plan.replace('-', '–');
     margin: var(--space-5) 0;
     border-left: 4px solid var(--brand);
   }
-  .two-budgets .h-small {
-    margin-top: 0;
+  .two-budgets summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    color: var(--link);
   }
   .two-budgets p {
     max-width: 70ch;
