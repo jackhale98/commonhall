@@ -1,10 +1,11 @@
 ---
 import StateHeader from '../../../components/StateHeader.astro';
 import StateLegislators from '../../../components/StateLegislators';
+import YourFollowed from '../../../components/YourFollowed';
 import Base from '../../../layouts/Base.astro';
 import { loadStateLegislators } from '../../../lib/build-data';
 import { LEGISLATURE_STATES, stateName } from '../../../lib/format';
-import { href } from '../../../lib/paths';
+import { href, stateLegislatorHref } from '../../../lib/paths';
 import { chamberLabel } from '../../../lib/state-people';
 import { legislatureChambers } from '../../../lib/state-tabs';
 
@@ -39,6 +40,26 @@ const rows = chambers.flatMap((c) =>
   section="states"
 >
   <StateHeader code={code} current="legislature" />
+  <YourFollowed
+    client:idle
+    targetType="state_legislator"
+    title="Legislators you follow"
+    people={chambers.flatMap((c) =>
+      c.people.map((l) => ({
+        id: l.id,
+        name: l.name,
+        photo_url: l.photo_url,
+        detail: [
+          l.party?.charAt(0),
+          c.label,
+          l.district && (/^\d+$/.test(l.district) ? `District ${l.district}` : l.district),
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        href: stateLegislatorHref(l.id),
+      })),
+    )}
+  />
   <h2 class="h-small">State legislators</h2>
   {legislators.length === 0 ? (
     <p class="muted">Not loaded yet.</p>

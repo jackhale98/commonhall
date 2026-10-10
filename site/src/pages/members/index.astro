@@ -436,36 +436,3 @@ const senate = chamberGroups(all.values(), 'senate');
     display: none;
   }
 </style>
-
-<style is:global>
-  .member-rows {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .member-rows li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 44px;
-    padding-block: 4px;
-    border-bottom: 1px solid var(--border);
-    break-inside: avoid;
-  }
-  .member-rows li[hidden] {
-    display: none;
-  }
-  .member-rows a {
-    color: var(--text);
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .member-rows a:hover {
-    color: var(--link);
-    text-decoration: underline;
-  }
-  .member-rows .photo,
-  .member-rows .photo-fallback {
-    flex: none;
-  }
-</style>
