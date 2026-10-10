@@ -65,7 +65,10 @@ describe('activeNav', () => {
 describe('orderedItems', () => {
   it('reads the local trail from all states down to the cities', () => {
     const local = NAV.find((g) => g.key === 'local')!;
-    expect(orderedItems(local).map((i) => i.label)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    const labels = orderedItems(local).map((i) => i.label);
+    // Registry order after the state; more cities are appended to the registry.
+    expect(labels.slice(0, 4)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    expect(labels).toContain('Cambridge');
   });
 });
 

@@ -26,6 +26,7 @@ import {
   CAMBRIDGE_TYPES,
   CouncillorIndex,
   BudgetExhaustedError,
+  ShapeError,
   cambridgeCommitteeSlug,
   cambridgeMatterId,
   cambridgeMatterNumber,
@@ -723,8 +724,17 @@ async function syncPrimeGov(run: JobRun<CambridgeCursor>, options: SyncCambridge
     if (!doc || row!.status === 'Cancelled') continue;
     const version = pageVersion(doc);
     if (read[String(m.id)] === version) continue;
-    const record = parseCambridgeActions(await primegov.http.getText(primegov.documentUrl(doc), 'text/html'));
+    const html = await primegov.http.getText(primegov.documentUrl(doc), 'text/html');
     pages += 1;
+    let record: CambridgeMeetingRecord;
+    try {
+      record = parseCambridgeActions(html);
+    } catch (error) {
+      // An agenda the clerk hasn't filled in yet may not read as one; final actions must.
+      if (!(error instanceof ShapeError) || /final actions/i.test(doc.templateName)) throw error;
+      run.log('agenda not readable yet', { meeting: m.id, date: row!.date });
+      continue;
+    }
     run.rowsWritten += await writeCambridgeMeetingItems(run.sql, row!.id, record.items);
     for (const { item, action } of primeGovActions(record, m.id, row!.date)) {
       run.rowsWritten += await writeCambridgeMatter(
