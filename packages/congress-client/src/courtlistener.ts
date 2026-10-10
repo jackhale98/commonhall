@@ -5,6 +5,7 @@
  * may make 5 requests a minute, 50 an hour and 125 a day (rolling windows). Field names follow the published v4 docs
  * and CourtListener's search index source (cl/search/documents.py, constants.py).
  */
+import { checkShape, type Shape } from './shape.ts';
 import { HttpClient, type HttpOptions } from './http.ts';
 
 export const COURTLISTENER_API_BASE = 'https://www.courtlistener.com/api/rest/v4';
@@ -20,6 +21,20 @@ export interface ClOpinion {
 }
 
 /** One opinion cluster (a decided case) from /search/?type=o. */
+/** The cluster fields the court syncs read (shape.ts). */
+export const CL_CLUSTER_SHAPE = {
+  cluster_id: 'number',
+  absolute_url: 'string',
+  caseName: 'string',
+  court_id: 'string',
+  dateFiled: 'date',
+  docketNumber: 'string?',
+  citation: 'array?',
+  opinions: 'array',
+  judge: 'string?',
+  syllabus: 'string?',
+} satisfies Shape;
+
 export interface ClCluster {
   cluster_id: number;
   docket_id: number | null;
@@ -99,7 +114,7 @@ export class CourtListenerClient {
     let next: string | null = this.courtUrl(courtId, since, until);
     while (next) {
       const page: ClPage = await this.http.getJson<ClPage>(next);
-      for (const c of page.results ?? []) yield c;
+      for (const c of checkShape('CourtListener opinions', page.results ?? [], CL_CLUSTER_SHAPE)) yield c;
       next = page.next;
     }
   }

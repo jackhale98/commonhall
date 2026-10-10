@@ -7,6 +7,7 @@
  * Timestamps: *LastModifiedUtc fields are UTC without a zone suffix. EventDate
  * is a local (Eastern) calendar date with EventTime as text ("12:00 PM").
  */
+import { checkRecord, checkShape, type Shape } from './shape.ts';
 import { HttpClient, type HttpOptions } from './http.ts';
 
 export const LEGISTAR_BASE = 'https://webapi.legistar.com/v1';
@@ -106,6 +107,41 @@ export interface LegistarOfficeRecord {
   OfficeRecordMemberType: string | null;
 }
 
+/**
+ * The fields the sync relies on (shape.ts): Legistar returns every field, null when
+ * empty, so the ones we read are required; a missing one means it was renamed.
+ */
+export const LEGISTAR_SHAPES = {
+  matter: {
+    MatterId: 'number',
+    MatterLastModifiedUtc: 'date',
+    MatterFile: 'string',
+    MatterTitle: 'string',
+    MatterTypeName: 'string',
+    MatterStatusName: 'string',
+    MatterIntroDate: 'date',
+  },
+  history: {
+    MatterHistoryId: 'number',
+    MatterHistoryActionDate: 'date',
+    MatterHistoryActionName: 'string',
+    MatterHistoryActionText: 'string',
+  },
+  sponsor: { MatterSponsorNameId: 'number', MatterSponsorName: 'string' },
+  event: {
+    EventId: 'number',
+    EventLastModifiedUtc: 'date',
+    EventBodyName: 'string',
+    EventDate: 'date',
+    EventTime: 'string',
+    EventLocation: 'string',
+    EventAgendaFile: 'string',
+  },
+  eventItem: { EventItemId: 'number', EventItemMatterId: 'number', EventItemTitle: 'string' },
+  vote: { VotePersonId: 'number', VoteValueName: 'string' },
+  officeRecord: { OfficeRecordPersonId: 'number', OfficeRecordFullName: 'string', OfficeRecordStartDate: 'date' },
+} satisfies Record<string, Shape>;
+
 /** OData datetime literal: datetime'2026-10-05T00:00:00'. */
 export function odataDate(value: string | Date): string {
   const iso = (typeof value === 'string' ? new Date(value.endsWith('Z') ? value : `${value}Z`) : value).toISOString();
@@ -161,64 +197,73 @@ export class LegistarClient {
   }
 
   /** Matters of a body modified after `since`, oldest change first. */
-  mattersModifiedSince(bodyId: number, since: string): Promise<LegistarMatter[]> {
-    return this.all<LegistarMatter>('matters', {
+  async mattersModifiedSince(bodyId: number, since: string): Promise<LegistarMatter[]> {
+    const rows = await this.all<LegistarMatter>('matters', {
       $filter: `MatterBodyId eq ${bodyId} and MatterLastModifiedUtc gt ${odataDate(since)}`,
       $orderby: 'MatterLastModifiedUtc asc',
     });
+    return checkShape('Legistar matters', rows, LEGISTAR_SHAPES.matter);
   }
 
   /** One page of a body's matters introduced on or after `since`, newest first (for the first load). */
-  mattersIntroducedSince(bodyId: number, since: string, skip: number, top = 100): Promise<LegistarMatter[]> {
-    return this.get<LegistarMatter[]>('matters', {
+  async mattersIntroducedSince(bodyId: number, since: string, skip: number, top = 100): Promise<LegistarMatter[]> {
+    const rows = await this.get<LegistarMatter[]>('matters', {
       $filter: `MatterBodyId eq ${bodyId} and MatterIntroDate ge ${odataDate(since)}`,
       $orderby: 'MatterIntroDate desc,MatterId desc',
       $top: top,
       $skip: skip || undefined,
     });
+    return checkShape('Legistar matters', rows, LEGISTAR_SHAPES.matter);
   }
 
   /** A body's meetings held on or after `date` (including upcoming ones), newest first. */
-  eventsOnOrAfter(bodyId: number, date: string): Promise<LegistarEvent[]> {
-    return this.all<LegistarEvent>('events', {
+  async eventsOnOrAfter(bodyId: number, date: string): Promise<LegistarEvent[]> {
+    const rows = await this.all<LegistarEvent>('events', {
       $filter: `EventBodyId eq ${bodyId} and EventDate ge ${odataDate(date)}`,
       $orderby: 'EventDate desc',
     });
+    return checkShape('Legistar events', rows, LEGISTAR_SHAPES.event);
   }
 
-  matter(id: number): Promise<LegistarMatter> {
-    return this.get<LegistarMatter>(`matters/${id}`);
+  async matter(id: number): Promise<LegistarMatter> {
+    return checkRecord('Legistar matter', await this.get<LegistarMatter>(`matters/${id}`), LEGISTAR_SHAPES.matter);
   }
 
-  histories(matterId: number): Promise<LegistarHistory[]> {
-    return this.get<LegistarHistory[]>(`matters/${matterId}/histories`);
+  async histories(matterId: number): Promise<LegistarHistory[]> {
+    const rows = await this.get<LegistarHistory[]>(`matters/${matterId}/histories`);
+    return checkShape('Legistar histories', rows, LEGISTAR_SHAPES.history);
   }
 
-  sponsors(matterId: number): Promise<LegistarSponsor[]> {
-    return this.get<LegistarSponsor[]>(`matters/${matterId}/sponsors`);
+  async sponsors(matterId: number): Promise<LegistarSponsor[]> {
+    const rows = await this.get<LegistarSponsor[]>(`matters/${matterId}/sponsors`);
+    return checkShape('Legistar sponsors', rows, LEGISTAR_SHAPES.sponsor);
   }
 
-  eventsModifiedSince(bodyId: number, since: string): Promise<LegistarEvent[]> {
-    return this.all<LegistarEvent>('events', {
+  async eventsModifiedSince(bodyId: number, since: string): Promise<LegistarEvent[]> {
+    const rows = await this.all<LegistarEvent>('events', {
       $filter: `EventBodyId eq ${bodyId} and EventLastModifiedUtc gt ${odataDate(since)}`,
       $orderby: 'EventLastModifiedUtc asc',
     });
+    return checkShape('Legistar events', rows, LEGISTAR_SHAPES.event);
   }
 
-  eventItems(eventId: number): Promise<LegistarEventItem[]> {
-    return this.get<LegistarEventItem[]>(`events/${eventId}/eventitems`);
+  async eventItems(eventId: number): Promise<LegistarEventItem[]> {
+    const rows = await this.get<LegistarEventItem[]>(`events/${eventId}/eventitems`);
+    return checkShape('Legistar agenda items', rows, LEGISTAR_SHAPES.eventItem);
   }
 
-  eventItemVotes(eventItemId: number): Promise<LegistarVote[]> {
-    return this.get<LegistarVote[]>(`eventitems/${eventItemId}/votes`);
+  async eventItemVotes(eventItemId: number): Promise<LegistarVote[]> {
+    const rows = await this.get<LegistarVote[]>(`eventitems/${eventItemId}/votes`);
+    return checkShape('Legistar votes', rows, LEGISTAR_SHAPES.vote);
   }
 
   /** Seats on a body held on a given day. */
-  officeRecords(bodyId: number, on: Date = new Date()): Promise<LegistarOfficeRecord[]> {
+  async officeRecords(bodyId: number, on: Date = new Date()): Promise<LegistarOfficeRecord[]> {
     const day = on.toISOString().slice(0, 10);
-    return this.all<LegistarOfficeRecord>('officerecords', {
+    const rows = await this.all<LegistarOfficeRecord>('officerecords', {
       $filter: `OfficeRecordBodyId eq ${bodyId} and OfficeRecordStartDate le datetime'${day}' and OfficeRecordEndDate ge datetime'${day}'`,
     });
+    return checkShape('Legistar office records', rows, LEGISTAR_SHAPES.officeRecord);
   }
 }
 

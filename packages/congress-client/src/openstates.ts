@@ -3,6 +3,7 @@
  * Rate limits on the free tier are not published and are low, so the client
  * spaces requests out (`minIntervalMs`) in addition to the shared budget.
  */
+import { checkShape, type Shape } from './shape.ts';
 import { HttpClient, type HttpOptions } from './http.ts';
 
 export const OPENSTATES_BASE = 'https://v3.openstates.org';
@@ -143,6 +144,25 @@ export function currentSession(sessions: OSSession[], today = new Date()): OSSes
   return [...pool].sort(byStart).at(-1);
 }
 
+/** The fields the state syncs read (shape.ts). */
+export const OS_BILL_SHAPE = {
+  id: 'string',
+  session: 'string',
+  identifier: 'string',
+  title: 'string',
+  updated_at: 'date?',
+  latest_action_date: 'date?',
+  latest_action_description: 'string?',
+  sponsorships: 'array?',
+} satisfies Shape;
+
+export const OS_PERSON_SHAPE = {
+  id: 'string',
+  name: 'string',
+  party: 'string?',
+  current_role: 'object?',
+} satisfies Shape;
+
 export class OpenStatesClient {
   readonly http: HttpClient;
   private readonly baseUrl: string;
@@ -191,11 +211,13 @@ export class OpenStatesClient {
     });
   }
 
-  people(jurisdiction: string, page = 1): Promise<OSPage<OSPerson>> {
-    return this.get('/people', { jurisdiction, page, per_page: 50 });
+  async people(jurisdiction: string, page = 1): Promise<OSPage<OSPerson>> {
+    const body = await this.get<OSPage<OSPerson>>('/people', { jurisdiction, page, per_page: 50 });
+    checkShape('Open States people', body.results ?? [], OS_PERSON_SHAPE);
+    return body;
   }
 
-  bills(options: {
+  async bills(options: {
     jurisdiction: string;
     session?: string;
     updatedSince?: string;
@@ -204,7 +226,7 @@ export class OpenStatesClient {
     /** Extra detail in the same response, e.g. ['actions', 'votes', 'abstracts']. Sponsors always come. */
     include?: string[];
   }): Promise<OSPage<OSBill>> {
-    return this.get('/bills', {
+    const body = await this.get<OSPage<OSBill>>('/bills', {
       jurisdiction: options.jurisdiction,
       session: options.session,
       updated_since: options.updatedSince,
@@ -213,6 +235,8 @@ export class OpenStatesClient {
       page: options.page ?? 1,
       per_page: 20,
     });
+    checkShape('Open States bills', body.results ?? [], OS_BILL_SHAPE);
+    return body;
   }
 
   peopleGeo(lat: number, lng: number): Promise<OSPage<OSPerson>> {

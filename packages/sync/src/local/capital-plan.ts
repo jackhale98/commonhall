@@ -4,7 +4,7 @@
  * the coming years. The city publishes a new plan once a year; a weekly run reads
  * the 300-odd rows and writes only what changed.
  */
-import { datastoreResource, type AnalyzeBostonClient } from '@civic/congress-client';
+import { checkKept, checkShape, datastoreResource, type AnalyzeBostonClient, type Shape } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
 import type { JobRun } from '../job.ts';
 
@@ -93,6 +93,18 @@ export function unbalancedProjects(rows: CapitalProjectRow[]): string[] {
     .map((r) => r.proj_id);
 }
 
+/** The Capital Plan columns read by name (values come as text or numbers). */
+export const CAPITAL_PLAN_SHAPE = {
+  'Proj ID': 'string|number',
+  Project_Name: 'string',
+  Department: 'string',
+  Project_Status: 'string',
+  Neighborhood: 'string',
+  Total_Project_Budget: 'string|number',
+  External_Funds: 'string|number',
+  Scope_Of_Work: 'string',
+} satisfies Shape;
+
 export async function syncCapitalPlan(
   run: JobRun<CapitalPlanCursor>,
   options: { client: AnalyzeBostonClient },
@@ -105,11 +117,12 @@ export async function syncCapitalPlan(
     run.log('capital-plan: unchanged', { plan });
     return run.cursor;
   }
-  const rows: CapitalProjectRow[] = [];
-  for await (const r of options.client.all<Record<string, unknown>>(resource.id)) {
-    const row = capitalProjectRow(r, plan, firstYear);
-    if (row) rows.push(row);
-  }
+  const records: Record<string, unknown>[] = [];
+  for await (const r of options.client.all<Record<string, unknown>>(resource.id)) records.push(r);
+  // The columns read by name: a renamed one would quietly zero budgets or drop projects.
+  checkShape('Capital Plan table', records, CAPITAL_PLAN_SHAPE);
+  const rows = records.map((r) => capitalProjectRow(r, plan, firstYear)).filter((r) => r !== null);
+  checkKept('Capital Plan table', records.length, rows.length);
   if (rows.length === 0) throw new Error('Capital Plan: the table came back empty; keeping the stored plan');
   for (const row of rows) {
     if (await upsertIfChanged(run.sql, 'public.capital_projects', ['proj_id'], row)) run.rowsWritten++;

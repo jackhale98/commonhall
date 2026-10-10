@@ -158,7 +158,10 @@ describe('CongressClient with recorded fixtures', () => {
         match: () => true,
         respond: (u) => {
           const offset = Number(u.searchParams.get('offset') ?? 0);
-          return json({ bills: [{ number: String(offset) }], pagination: { count: 100, next: 'x' } });
+          return json({
+            bills: [{ congress: 119, number: String(offset), type: 'HR', title: 'A bill', updateDate: '2026-10-01' }],
+            pagination: { count: 100, next: 'x' },
+          });
         },
       },
     ]);

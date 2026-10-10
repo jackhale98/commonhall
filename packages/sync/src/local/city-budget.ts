@@ -7,7 +7,7 @@
  * skipped (the site adds the lines up itself). A weekly run reads a
  * file only when the city has changed it, and replaces that budget's rows.
  */
-import { datastoreResource, type AnalyzeBostonClient } from '@civic/congress-client';
+import { checkShape, datastoreResource, type AnalyzeBostonClient, type Shape } from '@civic/congress-client';
 import type { JobRun } from '../job.ts';
 
 export const CITY_BUDGET_JOB = 'city-budget';
@@ -69,6 +69,12 @@ export function cityBudgetRows(kind: Kind, r: Record<string, unknown>): CityBudg
   return out;
 }
 
+/** The label columns of each budget file, read by name. */
+export const CITY_BUDGET_SHAPES: Record<Kind, Shape> = {
+  expense: { Cabinet: 'string', Dept: 'string', Program: 'string', 'Expense Category': 'string' },
+  revenue: { Cabinet: 'string', Dept: 'string', 'Revenue Category': 'string', Account: 'string' },
+};
+
 export async function syncCityBudget(
   run: JobRun<CityBudgetCursor>,
   options: { client: AnalyzeBostonClient },
@@ -81,9 +87,11 @@ export async function syncCityBudget(
       run.log(`city-budget: ${kind} unchanged`);
       continue;
     }
-    const rows: CityBudgetRow[] = [];
-    for await (const r of options.client.all<Record<string, unknown>>(resource.id))
-      rows.push(...cityBudgetRows(kind, r));
+    const records: Record<string, unknown>[] = [];
+    for await (const r of options.client.all<Record<string, unknown>>(resource.id)) records.push(r);
+    // The label columns read by name; the year columns are found by their "FY27 Budget" pattern.
+    checkShape(`City budget ${kind} table`, records, CITY_BUDGET_SHAPES[kind]);
+    const rows = records.flatMap((r) => cityBudgetRows(kind, r));
     if (rows.length === 0) throw new Error(`City budget: ${kind} file came back empty; keeping the stored rows`);
     // Replace this budget's rows in one transaction, counting only real changes.
     run.rowsWritten += await run.sql.begin(async (tx) => {

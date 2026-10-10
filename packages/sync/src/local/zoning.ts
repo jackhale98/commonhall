@@ -8,7 +8,7 @@
  *   site never keeps an archive of people's home renovations by address.
  * Applicants' names ("contact") are never read.
  */
-import { datastoreResource, type AnalyzeBostonClient } from '@civic/congress-client';
+import { checkKept, datastoreResource, type AnalyzeBostonClient } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
 import type { JobRun } from '../job.ts';
 
@@ -161,8 +161,10 @@ export async function syncZoningAppeals(
       WHERE hearing_date >= '${today}'`,
   );
   // The city's table repeats some case numbers (a rescheduled hearing is a new row): keep the latest.
+  const mapped = records.map(zbaAppealRow);
+  checkKept('Zoning Board of Appeal table', records.length, mapped.filter((r) => r !== null).length);
   const byId = new Map<string, ZbaAppealRow>();
-  for (const row of records.map(zbaAppealRow)) {
+  for (const row of mapped) {
     if (!row) continue;
     const seen = byId.get(row.boa_apno);
     const key = (r: ZbaAppealRow) => `${r.hearing_date ?? ''}|${r.final_decision_date ?? ''}|${r.closed_date ?? ''}`;

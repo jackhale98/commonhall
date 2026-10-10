@@ -8,6 +8,7 @@
  *
  * Times are local (Eastern) wall-clock times without a zone.
  */
+import { checkShape, type Shape } from './shape.ts';
 import { HttpClient, type HttpOptions } from './http.ts';
 
 export interface PrimeGovDocument {
@@ -31,6 +32,15 @@ export interface PrimeGovMeeting {
   documentList: PrimeGovDocument[];
 }
 
+/** The meeting fields the Worcester sync and agenda loader read (shape.ts). */
+export const PRIMEGOV_MEETING_SHAPE = {
+  id: 'number',
+  title: 'string',
+  dateTime: 'date',
+  location: 'string?',
+  documentList: 'array',
+} satisfies Shape;
+
 export class PrimeGovClient {
   readonly http: HttpClient;
   readonly baseUrl: string;
@@ -40,14 +50,16 @@ export class PrimeGovClient {
     this.baseUrl = (options.baseUrl ?? `https://${options.client ?? 'worcesterma'}.primegov.com`).replace(/\/$/, '');
   }
 
-  upcoming(): Promise<PrimeGovMeeting[]> {
-    return this.http.getJson<PrimeGovMeeting[]>(`${this.baseUrl}/api/v2/PublicPortal/ListUpcomingMeetings`);
+  async upcoming(): Promise<PrimeGovMeeting[]> {
+    const rows = await this.http.getJson<PrimeGovMeeting[]>(`${this.baseUrl}/api/v2/PublicPortal/ListUpcomingMeetings`);
+    return checkShape('PrimeGov meetings', rows, PRIMEGOV_MEETING_SHAPE);
   }
 
-  archived(year: number): Promise<PrimeGovMeeting[]> {
-    return this.http.getJson<PrimeGovMeeting[]>(
+  async archived(year: number): Promise<PrimeGovMeeting[]> {
+    const rows = await this.http.getJson<PrimeGovMeeting[]>(
       `${this.baseUrl}/api/v2/PublicPortal/ListArchivedMeetings?year=${year}`,
     );
+    return checkShape('PrimeGov meetings', rows, PRIMEGOV_MEETING_SHAPE);
   }
 
   /** A published meeting document: the compiled PDF, or the web page for an HTML one (compileOutputType 3). */

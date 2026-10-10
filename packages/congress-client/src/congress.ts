@@ -4,6 +4,7 @@
  * is absent, so callers can stop early (for example when the budget runs out)
  * without fetching pages they will not use.
  */
+import { checkRecord, checkShape, type Shape } from './shape.ts';
 import { HttpClient, type HttpOptions } from './http.ts';
 import type {
   BillAction,
@@ -50,6 +51,29 @@ export function toApiDateTime(value: Date | string): string {
   const date = typeof value === 'string' ? new Date(value) : value;
   return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
+
+/**
+ * The fields the syncs read from each list (shape.ts), by the list's key in the
+ * response. Congress.gov leaves out empty fields, so only identifying ones are required.
+ */
+export const CONGRESS_LIST_SHAPES = {
+  bills: { congress: 'number', number: 'string|number', type: 'string', title: 'string', updateDate: 'date' },
+  members: { bioguideId: 'string', name: 'string', state: 'string?', terms: 'object|array?' },
+  committeeMeetings: { eventId: 'string|number', chamber: 'string?', updateDate: 'date?' },
+  nominations: { citation: 'string', number: 'number|string?', updateDate: 'date?', receivedDate: 'date?' },
+  houseRollCallVotes: { rollCallNumber: 'number', updateDate: 'date?' },
+  actions: { actionDate: 'date', text: 'string' },
+  cosponsors: { bioguideId: 'string' },
+} satisfies Record<string, Shape>;
+
+export const CONGRESS_BILL_SHAPE = {
+  congress: 'number',
+  number: 'string|number',
+  type: 'string',
+  title: 'string',
+  updateDate: 'date',
+  latestAction: 'object?',
+} satisfies Shape;
 
 export class CongressClient {
   readonly http: HttpClient;
@@ -108,6 +132,8 @@ export class CongressClient {
       );
       onPage?.(page, offset);
       const items = (page[key] ?? []) as T[];
+      const shape = (CONGRESS_LIST_SHAPES as Record<string, Shape>)[key];
+      if (shape) checkShape(`Congress.gov ${key}`, items, shape);
       for (const item of items) yield item;
       offset += items.length;
       const total = page.pagination?.count;
@@ -145,7 +171,7 @@ export class CongressClient {
   async getBill(congress: number, type: string, number: string | number): Promise<BillDetail> {
     const body = await this.get<{ bill?: BillDetail }>(`/bill/${congress}/${type.toLowerCase()}/${number}`);
     if (!body.bill) throw new Error(`Bill ${congress}-${type}-${number} missing from response`);
-    return body.bill;
+    return checkRecord('Congress.gov bill', body.bill, CONGRESS_BILL_SHAPE);
   }
 
   getBillActions(congress: number, type: string, number: string | number): Promise<BillAction[]> {
@@ -274,7 +300,10 @@ export class CongressClient {
       `/house-vote/${congress}/${session}/${rollNumber}`,
     );
     if (!body.houseRollCallVote) throw new Error(`House vote ${congress}-${session}-${rollNumber} missing`);
-    return body.houseRollCallVote;
+    return checkRecord('Congress.gov House vote', body.houseRollCallVote, {
+      rollCallNumber: 'number',
+      result: 'string?',
+    });
   }
 
   /** Member positions. Currently returned in one response; paginated defensively in case that changes. */

@@ -3,11 +3,24 @@
  * No key is needed. Only presidential documents of type "executive_order" are
  * read; field names were checked against live responses (test/fixtures/federal-register).
  */
+import { checkShape, type Shape } from './shape.ts';
 import { HttpClient, type HttpOptions } from './http.ts';
 
 export const FEDERAL_REGISTER_API_BASE = 'https://www.federalregister.gov/api/v1';
 
 /** One executive order as returned with the fields requested below. */
+/** The order fields the executive sync reads (shape.ts). */
+export const FR_ORDER_SHAPE = {
+  document_number: 'string',
+  executive_order_number: 'string|number?',
+  title: 'string',
+  signing_date: 'date?',
+  publication_date: 'date',
+  president: 'object?',
+  html_url: 'string',
+  disposition_notes: 'string?',
+} satisfies Shape;
+
 export interface FrExecutiveOrder {
   document_number: string;
   /** A string in the API, e.g. "14434"; null for a few older documents. */
@@ -77,7 +90,7 @@ export class FederalRegisterClient {
     let next: string | null | undefined = this.executiveOrdersUrl(options);
     while (next) {
       const page: FrPage = await this.http.getJson<FrPage>(next);
-      for (const doc of page.results ?? []) yield doc;
+      for (const doc of checkShape('Federal Register orders', page.results ?? [], FR_ORDER_SHAPE)) yield doc;
       next = page.next_page_url;
     }
   }

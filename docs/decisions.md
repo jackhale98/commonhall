@@ -1448,3 +1448,28 @@ data side and a few pages didn't:
 Not done: the PrimeGov sync and the Worcester agenda and budget loaders are still
 Worcester's own; a second PrimeGov city should start by lifting their settings the
 same way.
+
+## 96. Field checks at each source
+
+Responses were cast to TypeScript types, so a renamed field upstream became
+`undefined`, then NULL columns: pages would quietly lose titles or dates and no job
+would fail. `shape.ts` (congress-client) adds a light check, no library:
+
+- `checkShape(source, records, shape)` throws a `ShapeError` when a required field is
+  missing from **every** record in a batch (a rename; an empty value is fine), or when
+  more than a tenth of a field's non-null values have the wrong type. Optional fields
+  (`?`) are only type-checked, since some APIs leave empty fields out.
+- `checkKept(source, read, kept)` throws when a mapper had to skip most of a batch of
+  ten or more.
+
+A ShapeError fails the job like any error, so the daily Sync health check reports it
+and the stored data is left as it was. Checked at the client: Legistar (matters,
+histories, sponsors, meetings, agenda items, votes, office records; Legistar returns
+every field, so the ones we read are required), PrimeGov meetings, CourtListener
+clusters, Federal Register orders, Open States bills and people, Congress.gov lists
+(bills, members, hearings, nominations, House votes, actions, cosponsors) and single
+bills and votes. In the syncs: the Capital Plan and budget tables' columns (read by
+name) and skipped rows for the Capital Plan and zoning appeals. Analyze Boston SQL
+names its columns, so a rename there already fails. Shapes list only fields we read,
+and were checked against the live keyless sources (Legistar, PrimeGov, Federal
+Register, Analyze Boston) as well as the recorded fixtures.

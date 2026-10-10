@@ -18,3 +18,4 @@ export * from './primegov.ts';
 export * from './worcester.ts';
 export * from './worcester-agenda.ts';
 export * from './mass-orders.ts';
+export * from './shape.ts';

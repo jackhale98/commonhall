@@ -29,7 +29,15 @@ describe('LegistarClient with recorded Boston responses', () => {
   });
 
   it('pages past the 1,000-row cap with $skip and filters by body and modified time', async () => {
-    const all = Array.from({ length: 1500 }, (_, i) => ({ MatterId: i + 1 }));
+    const all = Array.from({ length: 1500 }, (_, i) => ({
+      MatterId: i + 1,
+      MatterLastModifiedUtc: '2026-10-02T12:00:00',
+      MatterFile: `${i + 1}`,
+      MatterTitle: 'An order',
+      MatterTypeName: 'Council Order',
+      MatterStatusName: 'Filed',
+      MatterIntroDate: '2026-10-01T00:00:00',
+    }));
     const fetch = replayFetch([
       {
         match: (u) => u.pathname === '/v1/boston/matters',

@@ -56,6 +56,8 @@ States). For more:
   last error.
 - Use `HttpClient` from `@civic/congress-client` for requests: retries, backoff, a
   60-second timeout and keys kept out of errors.
+- Check the fields you read with `checkShape` (and `checkKept` where a mapper skips
+  records), so a renamed field fails the job instead of storing empty columns.
 - Add a `private.job_schedule` row. If it fills a new table, add the table's newest
   date to `private.data_freshness()` with a generous limit.
 - Record fixtures from the real source and test the parser against them, including a
