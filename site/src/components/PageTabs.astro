@@ -1,0 +1,81 @@
+---
+/**
+ * A row of tabs for the pages of one place (Boston's Overview, Council…; a state's
+ * Overview and Committees). Each tab is its own page, so it can be linked to. It
+ * sticks under the header while scrolling.
+ */
+interface Props {
+  /** Names the row for screen readers, e.g. "Boston". */
+  label: string;
+  tabs: { label: string; href: string; current?: boolean; count?: number }[];
+  /** Spread the tabs across a phone's width (for four or more). */
+  fill?: boolean;
+}
+
+const { label, tabs, fill = false } = Astro.props;
+---
+
+<nav class:list={['page-tabs', { 'page-tabs-fill': fill }]} aria-label={label}>
+  {tabs.map((t) => (
+    <a href={t.href} aria-current={t.current ? 'page' : undefined}>
+      {t.label}
+      {t.count !== undefined && <span class="tab-count">{t.count}</span>}
+    </a>
+  ))}
+</nav>
+
+<style>
+  .page-tabs {
+    position: sticky;
+    top: var(--header-h, 4rem);
+    z-index: 5;
+    display: flex;
+    gap: var(--space-1);
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 calc(-1 * var(--space-4)) var(--space-5);
+    padding: var(--space-2) var(--space-4);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .page-tabs a {
+    flex: none;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .page-tabs a:hover {
+    color: var(--text);
+    background: var(--bg-raised);
+  }
+  .page-tabs a[aria-current='page'] {
+    color: var(--brand-strong);
+    background: var(--brand-soft);
+  }
+  .tab-count {
+    margin-left: 0.35em;
+    font-weight: 500;
+    opacity: 0.75;
+  }
+  /* Four tabs fit across a phone. */
+  @media (max-width: 30rem) {
+    .page-tabs-fill {
+      justify-content: space-between;
+      gap: 0;
+    }
+    .page-tabs-fill a {
+      padding-inline: 0.6rem;
+    }
+  }
+  @media (max-width: 22rem) {
+    .page-tabs a {
+      padding-inline: 0.4rem;
+      font-size: 0.8rem;
+    }
+  }
+</style>

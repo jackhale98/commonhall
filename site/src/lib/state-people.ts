@@ -46,10 +46,23 @@ export interface CommitteeSeat {
   role: string | null;
 }
 
-/** "Senate" / "House" / "Joint"; Nebraska and DC have one chamber. */
+/** Lower chambers not called the House. */
+const LOWER: Record<string, string> = {
+  CA: 'Assembly',
+  NV: 'Assembly',
+  NY: 'Assembly',
+  WI: 'Assembly',
+  NJ: 'General Assembly',
+  MD: 'House of Delegates',
+  VA: 'House of Delegates',
+  WV: 'House of Delegates',
+  DC: 'Council',
+};
+
+/** "Senate" / "House" (or "Assembly", "House of Delegates") / "Joint"; Nebraska and DC have one chamber. */
 export function chamberLabel(state: string, chamber: string | null): string {
   if (chamber === 'upper') return state === 'NE' ? 'Legislature' : 'Senate';
-  if (chamber === 'lower') return state === 'DC' ? 'Council' : 'House';
+  if (chamber === 'lower') return LOWER[state] ?? 'House';
   if (chamber === 'legislature') return state === 'NE' ? 'Legislature' : state === 'DC' ? 'Council' : 'Joint';
   return 'Legislature';
 }
@@ -67,9 +80,18 @@ export function seatLabel(l: {
   district: string | null;
   title?: string | null;
 }): string {
+  const lower = LOWER[l.state] ?? '';
   const role =
     l.title ||
-    (l.chamber === 'upper' ? 'State Senator' : l.chamber === 'lower' ? 'State Representative' : 'Legislator');
+    (l.chamber === 'upper'
+      ? 'State Senator'
+      : l.chamber === 'lower'
+        ? lower.endsWith('Assembly')
+          ? 'Assembly Member'
+          : lower === 'House of Delegates'
+            ? 'Delegate'
+            : 'State Representative'
+        : 'Legislator');
   const district = districtLabel(l.district);
   return district ? `${role}, ${district}` : role;
 }

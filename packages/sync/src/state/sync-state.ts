@@ -1,13 +1,13 @@
 /**
- * Nightly state sync from Open States: current-session bills (trimmed to
- * essentials) and, weekly, legislators, for all 50 states and DC.
+ * Hourly state sync from Open States: current-session bills (trimmed to
+ * essentials) for all 50 states and DC. Legislators and committees come from the
+ * weekly "Load state people and committees" workflow instead (people.ts), so every
+ * API request goes on bills.
  *
  * Open States' free-tier limits are low (about 500 requests a day), so the job:
  *  - spends at most a daily request budget (shared `api_usage`, per UTC day);
  *  - spaces requests out (the client's minIntervalMs);
- *  - loads legislators for every state first (a few requests each), so every state
- *    page has its legislature before any bills;
- *  - then reads bills in rounds that alternate first-class states (Massachusetts)
+ *  - reads bills in rounds that alternate first-class states (Massachusetts)
  *    with each other state in turn, so first-class states get about half the
  *    requests and every state moves forward every night.
  *
@@ -116,7 +116,6 @@ export interface StateCursor extends Record<string, unknown> {
   sessions?: Record<string, string>;
   sessionsCheckedAt?: string;
   bills?: Record<string, StateBillsCursor>;
-  legislatorsAt?: Record<string, string>;
 }
 
 export interface SyncStateOptions {
@@ -269,26 +268,6 @@ async function writeStateBills(sql: Sql, bills: OSBill[], filled: boolean): Prom
   return written;
 }
 
-async function syncLegislators(sql: Sql, client: OpenStatesClient, state: string): Promise<number> {
-  const people: OSPerson[] = [];
-  for (let page = 1; ; page++) {
-    const result = await client.people(stateJurisdiction(state), page);
-    people.push(...result.results);
-    if (page >= (result.pagination?.max_page ?? 1)) break;
-  }
-  const rows = people.map(stateLegislatorRow).filter((r): r is Record<string, unknown> => r !== null);
-  let written = 0;
-  await sql.begin(async (tx) => {
-    for (const row of rows) if (await upsertIfChanged(tx, 'public.state_legislators', ['id'], row)) written += 1;
-    const retired = await tx`
-      update public.state_legislators set current = false
-       where state = ${state} and current and id <> all(${rows.map((r) => r.id as string)}::text[])
-       returning 1`;
-    written += retired.length;
-  });
-  return written;
-}
-
 /** First-class states: synced first every night and given prerendered bill pages (see docs/decisions.md). */
 export const FIRST_CLASS_STATES = ['MA'];
 
@@ -433,17 +412,7 @@ export async function syncStates(run: JobRun<StateCursor>, options: SyncStateOpt
     }
     const order = (await stateOrder(run.sql, cursor, options.states)).filter((state) => cursor.sessions?.[state]);
 
-    // 1. Legislators for every state that is due (weekly), before any bills.
-    for (const state of order) {
-      if (run.outOfTime() || client.budget.exhausted) return cursor;
-      const legislatorsAt = cursor.legislatorsAt?.[state];
-      if (legislatorsAt && now().getTime() - new Date(legislatorsAt).getTime() <= WEEK_MS) continue;
-      run.rowsWritten += await syncLegislators(run.sql, client, state);
-      cursor.legislatorsAt = { ...(cursor.legislatorsAt ?? {}), [state]: now().toISOString() };
-      await run.checkpoint(cursor);
-    }
-
-    // 2. Bills in rounds: first-class states alternate with each other state in turn.
+    // Bills in rounds: first-class states alternate with each other state in turn.
     const pages = new Map<string, number>();
     // Loaded states catch up once a day (first-class states every run), so the checks
     // don't use up the budget that first loads need.

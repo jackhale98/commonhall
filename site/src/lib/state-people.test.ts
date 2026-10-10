@@ -6,6 +6,8 @@ describe('state people labels', () => {
     expect(chamberLabel('MA', 'upper')).toBe('Senate');
     expect(chamberLabel('MA', 'lower')).toBe('House');
     expect(chamberLabel('MA', 'legislature')).toBe('Joint');
+    expect(chamberLabel('NY', 'lower')).toBe('Assembly');
+    expect(chamberLabel('VA', 'lower')).toBe('House of Delegates');
     expect(chamberLabel('NE', 'legislature')).toBe('Legislature');
     expect(chamberLabel('DC', 'legislature')).toBe('Council');
   });
@@ -16,6 +18,7 @@ describe('state people labels', () => {
       'State Senator, Second Suffolk',
     );
     expect(seatLabel({ state: 'TX', chamber: 'lower', district: '49' })).toBe('State Representative, District 49');
+    expect(seatLabel({ state: 'NY', chamber: 'lower', district: '74' })).toBe('Assembly Member, District 74');
   });
 
   it('puts committee leadership first', () => {

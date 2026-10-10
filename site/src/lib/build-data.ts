@@ -362,6 +362,15 @@ export const loadStateCommittees = memo(async () => {
   return groupBy(rows, (r) => r.state);
 });
 
+/** Each state committee's chairs and co-chairs, by committee id. */
+export const loadStateCommitteeChairs = memo(async () => {
+  const rows = await selectAllOptional<{ committee_id: string; seq: number; person_id: string | null; name: string }>(
+    'state_committee_members',
+    { select: 'committee_id,seq,person_id,name', role: 'in.(chair,co-chair)', order: 'committee_id.asc,seq.asc' },
+  );
+  return groupBy(rows, (r) => r.committee_id);
+});
+
 /** The 10 most recently active bills for a state, and how many it has (one request per state page). */
 export async function loadRecentStateBills(state: string): Promise<{ bills: StateBill[]; total: number }> {
   const params = {

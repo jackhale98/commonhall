@@ -119,8 +119,8 @@ automatically.
 | Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
-| State legislators and bills | [Open States](https://openstates.org/) (CC0) | hourly within a daily request budget, Massachusetts first |
-| State legislators' contact details and state committees | [openstates/people](https://github.com/openstates/people) (CC0) | weekly |
+| State bills | [Open States](https://openstates.org/) (CC0) | hourly within a daily request budget, Massachusetts first |
+| State legislators and committees | [openstates/people](https://github.com/openstates/people) (CC0) | weekly |
 | Boston City Council | [Boston Legistar](https://boston.legistar.com/) | every 15 minutes |
 | Boston council districts | [Analyze Boston](https://data.boston.gov/) | on redistricting |
 | Boston 311 request summaries | [Analyze Boston](https://data.boston.gov/dataset/311-service-requests) (both 311 systems) | daily |
@@ -167,7 +167,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | --- | --- | --- |
 | `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events |
 | `sync-members` | daily | Members of Congress |
-| `sync-state` | hourly (daily Open States budget) | State bills and legislators, Massachusetts first |
+| `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |

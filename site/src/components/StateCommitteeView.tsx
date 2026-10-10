@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { partyClass, stateName } from '../lib/format';
-import { stateCommitteeHref, stateHref, stateLegislatorHref } from '../lib/paths';
+import { href, stateCommitteeHref, stateHref, stateLegislatorHref } from '../lib/paths';
 import { select } from '../lib/rest';
 import {
   STATE_COMMITTEE_COLUMNS,
@@ -97,7 +97,7 @@ export default function StateCommitteeView() {
     <article class="state-committee">
       <nav aria-label="Breadcrumb" class="small muted">
         <a href={stateHref(committee.state)}>{stateName(committee.state)}</a> ›{' '}
-        <a href={`${stateHref(committee.state)}#committees-h`}>Committees</a>
+        <a href={href(`states/${committee.state.toLowerCase()}/committees/`)}>Committees</a>
       </nav>
       <p class="kicker">
         {stateName(committee.state)} · {chamberLabel(committee.state, committee.chamber)}{' '}

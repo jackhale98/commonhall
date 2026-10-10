@@ -1,0 +1,130 @@
+---
+import PageTabs from '../../../components/PageTabs.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadStateCommitteeChairs, loadStateCommittees } from '../../../lib/build-data';
+import { LEGISLATURE_STATES, stateName } from '../../../lib/format';
+import { href, stateCommitteeHref, stateHref, stateLegislatorHref } from '../../../lib/paths';
+import { chamberLabel, type StateCommittee } from '../../../lib/state-people';
+
+/** A page for each state with committees loaded (from the weekly openstates/people load). */
+export async function getStaticPaths() {
+  const committees = await loadStateCommittees();
+  return LEGISLATURE_STATES.filter((code) => (committees.get(code)?.length ?? 0) > 0).map((code) => ({
+    params: { state: code.toLowerCase() },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const all = (await loadStateCommittees()).get(code) ?? [];
+const chairs = await loadStateCommitteeChairs();
+const top = all.filter((c) => c.classification !== 'subcommittee');
+const subs = new Map<string, StateCommittee[]>();
+for (const c of all)
+  if (c.classification === 'subcommittee' && c.parent_id) subs.set(c.parent_id, [...(subs.get(c.parent_id) ?? []), c]);
+const groups = (['upper', 'lower', 'legislature'] as const)
+  .map((key) => ({
+    key,
+    label: `${chamberLabel(code, key)} committees`,
+    committees: top.filter((c) => c.chamber === key),
+  }))
+  .filter((g) => g.committees.length > 0);
+const tabs = [
+  { label: 'Overview', href: stateHref(code) },
+  { label: 'Committees', href: href(`states/${code.toLowerCase()}/committees/`), current: true, count: top.length },
+];
+---
+
+<Base
+  title={`${name} legislative committees`}
+  description={`Every ${name} legislative committee, its chairs and members.`}
+  section="states"
+>
+  {code !== 'MA' && (
+    <nav aria-label="Breadcrumb" class="small muted">
+      <a href={href('states/')}>States</a> › <a href={stateHref(code)}>{name}</a> › Committees
+    </nav>
+  )}
+  <h1>{name}</h1>
+  <PageTabs label={name} tabs={tabs} />
+
+  {groups.length > 1 && (
+    <p class="cluster small chamber-jump">
+      {groups.map((g) => (
+        <a href={`#${g.key}-h`}>
+          {g.label} ({g.committees.length})
+        </a>
+      ))}
+    </p>
+  )}
+
+  {groups.map((g) => (
+    <section aria-labelledby={`${g.key}-h`}>
+      <h2 id={`${g.key}-h`}>{g.label}</h2>
+      <ul class="plain-rows state-committee-list">
+        {g.committees.map((c) => {
+          const lead = chairs.get(c.id) ?? [];
+          const children = subs.get(c.id) ?? [];
+          return (
+            <li>
+              <a class="committee-name" href={stateCommitteeHref(c.id)}>
+                {c.name}
+              </a>
+              <span class="small muted">
+                {lead.length > 0 && (
+                  <>
+                    {lead.length > 1 ? 'Chairs' : 'Chair'}:{' '}
+                    {lead.map((p, i) => (
+                      <>
+                        {i > 0 && ', '}
+                        {p.person_id ? <a href={stateLegislatorHref(p.person_id)}>{p.name}</a> : p.name}
+                      </>
+                    ))}
+                    {' · '}
+                  </>
+                )}
+                {c.member_count} {c.member_count === 1 ? 'member' : 'members'}
+                {children.length > 0 && ` · ${children.length} subcommittees`}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))}
+  <p class="small muted">
+    Committees and members from{' '}
+    <a href="https://github.com/openstates/people" rel="noopener">
+      Open States
+    </a>
+    , refreshed weekly.
+  </p>
+</Base>
+
+<style>
+  .chamber-jump {
+    margin: 0 0 var(--space-4);
+    gap: var(--space-2) var(--space-4);
+  }
+  .state-committee-list li {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .committee-name {
+    font-weight: 650;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .committee-name:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .state-committee-list .muted a {
+    color: inherit;
+  }
+</style>

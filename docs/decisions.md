@@ -994,10 +994,12 @@ downloads the repository archive weekly and runs `scripts/load-state-people.ts`.
 It uses none of the API allowance and runs in GitHub Actions, not an Edge Function,
 because parsing about 10,000 files is too much work for an Edge Function's CPU limit.
 
-- The API sync stays the source for who a legislator is. The load adds offices and
-  links, fills a missing email or photo, adds legislators the sync hasn't reached,
-  and marks as former those who left the repository's legislature folder (only when
-  the state's list looks complete, more than 20 people).
+- Legislators now come only from this load. The API sync stopped fetching them (a
+  few requests per state a week), so its whole allowance goes on bills. A new
+  legislator appears within a week, not a day. The load adds offices and links,
+  fills a missing email or photo, and marks as former those who left the
+  repository's legislature folder (only when the state's list looks complete,
+  more than 20 people).
 - Each state's committees are replaced on every load (`state_committees`,
   `state_committee_members`). Congress's files (`data/us`) are skipped; Congress has
   its own committee data.
@@ -1006,5 +1008,9 @@ because parsing about 10,000 files is too much work for an Edge Function's CPU l
   Until then, legislator pages also count the bills where they are the main sponsor.
 - Legislator (`/state-legislator/?id=`) and committee (`/state-committee/?id=`)
   pages are rendered in the browser, like other state pages, so 7,400 people and
-  2,800 committees don't add to the build. State pages list their committees by
-  chamber, folded. Legislator names across the site link to their page.
+  2,800 committees don't add to the build. Like Congress's Committees tab, each
+  state with committees gets an Overview / Committees tab row and a prerendered
+  page per state (`/states/ny/committees/`) listing every committee by chamber
+  with its chairs. Chamber names follow the state ("Assembly" in New York,
+  "House of Delegates" in Virginia). Legislator names across the site link to
+  their page.

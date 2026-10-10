@@ -215,15 +215,13 @@ beforeEach(async () => {
 });
 
 describe('sync-state', () => {
-  it('loads legislators and every current-session bill, then only what changed', async () => {
+  it('loads every current-session bill, then only what changed', async () => {
     const api = new FakeOpenStates();
     api.addBills('tx', 45);
     const first = await runState(api);
     expect(first.status).toBe('ok');
     const bills = Number((await sql`select count(*)::int as n from public.state_bills where state = 'TX'`)[0]!.n);
     expect(bills).toBe(45);
-    const legislators = await sql`select name, chamber, district from public.state_legislators order by name`;
-    expect(legislators.map((l) => l.name)).toEqual(['Gina Hinojosa', 'Sarah Eckhardt', 'Someone Else']);
     const [bill] = await sql`select * from public.state_bills where id = 'ocd-bill/tx-1'`;
     expect(bill).toMatchObject({
       state: 'TX',
@@ -336,25 +334,21 @@ describe('sync-state', () => {
     expect(feed[0]!.payload.openstates_url).toMatch(/openstates\.org\/tx\/bills/);
   });
 
-  it('loads every state’s legislators before any bills', async () => {
+  it('spends Open States requests on bills only: legislators come from the weekly people load', async () => {
     const api = new FakeOpenStates();
-    api.people.ca = [
-      { id: 'ocd-person/ca-1', name: 'Cal Person', party: 'Democratic', chamber: 'upper', district: '1' },
-    ];
     api.addBills('tx', 100);
-    // Sessions (1) + legislators for both states (2) + one page of bills.
-    const result = await runState(api, 4);
+    // Sessions (1) + one page of bills.
+    const result = await runState(api, 2);
     expect(result.status).toBe('ok');
-    const states = await sql`select distinct state from public.state_legislators order by state`;
-    expect(states.map((s) => s.state)).toEqual(['CA', 'TX']);
+    expect(api.requests.filter((u) => u.pathname === '/people')).toHaveLength(0);
     expect(api.requests.filter((u) => u.pathname === '/bills')).toHaveLength(1);
   });
 
   it('reads a state’s newest bills first, then catches up from where the load began', async () => {
     const api = new FakeOpenStates();
     api.addBills('tx', 100);
-    // Sessions (1) + legislators (1) + one page of bills: it holds the 20 newest.
-    await runState(api, 3, ['TX']);
+    // Sessions (1) + one page of bills: it holds the 20 newest.
+    await runState(api, 2, ['TX']);
     const newest = [...api.bills.tx!].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 20);
     const stored = await sql`select id from public.state_bills order by id`;
     expect(new Set(stored.map((r) => r.id))).toEqual(new Set(newest.map((b) => b.id)));
@@ -373,8 +367,8 @@ describe('sync-state', () => {
     api.addBills('ma', 400);
     api.addBills('tx', 200);
     api.addBills('ca', 200);
-    // Sessions (1) + legislators (3) + 16 pages of bills.
-    await runState(api, 20, ['MA', 'TX', 'CA']);
+    // Sessions (1) + 16 pages of bills.
+    await runState(api, 17, ['MA', 'TX', 'CA']);
     const pagesFor = (st: string) =>
       api.requests.filter((u) => u.pathname === '/bills' && u.search.includes(`state%3A${st}`)).length;
     expect(pagesFor('ma')).toBe(8);
@@ -461,8 +455,12 @@ describe('find my reps', () => {
   });
 
   it('falls back to district matching in the database without Open States', async () => {
-    const api = new FakeOpenStates();
-    await runState(api, 1000, ['TX']); // loads TX legislators
+    // TX legislators as the weekly people load stores them.
+    for (const p of new FakeOpenStates().people.tx!) {
+      await sql`
+        insert into public.state_legislators (id, name, party, state, chamber, district, current)
+        values (${p.id}, ${p.name}, ${p.party}, 'TX', ${p.chamber}, ${p.district}, true)`;
+    }
     const result = await findReps(sql, { census: census() }, '1100 Congress Ave, Austin, TX 78701', 119);
     expect(result!.stateSource).toBe('database');
     expect(result!.stateLegislators.map((l) => l.name).sort()).toEqual(['Gina Hinojosa', 'Sarah Eckhardt']);
