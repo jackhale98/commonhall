@@ -26,3 +26,5 @@ export * from './civicclerk.ts';
 export * from './connecticut-cities.ts';
 export * from './middletown-agenda.ts';
 export * from './seeclickfix.ts';
+export * from './iqm2.ts';
+export * from './cambridge.ts';

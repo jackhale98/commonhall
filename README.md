@@ -81,6 +81,7 @@ about, and take part in moderated public discussions.
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ct/bristol/`,
 `/states/ct/middletown/`): one set of pages for
+**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ma/cambridge/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,
 Committees, Neighborhoods, Budget) appear only when there is data behind them; a
 new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
@@ -136,6 +137,17 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   the agenda gives one; items carried to later meetings keep one page.
 - 311 requests from SeeClickFix (summaries only): how many, typical time to close,
   the most common requests.
+**Cambridge** (tabs: Overview, Council, Committees, Neighborhoods, Budget)
+
+- All nine councillors (elected citywide, so there is no district map).
+- Policy orders, ordinances, City Manager items and committee reports since 2025,
+  with sponsors, what the council did at each meeting and its roll calls;
+  ceremonial resolutions are hidden until asked for.
+- Council and committee meetings with agendas and minutes.
+- 311 (SeeClickFix) requests citywide: how many, the share closed, typical time to
+  close and the most common requests (summaries only).
+- The operating budget by department and revenue by source, and the five-year
+  capital plan with a page per project.
 
 **Every state**
 
@@ -198,6 +210,10 @@ automatically.
 | Middletown (CT) council members, meetings and agenda items | [middletownct.gov](https://www.middletownct.gov/AgendaCenter) (agenda PDFs) | daily |
 | Middletown 311 request summaries | [SeeClickFix](https://seeclickfix.com/middletown) | daily |
 | Bristol and Middletown city boundaries | [Census TIGERweb](https://tigerweb.geo.census.gov/) | once |
+| Cambridge councillors; council items, sponsors and votes in 2025 | [IQM2 portal](https://cambridgema.iqm2.com/) | weekly; 2025 loaded once |
+| Cambridge council meetings, items, sponsors and votes since 2026 | [PrimeGov](https://cambridgema.primegov.com/public/portal) (final actions) | every 30 minutes |
+| Cambridge 311, operating budget, revenue, capital plan | [Cambridge open data](https://data.cambridgema.gov/) | daily |
+| Cambridge city boundary | [Census TIGERweb](https://tigerweb.geo.census.gov/) | once |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 
@@ -246,6 +262,8 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | `sync-bristol` | hourly | Bristol (CT) council and committee meetings and agenda items from CivicClerk; councilors weekly |
 | `sync-middletown-311` | daily | Middletown (CT) 311 report from SeeClickFix (only the report is stored) |
+| `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |
+| `sync-cambridge-data` | daily | Cambridge 311 report, operating and revenue budgets and capital plan from data.cambridgema.gov |
 | `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load Middletown agendas (GitHub Action) | daily | Middletown (CT) Common Council members, meetings and agenda items (resolutions, ordinances, appropriations) from the city's agenda PDFs |

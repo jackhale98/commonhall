@@ -348,6 +348,13 @@ Common problems:
    agendas" workflow (daily; run it once by hand to start, about five minutes for two
    years of agenda PDFs), and its 311 report with `sync-middletown-311` (daily), or
    now: `select private.invoke_sync('sync-bristol'); select private.invoke_sync('sync-middletown-311');`
+5. **Cambridge** (no key): Actions → "Load council districts" → Run workflow with
+   city `ma-cambridge` (the city's boundary from Census TIGERweb; the council is
+   elected citywide). Council data arrives with `sync-cambridge` every 30 minutes:
+   2026 meetings and items from PrimeGov on the first run, then the 2025 IQM2
+   archive over the next hour or so (about 1,500 requests, one a second). 311 and
+   the budget arrive with `sync-cambridge-data` daily; to load them now:
+   `select private.invoke_sync('sync-cambridge-data');`
 
 ## 9. Switch the site to live data
 

@@ -1,0 +1,219 @@
+[
+ {
+  "Meeting": {
+   "ID": 4769,
+   "Department": {
+    "IsMeetingGroup": true,
+    "ID": 1000,
+    "Name": "City Council"
+   },
+   "Date": "2025-12-29T17:30:00.0000000-05:00",
+   "Type": {
+    "ID": 1000,
+    "Name": "Regular Meeting"
+   },
+   "Location": {
+    "ID": 1000,
+    "Name": "Sullivan Chamber",
+    "Address": {
+     "Line1": "Cambridge City Hall",
+     "Line2": "795 Massachusetts Ave",
+     "City": "Cambridge",
+     "State": "MA",
+     "Postal": "02139"
+    }
+   },
+   "Status": "Cancelled",
+   "MeetingTypeInfo": {
+    "MeetingTypeID": 1000,
+    "MeetingGroupID": 1000,
+    "MeetingTypeName": "Regular Meeting",
+    "PublicMeeting": true,
+    "ReviewMeeting": false,
+    "RecordedMeeting": true,
+    "VotePassBasisID": 10,
+    "Inactive": false,
+    "Id": 1000,
+    "Title": "Regular Meeting"
+   }
+  }
+ },
+ {
+  "Meeting": {
+   "ID": 4768,
+   "Department": {
+    "IsMeetingGroup": true,
+    "ID": 1000,
+    "Name": "City Council"
+   },
+   "Date": "2025-12-22T17:30:00.0000000-05:00",
+   "Type": {
+    "ID": 1000,
+    "Name": "Regular Meeting"
+   },
+   "Location": {
+    "ID": 1000,
+    "Name": "Sullivan Chamber",
+    "Address": {
+     "Line1": "Cambridge City Hall",
+     "Line2": "795 Massachusetts Ave",
+     "City": "Cambridge",
+     "State": "MA",
+     "Postal": "02139"
+    }
+   },
+   "Status": "Scheduled",
+   "MeetingTypeInfo": {
+    "MeetingTypeID": 1000,
+    "MeetingGroupID": 1000,
+    "MeetingTypeName": "Regular Meeting",
+    "PublicMeeting": true,
+    "ReviewMeeting": false,
+    "RecordedMeeting": true,
+    "VotePassBasisID": 10,
+    "Inactive": false,
+    "Id": 1000,
+    "Title": "Regular Meeting"
+   }
+  },
+  "Agenda": {
+   "ID": 4354,
+   "Documents": [
+    {
+     "ID": 4354,
+     "FileType": "Agenda",
+     "FileUpdated": "2025-12-18T14:26:26.7200000-05:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=1&ID=4354",
+     "FileSize": 0
+    },
+    {
+     "ID": 4354,
+     "FileType": "PublicAgenda",
+     "FileUpdated": "2025-12-18T14:26:26.7200000-05:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=14&ID=4354",
+     "FileSize": 0
+    }
+   ],
+   "Finalized": "2025-12-18T14:27:03.5300000-05:00",
+   "Generated": "2025-12-18T14:15:56.4770000-05:00",
+   "Published": "2025-12-18T00:00:00.0000000-05:00",
+   "MeetingDate": "2025-12-22T17:30:00.0000000-05:00",
+   "Revised": false
+  },
+  "Minutes": {
+   "ID": 3114,
+   "Documents": [
+    {
+     "ID": 3114,
+     "FileType": "Minutes",
+     "FileUpdated": "2026-04-14T12:45:19.3070000-04:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=12&ID=3114",
+     "FileSize": 0
+    },
+    {
+     "ID": 3114,
+     "FileType": "PublicMinutes",
+     "FileUpdated": "2026-01-08T12:18:53.5470000-05:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=15&ID=3114",
+     "FileSize": 0
+    }
+   ],
+   "Finalized": "2026-04-14T12:45:59.0200000-04:00",
+   "Generated": "2026-01-08T12:16:18.0830000-05:00",
+   "Published": "2026-01-08T00:00:00.0000000-05:00"
+  }
+ },
+ {
+  "Meeting": {
+   "ID": 4819,
+   "Department": {
+    "IsMeetingGroup": true,
+    "ID": 1000,
+    "Name": "City Council"
+   },
+   "Date": "2025-12-17T15:30:00.0000000-05:00",
+   "Type": {
+    "ID": 1004,
+    "Name": "Special Meeting"
+   },
+   "Location": {
+    "ID": 1000,
+    "Name": "Sullivan Chamber",
+    "Address": {
+     "Line1": "Cambridge City Hall",
+     "Line2": "795 Massachusetts Ave",
+     "City": "Cambridge",
+     "State": "MA",
+     "Postal": "02139"
+    }
+   },
+   "Status": "Scheduled",
+   "MeetingTypeInfo": {
+    "MeetingTypeID": 1004,
+    "MeetingGroupID": 1000,
+    "MeetingTypeName": "Special Meeting",
+    "PublicMeeting": true,
+    "ReviewMeeting": false,
+    "RecordedMeeting": true,
+    "VotePassBasisID": 10,
+    "Inactive": false,
+    "Id": 1004,
+    "Title": "Special Meeting"
+   }
+  },
+  "Agenda": {
+   "ID": 4346,
+   "Documents": [
+    {
+     "ID": 4346,
+     "FileType": "Agenda",
+     "FileUpdated": "2025-12-15T13:39:04.3500000-05:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=1&ID=4346",
+     "FileSize": 0
+    },
+    {
+     "ID": 4346,
+     "FileType": "PublicAgenda",
+     "FileUpdated": "2025-12-15T13:39:04.3500000-05:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=14&ID=4346",
+     "FileSize": 0
+    }
+   ],
+   "Finalized": "2025-12-15T13:40:00.6670000-05:00",
+   "Generated": "2025-12-15T13:38:47.5800000-05:00",
+   "Published": "2025-12-15T00:00:00.0000000-05:00",
+   "MeetingDate": "2025-12-17T15:30:00.0000000-05:00",
+   "Revised": false
+  },
+  "Minutes": {
+   "ID": 3113,
+   "Documents": [
+    {
+     "ID": 3113,
+     "FileType": "Minutes",
+     "FileUpdated": "2026-03-16T12:25:32.3000000-04:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=12&ID=3113",
+     "FileSize": 0
+    },
+    {
+     "ID": 3113,
+     "FileType": "PublicMinutes",
+     "FileUpdated": "2025-12-23T10:27:43.4730000-05:00",
+     "FileFormat": "pdf",
+     "DownloadURL": "https://cambridgema.iqm2.com/Citizens/FileOpen.aspx?Type=15&ID=3113",
+     "FileSize": 0
+    }
+   ],
+   "Finalized": "2026-03-16T12:25:58.8470000-04:00",
+   "Generated": "2025-12-23T10:27:23.7230000-05:00",
+   "Published": "2025-12-23T00:00:00.0000000-05:00"
+  }
+ }
+]

@@ -28,3 +28,5 @@ export * from './local/city-budget.ts';
 export * from './local/somerville.ts';
 export * from './local/bristol.ts';
 export * from './local/middletown-311.ts';
+export * from './local/cambridge.ts';
+export * from './local/cambridge-data.ts';

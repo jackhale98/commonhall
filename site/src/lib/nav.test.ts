@@ -74,6 +74,7 @@ describe('orderedItems', () => {
       'Boston',
       'Worcester',
       'Somerville',
+      'Cambridge',
       'Connecticut',
       'Bristol',
       'Middletown',

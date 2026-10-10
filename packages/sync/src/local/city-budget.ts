@@ -101,14 +101,14 @@ export async function syncCityBudget(
           from jsonb_to_recordset(${tx.json(rows as never)}::jsonb) as x(
             kind text, cabinet text, dept text, grouping text, line text,
             fiscal_year smallint, basis text, amount numeric)
-        on conflict (kind, cabinet, dept, grouping, line, fiscal_year, basis) do update
+        on conflict (city, kind, cabinet, dept, grouping, line, fiscal_year, basis) do update
           set amount = excluded.amount, updated_at = now()
           where t.amount is distinct from excluded.amount
         returning 1`;
       const keys = rows.map((r) => [r.cabinet, r.dept, r.grouping, r.line, r.fiscal_year, r.basis].join('|'));
       const gone = await tx`
         delete from public.city_budget_lines
-         where kind = ${kind}
+         where city = 'ma-boston' and kind = ${kind}
            and (cabinet || '|' || dept || '|' || grouping || '|' || line || '|' || fiscal_year || '|' || basis)
                <> all(${keys}::text[])
         returning 1`;

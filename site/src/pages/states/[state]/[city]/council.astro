@@ -97,7 +97,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
             photo_url: o.photo_url,
           }))}
         />
-        {!DEMO && (
+        {!DEMO && city.districts > 0 && (
           <details class="by-address">
             <summary>
               {city.districtMap === false || city.districts === 0

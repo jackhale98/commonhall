@@ -14,6 +14,8 @@ import type { JobRun } from '../job.ts';
 
 export const ZBA_JOB = 'boston-zba';
 export const ZBA_DATASET = 'zoning-board-of-appeal-tracker';
+/** The tables hold every city's cases; this sync writes Boston's. */
+const BOSTON_KEY = 'ma-boston';
 
 export interface ZbaCursor {
   [key: string]: unknown;
@@ -146,11 +148,17 @@ export async function syncZoningAppeals(
     run.rowsWritten += await run.sql.begin(async (tx) => {
       let n = 0;
       for (const row of decided) {
-        if (await upsertIfChanged(tx, 'public.zba_decision_counts', ['neighborhood', 'decision'], row)) n++;
+        if (
+          await upsertIfChanged(tx, 'public.zba_decision_counts', ['city', 'neighborhood', 'decision'], {
+            city: BOSTON_KEY,
+            ...row,
+          })
+        )
+          n++;
       }
       const gone = await tx`
         delete from public.zba_decision_counts
-        where neighborhood || '|' || decision <> all(${decided.map((d) => `${d.neighborhood}|${d.decision}`)}::text[])
+        where city = ${BOSTON_KEY} and neighborhood || '|' || decision <> all(${decided.map((d) => `${d.neighborhood}|${d.decision}`)}::text[])
         returning 1`;
       return n + gone.length;
     });
@@ -174,11 +182,13 @@ export async function syncZoningAppeals(
   if (rows.length === 0 && decided.length === 0)
     throw new Error('Zoning Board of Appeal: nothing came back; keeping the stored cases');
   for (const row of rows) {
-    if (await upsertIfChanged(run.sql, 'public.zba_appeals', ['boa_apno'], row)) run.rowsWritten++;
+    if (await upsertIfChanged(run.sql, 'public.zba_appeals', ['city', 'boa_apno'], { city: BOSTON_KEY, ...row }))
+      run.rowsWritten++;
   }
   // Cases whose hearing has passed (or was cancelled) leave with their address.
   const gone = await run.sql`
-    delete from public.zba_appeals where boa_apno <> all(${rows.map((r) => r.boa_apno)}::text[]) returning 1`;
+    delete from public.zba_appeals
+     where city = ${BOSTON_KEY} and boa_apno <> all(${rows.map((r) => r.boa_apno)}::text[]) returning 1`;
   run.rowsWritten += gone.length;
   run.log('boston-zba', { upcoming: rows.length, decisionGroups: decided.length, written: run.rowsWritten });
   return { lastCount: rows.length };

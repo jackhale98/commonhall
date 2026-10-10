@@ -118,12 +118,22 @@ export const projectRow = (p: ProjectView): ProjectRow => ({
 
 const fy = (y: number) => `FY${String(y).slice(2)}`;
 
-/** Boston's Capital Plan (Analyze Boston) as the shared view. */
-export function bostonCapital(projects: CapitalProject[], cityKey: string): CapitalView | null {
+/** Where a city's capital plan and operating budget come from, and whether the plan reports spending to date. */
+export interface PlanSources {
+  capital?: { label: string; url: string };
+  operating?: { label: string; url: string }[];
+  /** False when the city publishes only what each year will spend (Cambridge), not what has been spent. */
+  spending?: boolean;
+}
+
+/** A multi-year Capital Plan (Boston's Analyze Boston data, Cambridge's open data) as the shared view. */
+export function bostonCapital(projects: CapitalProject[], cityKey: string, from: PlanSources = {}): CapitalView | null {
   if (!projects.length) return null;
   const first = projects[0]!;
   const yearLabel = first.first_year ? fy(first.first_year) : 'this year';
-  const spentText = spentLabel(first.first_year ?? null);
+  // Without spending to date, the bar shows the year being adopted against the five-year total.
+  const spending = from.spending !== false;
+  const spentText = spending ? spentLabel(first.first_year ?? null) : `planned for ${yearLabel}`;
   return {
     kind: 'plan',
     title: `Capital Plan, ${first.plan.replace('-', '–')}`,
@@ -133,7 +143,10 @@ export function bostonCapital(projects: CapitalProject[], cityKey: string): Capi
     areaLabel: 'Neighborhood',
     planYears: [],
     sources: [
-      { label: `${first.plan.replace('-', '–')} Capital Plan`, url: 'https://data.boston.gov/dataset/capital-budget' },
+      from.capital ?? {
+        label: `${first.plan.replace('-', '–')} Capital Plan`,
+        url: 'https://data.boston.gov/dataset/capital-budget',
+      },
     ],
     boston: projects,
     projects: projects.map((p) => ({
@@ -144,10 +157,10 @@ export function bostonCapital(projects: CapitalProject[], cityKey: string): Capi
       description: p.scope,
       status: p.status,
       total: p.total_budget,
-      spent: p.spent,
+      spent: spending ? p.spent : p.year1,
       thisYear: p.year1,
       money: [
-        { label: `Planned in ${yearLabel}`, value: p.year1 },
+        { label: `Planned in ${yearLabel}`, value: spending ? p.year1 : 0 },
         { label: 'Planned later in the plan', value: p.years_2_5 },
         { label: 'Outside funds', value: p.external_funds },
       ].filter((m) => m.value > 0),
@@ -159,7 +172,10 @@ export function bostonCapital(projects: CapitalProject[], cityKey: string): Capi
 }
 
 /** Boston's operating and revenue budgets (line-item data) as the shared summary. */
-export function bostonOperating(b: BudgetSummary | null): OperatingSummary | null {
+export function bostonOperating(
+  b: BudgetSummary | null,
+  sources?: { label: string; url: string }[],
+): OperatingSummary | null {
   if (!b) return null;
   return {
     fiscalYear: b.year,
@@ -171,7 +187,7 @@ export function bostonOperating(b: BudgetSummary | null): OperatingSummary | nul
     revenue: b.revenue,
     spending: b.departments,
     spendingUnit: 'departments',
-    sources: [
+    sources: sources ?? [
       { label: 'operating budget', url: 'https://data.boston.gov/dataset/operating-budget' },
       { label: 'revenue budget', url: 'https://data.boston.gov/dataset/revenue-budget' },
     ],
