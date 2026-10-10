@@ -19,8 +19,10 @@ function Rows({ people }: { people: PinnedPerson[] }) {
       {people.map((p) => (
         <li key={p.id}>
           <MemberPhoto name={p.name} url={p.photo_url} bioguideId={p.bioguideId} size={28} />
-          <a href={p.href}>{p.name}</a>
-          <span class="small muted">{p.detail}</span>
+          <span class="row-text">
+            <a href={p.href}>{p.name}</a>
+            <span class="small muted">{p.detail}</span>
+          </span>
         </li>
       ))}
     </ul>

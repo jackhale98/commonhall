@@ -52,8 +52,10 @@ export default function YourMembers() {
         {rows.map((m) => (
           <li key={m.bioguide_id}>
             <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={28} />
-            <a href={memberHref(m.bioguide_id)}>{m.name}</a>
-            <span class="small muted">{memberTag(m)}</span>
+            <span class="row-text">
+              <a href={memberHref(m.bioguide_id)}>{m.name}</a>
+              <span class="small muted">{memberTag(m)}</span>
+            </span>
           </li>
         ))}
       </ul>

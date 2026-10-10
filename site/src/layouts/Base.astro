@@ -111,6 +111,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
           span.className = 'photo photo-fallback';
           span.setAttribute('aria-hidden', 'true');
           span.style.cssText = img.style.cssText;
+          span.style.fontSize = Math.min(19, Math.round((img.width || 96) * 0.4)) + 'px';
           span.textContent = img.dataset.initials || '';
           img.replaceWith(span);
         },

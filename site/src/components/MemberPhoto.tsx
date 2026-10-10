@@ -26,8 +26,13 @@ export default function MemberPhoto({ name, url, bioguideId, size = 96, eager = 
   const portrait = bioguideId ? congressPortrait(bioguideId) : null;
   const src = url ?? portrait;
   if (!src) {
+    // Initials scale with the badge, so two letters fit a small one.
     return (
-      <span class="photo photo-fallback" style={style} aria-hidden="true">
+      <span
+        class="photo photo-fallback"
+        style={{ ...style, fontSize: `${Math.min(19, Math.round(size * 0.4))}px` }}
+        aria-hidden="true"
+      >
         {initials(name)}
       </span>
     );

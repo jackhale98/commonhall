@@ -3201,6 +3201,17 @@ button .ch-loader,
 .member-rows .photo-fallback {
   flex: none;
 }
+/* Name and detail wrap together, so a long name doesn't squeeze the detail. */
+.member-rows .row-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+  min-width: 0;
+}
+.photo-fallback {
+  line-height: 1;
+}
 .your-followed {
   margin-bottom: var(--space-5);
 }
