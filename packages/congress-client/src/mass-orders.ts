@@ -30,11 +30,15 @@ export interface MaOrderSummary {
   reason: string | null;
 }
 
+/** Words a period follows without ending a sentence: "Executive Order No. 7MM", "Section 2, a. …". */
+const NOT_AN_END = /(?:^|[\s(])(?:Nos?|Sec|Secs|St|Mr|Mrs|Ms|Dr|Gen|Stat|Inc|Co|[A-Za-z])$/;
+
 /** Cut text at a sentence end near `max` characters, else at a word. */
 function clipText(text: string, max: number): string {
   if (text.length <= max) return text;
   const cut = text.slice(0, max);
-  const end = cut.lastIndexOf('. ');
+  let end = cut.lastIndexOf('. ');
+  while (end > max / 2 && NOT_AN_END.test(cut.slice(0, end))) end = cut.lastIndexOf('. ', end - 1);
   if (end > max / 2) return cut.slice(0, end + 1);
   return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:]$/, '')}…`;
 }

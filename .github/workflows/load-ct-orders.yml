@@ -1,0 +1,37 @@
+name: Load CT governor orders
+
+# Connecticut governors' executive orders from the Governor's office list on
+# portal.ct.gov (plain requests work there). A weekly run picks up new orders; an
+# order's PDF is read only when the order is new or its file changed, for a short
+# summary (scanned PDFs have none). Run with "refresh" to re-read every PDF.
+on:
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: Re-read every order's PDF
+        type: boolean
+        default: false
+  schedule:
+    - cron: '37 10 * * 1' # 10:37 UTC on Mondays
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      # pdftotext; refresh the package list first (the runner image's can be out of date).
+      - name: Install pdftotext
+        run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends poppler-utils)
+      - run: npm ci
+      - name: Load the orders
+        run: npx tsx scripts/load-ct-orders.ts ${{ inputs.refresh && '--refresh' || '' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { CourtListenerClient, type FetchLike } from '@civic/congress-client';
-import { STATE_COURTS_JOB, runJob, syncStateCourts, type Sql, type StateCourtsCursor } from '@civic/sync';
+import { STATE_COURTS, STATE_COURTS_JOB, runJob, syncStateCourts, type Sql, type StateCourtsCursor } from '@civic/sync';
 import { asAnon } from './auth.ts';
 import { connect } from './db.ts';
 
@@ -100,6 +100,51 @@ describe('sync-state-courts', () => {
     api.opinionCalls.length = 0;
     await run(api.fetch);
     expect(api.opinionCalls).toHaveLength(0);
+  });
+
+  it('follows the Connecticut Supreme Court too, each court under its own state', async () => {
+    expect(STATE_COURTS.map((c) => [c.court, c.state])).toEqual([
+      ['mass', 'MA'],
+      ['conn', 'CT'],
+    ]);
+    const asked: string[] = [];
+    const fetch: FetchLike = async (input) => {
+      const url = new URL(input);
+      if (url.pathname.includes('/opinions/'))
+        return new Response(JSON.stringify({ id: 1, plain_text: opinion }), {
+          headers: { 'content-type': 'application/json' },
+        });
+      const q = url.searchParams.get('q') ?? '';
+      asked.push(q);
+      // The sample's decisions, as if filed in Connecticut in January 2024.
+      const body = JSON.parse(sample) as { results: Record<string, unknown>[] };
+      if (!q.startsWith('court_id:conn') || !q.includes('2024-01-01'))
+        return new Response(JSON.stringify({ count: 0, next: null, previous: null, results: [] }));
+      body.results = body.results.map((r) => ({ ...r, court_id: 'conn', dateFiled: '2024-01-10' }));
+      return new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } });
+    };
+    await runJob<StateCourtsCursor>({
+      sql,
+      job: STATE_COURTS_JOB,
+      timeLimitMs: 60_000,
+      log: () => undefined,
+      run: (ctx) =>
+        syncStateCourts(ctx, {
+          client: new CourtListenerClient({ token: 't', fetch }),
+          now: () => new Date('2024-02-15T12:00:00Z'),
+        }),
+    });
+    expect(asked).toEqual([
+      'court_id:mass AND dateFiled:[2024-02-01 TO 2024-02-29]',
+      'court_id:mass AND dateFiled:[2024-01-01 TO 2024-01-31]',
+      'court_id:conn AND dateFiled:[2024-02-01 TO 2024-02-29]',
+      'court_id:conn AND dateFiled:[2024-01-01 TO 2024-01-31]',
+    ]);
+    const rows = await sql`select court_id, state from public.state_court_cases`;
+    expect(rows).toEqual([
+      { court_id: 'conn', state: 'CT' },
+      { court_id: 'conn', state: 'CT' },
+    ]);
   });
 
   it('is public to read', async () => {

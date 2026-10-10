@@ -4,7 +4,8 @@
  * to each court's start date, so recent decisions show up first; after that each
  * run re-reads the last month (citations and opinions are filled in after release). CourtListener's free
  * tier is small (50 requests an hour, 125 a day, shared with the Supreme Court
- * sync), so this runs every few hours with a few requests each time.
+ * sync), so this runs every few hours with a few requests each time. Courts: the
+ * Massachusetts Supreme Judicial Court and the Connecticut Supreme Court.
  */
 import {
   BudgetExhaustedError,
@@ -20,7 +21,12 @@ import type { JobRun } from '../job.ts';
 export const STATE_COURTS_JOB = 'state-courts';
 
 /** The courts we follow: CourtListener's court id, the state, and how far back the first load reads. */
-export const STATE_COURTS = [{ court: 'mass', state: 'MA', since: '2024-01-01' }] as const;
+export const STATE_COURTS = [
+  { court: 'mass', state: 'MA', since: '2024-01-01' },
+  // Connecticut Supreme Court, about 100 decisions a year. Not the Appellate Court
+  // (connappct, several hundred a year): its texts would outrun the daily share.
+  { court: 'conn', state: 'CT', since: '2024-01-01' },
+] as const;
 
 export interface StateCourtsCursor {
   [key: string]: unknown;

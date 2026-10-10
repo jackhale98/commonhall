@@ -69,7 +69,13 @@ async function main() {
       );
       let written = 0;
       for (const order of orders) {
-        const row = { state: STATE, number: order.number, title: order.title, url: order.url };
+        const row = {
+          state: STATE,
+          number: order.number,
+          label: String(order.number),
+          title: order.title,
+          url: order.url,
+        };
         if (known.has(order.number) && known.get(order.number)) {
           // Titles are corrected now and then; dates and issuers don't change.
           const changed = await sql`
