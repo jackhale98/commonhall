@@ -797,6 +797,14 @@ button.danger {
   display: flex;
   gap: var(--space-2);
 }
+.reps-row input {
+  min-width: 0;
+  flex: 1;
+}
+.reps-row button {
+  flex: none;
+  white-space: nowrap;
+}
 .reps-list {
   list-style: none;
   padding: 0;
@@ -2338,4 +2346,496 @@ html {
 .stage-dots > span.on {
   background: var(--brand);
   box-shadow: none;
+}
+
+/* ---------- Loader: "roll call" ---------- */
+/* Seats fill in as members vote, your amber ballot comes in through the open side,
+   the gavel falls, the room applauds, and the session adjourns. */
+.ch-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding-block: var(--space-4, 1rem);
+  text-align: center;
+  /* Fast loads finish before it shows, so there's no flash. */
+  animation: ch-appear 0.2s 0.25s ease-out both;
+}
+@keyframes ch-appear {
+  from {
+    opacity: 0;
+  }
+}
+.ch-loader {
+  --ch-seat: var(--brand);
+  --ch-you: var(--highlight);
+  --ch-speed: 3s;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: visible;
+  flex-shrink: 0;
+}
+.ch-seat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ch-applause var(--ch-speed) infinite ease-out;
+}
+/* Every seat runs on the same clock; its own keyframes set when it votes and when it leaves */
+.ch-seat circle {
+  fill: var(--ch-seat);
+  stroke: var(--ch-seat);
+  stroke-width: 1.1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ch-vote-0 var(--ch-speed) infinite ease-in-out both;
+}
+.ch-seat:nth-of-type(1) circle {
+  animation-name: ch-vote-0;
+}
+.ch-seat:nth-of-type(2) circle {
+  animation-name: ch-vote-1;
+}
+.ch-seat:nth-of-type(3) circle {
+  animation-name: ch-vote-2;
+}
+.ch-seat:nth-of-type(4) circle {
+  animation-name: ch-vote-3;
+}
+.ch-seat:nth-of-type(5) circle {
+  animation-name: ch-vote-4;
+}
+.ch-seat:nth-of-type(6) circle {
+  animation-name: ch-vote-5;
+}
+.ch-seat:nth-of-type(7) circle {
+  animation-name: ch-vote-6;
+}
+.ch-you {
+  fill: var(--ch-you);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ch-ballot var(--ch-speed) infinite ease-in-out;
+}
+.ch-ring {
+  fill: none;
+  stroke: var(--ch-you);
+  stroke-width: 1.1;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ch-gavel var(--ch-speed) infinite ease-out;
+}
+/* Roll call: each seat fills in and hops as its member votes, in turn. After the applause they leave in the same order,
+   and the chamber is empty before the next roll call. */
+@keyframes ch-vote-0 {
+  0%,
+  3% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  7% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  12% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  16%,
+  84% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  88%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-0 {
+  0%,
+  3% {
+    fill-opacity: 0;
+  }
+  9%,
+  84% {
+    fill-opacity: 1;
+  }
+  88%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+@keyframes ch-vote-1 {
+  0%,
+  8% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  12% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  17% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  21%,
+  85.5% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  89.5%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-1 {
+  0%,
+  8% {
+    fill-opacity: 0;
+  }
+  14%,
+  85.5% {
+    fill-opacity: 1;
+  }
+  89.5%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+@keyframes ch-vote-2 {
+  0%,
+  13% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  17% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  22% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  26%,
+  87% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  91%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-2 {
+  0%,
+  13% {
+    fill-opacity: 0;
+  }
+  19%,
+  87% {
+    fill-opacity: 1;
+  }
+  91%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+@keyframes ch-vote-3 {
+  0%,
+  18% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  22% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  27% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  31%,
+  88.5% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  92.5%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-3 {
+  0%,
+  18% {
+    fill-opacity: 0;
+  }
+  24%,
+  88.5% {
+    fill-opacity: 1;
+  }
+  92.5%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+@keyframes ch-vote-4 {
+  0%,
+  23% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  27% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  32% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  36%,
+  90% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  94%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-4 {
+  0%,
+  23% {
+    fill-opacity: 0;
+  }
+  29%,
+  90% {
+    fill-opacity: 1;
+  }
+  94%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+@keyframes ch-vote-5 {
+  0%,
+  28% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  32% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  37% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  41%,
+  91.5% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  95.5%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-5 {
+  0%,
+  28% {
+    fill-opacity: 0;
+  }
+  34%,
+  91.5% {
+    fill-opacity: 1;
+  }
+  95.5%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+@keyframes ch-vote-6 {
+  0%,
+  33% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+  37% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * 2.6px), calc(var(--dy) * 2.6px)) scale(1.25);
+  }
+  42% {
+    fill-opacity: 1;
+    transform: translate(calc(var(--dx) * -0.4px), calc(var(--dy) * -0.4px)) scale(0.92);
+  }
+  46%,
+  93% {
+    fill-opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  97%,
+  100% {
+    fill-opacity: 0;
+    transform: translate(0, 0) scale(0.85);
+  }
+}
+@keyframes ch-calm-6 {
+  0%,
+  33% {
+    fill-opacity: 0;
+  }
+  39%,
+  93% {
+    fill-opacity: 1;
+  }
+  97%,
+  100% {
+    fill-opacity: 0;
+  }
+}
+/* Your ballot comes in through the open side, lands, then strikes like a gavel */
+@keyframes ch-ballot {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translate(13px, 0) scale(0.5);
+  }
+  38% {
+    opacity: 1;
+    transform: translate(11px, 0) scale(0.85);
+  }
+  45% {
+    transform: translate(4px, -3.5px) scale(0.95, 1.08);
+  }
+  51% {
+    transform: translate(0, 0) scale(1.28, 0.74);
+  }
+  55% {
+    transform: translate(0, 0) scale(0.94, 1.07);
+  }
+  58% {
+    transform: translate(0, 0) scale(1, 1);
+  }
+  61% {
+    transform: translate(0, -3px) scale(0.9, 1.12);
+  }
+  63% {
+    transform: translate(0, 0) scale(1.32, 0.7);
+  }
+  67% {
+    transform: translate(0, 0) scale(0.95, 1.05);
+  }
+  71%,
+  84% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1, 1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+}
+/* The gavel's shock ring */
+@keyframes ch-gavel {
+  0%,
+  62% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  63% {
+    opacity: 0.95;
+    transform: scale(0.45);
+  }
+  82%,
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+/* Applause: every seat bounces twice, together */
+@keyframes ch-applause {
+  0%,
+  64%,
+  82%,
+  100% {
+    transform: translate(0, 0);
+  }
+  68% {
+    transform: translate(calc(var(--dx) * 1.6px), calc(var(--dy) * 1.6px));
+  }
+  72% {
+    transform: translate(calc(var(--dx) * -0.3px), calc(var(--dy) * -0.3px));
+  }
+  76% {
+    transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px));
+  }
+  80% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes ch-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ch-loader--inline {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.45em;
+  vertical-align: -0.22em;
+}
+button .ch-loader,
+.button .ch-loader {
+  --ch-seat: currentColor;
+}
+.ch-msg {
+  color: var(--text-muted, inherit);
+  font-weight: 500;
+  animation: ch-msg-in 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ch-seat,
+  .ch-you,
+  .ch-msg {
+    animation: none;
+  }
+  .ch-ring {
+    display: none;
+  }
+  /* The site-wide rule stops all animation; let seats still fill in turn, without moving. */
+  .ch-seat:nth-of-type(1) circle {
+    animation: ch-calm-0 var(--ch-speed) infinite linear both !important;
+  }
+  .ch-seat:nth-of-type(2) circle {
+    animation: ch-calm-1 var(--ch-speed) infinite linear both !important;
+  }
+  .ch-seat:nth-of-type(3) circle {
+    animation: ch-calm-2 var(--ch-speed) infinite linear both !important;
+  }
+  .ch-seat:nth-of-type(4) circle {
+    animation: ch-calm-3 var(--ch-speed) infinite linear both !important;
+  }
+  .ch-seat:nth-of-type(5) circle {
+    animation: ch-calm-4 var(--ch-speed) infinite linear both !important;
+  }
+  .ch-seat:nth-of-type(6) circle {
+    animation: ch-calm-5 var(--ch-speed) infinite linear both !important;
+  }
+  .ch-seat:nth-of-type(7) circle {
+    animation: ch-calm-6 var(--ch-speed) infinite linear both !important;
+  }
 }

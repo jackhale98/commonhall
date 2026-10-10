@@ -7,6 +7,7 @@ import { redirectIfPrerendered } from '../lib/prerendered';
 import { select } from '../lib/rest';
 import type { Discussion } from '../lib/types';
 import PolisDiscussion from './PolisDiscussion';
+import Loader from './Loader';
 
 /** Client-rendered page for discussions published since the last build (?id=slug). */
 export default function DiscussionFallback() {
@@ -32,7 +33,7 @@ export default function DiscussionFallback() {
     })().catch(() => setState('error'));
   }, []);
 
-  if (state === 'loading') return <p aria-live="polite">Loading…</p>;
+  if (state === 'loading') return <Loader label="Loading discussion" />;
   if (state === 'missing') return <p class="notice">We couldn’t find that discussion.</p>;
   if (state === 'error' || !d) return <p class="notice error">Couldn’t load this discussion.</p>;
   const link = targetHref(d.target_type, d.target_id);

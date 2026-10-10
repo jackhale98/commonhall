@@ -4,6 +4,7 @@ import { localMatterHref } from '../lib/paths';
 import { redirectIfPrerendered } from '../lib/prerendered';
 import DiscussionRequest from './DiscussionRequest';
 import LocalMatterView, { loadMatter, type MatterData } from './LocalMatterView';
+import Loader from './Loader';
 
 /** Client-rendered page for council matters without a prerendered page (?id=MatterId). */
 export default function LocalMatterFallback() {
@@ -24,7 +25,7 @@ export default function LocalMatterFallback() {
       })
       .catch(() => setState('error'));
   }, []);
-  if (state === 'loading') return <p aria-live="polite">Loading…</p>;
+  if (state === 'loading') return <Loader label="Loading council matter" />;
   if (state === 'invalid') return <p class="notice error">That isn’t a valid matter id.</p>;
   if (state === 'missing') {
     return (

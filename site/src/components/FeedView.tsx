@@ -17,6 +17,7 @@ import {
   voteHref,
 } from '../lib/paths';
 import type { Member } from '../lib/types';
+import Loader from './Loader';
 
 export interface FeedItem {
   id: number;
@@ -153,7 +154,7 @@ export default function FeedView({ compact = false }: Props) {
     setMore(rows.length === PAGE);
   }
 
-  if (state === 'loading') return compact ? null : <p aria-live="polite">Loading your feed…</p>;
+  if (state === 'loading') return compact ? null : <Loader label="Loading your feed" />;
   if (state === 'signed-out') {
     return compact ? null : (
       <p class="notice">

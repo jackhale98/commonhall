@@ -962,3 +962,19 @@ At about 110 requests a day, the remaining month re-reads take about a day and t
 syllabi (one request per case) about five more. New decisions afterwards need only a
 few requests a day. A Free Law Project membership raises the limits; we haven't
 taken one.
+
+## 75. A loading animation from the logo
+
+Page-level waits (the vote, member, bill, discussion, council matter and state bill
+pages that load in the browser, the feed, and the Following list) show `Loader`: the
+logo's seven seats fill in one at a time, the amber dot arrives and "strikes" like a
+gavel, and a short line rotates through roll-call phrases ("Calling the roll…",
+"Checking for a quorum…"). Buttons show the mark alone, beside their own text.
+
+- Screen readers hear a single "Loading …" status naming what is loading. The rotating
+  phrases are hidden from them, so nothing is re-announced every few seconds.
+- It fades in after a quarter of a second, so fast loads never flash it.
+- With reduced motion, the seats still fill in turn but nothing moves or bounces.
+- No phrase suggests the visitor has done something they haven't ("Casting your
+  ballot…" became "Taking our seats…").
+- Short status lines inside lists ("Loading every order…") stay as text.

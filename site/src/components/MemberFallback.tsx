@@ -6,6 +6,7 @@ import { BILL_LIST_COLUMNS, MEMBER_COLUMNS, type BillListItem as Bill, type Memb
 import BillListItem from './BillListItem';
 import FollowButton from './FollowButton';
 import MemberPhoto from './MemberPhoto';
+import Loader from './Loader';
 
 interface View {
   member: Member;
@@ -52,7 +53,7 @@ export default function MemberFallback() {
     })();
   }, []);
 
-  if (state === 'loading') return <p aria-live="polite">Loading member…</p>;
+  if (state === 'loading') return <Loader label="Loading member" />;
   if (state === 'invalid') return <p class="notice error">That isn’t a valid member id. Ids look like A000375.</p>;
   if (state === 'error' || !view) return <p class="notice error">Couldn’t load this member. {message}</p>;
 

@@ -7,6 +7,7 @@ import type { Member } from '../lib/types';
 import { voteSegments } from '../lib/charts';
 import MemberChip from './MemberChip';
 import StackedBar from './viz/StackedBar';
+import Loader from './Loader';
 
 export interface Vote {
   id: string;
@@ -92,7 +93,7 @@ export default function VoteView({ initial }: Props) {
     [rows],
   );
 
-  if (state === 'loading') return <p aria-live="polite">Loading vote…</p>;
+  if (state === 'loading') return <Loader label="Loading vote" />;
   if (state === 'invalid') return <p class="notice error">That isn’t a valid vote id. Ids look like house-119-2-80.</p>;
   if (state === 'missing') return <p class="notice">We don’t have that roll call.</p>;
   if (state === 'error' || !vote) return <p class="notice error">Couldn’t load this vote.</p>;

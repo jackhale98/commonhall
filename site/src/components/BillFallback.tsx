@@ -13,6 +13,7 @@ import DiscussionRequest from './DiscussionRequest';
 import FollowButton from './FollowButton';
 import MemberChip from './MemberChip';
 import StatusTracker from './StatusTracker';
+import Loader from './Loader';
 
 type MemberRef = Pick<Member, 'bioguide_id' | 'name' | 'party' | 'state' | 'district' | 'chamber'>;
 
@@ -108,7 +109,7 @@ export default function BillFallback() {
       document.title = `${billNumberLabel(view.bill)}: ${billDisplayTitle(view.bill)} · ${document.title.split(' · ').pop()}`;
   }, [view]);
 
-  if (state === 'loading') return <p aria-live="polite">Loading bill…</p>;
+  if (state === 'loading') return <Loader label="Loading bill" />;
   if (state === 'invalid') return <p class="notice error">That isn’t a valid bill id. Ids look like 119-hr-1234.</p>;
   if (state === 'missing') return <p class="notice">We couldn’t find that bill. {message}</p>;
   if (state === 'error' || !view)

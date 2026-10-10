@@ -11,6 +11,7 @@ import {
   memberHref,
   stateBillFallbackHref,
 } from '../lib/paths';
+import Loader from './Loader';
 
 interface Follow {
   target_type: 'bill' | 'member' | 'state_bill' | 'state_legislator' | 'local_matter' | 'local_official' | 'discussion';
@@ -181,7 +182,7 @@ export default function FollowingList() {
     setRows((prev) => prev.filter((r) => !(r.target_type === row.target_type && r.target_id === row.target_id)));
   }
 
-  if (state === 'loading') return <p aria-live="polite">Loading…</p>;
+  if (state === 'loading') return <Loader label="Loading what you follow" />;
   if (state === 'signed-out') {
     return (
       <p class="notice">

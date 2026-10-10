@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { select } from '../lib/rest';
 import VoteList, { type VoteListItemData } from './VoteList';
+import Loader from './Loader';
 
 interface Row {
   vote_id: string;
@@ -73,12 +74,7 @@ export default function MemberVotes({ memberId, initial }: { memberId: string; i
   };
 
   if (error) return <p class="muted">Couldn’t load recent votes.</p>;
-  if (rows === null)
-    return (
-      <p class="muted" aria-live="polite">
-        Loading recent votes…
-      </p>
-    );
+  if (rows === null) return <Loader message="Loading recent votes…" label="Loading recent votes" />;
   if (rows.length === 0) return <p class="muted">No recorded votes yet.</p>;
   const hasMore = rows.length > shown || (more && !initial);
   return (
@@ -92,7 +88,14 @@ export default function MemberVotes({ memberId, initial }: { memberId: string; i
           disabled={loading}
           aria-busy={loading}
         >
-          {loading ? 'Loading…' : 'Show more votes'}
+          {loading ? (
+            <>
+              <Loader inline />
+              Loading…
+            </>
+          ) : (
+            'Show more votes'
+          )}
         </button>
       )}
     </>

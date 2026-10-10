@@ -5,6 +5,7 @@ import { redirectIfPrerendered } from '../lib/prerendered';
 import { select } from '../lib/rest';
 import DiscussionRequest from './DiscussionRequest';
 import StateBillView from './StateBillView';
+import Loader from './Loader';
 
 /**
  * Client-rendered page for state bills without a prerendered page. Accepts ?id=<Open
@@ -45,7 +46,7 @@ export default function StateBillFallback() {
     })().catch(() => setState('error'));
   }, []);
 
-  if (state === 'loading') return <p aria-live="polite">Loading…</p>;
+  if (state === 'loading') return <Loader label="Loading state bill" />;
   if (state === 'missing') return <p class="notice">We don’t have that state bill. It may not be synced yet.</p>;
   if (state === 'error' || !bill) return <p class="notice error">Couldn’t load this bill.</p>;
   return (

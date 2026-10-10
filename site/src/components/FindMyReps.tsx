@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import Loader from './Loader';
 import { areaLabel } from '../lib/address';
 import { accountUrl, followMany, getClient, getSession, hasStoredSession, savePendingFollows } from '../lib/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from '../lib/config';
@@ -286,7 +287,14 @@ export default function FindMyReps({ saved = false }: Props) {
             onInput={(e) => setAddress(e.currentTarget.value)}
           />
           <button type="submit" class="primary" disabled={state === 'loading'}>
-            {state === 'loading' ? 'Looking up…' : 'Find'}
+            {state === 'loading' ? (
+              <>
+                <Loader inline />
+                Looking up…
+              </>
+            ) : (
+              'Find'
+            )}
           </button>
         </div>
         <p class="small muted">Your address is used for this lookup only and isn’t stored unless you save it.</p>
