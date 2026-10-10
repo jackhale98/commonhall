@@ -8,10 +8,15 @@ import { CITY_LIST } from './cities';
 import { stateName } from './format';
 import { FEATURED_STATES } from './states';
 
-/** Each city we cover: a menu item under States & local, keyed by its city key. */
+/**
+ * Each city we cover: a menu item under States & local, keyed by its city key. It is
+ * listed under its state when the state is featured; otherwise its label names the
+ * state ("Hartford, CT"), so a city is never read as another state's.
+ */
 const CITY_ITEMS: NavItem[] = CITY_LIST.map((c) => {
   const path = `states/${c.state.toLowerCase()}/${c.slug}/`;
-  return { key: c.key, label: c.name, path, match: [path] };
+  const featured = FEATURED_STATES.includes(c.state);
+  return { key: c.key, label: featured ? c.name : `${c.name}, ${c.state}`, path, match: [path], child: featured };
 });
 
 /** Each state we cover in depth (lib/states.ts): a menu item keyed by its lower-case code. */
@@ -23,6 +28,8 @@ const STATE_ITEMS: NavItem[] = FEATURED_STATES.map((code) => {
 export interface NavItem {
   key: string;
   label: string;
+  /** Listed under the item before it (a city under its state), indented in menus. */
+  child?: boolean;
   /** Link target, relative to the site root. */
   path: string;
   /** Path prefixes (relative to the site root, no leading slash) that belong to this item. */
@@ -103,14 +110,22 @@ export function localTrail(path: string): NavItem[] {
   return city ? [all, stateItem, city] : [all, stateItem];
 }
 
+/** Keys in reading order: each featured state followed by its cities, then other states' cities. */
+function localOrder(): string[] {
+  const featured = STATE_ITEMS.flatMap((s) => [
+    s.key,
+    ...CITY_LIST.filter((c) => c.state.toLowerCase() === s.key).map((c) => c.key),
+  ]);
+  const others = CITY_LIST.filter((c) => !FEATURED_STATES.includes(c.state)).map((c) => c.key);
+  return [...featured, ...others];
+}
+
 /** Items in reading order (the trail runs All states › Massachusetts › Boston). */
 export function orderedItems(group: NavGroup): NavItem[] {
   const items = group.items ?? [];
   if (group.key !== 'local') return items;
   const by = new Map(items.map((i) => [i.key, i]));
-  return ['states', ...STATE_ITEMS.map((s) => s.key), ...CITY_ITEMS.map((c) => c.key)]
-    .map((k) => by.get(k)!)
-    .filter(Boolean);
+  return ['states', ...localOrder()].map((k) => by.get(k)!).filter(Boolean);
 }
 
 /** The group and item a page belongs to, from its path relative to the site root. */
@@ -129,7 +144,10 @@ export function activeNav(path: string): { group?: NavGroup; item?: NavItem } {
  * The phone menu: every page under a heading, one link per row, all the same size.
  * Keys match NAV's item and group keys, so the current page is marked the same way.
  */
-export const PHONE_NAV: { heading: string; items: { key: string; label: string; path: string }[] }[] = [
+export const PHONE_NAV: {
+  heading: string;
+  items: { key: string; label: string; path: string; child?: boolean }[];
+}[] = [
   {
     heading: 'Congress',
     items: [
@@ -150,8 +168,10 @@ export const PHONE_NAV: { heading: string; items: { key: string; label: string; 
     heading: 'States & local',
     items: [
       { key: 'states', label: 'All states', path: 'states/' },
-      ...STATE_ITEMS.map(({ key, label, path }) => ({ key, label, path })),
-      ...CITY_ITEMS.map(({ key, label, path }) => ({ key, label, path })),
+      ...localOrder().map((k) => {
+        const { key, label, path, child } = [...STATE_ITEMS, ...CITY_ITEMS].find((i) => i.key === k)!;
+        return { key, label, path, child };
+      }),
     ],
   },
   {

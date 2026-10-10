@@ -66,11 +66,18 @@ describe('activeNav', () => {
 describe('orderedItems', () => {
   it('reads the local trail from all states down to the cities', () => {
     const local = NAV.find((g) => g.key === 'local')!;
-    // Featured states, then every city, in registry order.
+    // Each featured state, then its cities in registry order.
     const labels = orderedItems(local).map((i) => i.label);
-    expect(labels.slice(0, 5)).toEqual(['All states', 'Massachusetts', 'Connecticut', 'Boston', 'Worcester']);
-    expect(labels).toContain('Somerville');
-    expect(labels).toContain('Bristol');
+    expect(labels).toEqual([
+      'All states',
+      'Massachusetts',
+      'Boston',
+      'Worcester',
+      'Somerville',
+      'Connecticut',
+      'Bristol',
+      'Middletown',
+    ]);
   });
 });
 

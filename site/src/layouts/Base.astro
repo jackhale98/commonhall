@@ -155,7 +155,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
                 <h2>{section.heading}</h2>
                 <ul>
                   {section.items.map((item) => (
-                    <li>
+                    <li class={item.child ? 'nav-child' : undefined}>
                       <a href={href(item.path)} aria-current={currentKey === item.key ? 'page' : undefined}>
                         {item.label}
                       </a>
@@ -186,7 +186,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
                     </button>
                     <ul class="nav-pop" id={`nav-${group.key}`} aria-label={group.label}>
                       {orderedItems(group).map((item) => (
-                        <li>
+                        <li class={item.child ? 'nav-child' : undefined}>
                           <a href={href(item.path)} aria-current={here.item?.key === item.key ? 'page' : undefined}>
                             {item.label}
                           </a>
@@ -778,6 +778,11 @@ const phoneNav = PHONE_NAV.map((section) => ({
     flex: none;
     display: flex;
     align-items: center;
+  }
+  /* A city under its state in the menus. */
+  .nav-child :global(a),
+  .nav-child a {
+    padding-left: 1.6rem;
   }
   .subnav.is-trail li + li::before {
     content: '›';
