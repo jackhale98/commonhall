@@ -104,21 +104,35 @@ async function main() {
   });
   const dbUrl = process.env.SUPABASE_DB_URL;
   if (!dbUrl) throw new Error('Set SUPABASE_DB_URL');
-  const city = values.city!;
-  const known = DISTRICT_SOURCES[city];
-  if (!known) throw new Error(`No district source for ${city}; add one to DISTRICT_SOURCES`);
-  const url = values.url ?? known.url;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Download failed: HTTP ${response.status}`);
-  const geojson = (await response.json()) as { features: Feature[] };
+  // "all" loads every city with a source; stray spaces from a typed input are ignored.
+  const wanted = values.city!.trim().toLowerCase();
+  const cities = wanted === 'all' ? Object.keys(DISTRICT_SOURCES) : [wanted];
+  for (const city of cities)
+    if (!DISTRICT_SOURCES[city])
+      throw new Error(`No district source for "${city}". Known: ${Object.keys(DISTRICT_SOURCES).join(', ')}, or all`);
+  if (values.url && cities.length > 1) throw new Error('--url needs a single --city');
   const sql = postgres(dbUrl, { max: 1, prepare: false, onnotice: () => undefined });
+  const failed: string[] = [];
   try {
-    const n = await loadDistricts(sql, geojson, url, city, known);
-    console.log(`Loaded ${n} ${city} district${n === 1 ? '' : 's'}.`);
-    if (n !== known.expect) throw new Error(`Expected ${known.expect}, got ${n}. Check the source.`);
+    for (const city of cities) {
+      const known = DISTRICT_SOURCES[city]!;
+      const url = values.url ?? known.url;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`download failed: HTTP ${response.status}`);
+        const geojson = (await response.json()) as { features: Feature[] };
+        const n = await loadDistricts(sql, geojson, url, city, known);
+        if (n !== known.expect) throw new Error(`expected ${known.expect}, got ${n}; check the source`);
+        console.log(`${city}: loaded ${n} district${n === 1 ? '' : 's'}.`);
+      } catch (error) {
+        failed.push(city);
+        console.error(`${city}: ${error instanceof Error ? error.message : error}`);
+      }
+    }
   } finally {
     await sql.end();
   }
+  if (failed.length) throw new Error(`Failed: ${failed.join(', ')}`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

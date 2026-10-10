@@ -8,9 +8,16 @@ on:
   workflow_dispatch:
     inputs:
       city:
-        description: City key (see DISTRICT_SOURCES in scripts/load-districts.ts)
-        type: string
-        default: ma-boston
+        description: Which city (or all of them); sources are in scripts/load-districts.ts
+        type: choice
+        default: all
+        options:
+          - all
+          - ma-boston
+          - ma-cambridge
+          - ma-somerville
+          - ct-bristol
+          - ct-middletown
 
 permissions:
   contents: read
