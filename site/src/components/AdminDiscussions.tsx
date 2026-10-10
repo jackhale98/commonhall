@@ -21,7 +21,7 @@ const TYPE_LABEL: Record<DiscussionTargetType, string> = {
   local_matter: 'Boston matter',
   executive_order: 'Executive order',
   scotus_case: 'Supreme Court decision',
-  capital_project: 'Boston capital project',
+  capital_project: 'Capital project',
 };
 
 /** Discussions grouped by status; closed ones are folded away. */
@@ -105,7 +105,14 @@ export default function AdminDiscussions() {
       ...EMPTY,
       target_type: r.target_type,
       target_id: r.target_id,
-      jurisdiction: r.target_type === 'state_bill' ? 'ma' : r.target_type === 'local_matter' ? 'boston' : 'federal',
+      jurisdiction:
+        r.target_type === 'state_bill'
+          ? 'ma'
+          : r.target_type === 'local_matter' || r.target_type === 'capital_project'
+            ? r.target_id.startsWith('worcester-')
+              ? 'worcester'
+              : 'boston'
+            : 'federal',
     });
     window.scrollTo({ top: 0 });
   };
@@ -117,7 +124,7 @@ export default function AdminDiscussions() {
     const client = await getClient();
     const row = {
       ...draft,
-      district: draft.jurisdiction === 'boston' ? draft.district : null,
+      district: draft.jurisdiction === 'boston' || draft.jurisdiction === 'worcester' ? draft.district : null,
       target_id: draft.target_type ? draft.target_id?.trim() || null : null,
       opens_at: draft.opens_at || null,
       closes_at: draft.closes_at || null,
@@ -210,16 +217,17 @@ export default function AdminDiscussions() {
                 <option value="federal">United States</option>
                 <option value="ma">Massachusetts</option>
                 <option value="boston">Boston</option>
+                <option value="worcester">Worcester</option>
               </select>
             </div>
-            {draft.jurisdiction === 'boston' && (
+            {(draft.jurisdiction === 'boston' || draft.jurisdiction === 'worcester') && (
               <div class="field">
                 <label for="d-district">Council district (blank = citywide)</label>
                 <input
                   id="d-district"
                   type="number"
                   min={1}
-                  max={9}
+                  max={draft.jurisdiction === 'worcester' ? 5 : 9}
                   value={draft.district ?? ''}
                   onInput={(e) => set('district', e.currentTarget.value ? Number(e.currentTarget.value) : null)}
                 />
@@ -252,7 +260,7 @@ export default function AdminDiscussions() {
                 <option value="local_matter">Boston council matter</option>
                 <option value="executive_order">Executive order</option>
                 <option value="scotus_case">Supreme Court decision</option>
-                <option value="capital_project">Boston capital project</option>
+                <option value="capital_project">Capital project (Boston id, or worcester-…)</option>
               </select>
             </div>
             {draft.target_type && (

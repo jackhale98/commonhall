@@ -49,7 +49,14 @@ import {
   type ZbaAppeal,
   type ZbaDecisionCount,
 } from './local';
-import type { CapitalDocument, CapitalItem, CityCommittee, CityMeeting } from './worcester';
+import type {
+  CapitalDocument,
+  CapitalItem,
+  CityCommittee,
+  CityMeeting,
+  OperatingBudget,
+  OperatingLine,
+} from './worcester';
 import {
   RestError,
   inList,
@@ -859,6 +866,30 @@ export const loadWorcesterCapital = memo(async () => {
     doc,
     items: items.filter((i) => i.fiscal_year === doc.fiscal_year && i.stage === doc.stage).map(num),
   }));
+});
+
+/** The newest operating budget's revenue and spending summaries (null before it loads). */
+export const loadWorcesterOperating = memo(async (): Promise<OperatingBudget | null> => {
+  const [docs, lines] = await Promise.all([
+    selectAllOptional<Omit<OperatingBudget, 'lines'>>('local_operating_documents', {
+      select: 'fiscal_year,stage,title,source_url,columns',
+      city: 'eq.worcester',
+      order: 'fiscal_year.desc',
+    }),
+    selectAllOptional<OperatingLine & { fiscal_year: number }>('local_operating_lines', {
+      select: 'fiscal_year,kind,seq,grp,label,amounts',
+      city: 'eq.worcester',
+      order: 'kind.asc,seq.asc',
+    }),
+  ]);
+  const doc = docs[0];
+  if (!doc) return null;
+  return {
+    ...doc,
+    lines: lines
+      .filter((l) => l.fiscal_year === doc.fiscal_year)
+      .map((l) => ({ ...l, amounts: l.amounts.map(Number) })),
+  };
 });
 
 export const loadWorcesterDistricts = memo(async () =>

@@ -1138,3 +1138,23 @@ address lookup matches any city's district map. Worcester's pages mirror Boston'
 tabs (Overview, Council, Committees, Budget) and sit under Massachusetts' Local tab.
 Agenda items and roll-call votes aren't in a structured form yet (agenda pages only);
 311 work orders are on the open data site for a later phase.
+
+## 83. Worcester's operating budget and project pages
+
+- **Operating budget:** the same PDF series has an annual operating budget (455
+  pages). We keep only its "Revenue Summary" and "Expenditure Summary" tables
+  (24 revenue lines in six groups, 41 spending lines in three), with every column
+  the book prints (FY27: FY25 actuals, FY26 budget, FY27 budget). The book prints
+  these tables more than once and in parts, so the loader takes the first copy that
+  reaches the grand total with every group adding up (within $10 of rounding; the
+  city's FY25 City Services total is $3 off its lines). The Budget tab shows it as
+  Boston's does: total and change, the property tax share, revenue by group and
+  spending by line.
+- **Project pages:** Worcester's PDF has no project ids, so a project is keyed by
+  department and title ("public-works-resurfacing"). A program funded every year
+  keeps one page, which lists each budget's amounts, and one discussion. Discussions
+  reuse the `capital_project` target with the id `worcester-{slug}`.
+- **Discussions in Worcester:** `worcester` is a discussion jurisdiction (with an
+  optional council district, 1–5); the residency check compares the saved address's
+  city with the discussion's. The admin form now defaults a capital project request
+  to its city (it had defaulted Boston projects to "United States").

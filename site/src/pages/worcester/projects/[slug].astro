@@ -1,0 +1,182 @@
+---
+import DiscussionLink from '../../../components/DiscussionLink.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadDiscussionsByTarget, loadWorcesterCapital } from '../../../lib/build-data';
+import { formatMoney } from '../../../lib/finance';
+import { href } from '../../../lib/paths';
+import {
+  projectSlug,
+  projectTargetId,
+  yearSpend,
+  type CapitalDocument,
+  type CapitalItem,
+} from '../../../lib/worcester';
+
+/** One page per project, across the budgets we hold (a program funded every year keeps one page). */
+export async function getStaticPaths() {
+  const budgets = await loadWorcesterCapital();
+  const bySlug = new Map<string, { item: CapitalItem; doc: CapitalDocument }[]>();
+  for (const b of budgets)
+    for (const item of b.items) {
+      const slug = projectSlug(item);
+      const list = bySlug.get(slug) ?? [];
+      // Two lines with the same title in one budget: keep the first.
+      if (!list.some((x) => x.doc.fiscal_year === b.doc.fiscal_year)) list.push({ item, doc: b.doc });
+      bySlug.set(slug, list);
+    }
+  return [...bySlug].map(([slug, years]) => ({ params: { slug }, props: { slug, years } }));
+}
+
+interface Props {
+  slug: string;
+  /** Newest budget first. */
+  years: { item: CapitalItem; doc: CapitalDocument }[];
+}
+
+const { slug, years } = Astro.props;
+const { item: p, doc } = years[0]!;
+const targetId = projectTargetId(slug);
+const discussion = (await loadDiscussionsByTarget()).get(`capital_project:${targetId}`);
+const fy = (y: number) => `FY${String(y).slice(2)}`;
+const description = years.find((y) => y.item.description)?.item.description ?? null;
+const rows: [string, (i: CapitalItem) => number][] = [
+  ['Borrowing', (i) => i.borrowing],
+  ['Cash', (i) => i.cash],
+  ['Grants and donations', (i) => i.grants],
+  ['New borrowing approved', (i) => i.new_authorization],
+  ['Approved in earlier years', (i) => i.prior_authorization],
+];
+---
+
+<Base
+  title={`${p.title} (Worcester capital project)`}
+  description={`${p.title}: ${p.department} capital project, ${formatMoney(yearSpend(p))} in Worcester's ${fy(doc.fiscal_year)} capital budget.`}
+  section="states"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('worcester/')}>Worcester</a> › <a href={href('worcester/budget/')}>Budget</a> › {p.title}
+  </nav>
+  <header class="page-head">
+    <p class="kicker">{[p.department, p.category].filter(Boolean).join(' · ')}</p>
+    <h1>{p.title}</h1>
+    {description && <p class="lede scope">{description}</p>}
+  </header>
+
+  <DiscussionLink discussion={discussion} targetType="capital_project" targetId={targetId} />
+
+  <div class="project-grid">
+    <section class="panel" aria-labelledby="money-h">
+      <h2 id="money-h" class="h-small">
+        {fy(doc.fiscal_year)} {doc.stage === 'proposed' ? 'proposal' : 'budget'}
+      </h2>
+      <p class="money-head">
+        <span class="money-big">{formatMoney(yearSpend(p))}</span>
+        <span class="muted">in borrowing and cash this year</span>
+      </p>
+      <dl class="money-rows">
+        {rows
+          .filter(([, get]) => get(p) > 0)
+          .map(([label, get]) => (
+            <div>
+              <dt>{label}</dt>
+              <dd>{formatMoney(get(p))}</dd>
+            </div>
+          ))}
+      </dl>
+    </section>
+
+    {years.length > 1 && (
+      <section class="panel" aria-labelledby="years-h">
+        <h2 id="years-h" class="h-small">
+          Year by year
+        </h2>
+        <table class="year-table">
+          <thead>
+            <tr>
+              <th scope="col">Budget</th>
+              <th scope="col">Borrowing and cash</th>
+              <th scope="col">New borrowing approved</th>
+            </tr>
+          </thead>
+          <tbody>
+            {years.map((y) => (
+              <tr>
+                <th scope="row">
+                  {fy(y.doc.fiscal_year)} {y.doc.stage}
+                </th>
+                <td>{formatMoney(yearSpend(y.item))}</td>
+                <td>{formatMoney(y.item.new_authorization)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )}
+  </div>
+
+  <p class="small muted">
+    From Worcester’s{' '}
+    {years.map((y, i) => (
+      <>
+        {i > 0 && ' and '}
+        <a href={y.doc.source_url} rel="noopener">
+          {y.doc.title}
+        </a>
+      </>
+    ))}
+    , as published. Borrowing is repaid over years from the operating budget; “new borrowing approved” is loan authority
+    the council grants for the project. <a href={href('worcester/budget/#projects-h')}>All projects</a>.
+  </p>
+</Base>
+
+<style>
+  .scope {
+    max-width: 65ch;
+  }
+  .project-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-4) 0;
+  }
+  @media (min-width: 60rem) {
+    .project-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .money-head {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0 0 var(--space-3);
+  }
+  .money-big {
+    font-size: var(--step-3);
+    font-weight: 700;
+  }
+  .money-rows {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+  }
+  .money-rows div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border-bottom: 1px solid var(--border);
+    padding-block: var(--space-1);
+  }
+  .money-rows dd {
+    margin: 0;
+    font-weight: 600;
+  }
+  .year-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .year-table th,
+  .year-table td {
+    text-align: left;
+    padding: var(--space-1) var(--space-2) var(--space-1) 0;
+    border-bottom: 1px solid var(--border);
+  }
+</style>

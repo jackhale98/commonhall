@@ -1,8 +1,10 @@
 ---
 import CityMeetingList from '../../components/CityMeetingList.astro';
+import LiveDiscussions from '../../components/LiveDiscussions';
 import WorcesterHeader from '../../components/WorcesterHeader.astro';
 import Base from '../../layouts/Base.astro';
 import {
+  loadDiscussions,
   loadWorcesterCapital,
   loadWorcesterCommittees,
   loadWorcesterMeetings,
@@ -12,12 +14,14 @@ import { formatMoney } from '../../lib/finance';
 import { href } from '../../lib/paths';
 import { spendByDepartment, yearSpend } from '../../lib/worcester';
 
-const [officials, meetings, committees, budgets] = await Promise.all([
+const [officials, meetings, committees, budgets, discussions] = await Promise.all([
   loadWorcesterOfficials(),
   loadWorcesterMeetings(),
   loadWorcesterCommittees(),
   loadWorcesterCapital(),
+  loadDiscussions(),
 ]);
+const worcesterDiscussions = discussions.filter((d) => d.jurisdiction === 'worcester' && d.status === 'open');
 const today = new Date().toISOString().slice(0, 10);
 const upcoming = meetings
   .filter((m) => m.date >= today && m.status !== 'Cancelled')
@@ -107,6 +111,16 @@ const WORDS: Record<number, string> = { 4: 'four', 5: 'five', 6: 'six', 7: 'seve
       </ul>
     </section>
   )}
+
+  <section aria-labelledby="disc-h">
+    <h2 id="disc-h">Have your say on Worcester</h2>
+    <LiveDiscussions
+      client:idle
+      initial={worcesterDiscussions}
+      jurisdictions={['worcester']}
+      empty="No Worcester discussion is open right now. Ask for one from any capital project’s page."
+    />
+  </section>
 </Base>
 
 <style>

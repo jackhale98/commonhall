@@ -3,11 +3,42 @@ import WorcesterCapital from '../../../components/WorcesterCapital';
 import WorcesterHeader from '../../../components/WorcesterHeader.astro';
 import BarList from '../../../components/viz/BarList';
 import Base from '../../../layouts/Base.astro';
-import { loadWorcesterCapital } from '../../../lib/build-data';
+import { loadWorcesterCapital, loadWorcesterOperating } from '../../../lib/build-data';
 import { formatMoney } from '../../../lib/finance';
-import { planTotals, spendByDepartment, yearSpend } from '../../../lib/worcester';
+import { budgetChange } from '../../../lib/local';
+import { operatingGroups, planTotals, spendByDepartment, yearSpend } from '../../../lib/worcester';
 
-const budgets = await loadWorcesterCapital();
+const [budgets, operating] = await Promise.all([loadWorcesterCapital(), loadWorcesterOperating()]);
+// Operating budget: revenue by printed group, spending by department (largest first).
+const opLines = operating?.lines ?? [];
+const sumLast = (kind: 'revenue' | 'spending', back = 1) =>
+  opLines.filter((l) => l.kind === kind).reduce((n, l) => n + (l.amounts.at(-back) ?? 0), 0);
+const opTotal = sumLast('spending');
+const opPrev = sumLast('spending', 2);
+const opChange = opTotal - opPrev;
+const revenueTotal = sumLast('revenue');
+const share = (v: number, of: number) => (of > 0 ? `${Math.round((v / of) * 100)}%` : '');
+const revenueGroups = operating ? operatingGroups(opLines, 'revenue').filter((g) => g.now > 0) : [];
+const revenueBars = revenueGroups.map((g) => ({ label: g.label, value: g.now, note: share(g.now, revenueTotal) }));
+const propertyTax = revenueGroups.find((g) => /property tax/i.test(g.label))?.now ?? 0;
+const spendingLines = opLines
+  .filter((l) => l.kind === 'spending')
+  .map((l) => ({ label: l.label, grp: l.grp, now: l.amounts.at(-1) ?? 0, before: l.amounts.at(-2) ?? 0 }))
+  .sort((a, b) => b.now - a.now);
+const OP_TOP = 8;
+const spendingBars = [
+  ...spendingLines.slice(0, OP_TOP).map((l) => ({ label: l.label, value: l.now, note: budgetChange(l.now, l.before) })),
+  ...(spendingLines.length > OP_TOP
+    ? [
+        {
+          label: 'Everything else',
+          value: spendingLines.slice(OP_TOP).reduce((n, l) => n + l.now, 0),
+          note: `(${spendingLines.length - OP_TOP} more)`,
+        },
+      ]
+    : []),
+];
+const columns = operating?.columns ?? [];
 const fy = (y: number) => `FY${String(y).slice(2)}`;
 const label = (b: (typeof budgets)[number]) => `${fy(b.doc.fiscal_year)} ${b.doc.stage}`;
 const current = budgets[0];
@@ -38,7 +69,91 @@ const prevSpend = previous ? previous.items.reduce((n, i) => n + yearSpend(i), 0
   description="Worcester's capital budget: what the city plans to build, repair and buy this year, by department and project."
   section="states"
 >
-  <WorcesterHeader current="budget" lede="What the city plans to build, repair and buy, project by project." />
+  <WorcesterHeader
+    current="budget"
+    lede="What the city spends to run itself, where the money comes from, and what it plans to build."
+  />
+
+  {operating && (
+    <section aria-labelledby="op-h">
+      <h2 id="op-h">
+        Operating budget, {fy(operating.fiscal_year)}
+        {operating.stage === 'proposed' && <span class="pill status-pill">Proposed</span>}
+      </h2>
+      <p class="small muted section-note">
+        Salaries, services, schools and running costs for a year (July {operating.fiscal_year - 1} to June{' '}
+        {operating.fiscal_year})
+        {operating.stage === 'proposed' ? ', as the City Manager proposed it to the council' : ', as adopted'}.
+      </p>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Operating budget</dt>
+          <dd>{formatMoney(opTotal)}</dd>
+          {opPrev > 0 && (
+            <p class="small muted stat-note">
+              {opChange >= 0 ? '+' : '−'}
+              {formatMoney(Math.abs(opChange))} ({budgetChange(opTotal, opPrev)}) on {columns.at(-2)}
+            </p>
+          )}
+        </div>
+        <div class="stat">
+          <dt>Paid for by property tax</dt>
+          <dd>{share(propertyTax, revenueTotal)}</dd>
+          <p class="small muted stat-note">of {formatMoney(revenueTotal)} in revenue</p>
+        </div>
+      </dl>
+      <div class="budget-charts">
+        <section class="panel" aria-labelledby="rev-h">
+          <h3 id="rev-h" class="h-small">
+            Where the money comes from
+          </h3>
+          <BarList items={revenueBars} label={`Revenue by source, ${fy(operating.fiscal_year)}`} format={formatMoney} />
+        </section>
+        <section class="panel" aria-labelledby="spend-h">
+          <h3 id="spend-h" class="h-small">
+            Where it goes
+          </h3>
+          <BarList
+            items={spendingBars}
+            label={`Operating budget by department, ${fy(operating.fiscal_year)}`}
+            tone="fill-sky"
+            format={formatMoney}
+          />
+          <p class="small muted">Change on {columns.at(-2)}.</p>
+          <details class="all-depts">
+            <summary>All {spendingLines.length} lines</summary>
+            <table class="dept-table">
+              <thead>
+                <tr>
+                  <th scope="col">Line</th>
+                  <th scope="col">{fy(operating.fiscal_year)}</th>
+                  <th scope="col">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {spendingLines.map((l) => (
+                  <tr>
+                    <th scope="row">
+                      {l.label} <span class="muted small">· {l.grp}</span>
+                    </th>
+                    <td>{formatMoney(l.now)}</td>
+                    <td>{budgetChange(l.now, l.before)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        </section>
+      </div>
+      <p class="small muted">
+        From the revenue and expenditure summary of{' '}
+        <a href={operating.source_url} rel="noopener">
+          {operating.title}
+        </a>
+        ; every group adds up to its printed total.
+      </p>
+    </section>
+  )}
 
   {!current ? (
     <p class="muted">The capital budget hasn’t loaded yet.</p>
@@ -135,6 +250,31 @@ const prevSpend = previous ? previous.items.reduce((n, i) => n + yearSpend(i), 0
       grid-template-columns: 1fr 1fr;
       align-items: start;
     }
+  }
+  .all-depts summary {
+    cursor: pointer;
+    color: var(--link);
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .dept-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step--1);
+  }
+  .dept-table th,
+  .dept-table td {
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .dept-table th[scope='row'],
+  .dept-table thead th:first-child {
+    text-align: left;
+    font-weight: 500;
   }
   .status-pill {
     margin-left: var(--space-2);

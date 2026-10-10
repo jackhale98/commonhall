@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { parseCapitalBudget, subtotalMismatches } from '../src/local/worcester-budget.ts';
+import { parseCapitalBudget, parseOperatingSummary, subtotalMismatches } from '../src/local/worcester-budget.ts';
 
 // Text of the city's PDFs (pdftotext -layout), as the loader sees them.
 const text = (name: string) => readFileSync(new URL(`./fixtures/worcester/${name}`, import.meta.url), 'utf8');
@@ -52,5 +52,35 @@ describe('Worcester capital budget', () => {
     expect(fy26.items).toHaveLength(82);
     expect(subtotalMismatches(fy26)).toEqual([]);
     expect(fy26.planWarnings).toEqual(['Facility Improvements 2026: rows add to 40247898, printed 41662898']);
+  });
+});
+
+describe('Worcester operating budget summaries', () => {
+  it('reads revenue and spending by group, every group adding up', () => {
+    const fy27 = parseOperatingSummary(text('fy27-operating-proposed-summary.txt'));
+    expect(fy27.problems).toEqual([]);
+    expect(fy27.columns).toEqual(['FY25 Actuals', 'FY26 Budget', 'FY27 Budget']);
+    const revenue = fy27.lines.filter((l) => l.kind === 'revenue');
+    expect(revenue.reduce((n, l) => n + l.amounts[2]!, 0)).toBe(1_001_107_417);
+    expect(revenue.find((l) => l.label === 'Hotel and Meals Tax')).toMatchObject({
+      grp: 'Local Receipts',
+      amounts: [5_326_896, 5_300_000, 5_400_000],
+    });
+    // A group printed as one line is its own group.
+    expect(revenue.find((l) => l.label === 'Property Tax Levy')?.grp).toBe('Property Tax Levy');
+    // A label wrapped onto two lines.
+    expect(fy27.lines.find((l) => l.label === 'Charter, School Choice, & Special Education')?.grp).toBe('Education');
+    expect([...new Set(fy27.lines.filter((l) => l.kind === 'spending').map((l) => l.grp))]).toEqual([
+      'Fixed Costs',
+      'Education',
+      'City Services',
+    ]);
+  });
+
+  it('finds the complete table when the book prints it in parts too (FY26)', () => {
+    const fy26 = parseOperatingSummary(text('fy26-operating-adopted-summary.txt'));
+    expect(fy26.problems).toEqual([]);
+    expect(fy26.columns).toEqual(['FY25 Budget', 'FY26 Budget']);
+    expect(fy26.lines.filter((l) => l.kind === 'spending').reduce((n, l) => n + l.amounts[1]!, 0)).toBe(947_928_261);
   });
 });

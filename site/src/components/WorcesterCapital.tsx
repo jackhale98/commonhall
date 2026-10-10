@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { formatMoney } from '../lib/finance';
-import { yearSpend, type CapitalItem } from '../lib/worcester';
+import { capitalProjectHref } from '../lib/paths';
+import { projectSlug, projectTargetId, yearSpend, type CapitalItem } from '../lib/worcester';
 
 const PAGE = 10;
 const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? 5 : PAGE);
@@ -112,7 +113,9 @@ export default function WorcesterCapital({ budgets }: { budgets: Budget[] }) {
                 <li key={i.seq}>
                   <p class="meta">{[i.department, i.category].filter(Boolean).join(' · ')}</p>
                   <p class="capital-name">
-                    <strong>{i.title}</strong>
+                    <a href={capitalProjectHref(projectTargetId(projectSlug(i)))}>
+                      <strong>{i.title}</strong>
+                    </a>
                   </p>
                   {i.description && <p class="small capital-scope">{i.description}</p>}
                   <p class="small muted">

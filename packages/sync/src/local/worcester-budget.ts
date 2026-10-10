@@ -252,3 +252,114 @@ export function subtotalMismatches(parsed: ParsedCapitalBudget): string[] {
   }
   return problems;
 }
+
+// ---- Operating budget -------------------------------------------------------
+
+export interface OperatingLine {
+  kind: 'revenue' | 'spending';
+  seq: number;
+  /** The printed group: "Local Receipts", "Fixed Costs", "City Services"… */
+  grp: string;
+  label: string;
+  /** One amount per column. */
+  amounts: number[];
+}
+
+export interface ParsedOperatingSummary {
+  /** e.g. ["FY25 Actuals", "FY26 Budget", "FY27 Budget"]. */
+  columns: string[];
+  lines: OperatingLine[];
+  /** Groups or totals whose lines don't add up to the printed figure. */
+  problems: string[];
+}
+
+/** The city's printed totals can differ from their lines by a few dollars of rounding. */
+const TOLERANCE = 10;
+
+const num = (raw: string) => {
+  if (raw === '-') return 0;
+  const n = Number(raw.replace(/[(),$]/g, ''));
+  return raw.startsWith('(') ? -n : n;
+};
+
+/**
+ * The operating budget's "Revenue Summary" and "Expenditure Summary" tables: each
+ * line with its amounts, grouped as printed. A group closes on its total line
+ * ("Local Receipts Total" or "Total Fixed Costs"); a line that is its own total
+ * ("Property Tax Levy Total", "Free Cash") is a group of one. Every group, and the
+ * grand total, is checked against the printed figure.
+ */
+export function parseOperatingSummary(text: string): ParsedOperatingSummary {
+  const lines = text.split(/\r?\n/);
+  const out: OperatingLine[] = [];
+  const problems: string[] = [];
+  let columns: string[] = [];
+
+  /** One table from its heading line to its grand total, or null if it never gets there. */
+  const readTable = (kind: OperatingLine['kind'], start: number, grand: RegExp) => {
+    const head = [...lines[start]!.matchAll(/FY\d{2} (?:Actuals|Budget)/g)].map((m) => m[0]);
+    const found: OperatingLine[] = [];
+    const issues: string[] = [];
+    let pending: Omit<OperatingLine, 'grp'>[] = [];
+    // The line before, if it could be the first half of a wrapped label.
+    let carry = '';
+    const check = (what: string, rows: { amounts: number[] }[], printed: number[]) =>
+      printed.forEach((total, k) => {
+        const sum = rows.reduce((n, l) => n + l.amounts[k]!, 0);
+        if (Math.abs(sum - total) > TOLERANCE)
+          issues.push(`${kind} ${what} ${head[k]}: lines add to ${sum}, printed ${total}`);
+      });
+    for (const raw of lines.slice(start + 1)) {
+      const trimmed = raw.trim();
+      if (!trimmed) continue;
+      const m = /^(.*?)\s{2,}((?:\(?[\d,]+\)?|-)(?:\s+(?:\(?[\d,]+\)?|-))*)$/.exec(trimmed);
+      const amounts = m ? m[2]!.split(/\s+/) : [];
+      if (!m || amounts.length !== head.length) {
+        // A label wrapped onto two lines: "Charter, School Choice, & Special" / "Education  47,109,010 …".
+        carry =
+          trimmed.length <= 45 && /^[A-Z]/.test(trimmed) && trimmed !== trimmed.toUpperCase() && !/\d/.test(trimmed)
+            ? trimmed
+            : '';
+        continue;
+      }
+      const label = `${carry} ${m[1]!.trim()}`.trim();
+      carry = '';
+      const values = amounts.map(num);
+      if (grand.test(label)) {
+        // Lines not followed by a group total stand alone.
+        for (const l of pending) found.push({ ...l, grp: l.label });
+        check('total', found, values);
+        return { head, found, issues };
+      }
+      const group = /^Total\s+(.+)$/.exec(label)?.[1] ?? /^(.+?)\s+Total$/.exec(label)?.[1];
+      if (group) {
+        if (pending.length) {
+          check(group, pending, values);
+          for (const l of pending) found.push({ ...l, grp: group });
+          pending = [];
+        } else found.push({ kind, seq: 0, grp: group, label: group, amounts: values });
+        continue;
+      }
+      pending.push({ kind, seq: 0, label, amounts: values });
+    }
+    return null;
+  };
+
+  /** The book repeats these tables in parts; the full one is the first that reaches the grand total and adds up. */
+  const table = (kind: OperatingLine['kind'], heading: RegExp, grand: RegExp) => {
+    const starts = lines.flatMap((l, i) => (heading.test(l) ? [i] : []));
+    const reads = starts.map((i) => readTable(kind, i, grand)).filter((r) => r !== null && r.head.length >= 2);
+    const good = reads.find((r) => r!.issues.length === 0) ?? reads[0];
+    if (!good) {
+      problems.push(`No complete ${kind} summary table`);
+      return;
+    }
+    problems.push(...good.issues);
+    if (!columns.length) columns = good.head;
+    good.found.forEach((l, i) => out.push({ ...l, seq: i + 1 }));
+  };
+
+  table('revenue', /^\s*Revenue Summary\s+FY\d{2} (?:Actuals|Budget)\s+FY\d{2} Budget/, /^Total Revenues?$/);
+  table('spending', /^\s*Expenditure Summary\s+FY\d{2} (?:Actuals|Budget)\s+FY\d{2} Budget/, /^Total Expenditures?$/);
+  return { columns, lines: out, problems };
+}

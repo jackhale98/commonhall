@@ -1,6 +1,6 @@
 name: Load Worcester budget
 
-# Worcester's capital budget, from the PDFs the city posts on its open data site
+# Worcester's capital and operating budgets, from the PDFs the city posts on its open data site
 # (opendata.worcesterma.gov) once or twice a year: the proposal in spring, the
 # adopted budget in summer. A monthly run picks up a new one; documents already
 # loaded are skipped. Refuses a document whose lines don't match its sub-totals.

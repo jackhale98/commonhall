@@ -130,7 +130,7 @@ automatically.
 | Worcester councilors and standing committees | [worcesterma.gov](https://www.worcesterma.gov/city-council/councilors) | weekly |
 | Worcester council and committee meetings, agendas, minutes | [PrimeGov](https://worcesterma.primegov.com/public/portal) | hourly |
 | Worcester council districts | [Worcester open data](https://opendata.worcesterma.gov/) (2020 Census map) | on redistricting |
-| Worcester capital budget | [Worcester open data](https://opendata.worcesterma.gov/) (annual PDF) | monthly check |
+| Worcester capital and operating budgets | [Worcester open data](https://opendata.worcesterma.gov/) (annual PDFs) | monthly check |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 
@@ -174,7 +174,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
-| Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget from the city's PDF, checked against its printed sub-totals |
+| Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |
 

@@ -19,6 +19,7 @@ interface Props {
 
 const LEVELS: { key: Jurisdiction; title: string }[] = [
   { key: 'boston', title: 'Boston' },
+  { key: 'worcester', title: 'Worcester' },
   { key: 'ma', title: 'Massachusetts' },
   { key: 'federal', title: 'National' },
 ];

@@ -82,3 +82,48 @@ export function planTotals(doc: Pick<CapitalDocument, 'plan' | 'plan_years'>): {
     amount: (doc.plan ?? []).reduce((n, r) => n + (r.amounts[k] ?? 0), 0),
   }));
 }
+
+/**
+ * A project's id across budgets: its department and title ("public-works-resurfacing"),
+ * so a project funded year after year keeps one page and one discussion.
+ */
+export function projectSlug(i: Pick<CapitalItem, 'department' | 'title'>): string {
+  return `${i.department} ${i.title}`
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 90);
+}
+
+/** The discussion target id for a Worcester capital project. */
+export const projectTargetId = (slug: string) => `worcester-${slug}`;
+
+export interface OperatingLine {
+  kind: 'revenue' | 'spending';
+  seq: number;
+  grp: string;
+  label: string;
+  amounts: number[];
+}
+
+export interface OperatingBudget {
+  fiscal_year: number;
+  stage: 'proposed' | 'adopted';
+  title: string;
+  source_url: string;
+  columns: string[];
+  lines: OperatingLine[];
+}
+
+/** Totals per printed group for the last column (this year) and the one before it. */
+export function operatingGroups(lines: OperatingLine[], kind: OperatingLine['kind']) {
+  const by = new Map<string, { now: number; before: number }>();
+  for (const l of lines.filter((x) => x.kind === kind)) {
+    const g = by.get(l.grp) ?? { now: 0, before: 0 };
+    g.now += l.amounts.at(-1) ?? 0;
+    g.before += l.amounts.at(-2) ?? 0;
+    by.set(l.grp, g);
+  }
+  return [...by].map(([label, v]) => ({ label, ...v })).sort((a, b) => b.now - a.now);
+}

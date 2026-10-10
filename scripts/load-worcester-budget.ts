@@ -1,14 +1,16 @@
 /**
- * Load Worcester's capital budget from the city's open data site, where each year's
- * budget is posted as a PDF ("Fiscal Year 2027 Annual Capital Budget (Proposed)").
+ * Load Worcester's capital and operating budgets from the city's open data site,
+ * where each year's budget is posted as a PDF ("Fiscal Year 2027 Annual Capital
+ * Budget (Proposed)", "… Annual Operating Budget …"). From the operating budget, only
+ * the revenue and spending summary tables are kept.
  * The "Load Worcester budget" workflow runs this monthly and on demand; it skips a
  * document it has already loaded.
  *
  *   SUPABASE_DB_URL=… npx tsx scripts/load-worcester-budget.ts [--force] [--file budget.pdf --year 2027 --stage proposed]
  *
- * Needs `pdftotext` (poppler-utils). Loads the newest two fiscal years, preferring
- * the adopted budget to the proposal for a year, and refuses a document whose
- * project lines don't add up to its printed department sub-totals.
+ * Needs `pdftotext` (poppler-utils). Loads the newest two capital budgets and the
+ * newest operating budget, preferring the adopted budget to the proposal for a year,
+ * and refuses a document whose lines don't add up to its printed totals.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -16,13 +18,20 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
-import { parseCapitalBudget, subtotalMismatches, type ParsedCapitalBudget } from '@civic/sync';
+import {
+  parseCapitalBudget,
+  parseOperatingSummary,
+  subtotalMismatches,
+  type ParsedCapitalBudget,
+  type ParsedOperatingSummary,
+} from '@civic/sync';
 
 const HUB = 'https://opendata.worcesterma.gov/api/search/v1/collections/all/items';
 const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
 const CITY = 'worcester';
 
 interface Document {
+  kind: 'capital' | 'operating';
   id: string;
   title: string;
   fiscalYear: number;
@@ -30,30 +39,33 @@ interface Document {
   url: string;
 }
 
-/** "Fiscal Year 2027 Annual Capital Budget (Proposed)" → 2027, proposed. */
+/** "Fiscal Year 2027 Annual Capital Budget (Proposed)" → capital, 2027, proposed. */
 export function budgetDocument(id: string, title: string): Document | null {
-  const m = /^Fiscal Year (\d{4}) Annual Capital Budget(.*)$/i.exec(title.trim());
+  const m = /^Fiscal Year (\d{4}) Annual (Capital|Operating) Budget(.*)$/i.exec(title.trim());
   if (!m) return null;
   return {
+    kind: m[2]!.toLowerCase() === 'capital' ? 'capital' : 'operating',
     id,
     title: title.trim(),
     fiscalYear: Number(m[1]),
-    stage: /proposed|recommended/i.test(m[2]!) ? 'proposed' : 'adopted',
+    stage: /proposed|recommended/i.test(m[3]!) ? 'proposed' : 'adopted',
     url: `https://www.arcgis.com/sharing/rest/content/items/${id}/data`,
   };
 }
 
-async function listDocuments(): Promise<Document[]> {
-  const url = `${HUB}?q=${encodeURIComponent('annual capital budget')}&limit=50`;
+async function listDocuments(kind: Document['kind']): Promise<Document[]> {
+  const url = `${HUB}?q=${encodeURIComponent(`annual ${kind} budget`)}&limit=50`;
   const response = await fetch(url, { headers: { 'user-agent': USER_AGENT } });
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
   const body = (await response.json()) as { features: { id: string; properties: { title: string } }[] };
-  return body.features.map((f) => budgetDocument(f.id, f.properties.title)).filter((d) => d !== null);
+  return body.features
+    .map((f) => budgetDocument(f.id, f.properties.title))
+    .filter((d) => d !== null && d.kind === kind) as Document[];
 }
 
-/** The newest two fiscal years; the adopted budget when there is one, else the proposal. */
-export function pickDocuments(docs: Document[]): Document[] {
-  const years = [...new Set(docs.map((d) => d.fiscalYear))].sort((a, b) => b - a).slice(0, 2);
+/** The newest fiscal years (two for capital, one for operating); adopted when there is one, else the proposal. */
+export function pickDocuments(docs: Document[], count = 2): Document[] {
+  const years = [...new Set(docs.map((d) => d.fiscalYear))].sort((a, b) => b - a).slice(0, count);
   return years.map(
     (y) => docs.find((d) => d.fiscalYear === y && d.stage === 'adopted') ?? docs.find((d) => d.fiscalYear === y)!,
   );
@@ -68,6 +80,21 @@ function pdfText(pdf: Buffer): string {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+async function writeOperating(sql: postgres.Sql, doc: Document, parsed: ParsedOperatingSummary) {
+  await sql.begin(async (tx) => {
+    await tx`delete from public.local_operating_lines where city = ${CITY}`;
+    await tx`delete from public.local_operating_documents where city = ${CITY}`;
+    await tx`
+      insert into public.local_operating_lines ${tx(
+        parsed.lines.map((l) => ({ city: CITY, fiscal_year: doc.fiscalYear, ...l })) as never,
+      )}`;
+    await tx`
+      insert into public.local_operating_documents (city, fiscal_year, stage, title, source_url, columns)
+      values (${CITY}, ${doc.fiscalYear}, ${doc.stage}, ${doc.title},
+              ${`https://opendata.worcesterma.gov/documents/${doc.id}/about`}, ${parsed.columns})`;
+  });
 }
 
 async function write(sql: postgres.Sql, doc: Document, parsed: ParsedCapitalBudget) {
@@ -103,6 +130,7 @@ async function main() {
       ? [
           {
             doc: {
+              kind: 'capital',
               id: 'local',
               title: `Fiscal Year ${values.year} Annual Capital Budget`,
               fiscalYear: Number(values.year),
@@ -112,7 +140,7 @@ async function main() {
             pdf: (await import('node:fs')).readFileSync(values.file),
           },
         ]
-      : pickDocuments(await listDocuments()).map((doc) => ({ doc }));
+      : pickDocuments(await listDocuments('capital')).map((doc) => ({ doc }));
     for (const { doc, pdf } of docs) {
       const [have] = await sql<{ title: string; stage: string }[]>`
         select title, stage from public.local_capital_documents where city = ${CITY} and fiscal_year = ${doc.fiscalYear}`;
@@ -132,6 +160,28 @@ async function main() {
       console.log(
         `${doc.title}: ${parsed.items.length} projects in ${parsed.subtotals.size} departments, $${total.toLocaleString()} borrowing and cash`,
       );
+    }
+    // The operating budget: the newest year's revenue and spending summaries.
+    if (!values.file) {
+      for (const doc of pickDocuments(await listDocuments('operating'), 1)) {
+        const [have] = await sql<{ title: string }[]>`
+          select title from public.local_operating_documents where city = ${CITY}`;
+        if (have && have.title === doc.title && !values.force) {
+          console.log(`${doc.title}: already loaded`);
+          continue;
+        }
+        const bytes = Buffer.from(
+          await (await fetch(doc.url, { headers: { 'user-agent': USER_AGENT } })).arrayBuffer(),
+        );
+        const parsed = parseOperatingSummary(pdfText(bytes));
+        if (parsed.problems.length || parsed.lines.length === 0)
+          throw new Error(`${doc.title} doesn't add up, so it wasn't loaded:\n  ${parsed.problems.join('\n  ')}`);
+        await writeOperating(sql, doc, parsed);
+        const total = parsed.lines.filter((l) => l.kind === 'revenue').reduce((n, l) => n + l.amounts.at(-1)!, 0);
+        console.log(
+          `${doc.title}: ${parsed.lines.length} revenue and spending lines, $${total.toLocaleString()} in revenue`,
+        );
+      }
     }
   } finally {
     await sql.end();

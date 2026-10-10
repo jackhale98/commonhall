@@ -149,7 +149,7 @@ export interface Discussion {
   id: string;
   title: string;
   prompt: string;
-  jurisdiction: 'federal' | 'ma' | 'boston';
+  jurisdiction: 'federal' | 'ma' | 'boston' | 'worcester';
   district: number | null;
   target_type: DiscussionTargetType | null;
   target_id: string | null;

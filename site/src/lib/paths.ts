@@ -41,7 +41,9 @@ export function scotusCaseHref(clusterId: string | number): string {
 }
 
 /** A Boston Capital Plan project's page, by the city's project id. */
+/** A capital project's page: Boston's by the city's project id, Worcester's by worcester-{slug}. */
 export function capitalProjectHref(projId: string): string {
+  if (projId.startsWith('worcester-')) return href(`worcester/projects/${projId.slice('worcester-'.length)}/`);
   return href(`boston/projects/${encodeURIComponent(projId)}/`);
 }
 
