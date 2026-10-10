@@ -74,7 +74,7 @@ const { requests, zoning: zoningSource } = city.sources;
   {report && (
     <section aria-labelledby="h311">
       <h2 id="h311">311 requests, last 30 days</h2>
-      <District311 client:visible report={report} districts={districtLabels} />
+      <District311 client:visible report={report} districts={districtLabels} cityName={city.name} />
     </section>
   )}
 

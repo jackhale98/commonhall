@@ -3,6 +3,7 @@ import BillListItem from '../components/BillListItem';
 import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
 import FindMyReps from '../components/FindMyReps';
+import YourCity from '../components/YourCity';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
@@ -187,6 +188,7 @@ const stats = [
     ))}
   </ul>
 
+  <YourCity client:idle />
   <FeedView client:idle compact />
   {!DEMO && <FindMyReps client:visible />}
 
@@ -427,31 +429,6 @@ const stats = [
   .pulse-discuss .pulse-label,
   .pulse-discuss .pulse-meta {
     color: rgb(255 255 255 / 85%);
-  }
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border-strong);
-  }
-  .dot-live {
-    background: var(--ok);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent);
-  }
-  .dot-law {
-    background: var(--highlight);
-  }
-  .dot-city {
-    background: var(--sky);
-  }
-  .dot-discuss {
-    background: #fff;
-  }
-  .dot-order {
-    background: var(--brand);
-  }
-  .dot-court {
-    background: var(--cat-markup);
   }
   .stat-strip {
     list-style: none;

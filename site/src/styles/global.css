@@ -3200,3 +3200,156 @@ button .ch-loader,
 .your-followed .h-small {
   margin: 0;
 }
+
+/* Small colored markers for kinds of update (home page cards). */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.dot-live {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent);
+}
+.dot-law {
+  background: var(--highlight);
+}
+.dot-city {
+  background: var(--sky);
+}
+.dot-discuss {
+  background: #fff;
+}
+.dot-order {
+  background: var(--brand);
+}
+.dot-court {
+  background: var(--cat-markup);
+}
+.dot {
+  flex: none;
+}
+
+/* The signed-in visitor's city on the home page (YourCity). */
+.your-city {
+  margin-block: var(--space-6);
+}
+.your-city h2 .muted {
+  font-weight: 500;
+}
+.yc-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 48rem) {
+  .yc-grid {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+}
+.yc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.yc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.yc-card strong {
+  font-family: var(--font-heading);
+  font-size: 1.08rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.yc-card .yc-big {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.yc-label,
+.yc-meta {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+.yc-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+.yc-when {
+  font-weight: 600;
+}
+.yc-figure,
+.yc-row {
+  display: grid;
+  gap: 0.3rem;
+}
+.yc-person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.yc-meter {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+.yc-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+}
+.yc-top {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--step--1);
+}
+.yc-top li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+.yc-top li > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.yc-top-bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+.yc-top-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sky, var(--brand));
+}
+.yc-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}

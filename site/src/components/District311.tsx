@@ -11,6 +11,8 @@ interface Props {
   fixed?: number;
   /** How many request types to list. */
   top?: number;
+  /** The city, for "All of Boston". */
+  cityName: string;
 }
 
 const pct = (part: number, whole: number) => (whole ? `${Math.round((part / whole) * 100)}%` : '—');
@@ -20,14 +22,14 @@ const pct = (part: number, whole: number) => (whole ? `${Math.round((part / whol
  * before), share closed on time, typical time to close, most common requests.
  * Citywide or for one council district, picked from a menu (kept in ?district=).
  */
-export default function District311({ report, districts = [], fixed, top = 8 }: Props) {
+export default function District311({ report, districts = [], fixed, top = 8, cityName }: Props) {
   const [district, setDistrict] = useState<number>(fixed ?? 0);
 
   useEffect(() => {
     if (fixed !== undefined) return;
     const d = Number(new URLSearchParams(location.search).get('district'));
-    if (d >= 1 && d <= 9) setDistrict(d);
-  }, [fixed]);
+    if (report.districts[d]) setDistrict(d);
+  }, [fixed, report]);
 
   const pick = (d: number) => {
     setDistrict(d);
@@ -38,7 +40,7 @@ export default function District311({ report, districts = [], fixed, top = 8 }: 
   };
 
   const s: Summary311 = (district && report.districts[district]) || report.city;
-  const where = district ? `District ${district}` : 'Boston';
+  const where = district ? `District ${district}` : cityName;
   const change = change311(s);
 
   return (
@@ -54,7 +56,7 @@ export default function District311({ report, districts = [], fixed, top = 8 }: 
             class={district ? 'is-set' : ''}
             onChange={(e) => pick(Number(e.currentTarget.value))}
           >
-            <option value={0}>All of Boston</option>
+            <option value={0}>All of {cityName}</option>
             {districts.map((d) => (
               <option value={d.district}>{d.label}</option>
             ))}
