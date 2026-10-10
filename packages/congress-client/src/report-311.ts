@@ -38,6 +38,8 @@ export interface Report311 {
   city: Summary311;
   /** Keyed by council district. */
   districts: Record<number, Summary311>;
+  /** False when the city sets no target times, so `closedOnTime` means nothing (Somerville). */
+  onTime?: false;
 }
 
 /** Days of counts a report needs: the window and the 30 days before it, plus slack for the slower system. */
@@ -81,7 +83,10 @@ function summarize(rows: Day311[], from: string, to: string, before: string, top
  * The report from daily counts: the window ends on the last day every system has
  * published (Boston's legacy one runs a day behind). Null without counts.
  */
-export function report311(rows: Day311[], options: { districts: number; top?: number }): Report311 | null {
+export function report311(
+  rows: Day311[],
+  options: { districts: number; top?: number; onTime?: boolean },
+): Report311 | null {
   const top = options.top ?? 8;
   const lastDays = [...new Set(rows.map((r) => r.source))]
     .map((s) => rows.filter((r) => r.source === s).reduce((m, r) => (r.day > m ? r.day : m), ''))
@@ -99,5 +104,7 @@ export function report311(rows: Day311[], options: { districts: number; top?: nu
       before,
       top,
     );
-  return { from, to, city: summarize(rows, from, to, before, top), districts };
+  const report: Report311 = { from, to, city: summarize(rows, from, to, before, top), districts };
+  if (options.onTime === false) report.onTime = false;
+  return report;
 }

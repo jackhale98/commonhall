@@ -1,0 +1,194 @@
+[
+  {
+    "BodyId": 138,
+    "BodyName": "City Council",
+    "BodyTypeName": "Primary Legislative Body",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 139,
+    "BodyName": "Committee of the Whole",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 140,
+    "BodyName": "Confirmation of Appointments and Personnel Matters Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 180,
+    "BodyName": "Equity, Gender, Seniors, Families and Vulnerable Populations Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 181,
+    "BodyName": "Finance Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 182,
+    "BodyName": "Flood Forum Special Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 183,
+    "BodyName": "Housing and Community Development Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 184,
+    "BodyName": "Land Use Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 185,
+    "BodyName": "Legislative Matters Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 186,
+    "BodyName": "Licenses and Permits Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 187,
+    "BodyName": "Open Space, Environment and Energy Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 188,
+    "BodyName": "Public Health and Public Safety Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 189,
+    "BodyName": "Public Utilities and Public Works Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 190,
+    "BodyName": "Rodent Issues Special Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 191,
+    "BodyName": "Rules Special Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 192,
+    "BodyName": "School Committee Regular Meeting",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 193,
+    "BodyName": "Traffic and Parking Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 241,
+    "BodyName": "School Building Facilities and Maintenance Special Committee ",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 250,
+    "BodyName": "Charter Review Special Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 252,
+    "BodyName": "City Council Caucus",
+    "BodyTypeName": "Primary Legislative Body",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 254,
+    "BodyName": "City Council Organizational Meeting",
+    "BodyTypeName": "Secondary Legislative Body",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 255,
+    "BodyName": "District Improvement Financing Governing Board",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 256,
+    "BodyName": "Environment and Energy Special Committee",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 257,
+    "BodyName": "Equity, Gender, Families and Vulnerable Populations",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 261,
+    "BodyName": "Information Technology Committee",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 262,
+    "BodyName": "Parks and Open Space Special Committee",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 263,
+    "BodyName": "Senior Services Committee",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 264,
+    "BodyName": "Veterans and Public Services Committee",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 265,
+    "BodyName": "Youth Services Committee",
+    "BodyTypeName": "Department",
+    "BodyActiveFlag": 0
+  },
+  {
+    "BodyId": 272,
+    "BodyName": "School Building Facilities and Maintenance Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 273,
+    "BodyName": "Sustainability and Infrastructure Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  },
+  {
+    "BodyId": 274,
+    "BodyName": "Housing, Community Development and Equity Committee",
+    "BodyTypeName": "Committee",
+    "BodyActiveFlag": 1
+  }
+]

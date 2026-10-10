@@ -99,6 +99,17 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   sponsors and what the council was asked to do; held items keep one page.
 - The operating budget summary and the capital budget, with a page per project.
 
+**Somerville** (tabs: Overview, Council, Committees, Neighborhoods)
+
+- All 11 councilors (seven ward councilors and four at-large), with the ward map.
+- Orders, resolutions, ordinances, home rule petitions and the mayor's requests
+  (appropriations, grants, appointments), with sponsors and history; licenses and
+  grants of location are left out.
+- Council and committee meetings (each committee is its own Legistar body), with
+  agendas and the items on them.
+- 311 service requests by ward: how many, the share closed so far, typical time to
+  close and the most common requests (summaries only; the city sets no target times).
+
 **Every state**
 
 - A state map with each state's members of Congress, state legislators and recent
@@ -151,6 +162,9 @@ automatically.
 | Worcester council agenda items | [PrimeGov](https://worcesterma.primegov.com/public/portal) agendas (HTML or PDF) | daily |
 | Worcester council districts | [Worcester open data](https://opendata.worcesterma.gov/) (2020 Census map) | on redistricting |
 | Worcester capital and operating budgets | [Worcester open data](https://opendata.worcesterma.gov/) (annual PDFs) | monthly check |
+| Somerville City Council | [Somerville Legistar](https://somervillema.legistar.com/) | every 15 minutes |
+| Somerville wards | [MassGIS Wards and Precincts (2022)](https://www.mass.gov/info-details/massgis-data-2022-wards-and-precincts), dissolved by ward | on redistricting |
+| Somerville 311 request summaries | [Somerville open data](https://data.somervillema.gov/d/4pyi-uqq6) | daily |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 
@@ -194,6 +208,8 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
+| `sync-somerville` | every 15 minutes | Somerville council and committee meetings, matters and sponsors; councilors weekly |
+| `sync-somerville-311` | daily | Somerville 311 service requests per day, ward and type, summarised on the city's portal; stores the report |
 | `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |

@@ -1,0 +1,77 @@
+[
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "Abandoned Property or Illegal Dumping",
+    "opened": "1",
+    "closed": "1",
+    "median_close_hours": "23.35"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "Dead animal",
+    "opened": "1",
+    "closed": "1",
+    "median_close_hours": "5.33333333333333"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "Debris on sidewalk or street",
+    "opened": "2",
+    "closed": "2",
+    "median_close_hours": "21.1166666666667"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "Dog feces on private property",
+    "opened": "1",
+    "closed": "1",
+    "median_close_hours": "0.416666666666667"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "Down tree limb branch",
+    "opened": "4",
+    "closed": "4",
+    "median_close_hours": "164.991666666667"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "DPW Miscellaneous",
+    "opened": "3",
+    "closed": "0"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "type": "Registry hold release request",
+    "opened": "2",
+    "closed": "2",
+    "median_close_hours": "0.141666666666667"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "type": "Wrong vehicle/ticket error report",
+    "opened": "1",
+    "closed": "1",
+    "median_close_hours": "4.21666666666667"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "DPW Miscellaneous",
+    "opened": "3",
+    "closed": "0"
+  },
+  {
+    "day": "2026-10-01T00:00:00.000",
+    "ward": "1",
+    "type": "Request new trash cart",
+    "opened": "1",
+    "closed": "0"
+  }
+]

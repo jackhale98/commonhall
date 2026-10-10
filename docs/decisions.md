@@ -1488,3 +1488,49 @@ the health check flags it after four days. Migration 055 drops `boston_311_daily
 
 Trade-off: there is no 311 history to chart over months. If we want that later, a
 monthly count per district (about 120 rows a year per city) is enough.
+
+## 98. Somerville
+
+Somerville is the second Legistar city (`SOMERVILLE` in
+`packages/sync/src/local/somerville.ts`, job `somerville`, every 15 minutes) and the
+first on Socrata (311, job `somerville-311`, daily). No new tables: everything goes
+into the city-keyed `local_*` tables and `city_311_reports`.
+
+- **Legislation.** Loaded: Order, Resolution, Ordinance, Zoning Ordinance, Mayor's
+  Request and Home Rule Petition (about 770 a year). Mayor's requests are most of the
+  council's votes (appropriations, grants, appointments, loan orders), so they are in.
+  Left out: License, Grant of Location and Small Wireless Facility (about 400 permits
+  a year that would bury the legislation; they can be added later as a hidden type),
+  and communications, minutes, committee reports, citations and remembrances. The
+  cursor's `otherTypes` still logs a new type. Matters are cited "File #26-1303".
+- **Seats without a seat map.** Somerville's office records name the seat ("Ward Three
+  City Councilor", "City Councilor At Large"), so `LegistarCity.seatFromTitle` reads
+  it and no JSON needs editing after an election. A seat map entry still wins; Boston
+  has no `seatFromTitle` and is unchanged.
+- **Committees are bodies.** Boston files hearings under the council and names the
+  committee in the location (§80); Somerville gives each committee its own Legistar
+  body and puts "Virtual" in the location. `LegistarCity.committeeBodies` (body name →
+  the name shown, "Finance Committee" → "Finance") makes the sync read the council's
+  and those bodies' meetings in one request (`(EventBodyId eq 138 or …)`) and file each
+  under its body. The ten active committees that met in the last year are listed;
+  inactive bodies (the old special committees) are not read. Body ids are looked up
+  once and kept in the cursor; a renamed body is logged. Boston, without
+  `committeeBodies`, makes the same request as before.
+- **No votes.** Somerville's Legistar records no roll calls, as in Boston.
+- **311 on the portal's side.** One SoQL query a day asks data.somervillema.gov for
+  service requests (classification "Service"; information calls and feedback are not
+  requests for work) of the last 62 days, counted per day, ward and type (about
+  6,000 groups). The dataset has no closed date: a request whose latest status is
+  "Closed" closed at that status's date, and SoQL's `median()` gives the hours to close
+  per group. SoQL has only whole-day differences (`date_diff_d`), so hours are whole
+  days × 24 plus the minutes between the clock times. Dates are text in local time and
+  compare in order. No request is read or stored, only the report.
+- **No "on time".** The city sets no target times, so the report carries
+  `onTime: false` and the pages show the share closed so far instead of "Closed on
+  time" (Boston's reports are unchanged).
+- **Wards.** MassGIS Wards and Precincts (2022) publishes Somerville as 28 precincts.
+  `load-districts.ts` now dissolves features that share a district into one shape
+  (`st_union`), so the source is the state's ArcGIS query for the town, with 7 wards.
+  The city's own "Wards" download is a zipped shapefile.
+- Pages say "ward" where the city does (`districtWord`): the map, the address
+  lookup, the councilor filter and the 311 menu.

@@ -65,7 +65,10 @@ export default function YourCity() {
   const atLarge = g.councilors.filter((c) => c.district === null).length;
   const s = g.report311 ? (district && g.report311.districts[district]) || g.report311.city : null;
   const where = district && g.report311?.districts[district] ? `${g.districtWord ?? 'District'} ${district}` : g.name;
-  const onTime = s ? pct(s.closedOnTime, s.closed) : null;
+  // Cities without target times (Somerville) show the share closed so far instead.
+  const timed = g.report311?.onTime !== false;
+  const onTime = s ? (timed ? pct(s.closedOnTime, s.closed) : pct(s.closed, s.opened)) : null;
+  const closedWord = timed ? 'closed on time' : 'closed so far';
   const change = s ? change311(s) : null;
   const maxTop = s ? Math.max(1, ...s.top.map((t) => t.n)) : 1;
   const op = g.operating;
@@ -76,7 +79,12 @@ export default function YourCity() {
       <div class="section-head">
         <h2 id="your-city-h">
           Your city: {g.name}
-          {district ? <span class="muted"> · District {district}</span> : null}
+          {district ? (
+            <span class="muted">
+              {' '}
+              · {g.districtWord ?? 'District'} {district}
+            </span>
+          ) : null}
         </h2>
         <a class="see-all" href={g.href}>
           {g.name}
@@ -138,10 +146,10 @@ export default function YourCity() {
             {onTime !== null && (
               <span class="yc-row">
                 <span class="yc-meta">
-                  {onTime}% closed on time
+                  {onTime}% {closedWord}
                   {s.typicalHours !== null && `, typically in ${closeTime(s.typicalHours)}`}
                 </span>
-                <Meter value={onTime} label={`${onTime}% of requests closed on time`} />
+                <Meter value={onTime} label={`${onTime}% of requests ${closedWord}`} />
               </span>
             )}
             {s.top.length > 0 && (

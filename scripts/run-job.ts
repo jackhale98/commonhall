@@ -6,6 +6,7 @@
  *   SUPABASE_DB_URL=… OPENSTATES_API_KEY=… npx tsx scripts/run-job.ts state [--minutes 60]
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba | boston-311 | city-budget
  *   SUPABASE_DB_URL=… COURTLISTENER_TOKEN=… npx tsx scripts/run-job.ts state-courts
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts somerville [--minutes 60] [--since 2024-01-01] | somerville-311
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -16,6 +17,7 @@ import {
   LegistarClient,
   OpenStatesClient,
   PrimeGovClient,
+  SocrataClient,
 } from '@civic/congress-client';
 import {
   BOSTON_311_JOB,
@@ -44,6 +46,12 @@ import {
   type StateCourtsCursor,
   type StateCursor,
   type WorcesterCursor,
+  SOMERVILLE,
+  SOMERVILLE_311_JOB,
+  SOMERVILLE_JOB,
+  SOMERVILLE_PORTAL,
+  syncLegistarCity,
+  syncSomerville311,
 } from '@civic/sync';
 
 async function main() {
@@ -149,9 +157,34 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'somerville') {
+      const result = await runJob<BostonCursor>({
+        sql,
+        job: SOMERVILLE_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) =>
+          syncLegistarCity(ctx, {
+            client: new LegistarClient({ client: SOMERVILLE.legistar, delayMs: 150 }),
+            city: SOMERVILLE,
+            startDate: values.since ? new Date(values.since).toISOString() : undefined,
+          }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten, cursor: result.cursor }));
+      if (result.status === 'error') process.exit(1);
+    } else if (job === 'somerville-311') {
+      const result = await runJob({
+        sql,
+        job: SOMERVILLE_311_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) => syncSomerville311(ctx, { client: new SocrataClient(SOMERVILLE_PORTAL) }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget|somerville|somerville-311> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

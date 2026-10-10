@@ -7,7 +7,8 @@
  *
  * District 0 is a city's whole boundary: for cities that elect everyone at-large (or
  * whose district map isn't published), so an address in the city finds its council.
- * Check that a source matches the current map before loading.
+ * Check that a source matches the current map before loading. A source drawn by
+ * precinct (several features per district) is dissolved into one shape per district.
  */
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
@@ -25,13 +26,18 @@ export interface DistrictSource {
   /** The feature property holding the district number; omit for a whole-city boundary (district 0). */
   districtProp?: string;
   nameProp?: string;
-  /** How many districts the source should have. */
+  /** How many districts the source should have (after dissolving precincts). */
   expect: number;
 }
+
+/** Somerville's wards: MassGIS Wards and Precincts (2022), the city's 28 precincts, dissolved by ward. */
+export const SOMERVILLE_WARDS_URL =
+  'https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/WardsPrecincts2022/FeatureServer/0/query?where=TOWN%3D%27SOMERVILLE%27&outFields=TOWN,WARD,PRECINCT&outSR=4326&f=geojson';
 
 /** Where each city's map comes from. */
 export const DISTRICT_SOURCES: Record<string, DistrictSource> = {
   'ma-boston': { url: DEFAULT_URL, districtProp: 'DISTRICT', nameProp: 'LONGNAME', expect: 9 },
+  'ma-somerville': { url: SOMERVILLE_WARDS_URL, districtProp: 'WARD', expect: 7 },
 };
 
 export async function loadDistricts(
@@ -49,18 +55,31 @@ export async function loadDistricts(
     }))
     .filter((r) => Number.isInteger(r.district) && r.district >= (props.districtProp ? 1 : 0));
   if (rows.length === 0) throw new Error(`No districts with a ${props.districtProp ?? 'boundary'} in that file`);
+  const byDistrict = new Map<number, typeof rows>();
+  for (const r of rows) byDistrict.set(r.district, [...(byDistrict.get(r.district) ?? []), r]);
   await sql.begin(async (tx) => {
     await tx`delete from public.council_districts where city = ${city}`;
-    for (const r of rows) {
+    for (const [district, parts] of byDistrict) {
+      const r = parts[0]!;
       const updated = r.f.properties.EditDate ? new Date(r.f.properties.EditDate).toISOString().slice(0, 10) : null;
-      await tx`
-        insert into public.council_districts (city, district, name, geometry, source, source_updated)
-        values (${city}, ${r.district}, ${r.name},
-                extensions.st_multi(extensions.st_setsrid(extensions.st_geomfromgeojson(${JSON.stringify(r.f.geometry)}), 4326)),
-                ${source}, ${updated})`;
+      if (parts.length === 1) {
+        await tx`
+          insert into public.council_districts (city, district, name, geometry, source, source_updated)
+          values (${city}, ${district}, ${r.name},
+                  extensions.st_multi(extensions.st_setsrid(extensions.st_geomfromgeojson(${JSON.stringify(r.f.geometry)}), 4326)),
+                  ${source}, ${updated})`;
+      } else {
+        // Precincts: one shape per district.
+        await tx`
+          insert into public.council_districts (city, district, name, geometry, source, source_updated)
+          select ${city}, ${district}, ${r.name},
+                 extensions.st_multi(extensions.st_union(extensions.st_setsrid(extensions.st_geomfromgeojson(g), 4326))),
+                 ${source}, ${updated}
+            from jsonb_array_elements_text(${JSON.stringify(parts.map((p) => p.f.geometry))}::text::jsonb) as g`;
+      }
     }
   });
-  return rows.length;
+  return byDistrict.size;
 }
 
 async function main() {
