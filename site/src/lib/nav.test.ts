@@ -70,6 +70,23 @@ describe('orderedItems', () => {
     const labels = orderedItems(local).map((i) => i.label);
     expect(labels.slice(0, 5)).toEqual(['All states', 'Massachusetts', 'Connecticut', 'Boston', 'Worcester']);
     expect(labels).toContain('Somerville');
+    expect(labels).toContain('Bristol');
+  });
+});
+
+describe('a city outside Massachusetts', () => {
+  it('trails back through its own state', () => {
+    expect(localTrail('states/ct/bristol/council/').map((i) => i.label)).toEqual([
+      'All states',
+      'Connecticut',
+      'Bristol',
+    ]);
+    expect(localTrail('states/ct/middletown/').map((i) => i.path)).toEqual([
+      'states/',
+      'states/ct/',
+      'states/ct/middletown/',
+    ]);
+    expect(at('states/ct/middletown/neighborhoods/')).toEqual(['local', 'ct-middletown']);
   });
 });
 

@@ -46,7 +46,9 @@ const [officials, districts, committees, report, cityFacets] = await Promise.all
 ]);
 // Cities without legislation records have nothing to look up.
 const sponsored = cityFacets.total > 0 ? await loadSponsoredMatters(official.id) : [];
-const features = districts.map((d) => {
+// District 0 is the whole city (at-large councils, or no published map): not a district to draw.
+const shapes = city.districtMap === false ? [] : districts.filter((d) => d.district > 0);
+const features = shapes.map((d) => {
   const o = officials.find((x) => x.district === d.district);
   return {
     district: d.district,
@@ -152,6 +154,13 @@ const stats = [
             : 'Represents the whole city (at-large).'}
         </p>
       </div>
+    )}
+    {features.length === 0 && (
+      <p class="small muted">
+        {official.district
+          ? `Represents ${districtName(city, official.district)}.`
+          : 'Represents the whole city (at-large).'}
+      </p>
     )}
   </div>
 

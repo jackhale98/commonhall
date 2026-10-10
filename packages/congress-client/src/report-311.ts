@@ -38,7 +38,7 @@ export interface Report311 {
   city: Summary311;
   /** Keyed by council district. */
   districts: Record<number, Summary311>;
-  /** False when the city sets no target times, so `closedOnTime` means nothing (Somerville). */
+  /** False when the city sets no target times, so `closedOnTime` means nothing (Somerville, SeeClickFix cities). */
   onTime?: false;
 }
 

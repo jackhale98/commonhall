@@ -1,0 +1,244 @@
+{
+ "@odata.count": 15,
+ "value": [
+  {
+   "id": 4948,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2026-08-04T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 2883,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13075,
+     "type": "Agenda",
+     "name": "Ordinance Committee",
+     "url": "stream/BRISTOLCT/3c560595-91c3-4af6-87e9-aa9c9eda8462.pdf"
+    },
+    {
+     "fileId": 13172,
+     "type": "Minutes",
+     "name": "Ordinance Committee",
+     "url": "stream/BRISTOLCT/30ea3e8d-9cdd-4a26-9113-5532d9e538e9.pdf"
+    }
+   ]
+  },
+  {
+   "id": 4764,
+   "eventName": "City Council Meeting",
+   "startDateTime": "2026-08-12T19:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 2885,
+   "eventLocation": {
+    "address1": "Council Chambers",
+    "address2": "111 N Main Street"
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13154,
+     "type": "Agenda",
+     "name": "Rev. Agenda 8-12-26",
+     "url": "stream/BRISTOLCT/db488866-82c7-47b4-a8e0-5d3f2dca05a4.pdf"
+    },
+    {
+     "fileId": 13159,
+     "type": "Agenda Packet",
+     "name": "City Council Revised Agenda Packet - August 12, 2026",
+     "url": "stream/BRISTOLCT/5e11a485-c0c2-437b-a531-a1f37a3ac370.pdf"
+    },
+    {
+     "fileId": 13401,
+     "type": "Minutes",
+     "name": "City Council Approved Minutes - August 12, 2026",
+     "url": "stream/BRISTOLCT/1693fa64-0ba6-4329-b3af-a20f7387df86.pdf"
+    }
+   ]
+  },
+  {
+   "id": 4949,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2026-09-01T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 2915,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13308,
+     "type": "Agenda",
+     "name": "Ordinance Committee",
+     "url": "stream/BRISTOLCT/d1a05bbf-1e76-43b7-ada8-ca4883165514.pdf"
+    },
+    {
+     "fileId": 13443,
+     "type": "Minutes",
+     "name": "Ordinance Minutes",
+     "url": "stream/BRISTOLCT/a20d2750-75b2-4ddb-b1b1-4849463ba34c.pdf"
+    },
+    {
+     "fileId": 13424,
+     "type": "Other",
+     "name": "Attachments",
+     "url": "stream/BRISTOLCT/d15f4bdb-dd21-417e-bc93-ffad259e20c4.pdf"
+    }
+   ]
+  },
+  {
+   "id": 5452,
+   "eventName": "Special City Council",
+   "startDateTime": "2026-09-03T18:30:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 2919,
+   "eventLocation": {
+    "address1": "111 North Main St., Bristol CT 06010",
+    "address2": null
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13346,
+     "type": "Agenda",
+     "name": "Special City Council Mtg 9-3-2026",
+     "url": "stream/BRISTOLCT/dada69d3-b1b8-4b85-b786-4b151046f054.pdf"
+    },
+    {
+     "fileId": 13393,
+     "type": "Minutes",
+     "name": "Special City Council 9-3-2026",
+     "url": "stream/BRISTOLCT/22d19410-f1a0-4fba-9861-3498069af549.pdf"
+    },
+    {
+     "fileId": 13397,
+     "type": "Other",
+     "name": "Chippanee Golf Course PowerPoint Presenation",
+     "url": "stream/BRISTOLCT/1d64281b-7737-48a5-a380-be880c5b6276.pdf"
+    }
+   ]
+  },
+  {
+   "id": 4765,
+   "eventName": "City Council Meeting",
+   "startDateTime": "2026-09-08T19:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 2916,
+   "eventLocation": {
+    "address1": "Council Chambers",
+    "address2": "111 N Main Street"
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13374,
+     "type": "Agenda",
+     "name": "City Council Mtg 9-8-26",
+     "url": "stream/BRISTOLCT/03534803-68b3-4046-9a2f-3fca3bf3ea8d.pdf"
+    },
+    {
+     "fileId": 13375,
+     "type": "Agenda Packet",
+     "name": "City Council Meeting",
+     "url": "stream/BRISTOLCT/138691bb-56ca-4e24-b4eb-d13f1329c0e0.pdf"
+    },
+    {
+     "fileId": 13466,
+     "type": "Minutes",
+     "name": "CC 9-8-26 Unapproved",
+     "url": "stream/BRISTOLCT/3a9ebe9a-598f-48c6-bc0f-cde7c11fae1b.pdf"
+    }
+   ]
+  },
+  {
+   "id": 5514,
+   "eventName": "Special City Council Meeting",
+   "startDateTime": "2026-09-22T19:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 2950,
+   "eventLocation": {
+    "address1": "111 N Main Street",
+    "address2": null
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13523,
+     "type": "Agenda",
+     "name": "Spec. CC 9-18-26",
+     "url": "stream/BRISTOLCT/234ece1d-d75b-4df5-97b2-b51c3c664023.pdf"
+    },
+    {
+     "fileId": 13524,
+     "type": "Agenda Packet",
+     "name": "Spec. CC 9-18-26",
+     "url": "stream/BRISTOLCT/6c3a4038-ccac-4171-a92a-d65afdc5024d.pdf"
+    },
+    {
+     "fileId": 13569,
+     "type": "Minutes",
+     "name": "Special City Council Unapproved Minutes - September 22, 2026",
+     "url": "stream/BRISTOLCT/0e6abe83-db33-473d-930e-1f4c4f0e411c.pdf"
+    }
+   ]
+  },
+  {
+   "id": 4950,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2026-10-06T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 2956,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13595,
+     "type": "Agenda",
+     "name": "Ordinance Committee",
+     "url": "stream/BRISTOLCT/ea9ad8ce-e90f-4549-aaf3-aecb185f8efc.pdf"
+    },
+    {
+     "fileId": 13590,
+     "type": "Other",
+     "name": "Red Light Motion to Introduce",
+     "url": "stream/BRISTOLCT/08be05d5-ae2f-41e9-afbb-b47ea6cfca80.pdf"
+    }
+   ]
+  },
+  {
+   "id": 5520,
+   "eventName": "Red Light Camera Presentations",
+   "startDateTime": "2026-10-06T18:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 2966,
+   "eventLocation": {
+    "address1": "Council Chambers",
+    "address2": null
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13614,
+     "type": "Agenda",
+     "name": "Red Light Camera Presentations 10-6-26",
+     "url": "stream/BRISTOLCT/ba0c1be1-5afd-4955-ba02-188fe6f05577.pdf"
+    },
+    {
+     "fileId": 13641,
+     "type": "Agenda Packet",
+     "name": "Presentations",
+     "url": "stream/BRISTOLCT/f9bc85a6-5f2a-45bd-8e67-4e73fe5420a1.pdf"
+    }
+   ]
+  }
+ ],
+ "@odata.nextLink": "https://bristolct.api.civicclerk.com/v1/Events?$skiptoken=page2"
+}

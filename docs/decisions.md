@@ -1631,3 +1631,58 @@ governors' numbers repeat his. So (migration 060):
 The Governor and Courts tabs, the state's Overview, search, Data status, the menu and
 the states page pick Connecticut up from data and `STATE_FEATURES`; discussions can be
 opened on its bills, orders and decisions (jurisdiction `ct`, already allowed).
+
+## 100. Bristol and Middletown, Connecticut
+
+The first cities outside Massachusetts, and two new kinds of source. Both are
+keyless and approved by the owner.
+
+- **Bristol: CivicClerk.** `bristolct.api.civicclerk.com/v1` is public OData JSON:
+  events (15 a page, `@odata.nextLink` for the next), the boards ("categories") and
+  each agenda as a tree of sections and numbered items ("2026-2402"). The firewall
+  turns some scripted user agents away, so `CivicClerkClient` sends a browser-like
+  one. Start times are the city's wall clock written with a "Z"; they are read as
+  local. `sync-bristol` (hourly) keeps the City Council, its joint meetings with the
+  Board of Finance and the council's Ordinance, Real Estate and Salary Committees
+  (the other fifty-odd boards are left out), found by name so a renamed board fails
+  the job. Each numbered item is a matter, `ct-bristol-{year × 100,000 + number}`,
+  cited as "Item 2026-2402", with an action for each meeting it is on (like
+  Worcester's, §87); procedure (call to order, minutes, public participation) is
+  left out. Agendas are read once, and again while their meeting is within two
+  weeks. CivicClerk has vote fields, but Bristol leaves them empty: outcomes stay in
+  the minutes PDFs, which are linked.
+- **Bristol's districts.** Two councilors for each of three districts, plus the
+  mayor. The district map is a PDF street index, not shapes, and we don't guess
+  polygons. "Load council districts" loads the city's whole boundary from the Census
+  Bureau's TIGERweb (Incorporated Places, by GEOID) as district 0, so an address in
+  Bristol finds the whole council; the roster gives each councilor's district for
+  their page. A city can now say `districtMap: false`, and the pages never draw
+  district 0 as a district.
+- **Middletown: a CivicPlus Agenda Center.** The council's postings come from the
+  listing form (`/AgendaCenter/UpdateCategoryList`, category 14), the agendas are
+  text PDFs (a few are plain text), so this is a daily GitHub Action like
+  Worcester's agenda loader, which also reads the members' page. Matters are the
+  items under Resolutions and Ordinances, Old Business and Appropriations;
+  resolutions are numbered only once adopted, so new items are cited "Item 11A,
+  Oct 5, 2026", and items the agenda cites by number ("Resolution No. 81-26",
+  "Ordinance No. 2-26") keep that number and one matter across meetings, as do items
+  carried with the same wording. Public hearings, reports and grant confirmations
+  are left out. A regular agenda that reads as fewer than eight items is skipped
+  and retried; the run fails when every regular agenda read is that short.
+- **Not yet: Middletown's minutes.** They record each vote with a named roll call
+  ("approved unanimously with 10 Aye votes. (AYE: Councilmembers …)") and the
+  resolution number given on adoption, but they run past 100 pages, repeat the
+  resolution text, and number items differently from the agenda. Matching votes to
+  agenda items reliably needs more work than this first step; the minutes are
+  linked from each meeting.
+- **Middletown 311: SeeClickFix.** The public API v2 lists issues for the place
+  ("middletown", about 450 a year). The job reads the last 62 days (a page or two,
+  at most one request a second), counts them in memory by day and request type, and
+  stores only the report (§97); no issue, address or description is kept.
+  SeeClickFix has no deadlines, so the report says `onTime: false` and the pages show
+  how many closed instead of a share closed on time. Bristol barely uses
+  SeeClickFix, so it has no 311.
+- **Pages.** Both cities use the shared pages; CT's Local tab lists them. A city
+  can name its full council's meetings (`councilBody: 'Common Council'`). Find my
+  reps says "the whole council" for an address matched to a city's boundary rather
+  than a district.

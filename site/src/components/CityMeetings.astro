@@ -42,7 +42,7 @@ const session = city.committeeSession;
           <strong>{formatDate(m.date)}</strong>
           {(upcoming || committee) && m.time && ` · ${m.time}`} ·{' '}
           {m.committees.length === 0 ? (
-            'City Council'
+            (city.councilBody ?? 'City Council')
           ) : committee && others.length === 0 ? (
             `Committee ${session}`
           ) : (

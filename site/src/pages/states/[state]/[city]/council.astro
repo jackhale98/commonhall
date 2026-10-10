@@ -38,7 +38,9 @@ const [officials, districts, meetings, committees, matters, facets] = await Prom
   loadRecentLocalMatters(city.key),
   loadLocalMatterFacets(city.key),
 ]);
-const features = districts.map((d) => {
+// District 0 is the whole city (at-large councils, or no published map): not a district to draw.
+const shapes = city.districtMap === false ? [] : districts.filter((d) => d.district > 0);
+const features = shapes.map((d) => {
   const o = officials.find((x) => x.district === d.district);
   return {
     district: d.district,
@@ -97,7 +99,11 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
         />
         {!DEMO && (
           <details class="by-address">
-            <summary>Find your {(city.districtWord ?? 'District').toLowerCase()} by address</summary>
+            <summary>
+              {city.districtMap === false || city.districts === 0
+                ? 'Find your councilors by address'
+                : `Find your ${(city.districtWord ?? 'District').toLowerCase()} by address`}
+            </summary>
             <FindMyReps client:visible />
           </details>
         )}

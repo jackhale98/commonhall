@@ -28,6 +28,14 @@ export interface City {
   atLarge: number;
   /** What the city calls a district: "District" (the default) or "Ward". */
   districtWord?: string;
+  /**
+   * False when the city's district shapes aren't published (Bristol's are a PDF street
+   * index): no district map, and an address in the city finds the whole council (its
+   * whole boundary is loaded as district 0). Default true.
+   */
+  districtMap?: boolean;
+  /** What a full council meeting is called in meeting lists: "City Council" (the default), "Common Council". */
+  councilBody?: string;
   /** What the city calls a committee session: "hearing" (Boston) or "meeting". */
   committeeSession: 'hearing' | 'meeting';
   /** One line under the name on the Overview. */
@@ -169,6 +177,80 @@ export const CITY_LIST: City[] = [
     recordLabel: 'Full record on Legistar',
     legislationTitle: 'Orders, resolutions, ordinances and the mayor’s requests',
     legistar: 'somervillema',
+  },
+  {
+    key: 'ct-bristol',
+    state: 'CT',
+    slug: 'bristol',
+    name: 'Bristol',
+    council: 'Bristol City Council',
+    districts: 3,
+    atLarge: 0,
+    // The district map is a PDF street index, not shapes: an address finds the whole council.
+    districtMap: false,
+    committeeSession: 'meeting',
+    lede: 'The mayor and six city councilors, two from each of three districts.',
+    summary: 'City Council, its committees and their agendas',
+    sources: {
+      people: {
+        label: 'the city’s website',
+        url: 'https://www.bristolct.gov/1030/City-Council-Members',
+        cadence: 'weekly',
+      },
+      meetings: {
+        label: 'the city’s CivicClerk portal',
+        url: 'https://bristolct.portal.civicclerk.com/',
+        cadence: 'hourly',
+      },
+      committees: {
+        label: 'the city’s CivicClerk portal',
+        url: 'https://bristolct.portal.civicclerk.com/',
+        cadence: 'hourly',
+      },
+      legislation: {
+        label: 'council and committee agendas on CivicClerk',
+        url: 'https://bristolct.portal.civicclerk.com/',
+        cadence: 'hourly',
+      },
+    },
+    docketPrefix: 'Item ',
+    recordLabel: 'The meeting on CivicClerk',
+    legislationTitle: 'Agenda items',
+  },
+  {
+    key: 'ct-middletown',
+    state: 'CT',
+    slug: 'middletown',
+    name: 'Middletown',
+    council: 'Middletown Common Council',
+    districts: 0,
+    atLarge: 12,
+    committeeSession: 'meeting',
+    councilBody: 'Common Council',
+    lede: 'Twelve council members, all elected citywide; the mayor presides.',
+    summary: 'Common Council, its resolutions and ordinances, and 311 requests',
+    sources: {
+      people: { label: 'the city’s website', url: 'https://www.middletownct.gov/458/Common-Council', cadence: 'daily' },
+      meetings: {
+        label: 'the city’s Agenda Center',
+        url: 'https://www.middletownct.gov/AgendaCenter',
+        cadence: 'daily',
+      },
+      legislation: {
+        label: 'Common Council agendas in the city’s Agenda Center',
+        url: 'https://www.middletownct.gov/AgendaCenter',
+        cadence: 'daily',
+      },
+      requests: {
+        label: 'requests on SeeClickFix',
+        url: 'https://seeclickfix.com/middletown',
+        cadence: 'daily',
+      },
+    },
+    // Items are cited as the agenda gives them: "Resolution No. 81-26" or "Item 11A, Oct 5, 2026".
+    docketPrefix: '',
+    recordLabel: 'The agenda',
+    legislationTitle: 'Resolutions, ordinances and appropriations',
   },
 ];
 

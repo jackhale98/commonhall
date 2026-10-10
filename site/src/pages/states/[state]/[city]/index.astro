@@ -125,7 +125,7 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
       <div class="section-head">
         <h2 id="h311">311 in the last 30 days</h2>
         <a class="see-all" href={cityHref(city, 'neighborhoods/')}>
-          By {(city.districtWord ?? 'District').toLowerCase()}
+          {city.districts > 0 ? `By ${(city.districtWord ?? 'District').toLowerCase()}` : 'More'}
         </a>
       </div>
       <dl class="stat-grid">

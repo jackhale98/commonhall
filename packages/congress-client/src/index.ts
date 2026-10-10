@@ -22,3 +22,7 @@ export * from './shape.ts';
 export * from './report-311.ts';
 export * from './socrata.ts';
 export * from './ct-orders.ts';
+export * from './civicclerk.ts';
+export * from './connecticut-cities.ts';
+export * from './middletown-agenda.ts';
+export * from './seeclickfix.ts';

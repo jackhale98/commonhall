@@ -1,0 +1,241 @@
+{
+ "@odata.context": "https://bristolct.api.civicclerk.com/v1/$metadata#EventCategories",
+ "value": [
+  {
+   "id": 30,
+   "categoryDesc": "American Rescue Plan Task Force"
+  },
+  {
+   "id": 77,
+   "categoryDesc": "Animal Control Building Committee"
+  },
+  {
+   "id": 38,
+   "categoryDesc": "Assessment Appeals Board"
+  },
+  {
+   "id": 39,
+   "categoryDesc": "Aquifer Protection Agency"
+  },
+  {
+   "id": 81,
+   "categoryDesc": "Board of Assessment Appeals"
+  },
+  {
+   "id": 71,
+   "categoryDesc": "Board of Ethics"
+  },
+  {
+   "id": 27,
+   "categoryDesc": "Board of Finance"
+  },
+  {
+   "id": 34,
+   "categoryDesc": "Board of Fire Commissioners"
+  },
+  {
+   "id": 54,
+   "categoryDesc": "Board of Park Commissioners"
+  },
+  {
+   "id": 75,
+   "categoryDesc": "Board of Police Commissioners"
+  },
+  {
+   "id": 29,
+   "categoryDesc": "Board of Public Works"
+  },
+  {
+   "id": 68,
+   "categoryDesc": "Building Code of Appeals"
+  },
+  {
+   "id": 37,
+   "categoryDesc": "Capital Improvement and Strategic Planning Committee"
+  },
+  {
+   "id": 36,
+   "categoryDesc": "Cemetery Commission"
+  },
+  {
+   "id": 82,
+   "categoryDesc": "Charter Revision Commission"
+  },
+  {
+   "id": 41,
+   "categoryDesc": "Citation Hearings"
+  },
+  {
+   "id": 42,
+   "categoryDesc": "City Arts & Culture Commission"
+  },
+  {
+   "id": 26,
+   "categoryDesc": "City Council"
+  },
+  {
+   "id": 43,
+   "categoryDesc": "Code Enforcement Committee"
+  },
+  {
+   "id": 55,
+   "categoryDesc": "Commission for Persons with Disabilities"
+  },
+  {
+   "id": 35,
+   "categoryDesc": "Commission on Aging"
+  },
+  {
+   "id": 70,
+   "categoryDesc": "Commissioner on Disabilities"
+  },
+  {
+   "id": 50,
+   "categoryDesc": "Conservation Commission/ Inland Wetlands & Watercourses Agency"
+  },
+  {
+   "id": 84,
+   "categoryDesc": "Cultural District Advisory Committee"
+  },
+  {
+   "id": 44,
+   "categoryDesc": "Diversity Council"
+  },
+  {
+   "id": 85,
+   "categoryDesc": "Duck Race Transition Task Force"
+  },
+  {
+   "id": 45,
+   "categoryDesc": "Economic and Community Development"
+  },
+  {
+   "id": 32,
+   "categoryDesc": "Energy Commission"
+  },
+  {
+   "id": 46,
+   "categoryDesc": "Fair Rent Commission Task Force"
+  },
+  {
+   "id": 83,
+   "categoryDesc": "Fire Station 3 Building Committee"
+  },
+  {
+   "id": 86,
+   "categoryDesc": "Flood and Erosion Control Board"
+  },
+  {
+   "id": 47,
+   "categoryDesc": "Freedom of Information Advisory Board"
+  },
+  {
+   "id": 24,
+   "categoryDesc": "General"
+  },
+  {
+   "id": 48,
+   "categoryDesc": "Historic District Commission"
+  },
+  {
+   "id": 49,
+   "categoryDesc": "HIV/AIDS Task Force"
+  },
+  {
+   "id": 72,
+   "categoryDesc": "Housing Board Code of Appeals"
+  },
+  {
+   "id": 28,
+   "categoryDesc": "Joint Meeting of the City Council and Board of Finance"
+  },
+  {
+   "id": 51,
+   "categoryDesc": "Library Board of Directors"
+  },
+  {
+   "id": 52,
+   "categoryDesc": "Opioid Task Force"
+  },
+  {
+   "id": 53,
+   "categoryDesc": "Ordinance Committee"
+  },
+  {
+   "id": 73,
+   "categoryDesc": "Parking Authority"
+  },
+  {
+   "id": 56,
+   "categoryDesc": "Planning Commission"
+  },
+  {
+   "id": 80,
+   "categoryDesc": "Police Awards Committee"
+  },
+  {
+   "id": 33,
+   "categoryDesc": "Police Commission"
+  },
+  {
+   "id": 78,
+   "categoryDesc": "Police Memorial Committee"
+  },
+  {
+   "id": 57,
+   "categoryDesc": "Real Estate Committee"
+  },
+  {
+   "id": 58,
+   "categoryDesc": "Retirement Board"
+  },
+  {
+   "id": 31,
+   "categoryDesc": "Retirement Board"
+  },
+  {
+   "id": 59,
+   "categoryDesc": "Salary Committee"
+  },
+  {
+   "id": 60,
+   "categoryDesc": "School Readiness Council"
+  },
+  {
+   "id": 61,
+   "categoryDesc": "Sewer Commissioners"
+  },
+  {
+   "id": 63,
+   "categoryDesc": "Storm Water Trust"
+  },
+  {
+   "id": 79,
+   "categoryDesc": "Subcommittee"
+  },
+  {
+   "id": 64,
+   "categoryDesc": "Transportation Commission"
+  },
+  {
+   "id": 62,
+   "categoryDesc": "Board of Water Commissioners"
+  },
+  {
+   "id": 65,
+   "categoryDesc": "Youth Commission"
+  },
+  {
+   "id": 66,
+   "categoryDesc": "Zoning Board of Appeals"
+  },
+  {
+   "id": 67,
+   "categoryDesc": "Zoning Commission"
+  },
+  {
+   "id": 88,
+   "categoryDesc": "Board of Health"
+  }
+ ]
+}
