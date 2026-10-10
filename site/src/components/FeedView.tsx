@@ -18,6 +18,7 @@ import {
   voteHref,
 } from '../lib/paths';
 import { LEVELS, legislatorFilter, type Level } from '../lib/feed-filters';
+import { voteSubject } from '../lib/vote-subject';
 import Loader from './Loader';
 import MemberPhoto from './MemberPhoto';
 
@@ -282,6 +283,8 @@ export default function FeedView({ compact = false }: Props) {
             const chamber =
               item.payload.chamber === 'house' ? 'House' : item.payload.chamber === 'senate' ? 'Senate' : null;
             const result = typeof item.payload.result === 'string' ? item.payload.result : null;
+            // What the vote was about (the bill, the nominee), so the question isn't all there is.
+            const subject = isVote ? voteSubject(item.payload) : null;
             const voteBill =
               typeof item.payload.vote_id === 'string' &&
               typeof item.payload.bill_id === 'string' &&
@@ -318,13 +321,15 @@ export default function FeedView({ compact = false }: Props) {
                       <p class="feed-title">
                         {link ? (
                           <a class="stretched" href={link}>
-                            {question(item)}
+                            {subject ?? question(item)}
                           </a>
                         ) : (
-                          question(item)
+                          (subject ?? question(item))
                         )}
                       </p>
-                      {result && <p class="feed-meta">{result}</p>}
+                      {(subject || result) && (
+                        <p class="feed-meta">{[subject && question(item), result].filter(Boolean).join(' · ')}</p>
+                      )}
                     </>
                   ) : (
                     <>
