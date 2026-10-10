@@ -1766,3 +1766,12 @@ First full load (October 2026): 218 meetings (123 from IQM2), 1,313 matters (774
 positions, in about 20 minutes; a rerun writes nothing. 311: 2,073 requests in the
 last 30 days. Budget: FY25–27 operating and revenue lines ($1.03B in FY27); capital:
 56 projects in the FY27–31 plan.
+
+## 102. Site size budget: 500 MB
+
+With Somerville, Cambridge, Bristol, Middletown and Connecticut merged, a production
+build came to 298 MB (6,463 pages; bill pages are 137 MB of it), against the deploy
+check's 300 MB, before any of the new places had data. The check is our own margin
+under GitHub Pages' 1 GB limit, so it is raised to 500 MB. Prerendering stays limited
+to notable items (§41). If the site nears 500 MB, the next saving is bill pages, which
+carry their actions twice (in the HTML and in the timeline island's props).

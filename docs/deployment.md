@@ -369,7 +369,7 @@ SQL editor. Sign-in (step 7) should be set up too.
 
 The build now reads the database instead of the demo snapshot and prerenders
 members and notable bills; accounts, following, the feed and Find my reps switch
-on. The deploy fails if the site exceeds 300 MB. To go back to the demo, delete
+on. The deploy fails if the site exceeds 500 MB. To go back to the demo, delete
 the two variables and redeploy.
 
 ## 10. Optional: discussions and maintainers

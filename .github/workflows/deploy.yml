@@ -85,13 +85,14 @@ jobs:
           # No Supabase project configured yet: build the demo from site/src/data/demo.json.
           PUBLIC_DEMO: ${{ vars.PUBLIC_SUPABASE_URL == '' && 'true' || 'false' }}
       - name: Check site size
-        # GitHub Pages allows 1 GB; only notable items are prerendered to stay well under 300 MB.
+        # GitHub Pages allows 1 GB; only notable items are prerendered, to stay under 500 MB
+        # (raised from 300 MB when Somerville, Cambridge and Connecticut were added).
         run: |
           size=$(du -sm site/dist | cut -f1)
           pages=$(find site/dist -name index.html | wc -l)
           echo "Built site: ${size} MB, ${pages} pages" | tee -a "$GITHUB_STEP_SUMMARY"
-          if [ "$size" -gt 300 ]; then
-            echo "::error::site/dist is ${size} MB, over the 300 MB budget. Tighten the prerender views (docs/decisions.md)."
+          if [ "$size" -gt 500 ]; then
+            echo "::error::site/dist is ${size} MB, over the 500 MB budget. Tighten the prerender views (docs/decisions.md)."
             exit 1
           fi
       - uses: actions/upload-pages-artifact@v5
