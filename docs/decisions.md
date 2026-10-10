@@ -1693,7 +1693,8 @@ Cambridge is the fourth-largest city in Massachusetts and the first we cover who
 council is elected entirely citywide (nine councillors, proportional representation;
 the council picks the mayor). Its records are open but spread over three systems, all
 public and keyless (approved by the owner: the IQM2 portal, the city's Socrata portal
-and Census TIGERweb; PrimeGov is the same vendor and kind of source as Worcester's):
+and Census TIGERweb; Cambridge's PrimeGov, the same vendor and kind of source as
+Worcester's, was approved by the owner once the move below was found):
 
 - **The council moved systems in January 2026.** Until then it used IQM2 / Accela
   Legislative Management (cambridgema.iqm2.com); since then PrimeGov
