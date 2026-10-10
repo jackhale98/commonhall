@@ -235,14 +235,22 @@ const stats = [
   // The hero search opens the full search (the header's) once it is ready; before
   // that, or without JavaScript, it submits to the bill search.
   const input = document.getElementById('home-q') as HTMLInputElement | null;
+  // Closing the search dialog hands focus back to this box, which would open it again
+  // (Cancel seemed to do nothing). Ignore focus that arrives just after a close.
+  let closedAt = 0;
+  document.addEventListener('close', () => (closedAt = Date.now()), true);
   const openSearch = (e?: Event) => {
     if (!input || !('searchReady' in document.documentElement.dataset)) return;
     e?.preventDefault();
-    document.dispatchEvent(new CustomEvent('open-search', { detail: { q: input.value } }));
+    const q = input.value;
     input.value = '';
+    // Blur first, so the dialog doesn't remember this box as the place to return focus to.
     input.blur();
+    document.dispatchEvent(new CustomEvent('open-search', { detail: { q } }));
   };
-  input?.addEventListener('focus', () => openSearch());
+  input?.addEventListener('focus', () => {
+    if (Date.now() - closedAt > 500) openSearch();
+  });
   input?.addEventListener('input', () => openSearch());
   input?.form?.addEventListener('submit', (e) => openSearch(e));
 </script>
