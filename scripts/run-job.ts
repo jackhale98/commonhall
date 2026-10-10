@@ -6,6 +6,7 @@
  *   SUPABASE_DB_URL=… OPENSTATES_API_KEY=… npx tsx scripts/run-job.ts state [--minutes 60]
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba | boston-311 | city-budget
  *   SUPABASE_DB_URL=… COURTLISTENER_TOKEN=… npx tsx scripts/run-job.ts state-courts
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts cambridge | cambridge-data
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -13,9 +14,11 @@ import postgres from 'postgres';
 import {
   AnalyzeBostonClient,
   CourtListenerClient,
+  Iqm2Client,
   LegistarClient,
   OpenStatesClient,
   PrimeGovClient,
+  SocrataClient,
 } from '@civic/congress-client';
 import {
   BOSTON_311_JOB,
@@ -27,6 +30,12 @@ import {
   STATE_COURTS_JOB,
   STATE_JOB,
   WORCESTER_JOB,
+  CAMBRIDGE_DATA_DOMAIN,
+  CAMBRIDGE_DATA_JOB,
+  CAMBRIDGE_JOB,
+  syncCambridge,
+  syncCambridgeData,
+  type CambridgeCursor,
   dailyBudget,
   runJob,
   syncBoston,
@@ -149,9 +158,33 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'cambridge') {
+      const result = await runJob<CambridgeCursor>({
+        sql,
+        job: CAMBRIDGE_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ? JSON.stringify(d) : ''),
+        run: (ctx) =>
+          syncCambridge(ctx, {
+            iqm2: new Iqm2Client({ client: 'cambridgema', minIntervalMs: 800 }),
+            primegov: new PrimeGovClient({ client: 'cambridgema', minIntervalMs: 800 }),
+          }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
+    } else if (job === 'cambridge-data') {
+      const result = await runJob({
+        sql,
+        job: CAMBRIDGE_DATA_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ? JSON.stringify(d) : ''),
+        run: (ctx) => syncCambridgeData(ctx, { client: new SocrataClient(CAMBRIDGE_DATA_DOMAIN) }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|worcester|cambridge|cambridge-data|state|state-courts|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

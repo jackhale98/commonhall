@@ -38,15 +38,18 @@ const [officials, districts, meetings, committees, matters, facets] = await Prom
   loadRecentLocalMatters(city.key),
   loadLocalMatterFacets(city.key),
 ]);
-const features = districts.map((d) => {
-  const o = officials.find((x) => x.district === d.district);
-  return {
-    district: d.district,
-    geojson: d.geojson,
-    href: o ? localOfficialHref(o.id) : undefined,
-    title: `${districtName(city, d.district)}${o ? `: ${o.name}` : ''}`,
-  };
-});
+// District 0 is the whole city (councils elected citywide): no map of districts to draw.
+const features = districts
+  .filter((d) => d.district > 0)
+  .map((d) => {
+    const o = officials.find((x) => x.district === d.district);
+    return {
+      district: d.district,
+      geojson: d.geojson,
+      href: o ? localOfficialHref(o.id) : undefined,
+      title: `${districtName(city, d.district)}${o ? `: ${o.name}` : ''}`,
+    };
+  });
 const today = new Date().toISOString().slice(0, 10);
 // Committee sessions have their own tab; without one, they stay here.
 const own = committees.length > 0 ? meetings.filter((m) => m.committees.length === 0) : meetings;
@@ -94,7 +97,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
             photo_url: o.photo_url,
           }))}
         />
-        {!DEMO && (
+        {!DEMO && city.districts > 0 && (
           <details class="by-address">
             <summary>Find your district by address</summary>
             <FindMyReps client:visible />

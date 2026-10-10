@@ -1,0 +1,56 @@
+[
+ {
+  "UserID": 5565,
+  "FullName": "Ayah A. Al-Zubi",
+  "Title": "Councillor",
+  "RollCallSort": 1
+ },
+ {
+  "UserID": 3631,
+  "FullName": "Burhan Azeem",
+  "Title": "Vice Mayor",
+  "RollCallSort": 2
+ },
+ {
+  "UserID": 5564,
+  "FullName": "Timothy R. Flaherty",
+  "Title": "Councillor",
+  "RollCallSort": 3
+ },
+ {
+  "UserID": 1021,
+  "FullName": "Marc C. McGovern",
+  "Title": "Councillor",
+  "RollCallSort": 4
+ },
+ {
+  "UserID": 2953,
+  "FullName": "Patricia Nolan",
+  "Title": "Councillor",
+  "RollCallSort": 5
+ },
+ {
+  "UserID": 1016,
+  "FullName": "E. Denise Simmons",
+  "Title": "Councillor",
+  "RollCallSort": 6
+ },
+ {
+  "UserID": 2948,
+  "FullName": "Jivan Sobrinho-Wheeler",
+  "Title": "Councillor",
+  "RollCallSort": 7
+ },
+ {
+  "UserID": 4919,
+  "FullName": "Catherine Zusy",
+  "Title": "Councillor",
+  "RollCallSort": 8
+ },
+ {
+  "UserID": 1368,
+  "FullName": "Sumbul Siddiqui",
+  "Title": "Mayor",
+  "RollCallSort": 9
+ }
+]

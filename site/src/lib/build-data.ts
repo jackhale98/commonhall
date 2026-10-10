@@ -32,6 +32,7 @@ import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import type { UnityRow } from './insights';
 import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type StateSession } from './state-people';
 import { DEMO } from './config';
+import { CITIES } from './cities';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
   CAPITAL_COLUMNS,
@@ -756,7 +757,11 @@ export const loadCityOperating = memoByCity(async (city): Promise<OperatingSumma
       order: 'kind.asc,seq.asc',
     }),
   ]);
-  if (lines.length) return bostonOperating(budgetSummary(lines.map((l) => ({ ...l, amount: Number(l.amount) }))));
+  if (lines.length)
+    return bostonOperating(
+      budgetSummary(lines.map((l) => ({ ...l, amount: Number(l.amount) }))),
+      CITIES[city]?.planSources?.operating,
+    );
   const doc = docs[0];
   if (!doc) return null;
   return printedOperating(
@@ -797,6 +802,7 @@ export const loadCityCapital = memoByCity(async (city): Promise<CapitalView | nu
         external_funds: Number(p.external_funds),
       })),
       city,
+      CITIES[city]?.planSources,
     );
   const num = (i: CapitalItem): CapitalItem => ({
     ...i,

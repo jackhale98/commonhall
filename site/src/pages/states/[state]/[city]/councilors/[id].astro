@@ -216,7 +216,9 @@ const stats = [
 
   <SourceNote parts={[{ what: 'Councilors', source: city.sources.people }]}>
     {cityFacets.total > 0
-      ? ` ${city.name} records roll-call votes in meeting minutes rather than item by item, so votes are not listed here.`
+      ? city.rollCalls
+        ? ''
+        : ` ${city.name} records roll-call votes in meeting minutes rather than item by item, so votes are not listed here.`
       : ` ${city.name} publishes agendas and minutes rather than individual items and votes, so sponsored items and roll calls are not listed here yet.`}
   </SourceNote>
 </Base>

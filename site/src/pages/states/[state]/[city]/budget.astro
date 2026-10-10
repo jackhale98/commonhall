@@ -53,6 +53,8 @@ const propertyTax = operating?.revenue.find((r) => /property tax/i.test(r.label)
 // Capital
 const projects = capital ? capital.projects.filter((p) => inCurrentBudget(p, capital)) : [];
 const plan = capital?.kind === 'plan';
+// Projects placed by neighborhood (Boston); Cambridge's plan has no places.
+const hasAreas = (capital?.projects ?? []).some((p) => p.area);
 const size = (p: (typeof projects)[number]) => p.total ?? p.thisYear;
 const sum = (list: typeof projects, f: (p: (typeof projects)[number]) => number) => list.reduce((n, p) => n + f(p), 0);
 const thisYear = sum(projects, (p) => p.thisYear);
@@ -80,7 +82,10 @@ const stats = capital
         { label: 'Total budget, all projects', value: formatMoney(sum(projects, (p) => p.total ?? 0)) },
         { label: `Planned spending, ${capital.yearLabel}`, value: formatMoney(thisYear) },
         { label: 'Projects', value: String(projects.length) },
-        { label: 'Under construction or underway', value: String(projects.filter(isBuilding).length) },
+        // Only where the city reports each project's stage (Boston; not Cambridge).
+        ...(projects.some((p) => p.status)
+          ? [{ label: 'Under construction or underway', value: String(projects.filter(isBuilding).length) }]
+          : []),
       ]
     : [
         {
@@ -234,7 +239,11 @@ const proposed = (stage: string | undefined) => stage === 'proposed';
       <details class="cap-charts" id="cap-charts">
         <summary class="h-small">
           {capital.name} by department
-          {plan ? ` and ${capital.areaLabel.toLowerCase()}` : capital.planYears.length > 0 ? ' and year' : ''}
+          {plan && hasAreas
+            ? ` and ${capital.areaLabel.toLowerCase()}`
+            : !plan && capital.planYears.length > 0
+              ? ' and year'
+              : ''}
         </summary>
         <div class="budget-charts">
           <section class="panel" aria-labelledby="dept-h">
@@ -247,34 +256,34 @@ const proposed = (stage: string | undefined) => stage === 'proposed';
               format={formatMoney}
             />
           </section>
-          {plan ? (
-            <section class="panel" aria-labelledby="area-h">
-              <h3 id="area-h" class="h-small">
-                By {capital.areaLabel.toLowerCase()}
-              </h3>
-              <BarList
-                items={totalsBy('area', size, 'Everything else')}
-                label={`${capital.name} by ${capital.areaLabel.toLowerCase()}`}
-                tone="fill-sky"
-                format={formatMoney}
-              />
-            </section>
-          ) : (
-            capital.planYears.length > 0 && (
-              <section class="panel" aria-labelledby="plan-h">
-                <h3 id="plan-h" class="h-small">
-                  Five-year plan, {capital.planYears[0]!.label}–{capital.planYears.at(-1)!.label}
-                </h3>
-                <BarList
-                  items={capital.planYears}
-                  label="Capital plan by year, all departments"
-                  tone="fill-sky"
-                  format={formatMoney}
-                />
-                <p class="small muted">As printed in the plan, before state and other credits.</p>
-              </section>
-            )
-          )}
+          {plan
+            ? hasAreas && (
+                <section class="panel" aria-labelledby="area-h">
+                  <h3 id="area-h" class="h-small">
+                    By {capital.areaLabel.toLowerCase()}
+                  </h3>
+                  <BarList
+                    items={totalsBy('area', size, 'Everything else')}
+                    label={`${capital.name} by ${capital.areaLabel.toLowerCase()}`}
+                    tone="fill-sky"
+                    format={formatMoney}
+                  />
+                </section>
+              )
+            : capital.planYears.length > 0 && (
+                <section class="panel" aria-labelledby="plan-h">
+                  <h3 id="plan-h" class="h-small">
+                    Five-year plan, {capital.planYears[0]!.label}–{capital.planYears.at(-1)!.label}
+                  </h3>
+                  <BarList
+                    items={capital.planYears}
+                    label="Capital plan by year, all departments"
+                    tone="fill-sky"
+                    format={formatMoney}
+                  />
+                  <p class="small muted">As printed in the plan, before state and other credits.</p>
+                </section>
+              )}
         </div>
       </details>
 

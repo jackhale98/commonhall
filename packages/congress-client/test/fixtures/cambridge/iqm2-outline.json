@@ -1,0 +1,338 @@
+{
+ "Meeting": {
+  "ID": 4768,
+  "Department": {
+   "ID": 1000,
+   "Name": "City Council"
+  },
+  "Date": "2025-12-22T17:30:00.0000000-05:00",
+  "Type": {
+   "ID": 1000,
+   "Name": "Regular Meeting"
+  },
+  "Status": "Scheduled"
+ },
+ "Agenda": {
+  "ID": 4354,
+  "Outline": [
+   {
+    "WasDeleted": false,
+    "ID": 104155,
+    "Title": "Call to Order",
+    "ItemNumFormatted": "",
+    "ItemNum": "",
+    "ChildItems": [
+     {
+      "WasDeleted": false,
+      "ID": 104156,
+      "Title": "Roll Call",
+      "ItemNumFormatted": "",
+      "ItemNum": "",
+      "ChildItems": [],
+      "ItemType": "RollCall",
+      "ParentItemID": 104155,
+      "Position": 1
+     }
+    ],
+    "ItemType": "Section",
+    "Position": 1
+   },
+   {
+    "WasDeleted": false,
+    "ID": 104162,
+    "Title": "City Manager's Agenda",
+    "ItemNumFormatted": "I",
+    "ItemNum": "I.",
+    "ChildItems": [
+     {
+      "WasDeleted": false,
+      "ID": 104186,
+      "Title": "CMA 2025 #305 : 12.22.25 Federal Update",
+      "ItemNumFormatted": "I.1",
+      "ItemNum": "1.",
+      "ReferencedItem": {
+       "ID": 31623,
+       "Type": "Resolution"
+      },
+      "ChildItems": [
+       {
+        "WasDeleted": false,
+        "ID": 104187,
+        "Title": "Federal Update 12.22.25",
+        "ItemNumFormatted": "I.1.a",
+        "ItemNum": "a.",
+        "ReferencedItem": {
+         "ID": 27606,
+         "Type": "Attachment"
+        },
+        "ChildItems": [],
+        "ItemType": "Attachment",
+        "ParentItemID": 104186,
+        "Position": 1
+       }
+      ],
+      "ItemType": "Resolution",
+      "ParentItemID": 104162,
+      "Position": 1
+     },
+     {
+      "WasDeleted": false,
+      "ID": 104171,
+      "Title": "CMA 2025 #306 : Fire HazMat Grant Appropriation $1,172,577",
+      "ItemNumFormatted": "I.2",
+      "ItemNum": "2.",
+      "ReferencedItem": {
+       "ID": 31610,
+       "Type": "Resolution"
+      },
+      "ChildItems": [],
+      "ItemType": "Resolution",
+      "ParentItemID": 104162,
+      "Position": 2
+     }
+    ],
+    "ItemType": "Section",
+    "Position": 4
+   },
+   {
+    "WasDeleted": false,
+    "ID": 104234,
+    "Title": "Policy Order and Resolution List",
+    "ItemNumFormatted": "II",
+    "ItemNum": "II.",
+    "ChildItems": [
+     {
+      "WasDeleted": false,
+      "ID": 104260,
+      "Title": "POR 2025 #172 : Policy Order pertaining to signs and dedications",
+      "ItemNumFormatted": "II.1",
+      "ItemNum": "1.",
+      "ReferencedItem": {
+       "ID": 31600,
+       "Type": "Resolution"
+      },
+      "ChildItems": [],
+      "ItemType": "Resolution",
+      "ParentItemID": 104234,
+      "Position": 1
+     },
+     {
+      "WasDeleted": false,
+      "ID": 104261,
+      "Title": "POR 2025 #173 : Restricting Eligibility for On-Street Resident Parking Permits in New Transit-Oriented Developments",
+      "ItemNumFormatted": "II.2",
+      "ItemNum": "2.",
+      "ReferencedItem": {
+       "ID": 31615,
+       "Type": "Resolution"
+      },
+      "ChildItems": [],
+      "ItemType": "Resolution",
+      "ParentItemID": 104234,
+      "Position": 2
+     }
+    ],
+    "ItemType": "Section",
+    "Position": 5
+   },
+   {
+    "WasDeleted": false,
+    "ID": 104188,
+    "Title": "Calendar",
+    "ItemNumFormatted": "III",
+    "ItemNum": "III.",
+    "ChildItems": [
+     {
+      "WasDeleted": false,
+      "ID": 104189,
+      "Title": "Charter Right",
+      "ItemNumFormatted": "",
+      "ItemNum": "",
+      "ChildItems": [
+       {
+        "WasDeleted": false,
+        "ID": 104190,
+        "Title": "POR 2025 #171 : Amending the Mass Ave Zoning Petition",
+        "ItemNumFormatted": "III.1",
+        "ItemNum": "1.",
+        "ReferencedItem": {
+         "ID": 31555,
+         "Type": "Resolution"
+        },
+        "ChildItems": [],
+        "ItemType": "Resolution",
+        "ParentItemID": 104189,
+        "Position": 1
+       }
+      ],
+      "ItemType": "Section",
+      "ParentItemID": 104188,
+      "Position": 1
+     },
+     {
+      "WasDeleted": false,
+      "ID": 104191,
+      "Title": "On the Table",
+      "ItemNumFormatted": "",
+      "ItemNum": "",
+      "ChildItems": [
+       {
+        "WasDeleted": false,
+        "ID": 104192,
+        "Title": "CMA 2025 #113 : AR 25=22 Response RE: King Open Garage",
+        "ItemNumFormatted": "III.2",
+        "ItemNum": "2.",
+        "ReferencedItem": {
+         "ID": 29351,
+         "Type": "Resolution"
+        },
+        "ChildItems": [],
+        "ItemType": "Resolution",
+        "ParentItemID": 104191,
+        "Position": 1
+       }
+      ],
+      "ItemType": "Section",
+      "ParentItemID": 104188,
+      "Position": 2
+     }
+    ],
+    "ItemType": "Section",
+    "Position": 6
+   },
+   {
+    "WasDeleted": false,
+    "ID": 104205,
+    "Title": "Communications",
+    "ItemNumFormatted": "V",
+    "ItemNum": "V.",
+    "ChildItems": [
+     {
+      "WasDeleted": false,
+      "ID": 104206,
+      "Title": "COM 3651 #2025 : A communication was received from Amy Thompson",
+      "ItemNumFormatted": "V.1",
+      "ItemNum": "1.",
+      "ReferencedItem": {
+       "ID": 31602,
+       "Type": "Resolution"
+      },
+      "ChildItems": [
+       {
+        "WasDeleted": false,
+        "ID": 104207,
+        "Title": "Amy ThompsonPlease vote NO on the proposed upzoning (11)",
+        "ItemNumFormatted": "V.1.a",
+        "ItemNum": "a.",
+        "ReferencedItem": {
+         "ID": 27547,
+         "Type": "Attachment"
+        },
+        "ChildItems": [],
+        "ItemType": "Attachment",
+        "ParentItemID": 104206,
+        "Position": 1
+       }
+      ],
+      "ItemType": "Resolution",
+      "ParentItemID": 104205,
+      "Position": 1
+     },
+     {
+      "WasDeleted": false,
+      "ID": 104208,
+      "Title": "COM 3652 #2025 : A communication was received from Andy Nash",
+      "ItemNumFormatted": "V.2",
+      "ItemNum": "2.",
+      "ReferencedItem": {
+       "ID": 31603,
+       "Type": "Resolution"
+      },
+      "ChildItems": [
+       {
+        "WasDeleted": false,
+        "ID": 104209,
+        "Title": "Andy Nash,Policy Order 2025 #131",
+        "ItemNumFormatted": "V.2.a",
+        "ItemNum": "a.",
+        "ReferencedItem": {
+         "ID": 27548,
+         "Type": "Attachment"
+        },
+        "ChildItems": [],
+        "ItemType": "Attachment",
+        "ParentItemID": 104208,
+        "Position": 1
+       }
+      ],
+      "ItemType": "Resolution",
+      "ParentItemID": 104205,
+      "Position": 2
+     }
+    ],
+    "ItemType": "Section",
+    "Position": 8
+   },
+   {
+    "WasDeleted": false,
+    "ID": 104220,
+    "Title": "Resolutions",
+    "ItemNumFormatted": "VI",
+    "ItemNum": "VI.",
+    "ChildItems": [
+     {
+      "WasDeleted": false,
+      "ID": 104221,
+      "Title": "RES 2025 #288 : Congratulations to Susan Cyr on her retirement",
+      "ItemNumFormatted": "VI.1",
+      "ItemNum": "1.",
+      "ReferencedItem": {
+       "ID": 31308,
+       "Type": "Resolution"
+      },
+      "ChildItems": [],
+      "ItemType": "Resolution",
+      "ParentItemID": 104220,
+      "Position": 1
+     },
+     {
+      "WasDeleted": false,
+      "ID": 104222,
+      "Title": "RES 2025 #289 : Congratulations to Migdalia Garcia on her retirement",
+      "ItemNumFormatted": "VI.2",
+      "ItemNum": "2.",
+      "ReferencedItem": {
+       "ID": 31309,
+       "Type": "Resolution"
+      },
+      "ChildItems": [],
+      "ItemType": "Resolution",
+      "ParentItemID": 104220,
+      "Position": 2
+     }
+    ],
+    "ItemType": "Section",
+    "Position": 9
+   }
+  ],
+  "Documents": [
+   {
+    "FileType": "Agenda",
+    "ID": 4354,
+    "FileUpdated": "2025-12-18T14:26:26.7200000-05:00",
+    "FileFormat": "pdf",
+    "DownloadURL": "https://CambridgeMA.IQM2.com/Citizens/FileOpen.aspx?Type=1&ID=4354"
+   },
+   {
+    "FileType": "PublicAgenda",
+    "ID": 4354,
+    "FileUpdated": "2025-12-18T14:26:26.7200000-05:00",
+    "FileFormat": "pdf",
+    "DownloadURL": "https://CambridgeMA.IQM2.com/Citizens/FileOpen.aspx?Type=14&ID=4354"
+   }
+  ],
+  "Finalized": "2025-12-18T14:27:03.5300000-05:00",
+  "Published": "2025-12-18T00:00:00.0000000-05:00"
+ },
+ "Minutes": null
+}

@@ -1488,3 +1488,77 @@ the health check flags it after four days. Migration 055 drops `boston_311_daily
 
 Trade-off: there is no 311 history to chart over months. If we want that later, a
 monthly count per district (about 120 rows a year per city) is enough.
+
+## 99. Cambridge
+
+Cambridge is the fourth-largest city in Massachusetts and the first we cover whose
+council is elected entirely citywide (nine councillors, proportional representation;
+the council picks the mayor). Its records are open but spread over three systems, all
+public and keyless (approved by the owner: the IQM2 portal, the city's Socrata portal
+and Census TIGERweb; PrimeGov is the same vendor and kind of source as Worcester's):
+
+- **The council moved systems in January 2026.** Until then it used IQM2 / Accela
+  Legislative Management (cambridgema.iqm2.com); since then PrimeGov
+  (cambridgema.primegov.com). IQM2 still answers, but its last agenda is from
+  February 2026 and its meeting list stops in April. So `sync-cambridge` reads both:
+  the IQM2 archive for meetings from 2025-01-01 to the end of 2025, once (newest
+  first, a meeting at a time, with checkpoints; about 1,500 requests at roughly one a
+  second, so a few runs), and PrimeGov every 30 minutes for 2026 on. IQM2's member
+  list is still current and gives the councillors, weekly.
+- **IQM2.** The JSON API under `/api/` is undocumented; every response is checked
+  (`checkShape`) and a renamed field fails the job. Meetings come per body
+  (`ListWithMeetingType?Range={year}&Group={id}`), each agenda from `Outline`. Sponsors
+  and votes are only on each file's public page (`Detail_LegiFile.aspx`): the
+  sponsors line and each meeting's "RESULT: … [4 TO 5]" with YEAS, NAYS, ABSENT and
+  PRESENT by name. A page without a file number throws.
+- **PrimeGov.** Each council meeting has an "HTML Final Actions" page once the clerk
+  publishes it (two days or so after the meeting): every item with its sponsors
+  ("COUNCILLOR NOLAN"), its result and roll call ("RESULT: Order Adopted [8-0-1]",
+  "YEAS: Councillor Al-Zubi, …"), or "[VV9]" for a voice vote with no names. Before
+  that the agenda is read (items and sponsors, no results). A page is read again only
+  when the city republishes it (template id and publish date in the cursor). Committee
+  agendas list topics rather than filed items and aren't read; their meetings are.
+- **One matter across both systems.** IQM2 cites "POR 2025 #171", PrimeGov
+  "POR 2026-185". Both become one key, kind × 10⁸ + year × 10⁴ + number
+  (`ma-cambridge-220250171`), shown as "POR 2025-171" (`docketPrefix` is empty). An
+  order filed in 2025 and acted on in 2026 is one page. Actions carry their meeting
+  in `event_id` (IQM2's id, or 1,000,000 + PrimeGov's), and each write replaces only
+  its own source's actions, then renumbers by date; the newest record's wording and
+  link win.
+- **What is kept.** Policy orders (POR), City Manager items (CMA), ordinances (ORD),
+  committee reports (CC) and resolutions (RES, congratulations and condolences
+  adopted together, typed "Consent Agenda Resolution" so the existing toggle hides
+  them). Left out: public communications (COM, residents' letters by name; PrimeGov
+  bundles them per meeting), applications and petitions (APP: one resident's curb cut
+  or sign, by address), other officers' communications (COF) and the clerk's
+  awaiting-report lists (AR).
+- **Roll calls.** Named votes go to `local_votes` (`ma-cambridge-ei{matter}{date}`),
+  so following a councillor shows their votes in the feed; resolutions' votes aren't
+  stored. Names are matched to councillors by full name or last name, allowing one
+  typo ("SIDDIQUII", "AL-ZUB") and a hyphen printed as a space when only one
+  councillor is that close. Councillors named in 2025's records who have left (two)
+  are added as former officials so their votes are theirs. Feed events (new items,
+  new actions) start after the first full read of each source.
+- **Open data** (`sync-cambridge-data`, daily, data.cambridgema.gov): 311 from the
+  city's SeeClickFix table, four columns of the last 62 days (when opened and closed,
+  category, status; never addresses, descriptions or photos), counted here and stored
+  as the report (§97). The city sets no target times, so the report carries
+  `onTime: false` and pages show the share closed instead of "closed on time".
+  Operating budget and revenues: adopted budgets summed on the portal per department,
+  division and category, the newest three years, into `city_budget_lines`. Capital:
+  the five-year plan folded into `capital_projects` (year 1, years 2–5, total); the
+  city publishes no spending to date, so project pages show the year being adopted
+  against the five-year total (`planSources.spending: false`).
+- **Tables keyed by city.** `capital_projects`, `city_budget_lines`, `zba_appeals` and
+  `zba_decision_counts` were keyed by Boston's ids alone; migration 057 adds `city` to
+  their primary keys, and Boston's syncs now delete only Boston's rows (they deleted
+  every row not in Boston's file, which would have emptied any other city's).
+- **Not loaded: zoning appeals.** The city's Board of Zoning Appeal table (urfm-usws)
+  has no hearing dates (only legal deadlines) and no decisions, and few cases since
+  2025 (43 in 2025, 21 so far in 2026), so it supports neither the upcoming-hearings
+  list nor decision counts. The board's agendas are on PrimeGov, a possible later
+  source.
+- **Map.** With no districts, `council_districts` holds the city's boundary as
+  district 0 (Census TIGERweb incorporated places, GEOID 2511000), so an address in
+  Cambridge finds all nine councillors. The Council tab draws no district map and
+  offers no "find your district" for a city with `districts: 0`.

@@ -9,6 +9,7 @@
  * jurisdiction of its discussions, so two towns with one name in different states
  * can't collide.
  */
+import type { PlanSources } from './city';
 
 export interface Source {
   label: string;
@@ -55,6 +56,10 @@ export interface City {
   locationIsSubject?: boolean;
   /** The city's Legistar client name, for links to matters we don't keep. */
   legistar?: string;
+  /** The city records each item's roll call (Cambridge): followers of a councillor see their votes in the feed. */
+  rollCalls?: boolean;
+  /** Budget sources when the city's budget data has Boston's shape but another home (lib/city.ts). */
+  planSources?: PlanSources;
 }
 
 export const CITY_LIST: City[] = [
@@ -129,6 +134,52 @@ export const CITY_LIST: City[] = [
     docketPrefix: 'Item ',
     recordLabel: 'The agenda',
     legislationTitle: 'Orders, petitions and communications',
+  },
+  {
+    key: 'ma-cambridge',
+    state: 'MA',
+    slug: 'cambridge',
+    name: 'Cambridge',
+    council: 'Cambridge City Council',
+    districts: 0,
+    atLarge: 9,
+    committeeSession: 'meeting',
+    lede: 'Nine city councillors, all elected citywide; they choose the mayor from among themselves.',
+    summary: 'City Council orders and votes, committees, 311 and the budget',
+    sources: {
+      people: {
+        label: 'the council’s IQM2 portal',
+        url: 'https://cambridgema.iqm2.com/Citizens/Default.aspx?DepartmentID=1000',
+        cadence: 'weekly',
+      },
+      meetings: {
+        label: 'the city’s PrimeGov portal',
+        url: 'https://cambridgema.primegov.com/public/portal',
+        cadence: 'every 30 minutes',
+      },
+      legislation: {
+        label: 'final actions on PrimeGov (2026) and the IQM2 portal (2025)',
+        url: 'https://cambridgema.primegov.com/public/portal',
+        cadence: 'every 30 minutes',
+      },
+      requests: {
+        label: 'SeeClickFix requests on the city’s open data portal',
+        url: 'https://data.cambridgema.gov/d/2z9k-mv9g',
+        cadence: 'daily',
+      },
+    },
+    docketPrefix: '',
+    recordLabel: 'Full record on the city’s portal',
+    rollCalls: true,
+    legislationTitle: 'Policy orders, ordinances and City Manager items',
+    planSources: {
+      capital: { label: 'capital budget', url: 'https://data.cambridgema.gov/d/9chi-2ed3' },
+      operating: [
+        { label: 'operating budget', url: 'https://data.cambridgema.gov/d/5bn4-5wey' },
+        { label: 'revenue budget', url: 'https://data.cambridgema.gov/d/ixyv-mje6' },
+      ],
+      spending: false,
+    },
   },
 ];
 

@@ -70,7 +70,7 @@ about, and take part in moderated public discussions.
 - The governor's executive orders and Supreme Judicial Court decisions (Governor
   and Courts tabs), each with a page where people can ask for a discussion.
 
-**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
+**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ma/cambridge/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,
 Committees, Neighborhoods, Budget) appear only when there is data behind them; a
 new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
@@ -98,6 +98,18 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   Manager communications, committee reports, ordinances), searchable, with
   sponsors and what the council was asked to do; held items keep one page.
 - The operating budget summary and the capital budget, with a page per project.
+
+**Cambridge** (tabs: Overview, Council, Committees, Neighborhoods, Budget)
+
+- All nine councillors (elected citywide, so there is no district map).
+- Policy orders, ordinances, City Manager items and committee reports since 2025,
+  with sponsors, what the council did at each meeting and its roll calls;
+  ceremonial resolutions are hidden until asked for.
+- Council and committee meetings with agendas and minutes.
+- 311 (SeeClickFix) requests citywide: how many, the share closed, typical time to
+  close and the most common requests (summaries only).
+- The operating budget by department and revenue by source, and the five-year
+  capital plan with a page per project.
 
 **Every state**
 
@@ -151,6 +163,10 @@ automatically.
 | Worcester council agenda items | [PrimeGov](https://worcesterma.primegov.com/public/portal) agendas (HTML or PDF) | daily |
 | Worcester council districts | [Worcester open data](https://opendata.worcesterma.gov/) (2020 Census map) | on redistricting |
 | Worcester capital and operating budgets | [Worcester open data](https://opendata.worcesterma.gov/) (annual PDFs) | monthly check |
+| Cambridge councillors; council items, sponsors and votes in 2025 | [IQM2 portal](https://cambridgema.iqm2.com/) | weekly; 2025 loaded once |
+| Cambridge council meetings, items, sponsors and votes since 2026 | [PrimeGov](https://cambridgema.primegov.com/public/portal) (final actions) | every 30 minutes |
+| Cambridge 311, operating budget, revenue, capital plan | [Cambridge open data](https://data.cambridgema.gov/) | daily |
+| Cambridge city boundary | [Census TIGERweb](https://tigerweb.geo.census.gov/) | once |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 
@@ -194,6 +210,8 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
+| `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |
+| `sync-cambridge-data` | daily | Cambridge 311 report, operating and revenue budgets and capital plan from data.cambridgema.gov |
 | `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |

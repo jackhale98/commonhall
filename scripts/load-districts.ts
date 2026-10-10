@@ -32,6 +32,12 @@ export interface DistrictSource {
 /** Where each city's map comes from. */
 export const DISTRICT_SOURCES: Record<string, DistrictSource> = {
   'ma-boston': { url: DEFAULT_URL, districtProp: 'DISTRICT', nameProp: 'LONGNAME', expect: 9 },
+  // Cambridge elects its council citywide: the city's boundary (Census TIGERweb, incorporated places, GEOID 2511000).
+  'ma-cambridge': {
+    url: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer/4/query?where=GEOID%3D%272511000%27&outFields=NAME,GEOID&f=geojson',
+    nameProp: 'NAME',
+    expect: 1,
+  },
 };
 
 export async function loadDistricts(

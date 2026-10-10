@@ -10,6 +10,8 @@ import type { JobRun } from '../job.ts';
 
 export const CAPITAL_PLAN_JOB = 'capital-plan';
 export const CAPITAL_PLAN_DATASET = 'capital-budget';
+/** The table holds every city's plan; this sync writes Boston's. */
+const BOSTON_KEY = 'ma-boston';
 
 export interface CapitalPlanCursor {
   [key: string]: unknown;
@@ -125,11 +127,13 @@ export async function syncCapitalPlan(
   checkKept('Capital Plan table', records.length, rows.length);
   if (rows.length === 0) throw new Error('Capital Plan: the table came back empty; keeping the stored plan');
   for (const row of rows) {
-    if (await upsertIfChanged(run.sql, 'public.capital_projects', ['proj_id'], row)) run.rowsWritten++;
+    if (await upsertIfChanged(run.sql, 'public.capital_projects', ['city', 'proj_id'], { city: BOSTON_KEY, ...row }))
+      run.rowsWritten++;
   }
   // Projects no longer in the plan.
   const gone = await run.sql`
-    delete from public.capital_projects where proj_id <> all(${rows.map((r) => r.proj_id)}::text[]) returning 1`;
+    delete from public.capital_projects
+     where city = ${BOSTON_KEY} and proj_id <> all(${rows.map((r) => r.proj_id)}::text[]) returning 1`;
   run.rowsWritten += gone.length;
   const unbalanced = unbalancedProjects(rows);
   run.log('capital-plan', {

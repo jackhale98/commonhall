@@ -510,3 +510,13 @@ import_map = "./functions/deno.json"
 enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
+
+[functions.sync-cambridge]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+
+[functions.sync-cambridge-data]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
