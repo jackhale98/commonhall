@@ -45,6 +45,16 @@ interface LegislatorRef {
   name: string;
   state: string;
   party: string | null;
+  chamber: string | null;
+  district: string | null;
+  openstates_url: string | null;
+}
+
+/** "Democratic · MA Senate, 2nd Suffolk": who a state legislator is, in one line. */
+function legislatorDetail(l: LegislatorRef): string {
+  const chamber = l.chamber === 'upper' ? 'Senate' : l.chamber === 'lower' ? 'House' : 'Legislature';
+  const district = l.district ? (/^\d+$/.test(l.district) ? `District ${l.district}` : l.district) : '';
+  return [l.party, `${l.state} ${chamber}${district ? `, ${district}` : ''}`].filter(Boolean).join(' · ');
 }
 
 interface Row extends Follow {
@@ -108,7 +118,10 @@ export default function FollowingList() {
           ? client.from('state_bills').select('id,state,identifier,title,openstates_url').in('id', ids('state_bill'))
           : { data: [] },
         ids('state_legislator').length
-          ? client.from('state_legislators').select('id,name,state,party').in('id', ids('state_legislator'))
+          ? client
+              .from('state_legislators')
+              .select('id,name,state,party,chamber,district,openstates_url')
+              .in('id', ids('state_legislator'))
           : { data: [] },
       ]);
       const billMap = new Map(((bills.data ?? []) as BillRef[]).map((b) => [b.id, b]));
@@ -170,7 +183,13 @@ export default function FollowingList() {
             };
           }
           const l = legislatorMap.get(f.target_id);
-          return { ...f, label: l?.name ?? f.target_id, detail: l ? `${l.party ?? ''} · ${l.state}` : undefined };
+          // No legislator pages of our own yet: link to their Open States profile, as the state pages do.
+          return {
+            ...f,
+            label: l?.name ?? f.target_id,
+            detail: l ? legislatorDetail(l) : undefined,
+            link: l?.openstates_url ?? undefined,
+          };
         }),
       );
       setState('ready');
