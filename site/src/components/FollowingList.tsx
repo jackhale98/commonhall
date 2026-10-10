@@ -10,6 +10,7 @@ import {
   localOfficialHref,
   memberHref,
   stateBillFallbackHref,
+  stateLegislatorHref,
 } from '../lib/paths';
 import Loader from './Loader';
 
@@ -183,12 +184,11 @@ export default function FollowingList() {
             };
           }
           const l = legislatorMap.get(f.target_id);
-          // No legislator pages of our own yet: link to their Open States profile, as the state pages do.
           return {
             ...f,
             label: l?.name ?? f.target_id,
             detail: l ? legislatorDetail(l) : undefined,
-            link: l?.openstates_url ?? undefined,
+            link: stateLegislatorHref(f.target_id),
           };
         }),
       );

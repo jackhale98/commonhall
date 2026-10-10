@@ -11,10 +11,12 @@ import {
   loadLocalOfficials,
   loadMembers,
   loadRecentStateBills,
+  loadStateCommittees,
   loadStateLegislators,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, stateName } from '../../lib/format';
-import { href } from '../../lib/paths';
+import { href, stateCommitteeHref } from '../../lib/paths';
+import { chamberLabel } from '../../lib/state-people';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -62,6 +64,14 @@ const officials = code === 'MA' ? await loadLocalOfficials() : [];
 // Massachusetts discussions (Boston's are on the Boston pages).
 const stateDiscussions =
   code === 'MA' ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === 'ma') : [];
+// Committees by chamber (Senate, House, then joint), subcommittees left to their parent's page.
+const committees = ((await loadStateCommittees()).get(code) ?? []).filter((c) => c.classification !== 'subcommittee');
+const committeeGroups = (['upper', 'lower', 'legislature'] as const)
+  .map((key) => ({
+    label: chamberLabel(code, key),
+    committees: committees.filter((c) => c.chamber === key),
+  }))
+  .filter((g) => g.committees.length > 0);
 // The delegation: senators and the first House members, the rest folded.
 const FIRST_REPS = 6;
 const legislatorRows = chambers.flatMap((c) =>
@@ -174,6 +184,35 @@ const legislatorRows = chambers.flatMap((c) =>
           State data from <a href="https://openstates.org/">Open States</a>, refreshed nightly.
         </p>
       </section>
+      {committeeGroups.length > 0 && (
+        <section aria-labelledby="committees-h">
+          <h2 id="committees-h">Committees</h2>
+          {committeeGroups.map((g) => (
+            <details class="panel committee-group">
+              <summary>
+                <span class="h-small">
+                  {g.label} committees <span class="muted">({g.committees.length})</span>
+                </span>
+              </summary>
+              <ul class="committee-links">
+                {g.committees.map((c) => (
+                  <li>
+                    <a href={stateCommitteeHref(c.id)}>{c.name}</a>
+                    <span class="small muted">{c.member_count} members</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+          <p class="small muted">
+            Committees and members from{' '}
+            <a href="https://github.com/openstates/people" rel="noopener">
+              Open States
+            </a>
+            , refreshed weekly.
+          </p>
+        </section>
+      )}
     </>
   )}
 </Base>

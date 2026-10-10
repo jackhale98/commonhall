@@ -27,6 +27,7 @@
     "demo:export": "tsx scripts/export-demo.ts",
     "load-districts": "tsx scripts/load-districts.ts",
     "load-scdb": "tsx scripts/load-scdb.ts",
+    "load-state-people": "tsx scripts/load-state-people.ts",
     "job": "tsx scripts/run-job.ts",
     "check:polis": "tsx scripts/check-polis-privacy.ts"
   },

@@ -1,12 +1,14 @@
+import type { ComponentChildren } from 'preact';
 import type { StateBill } from '../lib/types';
 import { formatDate, stateName } from '../lib/format';
-import { maLegislatureUrl, stateHref } from '../lib/paths';
+import { maLegislatureUrl, stateHref, stateLegislatorHref } from '../lib/paths';
 import FollowButton from './FollowButton';
 
 const CHAMBER: Record<string, string> = { upper: 'Senate', lower: 'House', legislature: 'Legislature' };
 
 /** A state bill: title, sponsor, latest action and links to the official record. */
-export default function StateBillView({ bill }: { bill: StateBill }) {
+/** `children` (the co-sponsors) goes under the sponsor line. */
+export default function StateBillView({ bill, children }: { bill: StateBill; children?: ComponentChildren }) {
   const official = bill.state === 'MA' ? maLegislatureUrl(bill.session, bill.identifier) : null;
   return (
     <article>
@@ -15,7 +17,17 @@ export default function StateBillView({ bill }: { bill: StateBill }) {
         {bill.chamber ? (CHAMBER[bill.chamber] ?? bill.chamber) : 'Legislature'} · {bill.session} session
       </p>
       <h1 class="matter-title">{bill.title}</h1>
-      {bill.primary_sponsor_name && <p class="meta">Sponsor: {bill.primary_sponsor_name}</p>}
+      {bill.primary_sponsor_name && (
+        <p class="meta">
+          Sponsor:{' '}
+          {bill.primary_sponsor_id ? (
+            <a href={stateLegislatorHref(bill.primary_sponsor_id)}>{bill.primary_sponsor_name}</a>
+          ) : (
+            bill.primary_sponsor_name
+          )}
+        </p>
+      )}
+      {children}
       <div class="cluster" style={{ margin: '1rem 0' }}>
         <FollowButton targetType="state_bill" targetId={bill.id} label={bill.identifier} />
         {official && (

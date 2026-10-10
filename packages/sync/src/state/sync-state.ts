@@ -31,7 +31,7 @@ import {
   type OSPerson,
   type OpenStatesClient,
 } from '@civic/congress-client';
-import { upsertIfChanged, type Sql } from '../db.ts';
+import { upsertIfChanged, type AnySql, type Sql } from '../db.ts';
 import { toDate } from '../text.ts';
 import { hash, writeFeedEvents, type FeedEventRow } from '../federal/events.ts';
 import type { JobRun } from '../job.ts';
@@ -159,6 +159,31 @@ export function stateBillRow(bill: OSBill): Record<string, unknown> | null {
   };
 }
 
+/** Every sponsor of a bill, primary first, in Open States' order. */
+export function stateBillSponsorRows(bill: OSBill): Record<string, unknown>[] {
+  const list = [...(bill.sponsorships ?? [])].filter((s) => s.person?.name ?? s.name);
+  list.sort((a, b) => Number(Boolean(b.primary)) - Number(Boolean(a.primary)));
+  return list.map((s, i) => ({
+    bill_id: bill.id,
+    seq: i,
+    person_id: s.person?.id ?? null,
+    name: (s.person?.name ?? s.name).trim(),
+    is_primary: Boolean(s.primary),
+    classification: s.classification ?? null,
+  }));
+}
+
+/** Replace a bill's sponsors when the list has changed; returns rows written. */
+async function writeSponsors(tx: AnySql, billId: string, rows: Record<string, unknown>[]): Promise<number> {
+  const key = (r: Record<string, unknown>) => `${r.person_id ?? ''}|${r.name}|${r.is_primary}`;
+  const existing = await tx<Record<string, unknown>[]>`
+    select person_id, name, is_primary from public.state_bill_sponsors where bill_id = ${billId} order by seq`;
+  if (existing.map(key).join('\n') === rows.map(key).join('\n')) return 0;
+  await tx`delete from public.state_bill_sponsors where bill_id = ${billId}`;
+  if (rows.length) await tx`insert into public.state_bill_sponsors ${tx(rows as never)}`;
+  return rows.length;
+}
+
 export function stateLegislatorRow(person: OSPerson): Record<string, unknown> | null {
   const state = jurisdictionToState(person.jurisdiction?.id ?? '');
   if (!state) return null;
@@ -231,10 +256,13 @@ async function writeStateBills(sql: Sql, bills: OSBill[], filled: boolean): Prom
           from public.state_bills where id = any(${rows.map((r) => r.id as string)}::text[])`
     ).map((r) => [r.id, r]),
   );
+  const byId = new Map(bills.map((b) => [b.id, b]));
   let written = 0;
   await sql.begin(async (tx) => {
     for (const row of rows) {
       if (await upsertIfChanged(tx, 'public.state_bills', ['id'], row)) written += 1;
+      const bill = byId.get(row.id as string);
+      if (bill?.sponsorships) written += await writeSponsors(tx, bill.id, stateBillSponsorRows(bill));
       written += await writeFeedEvents(tx, stateBillEvents(row, previous.get(row.id as string), filled));
     }
   });

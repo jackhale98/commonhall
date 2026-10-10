@@ -2875,3 +2875,101 @@ button .ch-loader,
     animation: ch-calm-6 var(--ch-speed) infinite linear both !important;
   }
 }
+
+/* ---- State legislators and committees ---- */
+.person-head {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  margin: var(--space-3) 0 var(--space-5);
+}
+.person-head h1 {
+  margin: 0 0 var(--space-1);
+}
+.person-meta {
+  margin: 0 0 var(--space-3);
+  color: var(--text-muted);
+}
+.contact {
+  margin-bottom: var(--space-5);
+}
+.contact h2 {
+  margin-top: 0;
+}
+.contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.contact-list li {
+  display: grid;
+  gap: 0.15rem;
+  overflow-wrap: anywhere;
+}
+.committee-seats li,
+.committee-members li,
+.committee-links li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+}
+.committee-seats a,
+.committee-members a,
+.committee-links a {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text);
+}
+.committee-seats a:hover,
+.committee-members a:hover,
+.committee-links a:hover {
+  color: var(--link);
+  text-decoration: underline;
+}
+.committee-members + .committee-members {
+  margin-top: var(--space-4);
+}
+.committee-group {
+  margin-bottom: var(--space-3);
+}
+.committee-group > summary {
+  cursor: pointer;
+}
+.committee-group[open] > summary {
+  margin-bottom: var(--space-3);
+}
+.committee-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.bill-cosponsors .link-button {
+  font-size: inherit;
+}
+
+.plain-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plain-rows > li {
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.state-bill-title {
+  margin: 0.15rem 0;
+  font-weight: 650;
+}
+.state-bill-title a {
+  color: var(--text);
+  text-decoration: none;
+}
+.state-bill-title a:hover {
+  color: var(--link);
+  text-decoration: underline;
+}

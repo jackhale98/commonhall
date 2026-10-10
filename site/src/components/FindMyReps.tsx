@@ -4,7 +4,7 @@ import { areaLabel } from '../lib/address';
 import { accountUrl, followMany, getClient, getSession, hasStoredSession, savePendingFollows } from '../lib/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from '../lib/config';
 import { memberRole, partyClass, partyLabel, stateName } from '../lib/format';
-import { localOfficialHref, memberHref } from '../lib/paths';
+import { localOfficialHref, memberHref, stateLegislatorHref } from '../lib/paths';
 import { select } from '../lib/rest';
 import FollowButton from './FollowButton';
 import MemberPhoto from './MemberPhoto';
@@ -341,13 +341,7 @@ export default function FindMyReps({ saved = false }: Props) {
                   <li>
                     <MemberPhoto name={l.name} url={l.photo_url} size={48} />
                     <div>
-                      {l.openstates_url ? (
-                        <a href={l.openstates_url} rel="noopener">
-                          {l.name}
-                        </a>
-                      ) : (
-                        l.name
-                      )}{' '}
+                      <a href={stateLegislatorHref(l.id)}>{l.name}</a>{' '}
                       {l.party && <span class={`party ${partyClass(l.party)}`}>{l.party}</span>}
                       <p class="small muted">
                         {chamberName(l.chamber, l.state)}

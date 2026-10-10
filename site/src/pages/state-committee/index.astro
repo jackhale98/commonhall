@@ -1,0 +1,11 @@
+---
+import StateCommitteeView from '../../components/StateCommitteeView';
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="State committee" section="states" noindex>
+  <noscript>
+    <p class="notice">This page needs JavaScript.</p>
+  </noscript>
+  <StateCommitteeView client:only="preact" />
+</Base>

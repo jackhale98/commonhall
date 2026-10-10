@@ -1,0 +1,11 @@
+---
+import StateLegislatorView from '../../components/StateLegislatorView';
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="State legislator" section="states" noindex>
+  <noscript>
+    <p class="notice">This page needs JavaScript.</p>
+  </noscript>
+  <StateLegislatorView client:only="preact" />
+</Base>

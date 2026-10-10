@@ -978,3 +978,33 @@ gavel, and a short line rotates through roll-call phrases ("Calling the roll…"
 - No phrase suggests the visitor has done something they haven't ("Casting your
   ballot…" became "Taking our seats…").
 - Short status lines inside lists ("Loading every order…") stay as text.
+
+## 76. State legislators' details and committees from openstates/people
+
+The Open States API is the state sync's only source, and its free allowance (about
+500 requests a day) goes on bills. Legislators held just name, party, seat, email
+and photo, and only for the states the sync had reached (3,048 of about 7,400). No
+committees at all.
+
+Open States publishes the data behind its API as a public-domain (CC0) GitHub
+repository, `openstates/people`: one YAML file per legislator (offices, phones,
+links) and per committee (members and their roles). The owner approved it as a
+source on 10 October 2026. The "Load state people and committees" workflow
+downloads the repository archive weekly and runs `scripts/load-state-people.ts`.
+It uses none of the API allowance and runs in GitHub Actions, not an Edge Function,
+because parsing about 10,000 files is too much work for an Edge Function's CPU limit.
+
+- The API sync stays the source for who a legislator is. The load adds offices and
+  links, fills a missing email or photo, adds legislators the sync hasn't reached,
+  and marks as former those who left the repository's legislature folder (only when
+  the state's list looks complete, more than 20 people).
+- Each state's committees are replaced on every load (`state_committees`,
+  `state_committee_members`). Congress's files (`data/us`) are skipped; Congress has
+  its own committee data.
+- The state bill sync now keeps every sponsor (`state_bill_sponsors`), not only the
+  first. It was already reading them. Bills stored earlier fill in as they change.
+  Until then, legislator pages also count the bills where they are the main sponsor.
+- Legislator (`/state-legislator/?id=`) and committee (`/state-committee/?id=`)
+  pages are rendered in the browser, like other state pages, so 7,400 people and
+  2,800 committees don't add to the build. State pages list their committees by
+  chamber, folded. Legislator names across the site link to their page.

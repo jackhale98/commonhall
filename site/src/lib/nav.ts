@@ -48,7 +48,12 @@ export const NAV: NavGroup[] = [
       // More specific first: Massachusetts pages also start with states/.
       { key: 'ma', label: 'Massachusetts', path: 'states/ma/', match: ['states/ma/'] },
       { key: 'boston', label: 'Boston', path: 'boston/', match: ['boston/'] },
-      { key: 'states', label: 'All states', path: 'states/', match: ['states/', 'state-bill/'] },
+      {
+        key: 'states',
+        label: 'All states',
+        path: 'states/',
+        match: ['states/', 'state-bill/', 'state-legislator/', 'state-committee/'],
+      },
     ],
   },
   { key: 'discuss', label: 'Discuss', path: 'discussions/', match: ['discussions/', 'discussion/'] },

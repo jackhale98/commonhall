@@ -29,6 +29,7 @@ import {
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import type { UnityRow } from './insights';
+import { STATE_COMMITTEE_COLUMNS, type StateCommittee } from './state-people';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
@@ -348,6 +349,15 @@ export const loadStateLegislators = memo(async () => {
     select: 'id,name,party,state,chamber,district,title,photo_url,openstates_url',
     current: 'eq.true',
     order: 'state.asc,chamber.asc,id.asc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
+/** Every state's committees (from openstates/people), by state; empty before the first load. */
+export const loadStateCommittees = memo(async () => {
+  const rows = await selectAllOptional<StateCommittee>('state_committees', {
+    select: STATE_COMMITTEE_COLUMNS,
+    order: 'state.asc,name.asc',
   });
   return groupBy(rows, (r) => r.state);
 });

@@ -26,6 +26,7 @@ interface FakeBill {
   latest_action_date: string;
   latest_action_description: string;
   sponsor?: string;
+  cosponsors?: string[];
 }
 
 class FakeOpenStates {
@@ -160,9 +161,12 @@ class FakeOpenStates {
           latest_action_date: b.latest_action_date,
           latest_action_description: b.latest_action_description,
           updated_at: b.updated_at,
-          sponsorships: b.sponsor
-            ? [{ name: 'Gina Hinojosa', primary: true, person: { id: b.sponsor, name: 'Gina Hinojosa' } }]
-            : [],
+          sponsorships: [
+            ...(b.cosponsors ?? []).map((name) => ({ name, primary: false, classification: 'cosponsor' })),
+            ...(b.sponsor
+              ? [{ name: 'Gina Hinojosa', primary: true, person: { id: b.sponsor, name: 'Gina Hinojosa' } }]
+              : []),
+          ],
         })),
         pagination: {
           per_page: perPage,
@@ -203,7 +207,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await sql`truncate public.state_bills, public.state_legislators, public.geo_cache, public.feed_events, public.follows`;
+  await sql`truncate public.state_bill_sponsors, public.state_bills, public.state_legislators, public.geo_cache, public.feed_events, public.follows`;
   await sql`delete from public.sync_state`;
   await sql`delete from public.sync_lock`;
   await sql`delete from public.api_usage`;
@@ -253,6 +257,28 @@ describe('sync-state', () => {
     ]);
     expect(kinds[0]!.summary).toBe('TX HB 5: Passed the House');
     expect(kinds[1]).toMatchObject({ member_type: 'state_legislator', member_id: 'ocd-person/tx-2' });
+  });
+
+  it('keeps every sponsor, primary first, and rewrites them only when they change', async () => {
+    const api = new FakeOpenStates();
+    api.addBills('tx', 3);
+    api.bills.tx![0]!.cosponsors = ['Ana Hernández', 'Jolanda Jones'];
+    await runState(api);
+    const rows = await sql`
+      select seq, person_id, name, is_primary from public.state_bill_sponsors
+       where bill_id = 'ocd-bill/tx-1' order by seq`;
+    expect(rows).toEqual([
+      { seq: 0, person_id: 'ocd-person/tx-2', name: 'Gina Hinojosa', is_primary: true },
+      { seq: 1, person_id: null, name: 'Ana Hernández', is_primary: false },
+      { seq: 2, person_id: null, name: 'Jolanda Jones', is_primary: false },
+    ]);
+
+    const bill = api.bills.tx![0]!;
+    bill.cosponsors = ['Ana Hernández'];
+    bill.updated_at = '2026-10-07T23:00:00.000000+00:00';
+    await runState(api, 1000, ['TX', 'CA'], '2026-10-09T07:00:00Z');
+    const after = await sql`select name from public.state_bill_sponsors where bill_id = 'ocd-bill/tx-1' order by seq`;
+    expect(after.map((r) => r.name)).toEqual(['Gina Hinojosa', 'Ana Hernández']);
   });
 
   it('gets through a full page of bills that share one timestamp', async () => {

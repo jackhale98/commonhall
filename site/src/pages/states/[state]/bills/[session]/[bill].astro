@@ -1,5 +1,6 @@
 ---
 import DiscussionLink from '../../../../../components/DiscussionLink.astro';
+import StateBillSponsors from '../../../../../components/StateBillSponsors';
 import StateBillView from '../../../../../components/StateBillView';
 import Base from '../../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadPrerenderStateBills, type StateBill } from '../../../../../lib/build-data';
@@ -30,5 +31,7 @@ const discussion = (await loadDiscussionsByTarget()).get(`state_bill:${bill.id}`
     <a href={stateHref(bill.state)}>{stateName(bill.state)}</a> › {bill.identifier}
   </nav>
   <DiscussionLink discussion={discussion} targetType="state_bill" targetId={bill.id} />
-  <StateBillView bill={bill} />
+  <StateBillView bill={bill}>
+    <StateBillSponsors client:visible billId={bill.id} />
+  </StateBillView>
 </Base>

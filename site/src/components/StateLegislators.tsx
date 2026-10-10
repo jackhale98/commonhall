@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
+import { stateLegislatorHref } from '../lib/paths';
 import FollowButton from './FollowButton';
 
 export interface LegislatorRow {
@@ -104,13 +105,7 @@ export default function StateLegislators({
             {hits.slice(0, shown).map((l) => (
               <li key={l.id} class="legislator">
                 <span class="legislator-text">
-                  {l.url ? (
-                    <a href={l.url} rel="noopener">
-                      {l.name}
-                    </a>
-                  ) : (
-                    l.name
-                  )}
+                  <a href={stateLegislatorHref(l.id)}>{l.name}</a>
                   <span class="small muted">
                     {partyShort(l.party)}
                     {chambers.length > 1 && ` · ${label.get(l.chamber) ?? ''}`}

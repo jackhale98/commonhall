@@ -75,6 +75,15 @@ export function stateBillFallbackHref(id: string): string {
   return href(`state-bill/?id=${encodeURIComponent(id)}`);
 }
 
+/** State legislators and committees are client-rendered pages keyed by Open States id. */
+export function stateLegislatorHref(id: string): string {
+  return href(`state-legislator/?id=${encodeURIComponent(id)}`);
+}
+
+export function stateCommitteeHref(id: string): string {
+  return href(`state-committee/?id=${encodeURIComponent(id)}`);
+}
+
 export function discussionHref(id: string): string {
   return href(`discussions/${id}/`);
 }

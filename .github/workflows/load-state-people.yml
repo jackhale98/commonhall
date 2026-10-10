@@ -1,0 +1,29 @@
+name: Load state people and committees
+
+# State legislators' offices, phones and links, and every state's committees with
+# their members, from Open States' people repository (github.com/openstates/people,
+# CC0). It changes a few times a week; a weekly run keeps up. Uses none of the Open
+# States API allowance. Safe to re-run: each state's committees are replaced.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 8 * * 1' # 08:23 UTC every Monday
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Load legislators and committees
+        run: npm run load-state-people
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
