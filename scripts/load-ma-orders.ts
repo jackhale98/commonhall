@@ -21,6 +21,7 @@ import {
   parseMaOrderLinks,
   type MaOrderLink,
 } from '@civic/congress-client';
+import { recordRun } from './lib/record-run.ts';
 
 const STATE = 'MA';
 const MIN_ORDERS = 20;
@@ -47,51 +48,54 @@ async function main() {
       await page.waitForSelector('main', { timeout: 30_000 });
     };
 
-    await open(MA_ORDERS_INDEX);
-    const ranges = maOrderRangePages(await links(page)).slice(0, Number(values.ranges));
-    const orders: MaOrderLink[] = [];
-    for (const range of ranges) {
-      await open(range);
-      orders.push(...parseMaOrderLinks(await links(page)));
-    }
-    // A changed layout reads as few or no orders: fail loudly rather than load nothing.
-    if (orders.length < MIN_ORDERS)
-      throw new Error(`Read only ${orders.length} orders; has mass.gov's layout changed?`);
-
-    const known = new Map(
-      (
-        await sql<{ number: number; complete: boolean }[]>`
-          select number, (signed_date is not null and (summary is not null or reason is not null)) as complete
-            from public.state_executive_orders where state = ${STATE}`
-      ).map((r) => [r.number, r.complete]),
-    );
-    let written = 0;
-    for (const order of orders) {
-      const row = { state: STATE, number: order.number, title: order.title, url: order.url };
-      if (known.has(order.number) && known.get(order.number)) {
-        // Titles are corrected now and then; dates and issuers don't change.
-        const changed = await sql`
-          update public.state_executive_orders set title = ${row.title}, url = ${row.url}
-           where state = ${STATE} and number = ${row.number} and (title <> ${row.title} or url <> ${row.url})
-          returning 1`;
-        written += changed.length;
-        continue;
+    await recordRun(sql, 'load-ma-orders', 30, async () => {
+      await open(MA_ORDERS_INDEX);
+      const ranges = maOrderRangePages(await links(page)).slice(0, Number(values.ranges));
+      const orders: MaOrderLink[] = [];
+      for (const range of ranges) {
+        await open(range);
+        orders.push(...parseMaOrderLinks(await links(page)));
       }
-      await open(order.url);
-      const { body, ...fields } = parseMaOrderDetail(await page.$eval('main', (m) => (m as HTMLElement).innerText));
-      // A short summary, not the full text: that stays on mass.gov.
-      const detail = { ...fields, ...(body ? maOrderSummary(body) : { summary: null, reason: null }) };
-      await sql`
-        insert into public.state_executive_orders ${sql({ ...row, ...detail })}
-        on conflict (state, number) do update set
-          title = excluded.title, url = excluded.url, signed_date = excluded.signed_date,
-          governor = excluded.governor, revokes = excluded.revokes, register = excluded.register,
-          summary = excluded.summary, reason = excluded.reason`;
-      written++;
-      console.log(`No. ${order.number}`, detail.signed_date ?? 'no date', detail.governor ?? '');
-      await page.waitForTimeout(800);
-    }
-    console.log(JSON.stringify({ orders: orders.length, written }));
+      // A changed layout reads as few or no orders: fail loudly rather than load nothing.
+      if (orders.length < MIN_ORDERS)
+        throw new Error(`Read only ${orders.length} orders; has mass.gov's layout changed?`);
+
+      const known = new Map(
+        (
+          await sql<{ number: number; complete: boolean }[]>`
+            select number, (signed_date is not null and (summary is not null or reason is not null)) as complete
+              from public.state_executive_orders where state = ${STATE}`
+        ).map((r) => [r.number, r.complete]),
+      );
+      let written = 0;
+      for (const order of orders) {
+        const row = { state: STATE, number: order.number, title: order.title, url: order.url };
+        if (known.has(order.number) && known.get(order.number)) {
+          // Titles are corrected now and then; dates and issuers don't change.
+          const changed = await sql`
+            update public.state_executive_orders set title = ${row.title}, url = ${row.url}
+             where state = ${STATE} and number = ${row.number} and (title <> ${row.title} or url <> ${row.url})
+            returning 1`;
+          written += changed.length;
+          continue;
+        }
+        await open(order.url);
+        const { body, ...fields } = parseMaOrderDetail(await page.$eval('main', (m) => (m as HTMLElement).innerText));
+        // A short summary, not the full text: that stays on mass.gov.
+        const detail = { ...fields, ...(body ? maOrderSummary(body) : { summary: null, reason: null }) };
+        await sql`
+          insert into public.state_executive_orders ${sql({ ...row, ...detail })}
+          on conflict (state, number) do update set
+            title = excluded.title, url = excluded.url, signed_date = excluded.signed_date,
+            governor = excluded.governor, revokes = excluded.revokes, register = excluded.register,
+            summary = excluded.summary, reason = excluded.reason`;
+        written++;
+        console.log(`No. ${order.number}`, detail.signed_date ?? 'no date', detail.governor ?? '');
+        await page.waitForTimeout(800);
+      }
+      console.log(JSON.stringify({ orders: orders.length, written }));
+      return written;
+    });
   } finally {
     await browser.close();
     await sql.end();

@@ -16,6 +16,7 @@ import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import { parse } from 'yaml';
 import { writeStatePeople, type PeopleCommittee, type PeoplePerson, type Sql } from '@civic/sync';
+import { recordRun } from './lib/record-run.ts';
 
 const ARCHIVE = 'https://codeload.github.com/openstates/people/tar.gz/refs/heads/main';
 const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
@@ -55,36 +56,39 @@ async function main() {
   const tmp = values.dir ? null : mkdtempSync(join(tmpdir(), 'people-'));
   const sql = postgres(dbUrl, { max: 1, prepare: false, onnotice: () => undefined });
   try {
-    const data = values.dir
-      ? existsSync(join(values.dir, 'data'))
-        ? join(values.dir, 'data')
-        : values.dir
-      : await download(tmp!);
-    const only = values.states?.toLowerCase().split(',').filter(Boolean);
-    // Two-letter state folders; "us" is Congress, which has its own source.
-    const states = readdirSync(data)
-      .filter((s) => /^[a-z]{2}$/.test(s) && s !== 'us' && (!only || only.includes(s)))
-      .sort();
-    const totals = { states: 0, updated: 0, added: 0, retired: 0, committees: 0, members: 0 };
-    for (const state of states) {
-      const people = readYaml<PeoplePerson>(join(data, state, 'legislature'));
-      const committees = readYaml<PeopleCommittee>(join(data, state, 'committees'));
-      const executives = readYaml<PeoplePerson>(join(data, state, 'executive'));
-      if (!people.length && !committees.length) continue;
-      const r = await writeStatePeople(sql as unknown as Sql, state.toUpperCase(), people, committees, executives);
-      totals.states++;
-      totals.updated += r.legislatorsUpdated;
-      totals.added += r.legislatorsAdded;
-      totals.retired += r.legislatorsRetired;
-      totals.committees += r.committees;
-      totals.members += r.members;
+    await recordRun(sql, 'load-state-people', 30, async () => {
+      const data = values.dir
+        ? existsSync(join(values.dir, 'data'))
+          ? join(values.dir, 'data')
+          : values.dir
+        : await download(tmp!);
+      const only = values.states?.toLowerCase().split(',').filter(Boolean);
+      // Two-letter state folders; "us" is Congress, which has its own source.
+      const states = readdirSync(data)
+        .filter((s) => /^[a-z]{2}$/.test(s) && s !== 'us' && (!only || only.includes(s)))
+        .sort();
+      const totals = { states: 0, updated: 0, added: 0, retired: 0, committees: 0, members: 0 };
+      for (const state of states) {
+        const people = readYaml<PeoplePerson>(join(data, state, 'legislature'));
+        const committees = readYaml<PeopleCommittee>(join(data, state, 'committees'));
+        const executives = readYaml<PeoplePerson>(join(data, state, 'executive'));
+        if (!people.length && !committees.length) continue;
+        const r = await writeStatePeople(sql as unknown as Sql, state.toUpperCase(), people, committees, executives);
+        totals.states++;
+        totals.updated += r.legislatorsUpdated;
+        totals.added += r.legislatorsAdded;
+        totals.retired += r.legislatorsRetired;
+        totals.committees += r.committees;
+        totals.members += r.members;
+        console.log(
+          `${state.toUpperCase()}: ${r.legislatorsUpdated + r.legislatorsAdded} legislators (${r.legislatorsAdded} new, ${r.legislatorsRetired} left office), ${r.executives} statewide officials, ${r.committees} committees`,
+        );
+      }
       console.log(
-        `${state.toUpperCase()}: ${r.legislatorsUpdated + r.legislatorsAdded} legislators (${r.legislatorsAdded} new, ${r.legislatorsRetired} left office), ${r.executives} statewide officials, ${r.committees} committees`,
+        `Loaded ${totals.states} states: ${totals.updated + totals.added} legislators (${totals.added} new, ${totals.retired} left office), ${totals.committees} committees with ${totals.members} seats.`,
       );
-    }
-    console.log(
-      `Loaded ${totals.states} states: ${totals.updated + totals.added} legislators (${totals.added} new, ${totals.retired} left office), ${totals.committees} committees with ${totals.members} seats.`,
-    );
+      return totals.updated + totals.added + totals.retired;
+    });
   } finally {
     await sql.end();
     if (tmp) rmSync(tmp, { recursive: true, force: true });

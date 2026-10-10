@@ -109,6 +109,17 @@ describe('HttpClient', () => {
     await expect(client.getJson('https://example.test')).resolves.toEqual({ n: 2 });
   });
 
+  it('gives up on a hung request, and keeps the key out of the error', async () => {
+    const fetch = (_url: string, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) =>
+        init?.signal?.addEventListener('abort', () => reject(new DOMException('timed out', 'TimeoutError'))),
+      );
+    const client = new HttpClient({ fetch, sleep: noSleep, timeoutMs: 5, maxAttempts: 2 });
+    const error = await client.getJson('https://example.test/a?api_key=secret').catch((e: unknown) => e);
+    expect((error as Error).message).toContain('TimeoutError');
+    expect((error as Error).message).not.toContain('secret');
+  });
+
   it('stops when the budget is exhausted, counting retries', async () => {
     const { fetch } = sequence(
       () => new Response('', { status: 500 }),

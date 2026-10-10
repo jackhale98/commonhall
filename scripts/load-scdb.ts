@@ -22,6 +22,7 @@ import {
   writeScdbOutcomes,
   type Sql,
 } from '@civic/sync';
+import { recordRun } from './lib/record-run.ts';
 
 const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
 
@@ -60,18 +61,21 @@ async function main() {
   const { values } = parseArgs({ options: { file: { type: 'string' } } });
   const dbUrl = process.env.SUPABASE_DB_URL;
   if (!dbUrl) throw new Error('Set SUPABASE_DB_URL');
-  const { csv, release } = values.file
-    ? {
-        csv: csvText(readFileSync(values.file), values.file),
-        release: /SCDB_(\d{4}_\d{2})/.exec(values.file)?.[1] ?? 'local',
-      }
-    : await download();
-  const rows = scdbOutcomeRows(csv, release);
   const sql = postgres(dbUrl, { max: 1, prepare: false, onnotice: () => undefined });
   try {
-    const n = await writeScdbOutcomes(sql as unknown as Sql, rows);
-    const terms = [...new Set(rows.map((r) => r.term))].sort();
-    console.log(`Loaded ${n} cases, terms ${terms[0]}–${terms.at(-1)}, from SCDB release ${release}.`);
+    await recordRun(sql, 'load-scdb', 15, async () => {
+      const { csv, release } = values.file
+        ? {
+            csv: csvText(readFileSync(values.file), values.file),
+            release: /SCDB_(\d{4}_\d{2})/.exec(values.file)?.[1] ?? 'local',
+          }
+        : await download();
+      const rows = scdbOutcomeRows(csv, release);
+      const n = await writeScdbOutcomes(sql as unknown as Sql, rows);
+      const terms = [...new Set(rows.map((r) => r.term))].sort();
+      console.log(`Loaded ${n} cases, terms ${terms[0]}–${terms.at(-1)}, from SCDB release ${release}.`);
+      return n;
+    });
   } finally {
     await sql.end();
   }

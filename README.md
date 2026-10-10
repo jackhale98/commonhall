@@ -199,6 +199,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |
+| Sync health (GitHub Action) | daily | Fails (and GitHub emails the owner) when a job failed, is overdue, or a source has gone quiet; the same list is public at `/status/` |
 
 The reasoning behind the main design choices is recorded in
 [docs/decisions.md](docs/decisions.md).

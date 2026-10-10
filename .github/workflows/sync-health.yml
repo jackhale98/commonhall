@@ -1,0 +1,32 @@
+name: Sync health
+
+# Daily: fails when a sync job or loader failed, is overdue or died mid-run, or a
+# dataset has had nothing new for longer than usual (private.sync_health()). A failed
+# run is how the owner hears about it: GitHub emails a failed scheduled workflow.
+# The same list, without error text, is on the site's Data status page.
+#
+# GitHub turns off scheduled workflows in a repository with no commits for 60 days;
+# re-enable it on the Actions tab if that happens.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '13 13 * * *' # 13:13 UTC daily, after the morning loaders
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check jobs and data
+        run: npx tsx scripts/check-health.ts
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

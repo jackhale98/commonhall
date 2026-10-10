@@ -49,22 +49,44 @@ export const DAILY_LIMITS: Record<string, number> = {
 };
 
 /**
- * A budget for `api` that respects both the job's own cap and what other jobs
- * have already used this hour.
+ * Each job's part of an API's daily limit, where several jobs share it. Without
+ * shares the job that runs first each hour takes everything the rolling window
+ * frees, and the others get nothing (the state courts went months without a request).
+ * A job's usage is also charged under `{api}:{job}` (see `shareKey`).
  */
-export async function hourlyBudget(sql: Sql, api: string, cap: number): Promise<RequestBudget> {
+export const DAILY_SHARES: Record<string, Record<string, number>> = {
+  courtlistener: { scotus: 60, 'state-courts': 50 },
+};
+
+/** The `api_usage` key that counts one job's share of an API. */
+export const shareKey = (api: string, job: string) => `${api}:${job}`;
+
+async function usedToday(sql: Sql, api: string): Promise<number> {
+  const [day] = await sql<{ used: number }[]>`
+    select coalesce(sum(requests), 0)::int as used from public.api_usage
+     where api = ${api} and hour > now() - interval '24 hours'`;
+  return day?.used ?? 0;
+}
+
+/**
+ * A budget for `api` that respects the job's own cap, what other jobs have already
+ * used this hour and today, and the job's daily share (DAILY_SHARES) when it has one.
+ */
+export async function hourlyBudget(sql: Sql, api: string, cap: number, job?: string): Promise<RequestBudget> {
   const limit = HOURLY_LIMITS[api];
   if (limit === undefined) return new RequestBudget(cap, api);
   const [row] = await sql<{ used: number }[]>`select public.api_usage_this_hour(${api}) as used`;
   let allowed = Math.min(cap, limit - (row?.used ?? 0));
   const daily = DAILY_LIMITS[api];
-  if (daily !== undefined) {
-    const [day] = await sql<{ used: number }[]>`
-      select coalesce(sum(requests), 0)::int as used from public.api_usage
-       where api = ${api} and hour > now() - interval '24 hours'`;
-    allowed = Math.min(allowed, daily - (day?.used ?? 0));
-  }
+  if (daily !== undefined) allowed = Math.min(allowed, daily - (await usedToday(sql, api)));
+  const share = job ? DAILY_SHARES[api]?.[job] : undefined;
+  if (share !== undefined) allowed = Math.min(allowed, share - (await usedToday(sql, shareKey(api, job!))));
   return new RequestBudget(Math.max(0, allowed), api);
+}
+
+/** The `budgets` for runJob: the API, and the job's share of it when it has one. */
+export function jobBudgets(api: string, job: string, budget: RequestBudget): Record<string, RequestBudget> {
+  return DAILY_SHARES[api]?.[job] === undefined ? { [api]: budget } : { [api]: budget, [shareKey(api, job)]: budget };
 }
 
 export interface RunJobOptions<C extends Cursor> {
@@ -151,6 +173,7 @@ export async function runJob<C extends Cursor>(options: RunJobOptions<C>): Promi
              last_error = null,
              requests_used = ${total},
              rows_written = ${ctx.rowsWritten},
+             last_progress_at = case when ${ctx.rowsWritten} > 0 then now() else last_progress_at end,
              updated_at = now()
        where job = ${job}`;
     log('done', { rowsWritten: ctx.rowsWritten, requests: requests(), ms: Date.now() - started });

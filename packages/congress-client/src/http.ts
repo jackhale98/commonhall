@@ -99,6 +99,8 @@ export interface HttpOptions {
   sleep?: (ms: number) => Promise<void>;
   headers?: Record<string, string>;
   userAgent?: string;
+  /** Give up on a request (and retry it) after this long, so a hung server can't use up a run. Default 60 s. */
+  timeoutMs?: number;
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -132,6 +134,7 @@ export class HttpClient {
   private lastRequestAt = 0;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly headers: Record<string, string>;
+  private readonly timeoutMs: number;
 
   constructor(options: HttpOptions = {}) {
     this.fetchImpl = options.fetch ?? ((input, init) => globalThis.fetch(input, init));
@@ -141,6 +144,7 @@ export class HttpClient {
     this.maxDelayMs = options.maxDelayMs ?? 60_000;
     this.maxRetryAfterMs = options.maxRetryAfterMs ?? 30_000;
     this.minIntervalMs = options.minIntervalMs ?? 0;
+    this.timeoutMs = options.timeoutMs ?? 60_000;
     this.sleep = options.sleep ?? defaultSleep;
     this.headers = {
       'user-agent': options.userAgent ?? 'commonhall (+https://github.com/jackhale98/commonhall)',
@@ -162,7 +166,10 @@ export class HttpClient {
       let response: Response | undefined;
       let networkError: unknown;
       try {
-        response = await this.fetchImpl(url, { headers: { ...this.headers, accept } });
+        response = await this.fetchImpl(url, {
+          headers: { ...this.headers, accept },
+          signal: AbortSignal.timeout(this.timeoutMs),
+        });
       } catch (error) {
         networkError = error;
       }
@@ -186,7 +193,10 @@ export class HttpClient {
           const body = await response.text().catch(() => '');
           throw new HttpError(response.status, url, body.slice(0, 500));
         }
-        throw networkError instanceof Error ? networkError : new Error(String(networkError));
+        // Runtimes put the URL in network errors; keep API keys out of logs and sync_state.
+        const reason =
+          networkError instanceof Error ? `${networkError.name}: ${networkError.message}` : String(networkError);
+        throw new Error(`Request failed for ${redactUrl(url)}: ${redactUrl(reason)}`);
       }
 
       // Drain the body so the connection can be reused.

@@ -1,15 +1,23 @@
 /** Hourly (pg_cron): Supreme Court decisions from CourtListener (needs COURTLISTENER_TOKEN). */
 import { CourtListenerClient } from '@civic/congress-client';
-import { COURTLISTENER_API, SCOTUS_JOB, hourlyBudget, runJob, syncSupremeCourt, type ScotusCursor } from '@civic/sync';
+import {
+  COURTLISTENER_API,
+  SCOTUS_JOB,
+  hourlyBudget,
+  jobBudgets,
+  runJob,
+  syncSupremeCourt,
+  type ScotusCursor,
+} from '@civic/sync';
 import { env, serveJob, timeLimitMs } from '../_shared/runtime.ts';
 
 serveJob('sync-scotus', async ({ sql, log }) => {
-  const budget = await hourlyBudget(sql, COURTLISTENER_API, 10);
+  const budget = await hourlyBudget(sql, COURTLISTENER_API, 10, SCOTUS_JOB);
   return runJob<ScotusCursor>({
     sql,
     job: SCOTUS_JOB,
     timeLimitMs: timeLimitMs(),
-    budgets: { [COURTLISTENER_API]: budget },
+    budgets: jobBudgets(COURTLISTENER_API, SCOTUS_JOB, budget),
     log,
     run: (ctx) =>
       syncSupremeCourt(ctx, {

@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import DataStatus from '../../components/DataStatus';
+import { rpc } from '../../lib/rest';
+import type { StatusRow } from '../../lib/status';
+
+// The build's copy; the page refreshes it on load. Empty before migration 050 is live.
+const initial = await rpc<StatusRow[]>('data_status', {}).catch(() => [] as StatusRow[]);
+---
+
+<Base
+  title="Data status"
+  description="When each source we track last updated: bills, votes, courts, governors' orders and city councils."
+>
+  <h1>Data status</h1>
+  <p class="lede">
+    Everything here is copied from official sources on a schedule. This page shows when each one last arrived, so you
+    can tell how current a page is. Problems are checked daily and fixed by the maintainer.
+  </p>
+  <DataStatus client:load initial={initial ?? []} />
+</Base>
+
+<style>
+  :global(.status-summary) {
+    font-size: 1.05rem;
+    margin-block: 1rem 1.5rem;
+  }
+  :global(.status-list) {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    border-top: 1px solid var(--border);
+  }
+  :global(.status-row) {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  :global(.status-what) {
+    display: grid;
+    gap: 0.15rem;
+  }
+  :global(.status-mark) {
+    color: var(--ok);
+    font-weight: 700;
+    text-align: center;
+  }
+  :global(.status-row.is-bad .status-mark),
+  :global(.status-state.bad) {
+    color: var(--danger);
+    font-weight: 600;
+  }
+  :global(.status-state) {
+    color: var(--ok);
+    font-size: 0.9rem;
+    text-align: right;
+    max-width: 14rem;
+  }
+</style>

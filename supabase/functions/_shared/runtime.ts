@@ -66,7 +66,20 @@ export function log(fn: string) {
     console.log(JSON.stringify({ fn, message, ...(data ?? {}) }));
 }
 
-/** Run a scheduled job handler with auth, a DB connection and error reporting. */
+/** The errors in a handler's result: a job result (runJob) with status 'error', at any depth. */
+export function jobErrors(result: unknown): string[] {
+  if (!result || typeof result !== 'object') return [];
+  if (Array.isArray(result)) return result.flatMap(jobErrors);
+  const r = result as Record<string, unknown>;
+  if (r.status === 'error' && typeof r.job === 'string') return [`${r.job}: ${String(r.reason ?? 'failed')}`];
+  return Object.values(r).flatMap(jobErrors);
+}
+
+/**
+ * Run a scheduled job handler with auth, a DB connection and error reporting. A job
+ * that fails answers 500, not 200, so pg_net's response log and the daily health
+ * check (private.sync_health) see it.
+ */
 export function serveJob(
   fn: string,
   handler: (ctx: { sql: Sql; req: Request; log: ReturnType<typeof log> }) => Promise<unknown>,
@@ -78,7 +91,8 @@ export function serveJob(
     const logger = log(fn);
     try {
       const result = await handler({ sql, req, log: logger });
-      return json({ ok: true, result });
+      const errors = jobErrors(result);
+      return errors.length ? json({ ok: false, errors, result }, 500) : json({ ok: true, result });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger('failed', { error: message });

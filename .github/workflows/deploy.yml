@@ -13,6 +13,7 @@ on:
       - 'scripts/**'
       - '.github/workflows/load-*.yml'
       - '.github/workflows/backfill.yml'
+      - '.github/workflows/sync-health.yml'
   workflow_dispatch:
   workflow_call:
   # Rebuild once new migrations are live, so pages pick up new tables and columns.

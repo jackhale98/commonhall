@@ -4,6 +4,7 @@ import {
   COURTLISTENER_API,
   STATE_COURTS_JOB,
   hourlyBudget,
+  jobBudgets,
   runJob,
   syncStateCourts,
   type StateCourtsCursor,
@@ -12,13 +13,13 @@ import { env, serveJob, timeLimitMs } from '../_shared/runtime.ts';
 
 serveJob('sync-state-courts', async ({ sql, log }) => {
   // A few requests a run: the free tier (50 an hour, 125 a day) is shared with sync-scotus,
-  // and hourlyBudget holds this run to what is left of both.
-  const budget = await hourlyBudget(sql, COURTLISTENER_API, 8);
+  // and hourlyBudget holds this run to what is left of both and to this job's daily share.
+  const budget = await hourlyBudget(sql, COURTLISTENER_API, 8, STATE_COURTS_JOB);
   return runJob<StateCourtsCursor>({
     sql,
     job: STATE_COURTS_JOB,
     timeLimitMs: timeLimitMs(),
-    budgets: { [COURTLISTENER_API]: budget },
+    budgets: jobBudgets(COURTLISTENER_API, STATE_COURTS_JOB, budget),
     log,
     run: (ctx) =>
       syncStateCourts(ctx, {

@@ -1314,3 +1314,47 @@ the site only needs enough to tell people what an order is about. Orders that on
 amend another have no WHEREAS; their summary comes from the text after the header
 fields. Migration 048 added `register` and `body`; migration 049 replaces `body`
 with `summary` and `reason`, and orders stored without either are re-opened once.
+
+## 92. Knowing when a source stops arriving
+
+An audit found two sources had quietly stopped: the Massachusetts SJC held 50
+decisions, all from early 2024, and Worcester's council items ended in October 2025.
+Nothing noticed, because every layer reported success:
+
+- `serveJob` answered 200 even when `runJob` returned `status: 'error'`, and pg_cron
+  records only that it queued the request.
+- A run that wrote nothing because its request budget was zero counted as a success.
+  The state courts were starved this way: sync-scotus (hourly, up to 10 requests) runs
+  first each hour and took everything CourtListener's rolling 110-a-day window freed.
+- No request had a timeout, so a hung upstream used up a run and left no error.
+- The GitHub Actions loaders didn't write `sync_state` at all. Worcester's agendas
+  had run once, by hand, and hit the workflow's 20-minute limit in October 2025.
+
+What changed:
+
+- **Failures are failures.** `serveJob` answers 500 when any job in its result
+  failed. `HttpClient` aborts a request after 60 s (retried like a network error), and
+  network errors are rethrown with API keys redacted (Deno puts the URL in them).
+- **Daily shares.** `DAILY_SHARES` gives each job sharing an API's daily limit its
+  own part (CourtListener: Supreme Court 60, state courts 50). A job's usage is
+  charged under the API and under `{api}:{job}` (`jobBudgets`), so the existing
+  `api_usage` table counts both.
+- **Loaders record runs.** Each GitHub Actions loader runs inside `runJob` through
+  `scripts/lib/record-run.ts`, so it has a lease, a last success and a last error like
+  the scheduled jobs. Worcester's agenda loader writes each meeting in a few batched
+  statements (it made several round trips per item) and stops after 18 minutes; the
+  next run continues. It fails when every agenda it read parsed as too short.
+- **Health check** (migration 050). `private.job_schedule` lists every job and loader
+  with how often it runs. `private.data_freshness()` reads each dataset's newest
+  record, per city, court and state, so a new one is covered without editing it, with
+  generous limits (recesses are normal). `private.sync_health()` lists jobs whose last
+  run failed, that are overdue (twice their interval plus an hour), or that started
+  over an hour ago and never finished, and datasets with nothing new for longer than
+  their limit. The daily **Sync health** workflow fails on any, which is how GitHub
+  emails the owner. `public.data_status()` is the same list without error text or
+  runner names, shown at `/status/` (linked in the footer) and refreshed on load.
+- `sync_state.last_progress_at` records the last run that wrote rows.
+
+GitHub disables scheduled workflows after 60 days without commits, the health check
+included; docs/deployment.md says to re-enable them.
+

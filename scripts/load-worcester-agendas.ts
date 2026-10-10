@@ -33,6 +33,7 @@ import {
   type AgendaItem,
   type PrimeGovMeeting,
 } from '@civic/congress-client';
+import { recordRun } from './lib/record-run.ts';
 
 const CITY = 'ma-worcester';
 const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
@@ -41,6 +42,8 @@ const CARRIED = new Set(['Order', 'Resolution', 'Ordinance', 'City Manager commu
 /** Meetings this recent are read again each run. */
 const REVISABLE_DAYS = 14;
 const MIN_ITEMS = 10;
+/** Stop reading new agendas after this long (the workflow allows 30 minutes). */
+const RUN_MINUTES = 18;
 
 const key = (type: string, title: string) => `${type}|${title.toLowerCase().replace(/\W+/g, ' ').trim().slice(0, 300)}`;
 const shortDate = (iso: string) =>
@@ -82,6 +85,106 @@ async function readAgenda(
   if (!pdf) return null;
   const url = primegov.documentUrl(pdf);
   return { items: parseAgendaText(pdfText(Buffer.from(await (await get(url)).arrayBuffer()))), url };
+}
+
+type Existing = Map<string, { id: string; type: string; title: string; agenda_date: string }>;
+
+/**
+ * Write one meeting's agenda in a few statements: its items replace the meeting's
+ * earlier ones, new items become matters, and an item carried from an earlier
+ * meeting moves its matter's latest action instead. Returns the items written.
+ */
+async function writeAgenda(
+  sql: postgres.Sql,
+  m: PrimeGovMeeting,
+  date: string,
+  meetingId: string,
+  agenda: { items: AgendaItem[]; url: string },
+  existing: Existing,
+  officialFor: (name: string) => string | null,
+): Promise<number> {
+  const matters: Record<string, unknown>[] = [];
+  const carried: { id: string; action: string }[] = [];
+  const sponsors: { matter_id: string; official_id: string; name: string; sequence: number }[] = [];
+  const items: Record<string, unknown>[] = [];
+  const actions = new Map<string, Record<string, unknown>>();
+  let seq = 0;
+  for (const item of agenda.items) {
+    seq++;
+    const c = classifyAgendaItem(item);
+    if (!c) continue;
+    const label = `${item.number}, ${shortDate(date)}`;
+    const action = `On the agenda${item.action ? `: ${item.action}` : ''}`;
+    const prior = CARRIED.has(c.type) ? existing.get(key(c.type, c.title)) : undefined;
+    const id = prior && prior.agenda_date < date ? prior.id : `${CITY}-${m.id * 1000 + seq}`;
+    if (prior && prior.id === id && prior.agenda_date < date) {
+      carried.push({ id, action });
+    } else {
+      matters.push({
+        id,
+        city: CITY,
+        matter_id: m.id * 1000 + seq,
+        file_number: label,
+        title: c.title,
+        type: c.type,
+        status: null,
+        body: item.section,
+        intro_date: date,
+        agenda_date: date,
+        passed_date: null,
+        legistar_url: agenda.url,
+        last_modified: `${date}T12:00:00Z`,
+        latest_action_date: date,
+        latest_action_text: action,
+      });
+      existing.set(key(c.type, c.title), { id, type: c.type, title: c.title, agenda_date: date });
+      const named = [
+        ...new Map(c.sponsors.map((name) => [officialFor(name), name] as const).filter(([oid]) => oid !== null)),
+      ];
+      named.forEach(([official_id, name], i) =>
+        sponsors.push({ matter_id: id, official_id: official_id!, name, sequence: i + 1 }),
+      );
+    }
+    items.push({ meeting_id: meetingId, seq, matter_id: id, file_number: item.number, title: c.title });
+    // Each appearance on an agenda is an action, so a carried item shows its history.
+    actions.set(id, {
+      matter_id: id,
+      seq: m.id,
+      action_date: date,
+      action_name: item.action ?? 'On the agenda',
+      action_text: `Item ${item.number} on the City Council agenda`,
+      body: 'City Council',
+      passed: null,
+      event_id: m.id,
+    });
+  }
+  await sql.begin(async (tx) => {
+    await tx`delete from public.local_meeting_items where meeting_id = ${meetingId}`;
+    await tx`delete from public.local_matter_actions where event_id = ${m.id} and matter_id like ${`${CITY}-%`}`;
+    if (matters.length) {
+      await tx`
+        insert into public.local_matters ${tx(matters)}
+        on conflict (id) do update set
+          file_number = excluded.file_number, title = excluded.title, type = excluded.type,
+          body = excluded.body, legistar_url = excluded.legistar_url,
+          latest_action_date = excluded.latest_action_date, latest_action_text = excluded.latest_action_text,
+          last_modified = excluded.last_modified`;
+      await tx`delete from public.local_matter_sponsors where matter_id in ${tx(matters.map((r) => r.id as string))}`;
+    }
+    if (sponsors.length) await tx`insert into public.local_matter_sponsors ${tx(sponsors)}`;
+    for (const c of carried)
+      await tx`
+        update public.local_matters
+           set latest_action_date = ${date}, latest_action_text = ${c.action}, last_modified = ${`${date}T12:00:00Z`}
+         where id = ${c.id} and (latest_action_date is null or latest_action_date <= ${date})`;
+    if (items.length) await tx`insert into public.local_meeting_items ${tx(items)}`;
+    if (actions.size)
+      await tx`
+        insert into public.local_matter_actions ${tx([...actions.values()])}
+        on conflict (matter_id, seq) do update set
+          action_date = excluded.action_date, action_name = excluded.action_name, action_text = excluded.action_text`;
+  });
+  return items.length;
 }
 
 async function main() {
@@ -129,98 +232,36 @@ async function main() {
     );
 
     let read = 0;
+    let skipped = 0;
     let written = 0;
-    for (const m of meetings) {
-      const date = m.dateTime.slice(0, 10);
-      const meetingId = `${CITY}-m${m.id}`;
-      if (!meetingRows.has(meetingId)) continue; // sync-worcester hasn't stored it yet
-      if (!values.force && loaded.has(meetingId) && date < revisable) continue;
-      const agenda = await readAgenda(primegov, m);
-      if (!agenda) continue;
-      read++;
-      if (agenda.items.length < MIN_ITEMS) {
-        console.warn(`${date}: only ${agenda.items.length} items read from ${agenda.url}; skipped`);
-        continue;
-      }
-      await sql.begin(async (tx) => {
-        await tx`delete from public.local_meeting_items where meeting_id = ${meetingId}`;
-        await tx`delete from public.local_matter_actions where event_id = ${m.id} and matter_id like ${`${CITY}-%`}`;
-        let seq = 0;
-        for (const item of agenda.items) {
-          seq++;
-          const c = classifyAgendaItem(item);
-          if (!c) continue;
-          const label = `${item.number}, ${shortDate(date)}`;
-          const action = `On the agenda${item.action ? `: ${item.action}` : ''}`;
-          const prior = CARRIED.has(c.type) ? existing.get(key(c.type, c.title)) : undefined;
-          const id = prior && prior.agenda_date < date ? prior.id : `${CITY}-${m.id * 1000 + seq}`;
-          if (prior && prior.id === id && prior.agenda_date < date) {
-            await tx`
-              update public.local_matters
-                 set latest_action_date = ${date}, latest_action_text = ${action}, last_modified = ${`${date}T12:00:00Z`}
-               where id = ${id} and (latest_action_date is null or latest_action_date <= ${date})`;
-          } else {
-            const row = {
-              id,
-              city: CITY,
-              matter_id: m.id * 1000 + seq,
-              file_number: label,
-              title: c.title,
-              type: c.type,
-              status: null,
-              body: item.section,
-              intro_date: date,
-              agenda_date: date,
-              passed_date: null,
-              legistar_url: agenda.url,
-              last_modified: `${date}T12:00:00Z`,
-              latest_action_date: date,
-              latest_action_text: action,
-            };
-            await tx`
-              insert into public.local_matters ${tx(row)}
-              on conflict (id) do update set
-                file_number = excluded.file_number, title = excluded.title, type = excluded.type,
-                body = excluded.body, legistar_url = excluded.legistar_url,
-                latest_action_date = excluded.latest_action_date, latest_action_text = excluded.latest_action_text,
-                last_modified = excluded.last_modified`;
-            existing.set(key(c.type, c.title), { id, type: c.type, title: c.title, agenda_date: date });
-            const sponsors = [
-              ...new Map(c.sponsors.map((name) => [officialFor(name), name] as const).filter(([oid]) => oid !== null)),
-            ];
-            await tx`delete from public.local_matter_sponsors where matter_id = ${id}`;
-            if (sponsors.length)
-              await tx`insert into public.local_matter_sponsors ${tx(
-                sponsors.map(([official_id, name], i) => ({
-                  matter_id: id,
-                  official_id: official_id!,
-                  name,
-                  sequence: i + 1,
-                })),
-              )}`;
-          }
-          await tx`
-            insert into public.local_meeting_items ${tx({ meeting_id: meetingId, seq, matter_id: id, file_number: item.number, title: c.title })}`;
-          // Each appearance on an agenda is an action, so a carried item shows its history.
-          await tx`
-            insert into public.local_matter_actions ${tx({
-              matter_id: id,
-              seq: m.id,
-              action_date: date,
-              action_name: item.action ?? 'On the agenda',
-              action_text: `Item ${item.number} on the City Council agenda`,
-              body: 'City Council',
-              passed: null,
-              event_id: m.id,
-            })}
-            on conflict (matter_id, seq) do update set
-              action_date = excluded.action_date, action_name = excluded.action_name, action_text = excluded.action_text`;
-          written++;
+    const stopAt = Date.now() + RUN_MINUTES * 60_000;
+    await recordRun(sql, 'load-worcester-agendas', RUN_MINUTES + 10, async () => {
+      for (const m of meetings) {
+        // Oldest first, so a carried item keeps its first matter; what is left waits for the next run.
+        if (Date.now() > stopAt) {
+          console.log(`Stopping at ${RUN_MINUTES} minutes; the next run continues from ${m.dateTime.slice(0, 10)}.`);
+          break;
         }
-      });
-      console.log(`${date}: ${agenda.items.length} items`);
-    }
-    console.log(JSON.stringify({ meetings: meetings.length, read, written }));
+        const date = m.dateTime.slice(0, 10);
+        const meetingId = `${CITY}-m${m.id}`;
+        if (!meetingRows.has(meetingId)) continue; // sync-worcester hasn't stored it yet
+        if (!values.force && loaded.has(meetingId) && date < revisable) continue;
+        const agenda = await readAgenda(primegov, m);
+        if (!agenda) continue;
+        read++;
+        if (agenda.items.length < MIN_ITEMS) {
+          skipped++;
+          console.warn(`${date}: only ${agenda.items.length} items read from ${agenda.url}; skipped`);
+          continue;
+        }
+        written += await writeAgenda(sql, m, date, meetingId, agenda, existing, officialFor);
+        console.log(`${date}: ${agenda.items.length} items`);
+      }
+      console.log(JSON.stringify({ meetings: meetings.length, read, skipped, written }));
+      // Every agenda too short to be real: the layout has changed, not the council.
+      if (read > 0 && skipped === read) throw new Error(`Every agenda read (${read}) parsed as too short`);
+      return written;
+    });
   } finally {
     await sql.end();
   }

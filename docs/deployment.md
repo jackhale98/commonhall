@@ -157,6 +157,15 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | Backfill | manually only | `SUPABASE_DB_URL`, `CONGRESS_API_KEY`, write permission (b) |
 | Load council districts | manually (once, and after redistricting) | `SUPABASE_DB_URL` |
 | Load Supreme Court Database | monthly (3rd, 07:41 UTC) and manually | `SUPABASE_DB_URL` |
+| Sync health | 13:13 UTC daily and manually | `SUPABASE_DB_URL` |
+
+**Sync health** is how you hear that something broke. It fails when a job's last run
+failed, a job is overdue or died mid-run, or a dataset has had nothing new for much
+longer than usual (`private.sync_health()`), and GitHub emails you about a failed
+scheduled workflow. The run's summary lists each problem and where the job runs. The
+same list, without error text, is public at `/status/`. A new job or loader needs a
+row in `private.job_schedule` (its name in `sync_state`, a label and how often it
+runs); new cities, courts and states' governor's orders are checked without changes.
 
 GitHub turns off scheduled workflows in a repository with no activity for 60 days.
 If the nightly rebuild stops, re-enable it from the Actions tab.

@@ -25,6 +25,7 @@ import {
   type ParsedCapitalBudget,
   type ParsedOperatingSummary,
 } from '@civic/sync';
+import { recordRun } from './lib/record-run.ts';
 
 const HUB = 'https://opendata.worcesterma.gov/api/search/v1/collections/all/items';
 const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
@@ -126,63 +127,69 @@ async function main() {
   if (!dbUrl) throw new Error('Set SUPABASE_DB_URL');
   const sql = postgres(dbUrl, { max: 1, prepare: false, onnotice: () => undefined });
   try {
-    const docs: { doc: Document; pdf?: Buffer }[] = values.file
-      ? [
-          {
-            doc: {
-              kind: 'capital',
-              id: 'local',
-              title: `Fiscal Year ${values.year} Annual Capital Budget`,
-              fiscalYear: Number(values.year),
-              stage: values.stage === 'proposed' ? 'proposed' : 'adopted',
-              url: values.file,
+    await recordRun(sql, 'load-worcester-budget', 30, async () => {
+      let written = 0;
+      const docs: { doc: Document; pdf?: Buffer }[] = values.file
+        ? [
+            {
+              doc: {
+                kind: 'capital',
+                id: 'local',
+                title: `Fiscal Year ${values.year} Annual Capital Budget`,
+                fiscalYear: Number(values.year),
+                stage: values.stage === 'proposed' ? 'proposed' : 'adopted',
+                url: values.file,
+              },
+              pdf: (await import('node:fs')).readFileSync(values.file),
             },
-            pdf: (await import('node:fs')).readFileSync(values.file),
-          },
-        ]
-      : pickDocuments(await listDocuments('capital')).map((doc) => ({ doc }));
-    for (const { doc, pdf } of docs) {
-      const [have] = await sql<{ title: string; stage: string }[]>`
-        select title, stage from public.local_capital_documents where city = ${CITY} and fiscal_year = ${doc.fiscalYear}`;
-      if (have && have.title === doc.title && !values.force) {
-        console.log(`${doc.title}: already loaded`);
-        continue;
-      }
-      const bytes =
-        pdf ?? Buffer.from(await (await fetch(doc.url, { headers: { 'user-agent': USER_AGENT } })).arrayBuffer());
-      const parsed = parseCapitalBudget(pdfText(bytes));
-      const problems = subtotalMismatches(parsed);
-      if (problems.length || parsed.items.length === 0)
-        throw new Error(`${doc.title} doesn't add up, so it wasn't loaded:\n  ${problems.join('\n  ')}`);
-      for (const w of parsed.planWarnings) console.warn(`${doc.title}: five-year plan as printed: ${w}`);
-      await write(sql, doc, parsed);
-      const total = parsed.items.reduce((n, i) => n + i.borrowing + i.cash, 0);
-      console.log(
-        `${doc.title}: ${parsed.items.length} projects in ${parsed.subtotals.size} departments, $${total.toLocaleString()} borrowing and cash`,
-      );
-    }
-    // The operating budget: the newest year's revenue and spending summaries.
-    if (!values.file) {
-      for (const doc of pickDocuments(await listDocuments('operating'), 1)) {
-        const [have] = await sql<{ title: string }[]>`
-          select title from public.local_operating_documents where city = ${CITY}`;
+          ]
+        : pickDocuments(await listDocuments('capital')).map((doc) => ({ doc }));
+      for (const { doc, pdf } of docs) {
+        const [have] = await sql<{ title: string; stage: string }[]>`
+          select title, stage from public.local_capital_documents where city = ${CITY} and fiscal_year = ${doc.fiscalYear}`;
         if (have && have.title === doc.title && !values.force) {
           console.log(`${doc.title}: already loaded`);
           continue;
         }
-        const bytes = Buffer.from(
-          await (await fetch(doc.url, { headers: { 'user-agent': USER_AGENT } })).arrayBuffer(),
-        );
-        const parsed = parseOperatingSummary(pdfText(bytes));
-        if (parsed.problems.length || parsed.lines.length === 0)
-          throw new Error(`${doc.title} doesn't add up, so it wasn't loaded:\n  ${parsed.problems.join('\n  ')}`);
-        await writeOperating(sql, doc, parsed);
-        const total = parsed.lines.filter((l) => l.kind === 'revenue').reduce((n, l) => n + l.amounts.at(-1)!, 0);
+        const bytes =
+          pdf ?? Buffer.from(await (await fetch(doc.url, { headers: { 'user-agent': USER_AGENT } })).arrayBuffer());
+        const parsed = parseCapitalBudget(pdfText(bytes));
+        const problems = subtotalMismatches(parsed);
+        if (problems.length || parsed.items.length === 0)
+          throw new Error(`${doc.title} doesn't add up, so it wasn't loaded:\n  ${problems.join('\n  ')}`);
+        for (const w of parsed.planWarnings) console.warn(`${doc.title}: five-year plan as printed: ${w}`);
+        await write(sql, doc, parsed);
+        written++;
+        const total = parsed.items.reduce((n, i) => n + i.borrowing + i.cash, 0);
         console.log(
-          `${doc.title}: ${parsed.lines.length} revenue and spending lines, $${total.toLocaleString()} in revenue`,
+          `${doc.title}: ${parsed.items.length} projects in ${parsed.subtotals.size} departments, $${total.toLocaleString()} borrowing and cash`,
         );
       }
-    }
+      // The operating budget: the newest year's revenue and spending summaries.
+      if (!values.file) {
+        for (const doc of pickDocuments(await listDocuments('operating'), 1)) {
+          const [have] = await sql<{ title: string }[]>`
+            select title from public.local_operating_documents where city = ${CITY}`;
+          if (have && have.title === doc.title && !values.force) {
+            console.log(`${doc.title}: already loaded`);
+            continue;
+          }
+          const bytes = Buffer.from(
+            await (await fetch(doc.url, { headers: { 'user-agent': USER_AGENT } })).arrayBuffer(),
+          );
+          const parsed = parseOperatingSummary(pdfText(bytes));
+          if (parsed.problems.length || parsed.lines.length === 0)
+            throw new Error(`${doc.title} doesn't add up, so it wasn't loaded:\n  ${parsed.problems.join('\n  ')}`);
+          await writeOperating(sql, doc, parsed);
+          written++;
+          const total = parsed.lines.filter((l) => l.kind === 'revenue').reduce((n, l) => n + l.amounts.at(-1)!, 0);
+          console.log(
+            `${doc.title}: ${parsed.lines.length} revenue and spending lines, $${total.toLocaleString()} in revenue`,
+          );
+        }
+      }
+      return written;
+    });
   } finally {
     await sql.end();
   }
