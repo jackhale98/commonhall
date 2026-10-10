@@ -1,4 +1,5 @@
 ---
+import { FEATURED_STATES, STATE_FEATURES } from '../../lib/states';
 import { CITY_LIST } from '../../lib/cities';
 import StateTiles from '../../components/viz/StateTiles';
 import Base from '../../layouts/Base.astro';
@@ -31,7 +32,7 @@ const tiles = LEGISLATURE_STATES.map((code) => {
           : stateName(code),
     href: stateHref(code),
     note: code === 'DC' ? 'del.' : n ? String(n) : undefined,
-    featured: code === 'MA',
+    featured: FEATURED_STATES.includes(code),
   };
 });
 ---
@@ -48,11 +49,13 @@ const tiles = LEGISLATURE_STATES.map((code) => {
   </header>
 
   <div class="featured-row">
-    <a class="card feature" href={stateHref('MA')}>
-      <span class="kicker">Most detailed coverage</span>
-      <strong>Massachusetts</strong>
-      <span class="small muted">Bills with their full history, roll-call votes and co-sponsors.</span>
-    </a>
+    {FEATURED_STATES.map((code) => (
+      <a class="card feature" href={stateHref(code)}>
+        <span class="kicker">{STATE_FEATURES[code]!.featured.kicker}</span>
+        <strong>{stateName(code)}</strong>
+        <span class="small muted">{STATE_FEATURES[code]!.featured.blurb}</span>
+      </a>
+    ))}
     {CITY_LIST.map((c) => (
       <a class="card feature" href={cityHref(c)}>
         <span class="kicker">Local government</span>
@@ -87,8 +90,8 @@ const tiles = LEGISLATURE_STATES.map((code) => {
     <div class="panel tiles-panel">
       <StateTiles tiles={tiles} label="States, arranged roughly by location" />
       <p class="small muted legend-note">
-        <span class="swatch fill-present"></span> Most detailed coverage (Massachusetts). Numbers are House seats.
-        Territories:{' '}
+        <span class="swatch fill-present"></span> Most detailed coverage (
+        {FEATURED_STATES.map((c) => stateName(c)).join(', ')}). Numbers are House seats. Territories:{' '}
         {territories.map((t, i) => (
           <>
             {i > 0 && ', '}

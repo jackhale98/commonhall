@@ -6,11 +6,18 @@
  */
 import { CITY_LIST } from './cities';
 import { stateName } from './format';
+import { FEATURED_STATES } from './states';
 
 /** Each city we cover: a menu item under States & local, keyed by its city key. */
 const CITY_ITEMS: NavItem[] = CITY_LIST.map((c) => {
   const path = `states/${c.state.toLowerCase()}/${c.slug}/`;
   return { key: c.key, label: c.name, path, match: [path] };
+});
+
+/** Each state we cover in depth (lib/states.ts): a menu item keyed by its lower-case code. */
+const STATE_ITEMS: NavItem[] = FEATURED_STATES.map((code) => {
+  const path = `states/${code.toLowerCase()}/`;
+  return { key: code.toLowerCase(), label: stateName(code), path, match: [path] };
 });
 
 export interface NavItem {
@@ -55,7 +62,7 @@ export const NAV: NavGroup[] = [
     items: [
       // More specific first: a city's pages start with its state's path, and Massachusetts' with states/.
       ...CITY_ITEMS,
-      { key: 'ma', label: 'Massachusetts', path: 'states/ma/', match: ['states/ma/'] },
+      ...STATE_ITEMS,
       {
         key: 'states',
         label: 'All states',
@@ -101,7 +108,9 @@ export function orderedItems(group: NavGroup): NavItem[] {
   const items = group.items ?? [];
   if (group.key !== 'local') return items;
   const by = new Map(items.map((i) => [i.key, i]));
-  return ['states', 'ma', ...CITY_ITEMS.map((c) => c.key)].map((k) => by.get(k)!).filter(Boolean);
+  return ['states', ...STATE_ITEMS.map((s) => s.key), ...CITY_ITEMS.map((c) => c.key)]
+    .map((k) => by.get(k)!)
+    .filter(Boolean);
 }
 
 /** The group and item a page belongs to, from its path relative to the site root. */
@@ -141,7 +150,7 @@ export const PHONE_NAV: { heading: string; items: { key: string; label: string; 
     heading: 'States & local',
     items: [
       { key: 'states', label: 'All states', path: 'states/' },
-      { key: 'ma', label: 'Massachusetts', path: 'states/ma/' },
+      ...STATE_ITEMS.map(({ key, label, path }) => ({ key, label, path })),
       ...CITY_ITEMS.map(({ key, label, path }) => ({ key, label, path })),
     ],
   },

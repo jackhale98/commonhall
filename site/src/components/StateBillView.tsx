@@ -1,7 +1,8 @@
 import type { ComponentChildren } from 'preact';
 import type { StateBill } from '../lib/types';
 import { formatDate, stateName, tidyTitle } from '../lib/format';
-import { maLegislatureUrl, stateHref, stateLegislatorHref } from '../lib/paths';
+import { stateHref, stateLegislatorHref } from '../lib/paths';
+import { stateFeatures } from '../lib/states';
 import FollowButton from './FollowButton';
 
 const CHAMBER: Record<string, string> = { upper: 'Senate', lower: 'House', legislature: 'Legislature' };
@@ -9,7 +10,7 @@ const CHAMBER: Record<string, string> = { upper: 'Senate', lower: 'House', legis
 /** A state bill: title, sponsor, latest action and links to the official record. */
 /** `children` (the co-sponsors) goes under the sponsor line. */
 export default function StateBillView({ bill, children }: { bill: StateBill; children?: ComponentChildren }) {
-  const official = bill.state === 'MA' ? maLegislatureUrl(bill.session, bill.identifier) : null;
+  const official = stateFeatures(bill.state)?.officialBillUrl?.(bill.session, bill.identifier) ?? null;
   return (
     <article>
       <p class="eyebrow">

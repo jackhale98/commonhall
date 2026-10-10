@@ -1425,3 +1425,26 @@ activity, and the table gains about 300 rows a day); two indexes nothing used ar
 dropped; and the member statistics (a full read of every vote position and
 cosponsorship) are rebuilt only when the votes or bills sync wrote something since
 the last rebuild (`sync_state.last_progress_at`), not every 30 minutes regardless.
+
+## 95. Settings, not copies: room for more cities and states
+
+The page side already scaled by registry (§80: one page tree for every city). The
+data side and a few pages didn't:
+
+- **Legistar cities.** The Boston sync had its city key, Legistar client, council
+  body, matter types, committees and feed wording as constants. They are now a
+  `LegistarCity` (`BOSTON` is the only one) passed to the sync (`syncLegistarCity`);
+  another Legistar city is settings, a seat map and a small Edge Function. Matter
+  types that aren't loaded are remembered in the cursor (`otherTypes`) and logged, so
+  a new kind of legislation is noticed instead of silently skipped.
+- **States in depth.** Massachusetts was named in the menu, the states page, the
+  bills tab (discussions) and the bill view (its legislature's link). Those come from
+  `STATE_FEATURES` (site/src/lib/states.ts) now.
+- **Worcester's meetings** log titles they don't recognize and fail when none is,
+  rather than look like a quiet month.
+- **docs/extending.md** is the checklist for a city, a state in more depth, and any
+  new job.
+
+Not done: the PrimeGov sync and the Worcester agenda and budget loaders are still
+Worcester's own; a second PrimeGov city should start by lifting their settings the
+same way.

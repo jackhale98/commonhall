@@ -3,6 +3,7 @@ import { billLabel } from '@civic/congress-client/ids';
 import { DEMO, hasSupabase } from '../lib/config';
 import { rpc, select } from '../lib/rest';
 import { stateName } from '../lib/format';
+import { FEATURED_STATES } from '../lib/states';
 import { CITY_LIST } from '../lib/cities';
 import { cityHref, href, stateLegislatorHref } from '../lib/paths';
 import { prepare, search, type Searchable } from '../lib/search';
@@ -82,7 +83,12 @@ const QUICK: Searchable[] = [
   ...(DEMO ? [] : [{ k: 'page', t: 'Find my representatives', s: 'From your address', h: href('reps/') }]),
   { k: 'page', t: 'Bills', s: 'Search and filter every bill', h: href('bills/') },
   { k: 'page', t: 'Votes', s: 'Every House and Senate roll call', h: href('votes/') },
-  { k: 'page', t: 'Massachusetts', s: 'Legislature and state bills', h: href('states/ma/') },
+  ...FEATURED_STATES.map((code) => ({
+    k: 'page',
+    t: stateName(code),
+    s: 'Legislature and state bills',
+    h: href(`states/${code.toLowerCase()}/`),
+  })),
   ...CITY_LIST.map((c) => ({ k: 'page', t: c.name, s: c.summary, h: cityHref(c) })),
   { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
 ];

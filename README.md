@@ -73,7 +73,8 @@ about, and take part in moderated public discussions.
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,
 Committees, Neighborhoods, Budget) appear only when there is data behind them; a
-new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code.
+new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
+(see [docs/extending.md](docs/extending.md)).
 
 **Boston** (tabs: Overview, Council, Committees, Neighborhoods, Budget)
 

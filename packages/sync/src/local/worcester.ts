@@ -191,6 +191,15 @@ export async function syncWorcester(
         .map((r) => [r.id, r]),
     ).values(),
   ];
+  // Meetings of other bodies (the School Committee, boards) are left out by title. If
+  // none is recognized, PrimeGov's titles have changed: fail rather than look quiet.
+  const listed = lists.flat();
+  const skipped = [
+    ...new Set(listed.filter((m) => worcesterMeetingKind(m.title).committees === null).map((m) => m.title)),
+  ];
+  if (skipped.length) run.log('meetings not recognized as council meetings', { titles: skipped.slice(0, 15) });
+  if (listed.length >= 20 && rows.length === 0)
+    throw new Error(`None of ${listed.length} PrimeGov meetings is a council meeting; have the titles changed?`);
   let written = 0;
   for (const row of rows) if (await upsertIfChanged(run.sql, 'public.local_meetings', ['id'], row)) written += 1;
   run.rowsWritten += written;

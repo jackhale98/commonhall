@@ -16,6 +16,11 @@
  *
  * Cursors advance per item processed, so a run cut short resumes where it
  * stopped; re-reading an unchanged matter writes nothing.
+ *
+ * Nothing here is Boston's except the `BOSTON` settings (a `LegistarCity`). Another
+ * city on Legistar needs its own settings, a seat map, an Edge Function calling
+ * `syncLegistarCity` with them, a cron schedule and a `private.job_schedule` row, and
+ * an entry in the site's city registry (site/src/lib/cities.ts).
  */
 import {
   BOSTON_COMMITTEES,
@@ -39,11 +44,24 @@ import type { JobRun } from '../job.ts';
 import { toDate } from '../text.ts';
 
 export const BOSTON_JOB = 'boston';
-/** The city key (state and name); every Boston id starts with it. */
-export const CITY = 'ma-boston';
-/** Boston's Legistar client name (its web addresses). */
-const LEGISTAR_CLIENT = 'boston';
-export const COUNCIL_BODY = 'City Council';
+
+/** What differs between cities on Legistar. */
+export interface LegistarCity {
+  /** The city key (state and name, "ma-boston"); every id of the city starts with it. */
+  key: string;
+  /** "Boston", for feed summaries. */
+  name: string;
+  /** The Legistar client name (its web addresses and API path). */
+  legistar: string;
+  /** The council's body name in Legistar. */
+  councilBody: string;
+  /** Matter types that are council legislation (Legistar's others are agendas, minutes, reports…). */
+  legislativeTypes: ReadonlySet<string>;
+  /** Standing committees, by name (Legistar lists no members). */
+  committees: readonly string[];
+  /** A matter's citation: "Docket #0123". */
+  docketLabel: (file: string) => string;
+}
 /** First load of meetings: this many days back, plus everything upcoming. */
 const MEETINGS_FIRST_DAYS = 180;
 /** 2: meetings carry their committees and agenda items. */
@@ -51,7 +69,7 @@ const MEETINGS_VERSION = 2;
 /** Matters per page during the first load. */
 const MATTER_PAGE = 100;
 
-/** Matter types that are council legislation (Legistar's other types are agendas, minutes, reports…). */
+/** Boston's matter types that are council legislation. */
 export const LEGISLATIVE_TYPES = new Set([
   'Council Ordinance',
   'Mayor Ordinance',
@@ -67,6 +85,19 @@ export const LEGISLATIVE_TYPES = new Set([
   'Council Motion',
 ]);
 
+export const BOSTON: LegistarCity = {
+  key: 'ma-boston',
+  name: 'Boston',
+  legistar: 'boston',
+  councilBody: 'City Council',
+  legislativeTypes: LEGISLATIVE_TYPES,
+  committees: BOSTON_COMMITTEES,
+  docketLabel: (file) => `Docket #${file}`,
+};
+/** Boston's city key and council body (kept for callers that predate LegistarCity). */
+export const CITY = BOSTON.key;
+export const COUNCIL_BODY = BOSTON.councilBody;
+
 export interface SeatMap {
   seats: { personId: number; name: string; seat: string; district: number | null }[];
 }
@@ -81,6 +112,8 @@ export interface BostonCursor extends Record<string, unknown> {
   /** First load of matters: how many of the newest-first list are done, and when it began. */
   fillOffset?: number;
   fillStartedAt?: string;
+  /** Matter types seen but not loaded (not in legislativeTypes): a new kind of legislation shows up here. */
+  otherTypes?: string[];
   /** First load of meetings done (then meetings follow eventsSince). */
   eventsFilled?: boolean;
   /** Bumped when meetings gain new fields; a lower value re-reads the first-load window once. */
@@ -89,19 +122,25 @@ export interface BostonCursor extends Record<string, unknown> {
 
 export interface SyncBostonOptions {
   client: LegistarClient;
+  /** The city (default Boston). */
+  city?: LegistarCity;
   seats: SeatMap;
   /** First load: matters introduced since this date (default: 2024-01-01, the current council term). */
   startDate?: string;
   now?: () => Date;
 }
 
-export const matterKey = (matterId: number) => `${CITY}-${matterId}`;
-export const officialKey = (personId: number) => `${CITY}-p${personId}`;
+export const matterKey = (matterId: number, city: LegistarCity = BOSTON) => `${city.key}-${matterId}`;
+export const officialKey = (personId: number, city: LegistarCity = BOSTON) => `${city.key}-p${personId}`;
 
-export function matterRow(m: LegistarMatter, latest?: { date: string | null; text: string | null }) {
+export function matterRow(
+  m: LegistarMatter,
+  latest?: { date: string | null; text: string | null },
+  city: LegistarCity = BOSTON,
+) {
   return {
-    id: matterKey(m.MatterId),
-    city: CITY,
+    id: matterKey(m.MatterId, city),
+    city: city.key,
     matter_id: m.MatterId,
     file_number: m.MatterFile,
     title: (m.MatterTitle ?? m.MatterName ?? m.MatterFile ?? `Matter ${m.MatterId}`).trim(),
@@ -111,7 +150,7 @@ export function matterRow(m: LegistarMatter, latest?: { date: string | null; tex
     intro_date: toDate(m.MatterIntroDate),
     agenda_date: toDate(m.MatterAgendaDate),
     passed_date: toDate(m.MatterPassedDate),
-    legistar_url: legistarMatterUrl(LEGISTAR_CLIENT, m.MatterId),
+    legistar_url: legistarMatterUrl(city.legistar, m.MatterId),
     last_modified: legistarUtc(m.MatterLastModifiedUtc),
     latest_action_date: latest?.date ?? null,
     latest_action_text: latest?.text ?? null,
@@ -141,11 +180,11 @@ export function matterActionRows(matterId: string, histories: LegistarHistory[])
 const actionLabel = (a: { action_name: string | null; action_text: string | null }) =>
   a.action_name ?? a.action_text ?? 'Action recorded';
 
-export function officialRow(r: LegistarOfficeRecord, seats: SeatMap) {
+export function officialRow(r: LegistarOfficeRecord, seats: SeatMap, city: LegistarCity = BOSTON) {
   const seat = seats.seats.find((s) => s.personId === r.OfficeRecordPersonId);
   return {
-    id: officialKey(r.OfficeRecordPersonId),
-    city: CITY,
+    id: officialKey(r.OfficeRecordPersonId, city),
+    city: city.key,
     person_id: r.OfficeRecordPersonId,
     name: r.OfficeRecordFullName,
     first_name: r.OfficeRecordFirstName,
@@ -184,18 +223,18 @@ async function syncOfficials(
   seats: SeatMap,
   now: Date,
   log: JobRun['log'],
+  city: LegistarCity,
 ) {
   const records = await client.officeRecords(bodyId, now);
-  const rows = records.map((r) => officialRow(r, seats));
+  const rows = records.map((r) => officialRow(r, seats, city));
   const unmapped = rows.filter((r) => !r.seat).map((r) => r.name);
-  if (unmapped.length > 0)
-    log('councilors missing from the seat map; update supabase/data/boston-council-seats.json', { unmapped });
+  if (unmapped.length > 0) log(`councilors missing from ${city.name}'s seat map`, { unmapped });
   let written = 0;
   await sql.begin(async (tx) => {
     for (const row of rows) if (await upsertIfChanged(tx, 'public.local_officials', ['id'], row)) written += 1;
     const retired = await tx`
       update public.local_officials set current = false
-       where city = ${CITY} and current and id <> all(${rows.map((r) => r.id)}::text[]) returning 1`;
+       where city = ${city.key} and current and id <> all(${rows.map((r) => r.id)}::text[]) returning 1`;
     written += retired.length;
   });
   return written;
@@ -208,12 +247,13 @@ export async function writeMatter(
   histories: LegistarHistory[],
   sponsors: LegistarSponsor[],
   filled: boolean,
+  city: LegistarCity = BOSTON,
 ): Promise<number> {
-  const id = matterKey(matter.MatterId);
+  const id = matterKey(matter.MatterId, city);
   const actions = matterActionRows(id, histories);
   const latest = actions.at(-1);
-  const row = matterRow(matter, latest ? { date: latest.action_date, text: actionLabel(latest) } : undefined);
-  const label = matter.MatterFile ? `Docket #${matter.MatterFile}` : `Matter ${matter.MatterId}`;
+  const row = matterRow(matter, latest ? { date: latest.action_date, text: actionLabel(latest) } : undefined, city);
+  const label = matter.MatterFile ? city.docketLabel(matter.MatterFile) : `Matter ${matter.MatterId}`;
   let written = 0;
 
   await sql.begin(async (tx) => {
@@ -240,8 +280,8 @@ export async function writeMatter(
             member_type: null,
             member_id: null,
             occurred_at: a.action_date ? `${a.action_date}T16:00:00.000Z` : new Date().toISOString(),
-            summary: `Boston ${label}: ${actionLabel(a)}`,
-            payload: { label, title: row.title, text: actionLabel(a), action_date: a.action_date, city: CITY },
+            summary: `${city.name} ${label}: ${actionLabel(a)}`,
+            payload: { label, title: row.title, text: actionLabel(a), action_date: a.action_date, city: city.key },
             dedupe_key: `local_action:${id}:${a.action_date ?? ''}:${hash(key(a))}`,
           });
         }
@@ -252,7 +292,7 @@ export async function writeMatter(
       .filter((s) => s.MatterSponsorNameId)
       .map((s) => ({
         matter_id: id,
-        official_id: officialKey(s.MatterSponsorNameId!),
+        official_id: officialKey(s.MatterSponsorNameId!, city),
         name: s.MatterSponsorName,
         sequence: s.MatterSponsorSequence,
       }));
@@ -273,8 +313,8 @@ export async function writeMatter(
         member_type: lead ? 'local_official' : null,
         member_id: lead?.official_id ?? null,
         occurred_at: row.intro_date ? `${row.intro_date}T16:00:00.000Z` : new Date().toISOString(),
-        summary: `New in Boston City Council: ${label} ${row.title}`.slice(0, 500),
-        payload: { label, title: row.title, type: row.type, city: CITY },
+        summary: `New in ${city.name} ${city.councilBody}: ${label} ${row.title}`.slice(0, 500),
+        payload: { label, title: row.title, type: row.type, city: city.key },
         dedupe_key: `local_new:${id}`,
       });
     }
@@ -284,20 +324,25 @@ export async function writeMatter(
 }
 
 /** The dockets on a meeting's agenda, in order; rewritten only when they change. */
-export function meetingItemRows(meetingId: string, items: LegistarEventItem[]) {
+export function meetingItemRows(meetingId: string, items: LegistarEventItem[], city: LegistarCity = BOSTON) {
   return items
     .filter((i) => i.EventItemMatterId && i.EventItemTitle?.trim())
     .map((i, n) => ({
       meeting_id: meetingId,
       seq: n + 1,
-      matter_id: matterKey(i.EventItemMatterId!),
+      matter_id: matterKey(i.EventItemMatterId!, city),
       file_number: i.EventItemMatterFile,
       title: i.EventItemTitle!.trim(),
     }));
 }
 
-async function writeMeetingItems(sql: Sql, meetingId: string, items: LegistarEventItem[]): Promise<number> {
-  const rows = meetingItemRows(meetingId, items);
+async function writeMeetingItems(
+  sql: Sql,
+  meetingId: string,
+  items: LegistarEventItem[],
+  city: LegistarCity,
+): Promise<number> {
+  const rows = meetingItemRows(meetingId, items, city);
   const before = await sql<{ matter_id: string | null; title: string }[]>`
     select matter_id, title from public.local_meeting_items where meeting_id = ${meetingId} order by seq`;
   const same =
@@ -310,13 +355,13 @@ async function writeMeetingItems(sql: Sql, meetingId: string, items: LegistarEve
   });
 }
 
-async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): Promise<number> {
-  const id = `${CITY}-e${e.EventId}`;
+async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent, city: LegistarCity): Promise<number> {
+  const id = `${city.key}-e${e.EventId}`;
   let written = 0;
   if (
     await upsertIfChanged(sql, 'public.local_meetings', ['id'], {
       id,
-      city: CITY,
+      city: city.key,
       event_id: e.EventId,
       body: e.EventBodyName,
       starts_at: meetingStart(e.EventDate, e.EventTime),
@@ -335,25 +380,25 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): 
   }
 
   const items = await client.eventItems(e.EventId);
-  written += await writeMeetingItems(sql, id, items);
+  written += await writeMeetingItems(sql, id, items, city);
 
   // Roll calls: only items Legistar flags as roll calls have per-member votes.
   for (const item of items.filter((i) => i.EventItemRollCallFlag === 1)) {
     const votes = await client.eventItemVotes(item.EventItemId);
     if (votes.length === 0) continue;
-    const voteId = `${CITY}-ei${item.EventItemId}`;
+    const voteId = `${city.key}-ei${item.EventItemId}`;
     const positions = votes.map((v) => ({
       vote_id: voteId,
-      official_id: officialKey(v.VotePersonId),
+      official_id: officialKey(v.VotePersonId, city),
       position: /absent|excused/i.test(v.VoteValueName ?? '') ? 'not_voting' : normalizePosition(v.VoteValueName),
     }));
     const count = (p: string) => positions.filter((x) => x.position === p).length;
-    const matterId = item.EventItemMatterId ? matterKey(item.EventItemMatterId) : null;
+    const matterId = item.EventItemMatterId ? matterKey(item.EventItemMatterId, city) : null;
     await sql.begin(async (tx) => {
       if (
         await upsertIfChanged(tx, 'public.local_votes', ['id'], {
           id: voteId,
-          city: CITY,
+          city: city.key,
           matter_id: matterId,
           meeting_id: id,
           meeting_date: toDate(e.EventDate),
@@ -380,8 +425,8 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): 
             member_type: null,
             member_id: null,
             occurred_at: `${toDate(e.EventDate)}T16:00:00.000Z`,
-            summary: `Boston City Council vote: ${item.EventItemActionName ?? 'roll call'} ${count('yea')}–${count('nay')}`,
-            payload: { local_vote_id: voteId, yea: count('yea'), nay: count('nay'), city: CITY },
+            summary: `${city.name} ${city.councilBody} vote: ${item.EventItemActionName ?? 'roll call'} ${count('yea')}–${count('nay')}`,
+            payload: { local_vote_id: voteId, yea: count('yea'), nay: count('nay'), city: city.key },
             dedupe_key: `local_vote:${voteId}`,
           },
         ]);
@@ -393,16 +438,16 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): 
 
 /**
  * The council's standing committees, in the table every city shares. Legistar lists no
- * members, so Boston's committees are names only; their hearings come from meetings.
+ * members, so a Legistar city's committees are names only; their hearings come from meetings.
  */
-export async function syncBostonCommittees(sql: Sql): Promise<number> {
+export async function syncBostonCommittees(sql: Sql, city: LegistarCity = BOSTON): Promise<number> {
   let written = 0;
-  for (const name of BOSTON_COMMITTEES) {
+  for (const name of city.committees) {
     const slug = committeeSlug(name);
     if (
       await upsertIfChanged(sql, 'public.local_committees', ['id'], {
-        id: `${CITY}-${slug}`,
-        city: CITY,
+        id: `${city.key}-${slug}`,
+        city: city.key,
         slug,
         name,
       })
@@ -414,18 +459,19 @@ export async function syncBostonCommittees(sql: Sql): Promise<number> {
 
 export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonOptions): Promise<BostonCursor> {
   const { client } = options;
+  const city = options.city ?? BOSTON;
   const now = options.now ?? (() => new Date());
   const cursor: BostonCursor = { ...run.cursor };
   const start = options.startDate ?? '2024-01-01T00:00:00Z';
 
   try {
-    cursor.bodyId ??= (await client.bodyId(COUNCIL_BODY)) ?? undefined;
-    if (!cursor.bodyId) throw new Error(`Legistar has no body named "${COUNCIL_BODY}"`);
+    cursor.bodyId ??= (await client.bodyId(city.councilBody)) ?? undefined;
+    if (!cursor.bodyId) throw new Error(`Legistar has no body named "${city.councilBody}"`);
 
     const weekAgo = now().getTime() - 7 * 24 * 3_600_000;
     if (!cursor.officialsAt || new Date(cursor.officialsAt).getTime() < weekAgo) {
-      run.rowsWritten += await syncOfficials(run.sql, client, cursor.bodyId, options.seats, now(), run.log);
-      run.rowsWritten += await syncBostonCommittees(run.sql);
+      run.rowsWritten += await syncOfficials(run.sql, client, cursor.bodyId, options.seats, now(), run.log, city);
+      run.rowsWritten += await syncBostonCommittees(run.sql, city);
       cursor.officialsAt = now().toISOString();
       await run.checkpoint(cursor);
     }
@@ -446,7 +492,7 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
       const events = await client.eventsOnOrAfter(cursor.bodyId, from);
       for (const e of events) {
         if (run.outOfTime()) break;
-        run.rowsWritten += await syncMeeting(run.sql, client, e);
+        run.rowsWritten += await syncMeeting(run.sql, client, e, city);
       }
       if (!run.outOfTime()) {
         cursor.eventsFilled = true;
@@ -458,17 +504,23 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
       const events = await client.eventsModifiedSince(cursor.bodyId, rewind(cursor.eventsSince ?? start));
       for (const e of events) {
         if (run.outOfTime()) break;
-        run.rowsWritten += await syncMeeting(run.sql, client, e);
+        run.rowsWritten += await syncMeeting(run.sql, client, e, city);
         cursor.eventsSince = legistarUtc(e.EventLastModifiedUtc) ?? cursor.eventsSince;
         await run.checkpoint(cursor);
       }
     }
 
     const syncMatter = async (m: LegistarMatter) => {
-      if (m.MatterTypeName && LEGISLATIVE_TYPES.has(m.MatterTypeName)) {
+      if (m.MatterTypeName && city.legislativeTypes.has(m.MatterTypeName)) {
         const [histories, sponsors] = await Promise.all([client.histories(m.MatterId), client.sponsors(m.MatterId)]);
-        run.rowsWritten += await writeMatter(run.sql, m, histories, sponsors, Boolean(cursor.filled));
+        run.rowsWritten += await writeMatter(run.sql, m, histories, sponsors, Boolean(cursor.filled), city);
         return true;
+      }
+      // Remember types that aren't loaded, so a new kind of legislation is noticed (it's in the cursor and the log).
+      const type = m.MatterTypeName ?? '(none)';
+      if (!(cursor.otherTypes ?? []).includes(type) && (cursor.otherTypes?.length ?? 0) < 40) {
+        cursor.otherTypes = [...(cursor.otherTypes ?? []), type].sort();
+        run.log('matter type not loaded', { type, city: city.key });
       }
       return false;
     };
@@ -522,3 +574,6 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
   }
   return cursor;
 }
+
+/** Any Legistar city: `syncBoston` with `options.city`. */
+export const syncLegistarCity = syncBoston;

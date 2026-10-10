@@ -1,4 +1,5 @@
 ---
+import { stateFeatures } from '../../../../lib/states';
 import LiveDiscussions from '../../../../components/LiveDiscussions';
 import FollowedItems from '../../../../components/FollowedItems';
 import StateBills from '../../../../components/StateBills';
@@ -21,9 +22,12 @@ const name = stateName(code);
 const { bills, total } = await loadRecentStateBills(code);
 const coverage = (await loadStateBillCoverage()).get(code);
 const shown = coverage ? Math.min(coverage.loaded, coverage.reported_total) : 0;
-// Massachusetts bills can have discussions (Boston's are on the Boston pages).
-const discussions =
-  code === 'MA' ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === 'ma') : [];
+// Some states' bills can have discussions (a city's are on the city's pages).
+const hasDiscussions = Boolean(stateFeatures(code)?.discussions);
+const jurisdiction = code.toLowerCase();
+const discussions = hasDiscussions
+  ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === jurisdiction)
+  : [];
 ---
 
 <Base title={`${name} state bills`} description={`Recent bills in the ${name} legislature.`} section="states">
@@ -39,13 +43,13 @@ const discussions =
     </p>
   )}
   <StateBills client:load state={code} initial={bills} total={total} />
-  {code === 'MA' && (
+  {hasDiscussions && (
     <section aria-labelledby="say-h">
       <h2 id="say-h">Have your say</h2>
       <LiveDiscussions
         client:idle
         initial={discussions}
-        jurisdictions={['ma']}
+        jurisdictions={[jurisdiction]}
         empty={`No ${name} discussion is open right now. Ask for one from any state bill’s page.`}
       />
     </section>
