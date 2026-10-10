@@ -54,7 +54,7 @@ export interface LocalRep {
 
 export interface RepsResult {
   matchedAddress: string;
-  /** City with local data (e.g. "boston") when the address is inside it. */
+  /** City with local data ("boston", "worcester") when the address is inside it. */
   city: string | null;
   councilDistrict: number | null;
   /** District councilor first, then at-large councilors. */
@@ -190,17 +190,18 @@ export async function findReps(
     if (stateLegislators.length > 0) stateSource = 'database';
   }
 
-  // Boston: point-in-polygon against the council district map.
+  // Cities we cover (Boston, Worcester): point-in-polygon against their council district maps.
   let city: string | null = null;
   let councilDistrict: number | null = null;
   let localOfficials: LocalRep[] = [];
   if (geo.state === 'MA') {
-    const [row] = await sql<
-      { d: number | null }[]
-    >`select public.council_district_at('boston', ${geo.lat}, ${geo.lng}) as d`;
-    if (row?.d) {
-      city = 'boston';
-      councilDistrict = row.d;
+    const [row] = await sql<{ city: string; district: number }[]>`
+      select d.city, d.district from public.council_districts d
+       where extensions.st_contains(d.geometry, extensions.st_setsrid(extensions.st_point(${geo.lng}, ${geo.lat}), 4326))
+       limit 1`;
+    if (row) {
+      city = row.city;
+      councilDistrict = row.district;
       localOfficials = await localReps(sql, city, councilDistrict);
     }
   }

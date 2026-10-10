@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
-import { AnalyzeBostonClient, LegistarClient, OpenStatesClient } from '@civic/congress-client';
+import { AnalyzeBostonClient, LegistarClient, OpenStatesClient, PrimeGovClient } from '@civic/congress-client';
 import {
   BOSTON_311_JOB,
   BOSTON_JOB,
@@ -18,6 +18,7 @@ import {
   ZBA_JOB,
   OPENSTATES_API,
   STATE_JOB,
+  WORCESTER_JOB,
   dailyBudget,
   runJob,
   syncBoston,
@@ -26,10 +27,13 @@ import {
   syncBoston311,
   syncZoningAppeals,
   syncStates,
+  syncWorcester,
+  worcesterPageFetcher,
   type BostonCursor,
   type SeatMap,
   type Sql,
   type StateCursor,
+  type WorcesterCursor,
 } from '@civic/sync';
 
 async function main() {
@@ -43,7 +47,16 @@ async function main() {
   const sql = postgres(url, { max: 4, prepare: false, onnotice: () => undefined }) as unknown as Sql;
   const timeLimitMs = Number(values.minutes) * 60_000;
   try {
-    if (job === 'boston') {
+    if (job === 'worcester') {
+      const result = await runJob<WorcesterCursor>({
+        sql,
+        job: WORCESTER_JOB,
+        timeLimitMs,
+        run: (ctx) => syncWorcester(ctx, { primegov: new PrimeGovClient(), fetchPage: worcesterPageFetcher() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten, cursor: result.cursor }));
+      if (result.status === 'error') process.exit(1);
+    } else if (job === 'boston') {
       const seats = JSON.parse(
         readFileSync(new URL('../supabase/data/boston-council-seats.json', import.meta.url), 'utf8'),
       ) as SeatMap;
@@ -116,7 +129,7 @@ async function main() {
       if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|state|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|worcester|state|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

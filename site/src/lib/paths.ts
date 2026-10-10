@@ -59,8 +59,15 @@ export function localCommitteeHref(slug: string): string {
   return href(`boston/committees/${slug}/`);
 }
 
+/** A councilor's page: boston-p324 → boston/councilors/324/, worcester-gary-rosen → worcester/councilors/gary-rosen/. */
 export function localOfficialHref(id: string): string {
+  if (id.startsWith('worcester-')) return href(`worcester/councilors/${id.slice('worcester-'.length)}/`);
   return href(`boston/councilors/${id.replace(/^boston-p/, '')}/`);
+}
+
+/** A Worcester council committee's page, by slug. */
+export function worcesterCommitteeHref(slug: string): string {
+  return href(`worcester/committees/${slug}/`);
 }
 
 /** "H 1234" → "h-1234"; "194th" → "194th". */

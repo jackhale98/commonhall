@@ -12,6 +12,8 @@ export * from './state/sync-state.ts';
 export * from './state/reps.ts';
 export * from './state/people.ts';
 export * from './local/boston.ts';
+export * from './local/worcester.ts';
+export * from './local/worcester-budget.ts';
 export * from './local/capital-plan.ts';
 export * from './local/zoning.ts';
 export * from './federal/finance.ts';

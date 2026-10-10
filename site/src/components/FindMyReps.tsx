@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import Loader from './Loader';
 import { areaLabel } from '../lib/address';
+import { CITIES } from '../lib/cities';
 import { accountUrl, followMany, getClient, getSession, hasStoredSession, savePendingFollows } from '../lib/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from '../lib/config';
 import { memberRole, partyClass, partyLabel, stateName } from '../lib/format';
@@ -122,6 +123,9 @@ async function repsFromProfile(p: Profile): Promise<Result | null> {
     localOfficials: local,
   };
 }
+
+/** Council name and at-large seat count for a city we cover (Boston when unknown). */
+const cityName = (city: string | null | undefined) => CITIES[city ?? ''] ?? CITIES.boston!;
 
 export default function FindMyReps({ saved = false }: Props) {
   const [address, setAddress] = useState('');
@@ -356,8 +360,10 @@ export default function FindMyReps({ saved = false }: Props) {
           )}
           {result.localOfficials && result.localOfficials.length > 0 && (
             <>
-              <h3 class="h-small">On the Boston City Council</h3>
-              <p class="small muted">District {result.councilDistrict} and the four at-large councilors.</p>
+              <h3 class="h-small">On the {cityName(result.city).council}</h3>
+              <p class="small muted">
+                District {result.councilDistrict} and the {cityName(result.city).atLarge} at-large councilors.
+              </p>
               <ul class="reps-list">
                 {result.localOfficials.map((o) => (
                   <li>

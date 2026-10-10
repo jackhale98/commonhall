@@ -460,6 +460,11 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
 
+[functions.sync-worcester]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+
 [functions.sync-boston]
 enabled = true
 verify_jwt = false
