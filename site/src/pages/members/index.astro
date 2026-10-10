@@ -10,7 +10,6 @@ import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadMembers } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
 import { congressLabel, stateName } from '../../lib/format';
-import { href } from '../../lib/paths';
 
 const all = await loadMembers();
 const sortKey = (m: { sort_name: string | null; name: string }) => m.sort_name ?? m.name;
@@ -35,14 +34,6 @@ const counts = {
 };
 const house = chamberGroups(all.values(), 'house');
 const senate = chamberGroups(all.values(), 'senate');
-const short: Record<string, string> = { Democrats: 'D', Republicans: 'R', Independents: 'I', Vacant: 'vacant' };
-const order = ['Democrats', 'Republicans', 'Independents', 'Vacant'];
-const summary = (groups: typeof house) =>
-  [...groups]
-    .sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label))
-    .filter((g) => g.seats > 0)
-    .map((g) => `${g.seats} ${short[g.label] ?? g.label}`)
-    .join(' · ');
 ---
 
 <Base
@@ -55,17 +46,6 @@ const summary = (groups: typeof house) =>
       <p class="kicker">{congressLabel(CURRENT_CONGRESS)}</p>
       <h1>Members of Congress</h1>
       <p class="lede">Find anyone by name, state or district, then see how they vote and what they sponsor.</p>
-      <p class="seat-summary small">
-        <span>
-          <strong>House</strong> {summary(house)}
-        </span>
-        <span>
-          <strong>Senate</strong> {summary(senate)}
-        </span>
-      </p>
-      <p class="cluster small head-links">
-        <a href={href('committees/')}>Committees</a>
-      </p>
     </div>
     <div class="panel chambers">
       <Hemicycle title="House" groups={house} />
@@ -123,6 +103,10 @@ const summary = (groups: typeof house) =>
     </div>
   </form>
 
+  <section class="member-insights" id="member-insights" aria-label="Party unity and campaign money">
+    <MemberInsights />
+  </section>
+
   <section class="member-results" id="member-results" aria-labelledby="results-h">
     <div class="results-head">
       <h2 id="results-h" class="h-small" aria-live="polite">
@@ -175,10 +159,6 @@ const summary = (groups: typeof house) =>
       </ul>
     </section>
   </div>
-
-  <section class="member-insights" aria-label="Party unity and campaign money">
-    <MemberInsights />
-  </section>
 </Base>
 
 <script>
@@ -189,6 +169,7 @@ const summary = (groups: typeof house) =>
   const form = document.getElementById('member-filter') as HTMLFormElement;
   const results = document.getElementById('member-results')!;
   const landing = document.getElementById('member-landing')!;
+  const insights = document.getElementById('member-insights')!;
   const heading = document.getElementById('results-h')!;
   const stateLine = document.getElementById('results-state')!;
   const clear = document.getElementById('member-clear')!;
@@ -250,6 +231,8 @@ const summary = (groups: typeof house) =>
     results.classList.toggle('is-active', active);
     form.classList.toggle('is-sticky', active);
     landing.hidden = active;
+    // Party unity and campaign money sit above the results; they step aside during a search.
+    insights.hidden = active;
     clear.hidden = !active;
     none.hidden = matches.length > 0;
     more.hidden = matches.length <= limit;
@@ -329,36 +312,11 @@ const summary = (groups: typeof house) =>
   .members-head h1 {
     margin-bottom: var(--space-2);
   }
-  .seat-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-4);
-    margin: var(--space-2) 0;
-    color: var(--text-muted);
-  }
-  .seat-summary strong {
-    color: var(--text);
-  }
-  .head-links {
-    margin: 0;
-    gap: var(--space-2) var(--space-4);
-  }
-  .head-links a {
-    font-weight: 600;
-  }
   .chambers {
-    display: none;
-  }
-  @media (min-width: 48rem) {
-    .chambers {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: var(--space-4);
-      align-items: end;
-    }
-    .seat-summary {
-      display: none;
-    }
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: var(--space-4);
+    align-items: end;
   }
   @media (min-width: 60rem) {
     .members-head {
@@ -472,7 +430,10 @@ const summary = (groups: typeof house) =>
     color: var(--link);
   }
   .member-insights {
-    margin-top: var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+  .member-insights[hidden] {
+    display: none;
   }
 </style>
 

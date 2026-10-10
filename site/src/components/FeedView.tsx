@@ -14,9 +14,11 @@ import {
   capitalProjectHref,
   scotusCaseHref,
   stateBillFallbackHref,
+  stateLegislatorHref,
   voteHref,
 } from '../lib/paths';
 import type { Member } from '../lib/types';
+import { LEVELS, legislatorFilter, type Level } from '../lib/feed-filters';
 import Loader from './Loader';
 
 export interface FeedItem {
@@ -62,7 +64,7 @@ export function targetLink(item: Pick<FeedItem, 'target_type' | 'target_id' | 'p
   }
   if (item.target_type === 'member') return memberHref(item.target_id);
   if (item.target_type === 'state_bill') return stateBillFallbackHref(item.target_id);
-  if (item.target_type === 'state_legislator') return (item.payload.openstates_url as string | undefined) ?? null;
+  if (item.target_type === 'state_legislator') return stateLegislatorHref(item.target_id);
   if (item.target_type === 'local_matter') return localMatterHref(item.target_id);
   if (item.target_type === 'local_official') return localOfficialHref(item.target_id);
   if (item.target_type === 'discussion') return discussionHref(item.target_id);
@@ -82,6 +84,8 @@ export default function FeedView({ compact = false }: Props) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [members, setMembers] = useState<Map<string, Pick<Member, 'bioguide_id' | 'name'>>>(new Map());
   const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state' | 'boston'>('');
+  // Within Legislators: members of Congress, state legislators or Boston councilors.
+  const [level, setLevel] = useState<Level>('');
   const [more, setMore] = useState(false);
   const [follows, setFollows] = useState<number | null>(null);
 
@@ -93,7 +97,7 @@ export default function FeedView({ compact = false }: Props) {
       .order('id', { ascending: false })
       .range(offset, offset + (compact ? 5 : PAGE) - 1);
     if (filter === 'bill') query = query.eq('target_type', 'bill');
-    if (filter === 'member') query = query.or('target_type.eq.member,reason.eq.legislator');
+    if (filter === 'member') query = query.or(legislatorFilter(level));
     if (filter === 'state') query = query.in('target_type', ['state_bill', 'state_legislator']);
     if (filter === 'boston') query = query.in('target_type', ['local_matter', 'local_official']);
     const { data, error } = await query;
@@ -145,7 +149,7 @@ export default function FeedView({ compact = false }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [filter]);
+  }, [filter, level]);
 
   async function loadMore() {
     const client = await getClient();
@@ -188,8 +192,20 @@ export default function FeedView({ compact = false }: Props) {
               type="button"
               aria-pressed={filter === value}
               class={filter === value ? 'primary' : ''}
-              onClick={() => setFilter(value)}
+              onClick={() => {
+                setFilter(value);
+                setLevel('');
+              }}
             >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {!compact && filter === 'member' && (
+        <div class="type-chips feed-levels" role="group" aria-label="Level of government">
+          {LEVELS.map(([value, label]) => (
+            <button type="button" class="chip-button" aria-pressed={level === value} onClick={() => setLevel(value)}>
               {label}
             </button>
           ))}

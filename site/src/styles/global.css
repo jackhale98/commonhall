@@ -2954,3 +2954,6 @@ button .ch-loader,
   color: var(--link);
   text-decoration: underline;
 }
+.feed-levels {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+}

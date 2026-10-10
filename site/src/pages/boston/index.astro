@@ -303,6 +303,28 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     min-height: 44px;
     display: flex;
     align-items: center;
+    gap: 0.6rem;
+  }
+  /* A chevron marks these as boxes that open (the flex layout hides the browser's own). */
+  .map-panel > summary::before,
+  .by-address > summary::before {
+    content: '';
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-inline: 0.15rem 0.1rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease;
+  }
+  .map-panel[open] > summary::before,
+  .by-address[open] > summary::before {
+    transform: rotate(45deg);
+  }
+  .map-panel > summary::-webkit-details-marker,
+  .by-address > summary::-webkit-details-marker {
+    display: none;
   }
   .by-address {
     margin-top: var(--space-3);
