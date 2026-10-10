@@ -27,6 +27,9 @@ interface FakeBill {
   latest_action_description: string;
   sponsor?: string;
   cosponsors?: string[];
+  subjects?: string[];
+  abstract?: string;
+  votes?: unknown[];
 }
 
 class FakeOpenStates {
@@ -137,6 +140,7 @@ class FakeOpenStates {
       const page = Number(url.searchParams.get('page') ?? 1);
       const perPage = Number(url.searchParams.get('per_page') ?? 20);
       const desc = url.searchParams.get('sort') === 'updated_desc';
+      const includes = url.searchParams.getAll('include');
       const all = (this.bills[state] ?? [])
         .filter((b) => b.session === url.searchParams.get('session'))
         .filter((b) => !since || b.updated_at >= since)
@@ -161,6 +165,22 @@ class FakeOpenStates {
           latest_action_date: b.latest_action_date,
           latest_action_description: b.latest_action_description,
           updated_at: b.updated_at,
+          subject: b.subjects ?? [],
+          ...(includes.includes('abstracts') ? { abstracts: b.abstract ? [{ abstract: b.abstract }] : [] } : {}),
+          ...(includes.includes('actions')
+            ? {
+                actions: [
+                  { description: 'Filed', date: '2026-03-01', order: 1, organization: { classification: 'lower' } },
+                  {
+                    description: b.latest_action_description,
+                    date: b.latest_action_date,
+                    order: 2,
+                    organization: { classification: 'lower' },
+                  },
+                ],
+              }
+            : {}),
+          ...(includes.includes('votes') ? { votes: b.votes ?? [] } : {}),
           sponsorships: [
             ...(b.cosponsors ?? []).map((name) => ({ name, primary: false, classification: 'cosponsor' })),
             ...(b.sponsor
@@ -207,7 +227,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await sql`truncate public.state_bill_sponsors, public.state_bills, public.state_legislators, public.geo_cache, public.feed_events, public.follows`;
+  await sql`truncate public.state_vote_positions, public.state_votes, public.state_bill_actions, public.state_sessions, public.state_bill_sponsors, public.state_bills, public.state_legislators, public.geo_cache, public.feed_events, public.follows`;
   await sql`delete from public.sync_state`;
   await sql`delete from public.sync_lock`;
   await sql`delete from public.api_usage`;
@@ -257,26 +277,122 @@ describe('sync-state', () => {
     expect(kinds[1]).toMatchObject({ member_type: 'state_legislator', member_id: 'ocd-person/tx-2' });
   });
 
-  it('keeps every sponsor, primary first, and rewrites them only when they change', async () => {
+  it('keeps every sponsor for Massachusetts, primary first, and only the main sponsor elsewhere', async () => {
     const api = new FakeOpenStates();
+    api.sessions = { ma: '194', tx: '89' };
+    api.bills = { ma: [], tx: [] };
+    api.addBills('ma', 3);
     api.addBills('tx', 3);
-    api.bills.tx![0]!.cosponsors = ['Ana Hernández', 'Jolanda Jones'];
-    await runState(api);
+    api.bills.ma![0]!.cosponsors = ['Ana Hernández', 'Jolanda Jones'];
+    api.bills.tx![0]!.cosponsors = ['Someone Else'];
+    await runState(api, 1000, ['MA', 'TX']);
     const rows = await sql`
       select seq, person_id, name, is_primary from public.state_bill_sponsors
-       where bill_id = 'ocd-bill/tx-1' order by seq`;
+       where bill_id = 'ocd-bill/ma-1' order by seq`;
     expect(rows).toEqual([
       { seq: 0, person_id: 'ocd-person/tx-2', name: 'Gina Hinojosa', is_primary: true },
       { seq: 1, person_id: null, name: 'Ana Hernández', is_primary: false },
       { seq: 2, person_id: null, name: 'Jolanda Jones', is_primary: false },
     ]);
+    const tx = await sql`select count(*)::int as n from public.state_bill_sponsors where bill_id = 'ocd-bill/tx-1'`;
+    expect(tx[0]!.n).toBe(0);
+    const [main] = await sql`select primary_sponsor_id from public.state_bills where id = 'ocd-bill/tx-1'`;
+    expect(main!.primary_sponsor_id).toBe('ocd-person/tx-2');
 
-    const bill = api.bills.tx![0]!;
+    const bill = api.bills.ma![0]!;
     bill.cosponsors = ['Ana Hernández'];
     bill.updated_at = '2026-10-07T23:00:00.000000+00:00';
-    await runState(api, 1000, ['TX', 'CA'], '2026-10-09T07:00:00Z');
-    const after = await sql`select name from public.state_bill_sponsors where bill_id = 'ocd-bill/tx-1' order by seq`;
+    await runState(api, 1000, ['MA', 'TX'], '2026-10-09T07:00:00Z');
+    const after = await sql`select name from public.state_bill_sponsors where bill_id = 'ocd-bill/ma-1' order by seq`;
     expect(after.map((r) => r.name)).toEqual(['Gina Hinojosa', 'Ana Hernández']);
+  });
+
+  it('keeps Massachusetts histories, roll calls and summaries, topics for every state, and session dates', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ma: '194', tx: '89' };
+    api.bills = { ma: [], tx: [] };
+    api.addBills('ma', 2);
+    api.addBills('tx', 2);
+    const ma = api.bills.ma![0]!;
+    ma.subjects = ['Housing', 'Taxation'];
+    ma.abstract = 'Relative to affordable housing.';
+    const position = (id: string, option: string) => ({
+      option,
+      voter_name: id,
+      voter: { id: `ocd-person/${id}`, name: id },
+    });
+    ma.votes = [
+      {
+        id: 'ocd-vote/ma-1',
+        motion_text: 'Passage',
+        start_date: '2026-06-01',
+        result: 'pass',
+        organization: { classification: 'lower' },
+        counts: [
+          { option: 'yes', value: 3 },
+          { option: 'no', value: 2 },
+          { option: 'not voting', value: 1 },
+        ],
+        votes: [
+          position('d1', 'yes'),
+          position('d2', 'no'),
+          position('d3', 'yes'),
+          position('r1', 'no'),
+          position('r2', 'no'),
+          position('r3', 'not voting'),
+        ],
+      },
+    ];
+    api.bills.tx![0]!.subjects = ['Education'];
+    for (const [id, party] of [
+      ['d1', 'Democratic'],
+      ['d2', 'Democratic'],
+      ['d3', 'Democratic'],
+      ['r1', 'Republican'],
+      ['r2', 'Republican'],
+      ['r3', 'Republican'],
+    ]) {
+      await sql`
+        insert into public.state_legislators (id, name, party, state, chamber, current)
+        values (${`ocd-person/${id}`}, ${id}, ${party}, 'MA', 'lower', true)`;
+    }
+    await runState(api, 1000, ['MA', 'TX']);
+
+    const [bill] = await sql`select subjects, abstract from public.state_bills where id = ${ma.id}`;
+    expect(bill).toEqual({ subjects: ['Housing', 'Taxation'], abstract: 'Relative to affordable housing.' });
+    const [tx] = await sql`select subjects, abstract from public.state_bills where id = 'ocd-bill/tx-1'`;
+    expect(tx).toEqual({ subjects: ['Education'], abstract: null });
+
+    const actions =
+      await sql`select seq, description, chamber from public.state_bill_actions where bill_id = ${ma.id} order by seq`;
+    expect(actions.map((a) => a.description)).toEqual(['Filed', ma.latest_action_description]);
+    expect(
+      (await sql`select count(*)::int as n from public.state_bill_actions where bill_id like 'ocd-bill/tx-%'`)[0]!.n,
+    ).toBe(0);
+
+    const [vote] =
+      await sql`select motion, result, chamber, yes, no, other from public.state_votes where id = 'ocd-vote/ma-1'`;
+    expect(vote).toEqual({ motion: 'Passage', result: 'pass', chamber: 'lower', yes: 3, no: 2, other: 1 });
+    const unity = await sql`select person_id, with_party, party_votes from public.state_party_unity order by person_id`;
+    expect(unity.map((u) => [u.person_id, u.with_party, u.party_votes])).toEqual([
+      ['ocd-person/d1', 1, 1],
+      ['ocd-person/d2', 0, 1],
+      ['ocd-person/d3', 1, 1],
+      ['ocd-person/r1', 1, 1],
+      ['ocd-person/r2', 1, 1],
+    ]);
+
+    const sessions = await sql`select state, identifier, start_date::text from public.state_sessions order by state`;
+    expect(sessions.map((r) => [r.state, r.identifier])).toEqual([
+      ['MA', '194'],
+      ['TX', '89'],
+    ]);
+
+    // Re-reading a bill whose history, votes and sponsors haven't changed rewrites only
+    // the bill row (its update time moved), not its children.
+    ma.updated_at = '2026-10-07T23:00:00.000000+00:00';
+    const again = await runState(api, 1000, ['MA', 'TX'], '2026-10-09T07:00:00Z');
+    expect(again.rowsWritten).toBe(1);
   });
 
   it('gets through a full page of bills that share one timestamp', async () => {

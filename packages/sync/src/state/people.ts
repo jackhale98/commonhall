@@ -113,10 +113,52 @@ export function peopleCommitteeRows(
   };
 }
 
+/** Statewide office titles, in the order state pages list them. */
+export const EXECUTIVE_ROLES: [string, string][] = [
+  ['governor', 'Governor'],
+  ['lt_governor', 'Lieutenant Governor'],
+  ['attorney general', 'Attorney General'],
+  ['secretary of state', 'Secretary of State'],
+  ['treasurer', 'Treasurer'],
+  ['auditor', 'Auditor'],
+  ['chief election officer', 'Chief Election Officer'],
+];
+
+/** A statewide official (data/{state}/executive), or null if none of their roles is current. */
+export function peopleExecutiveRow(p: PeoplePerson, state: string, today: string): Record<string, unknown> | null {
+  if (!p.id?.startsWith('ocd-person/') || !p.name) return null;
+  const role = (p.roles ?? []).find(
+    (r) => !CHAMBERS.has(r.type) && r.type !== 'mayor' && (!r.end_date || r.end_date >= today),
+  );
+  if (!role) return null;
+  const known = EXECUTIVE_ROLES.find(([type]) => type === role.type)?.[1];
+  const party = (p.party ?? []).find((x) => current(x, today)) ?? p.party?.[0];
+  return {
+    id: p.id,
+    state,
+    name: p.name,
+    party: party?.name ?? null,
+    role: known ?? role.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    photo_url: p.image || null,
+    email: p.email || null,
+    offices: (p.offices ?? [])
+      .filter((o) => o.address || o.voice)
+      .map((o) => ({
+        classification: o.classification ?? null,
+        address: o.address ?? null,
+        voice: o.voice ?? null,
+        fax: o.fax ?? null,
+      })),
+    links: uniqueUrls((p.links ?? []).map((l) => l.url)).slice(0, 4),
+    start_date: role.start_date ? String(role.start_date).slice(0, 10) : null,
+  };
+}
+
 export interface PeopleLoadResult {
   legislatorsUpdated: number;
   legislatorsAdded: number;
   legislatorsRetired: number;
+  executives: number;
   committees: number;
   members: number;
 }
@@ -131,6 +173,7 @@ export async function writeStatePeople(
   state: string,
   people: PeoplePerson[],
   committees: PeopleCommittee[],
+  executives: PeoplePerson[] = [],
   today = new Date().toISOString().slice(0, 10),
 ): Promise<PeopleLoadResult> {
   const rows = people.map((p) => peopleLegislatorRow(p, state, today)).filter((r) => r !== null);
@@ -139,6 +182,7 @@ export async function writeStatePeople(
     legislatorsUpdated: 0,
     legislatorsAdded: 0,
     legislatorsRetired: 0,
+    executives: 0,
     committees: 0,
     members: 0,
   };
@@ -169,6 +213,17 @@ export async function writeStatePeople(
          where state = ${state} and current and id <> all(${rows.map((r) => r.id as string)}::text[])
          returning 1`;
       result.legislatorsRetired = retired.length;
+    }
+    // Statewide officials: replaced each load (a handful per state).
+    const execs = executives.map((p) => peopleExecutiveRow(p, state, today)).filter((r) => r !== null);
+    if (executives.length > 0) {
+      await tx`delete from public.state_executives where state = ${state}`;
+      for (const e of execs) {
+        await tx`
+          insert into public.state_executives ${tx({ ...e, offices: tx.json(e.offices as never), links: tx.json(e.links as never) } as never)}
+          on conflict (id) do nothing`;
+      }
+      result.executives = execs.length;
     }
     const ids = groups.map((g) => g.committee.id as string);
     await tx`delete from public.state_committees where state = ${state} and id <> all(${ids}::text[])`;

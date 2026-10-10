@@ -1014,3 +1014,35 @@ because parsing about 10,000 files is too much work for an Edge Function's CPU l
   with its chairs. Chamber names follow the state ("Assembly" in New York,
   "House of Delegates" in Virginia). Legislator names across the site link to
   their page.
+
+## 77. Massachusetts in full, other states slim, and trimming past Congresses
+
+The database must stay under 400 MB. On 10 October 2026 it was 142 MB, and the
+national state-bill backfill alone could add 70–100 MB, plus 50–90 MB if every
+state's co-sponsors were kept. So:
+
+- **Massachusetts (first-class) bills** keep everything: every sponsor, the full
+  action history (`state_bill_actions`), roll-call votes with each legislator's vote
+  (`state_votes`, `state_vote_positions`) and the summary. The detail comes in the
+  same Open States requests (`include=actions,votes,abstracts`), so it costs no extra
+  requests. Its bills were read once more to fill in the history.
+- **Other states' bills** keep one row each: title, latest action, main sponsor and
+  topics (subjects, all states, about 5–10 MB at full load). Their co-sponsors are
+  no longer kept, and those already stored were deleted. Each bill links to its full
+  history on Open States.
+- **State party unity** (`state_party_unity`) uses the same method as Congress's
+  (§71), from Massachusetts roll calls. Legislator pages show it after at least five
+  party-line votes, with their recent votes.
+- **Session dates** (`state_sessions`, from the Open States jurisdictions request the
+  sync already makes weekly) give each state page a line such as "In session: 194th
+  General Court, January 2025 to December 2026."
+- **Statewide officials** (`state_executives`: governor, lieutenant governor, attorney
+  general, secretary of state, treasurer, auditor) come from the same weekly
+  openstates/people load, `data/{state}/executive`. Under 1 MB.
+- **Past Congresses.** `private.trim_past_congresses()` runs monthly. For bills and
+  votes before the current Congress it deletes action histories, co-sponsors and
+  member-by-member positions, and keeps the bills and vote totals. Congress.gov keeps
+  the full record. It does nothing until the 120th Congress begins in January 2027;
+  without it the federal tables (about 75 MB) would double every two years.
+
+Expected size once everything has loaded: about 290–325 MB.

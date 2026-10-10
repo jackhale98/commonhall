@@ -72,6 +72,30 @@ export interface OSBill {
   created_at?: string;
   updated_at?: string;
   sponsorships?: OSSponsorship[];
+  /** With include=actions. */
+  actions?: OSAction[];
+  /** With include=votes. */
+  votes?: OSVote[];
+  /** With include=abstracts. */
+  abstracts?: { abstract: string; note?: string }[];
+}
+
+export interface OSAction {
+  description: string;
+  date?: string;
+  order?: number;
+  classification?: string[];
+  organization?: { name?: string; classification?: string };
+}
+
+export interface OSVote {
+  id: string;
+  motion_text?: string;
+  start_date?: string;
+  result?: string;
+  organization?: { classification?: string };
+  counts?: { option: string; value: number }[];
+  votes?: { option: string; voter_name: string; voter?: { id: string; name: string } | null }[];
 }
 
 export interface OSSession {
@@ -177,13 +201,15 @@ export class OpenStatesClient {
     updatedSince?: string;
     page?: number;
     sort?: 'updated_asc' | 'updated_desc';
+    /** Extra detail in the same response, e.g. ['actions', 'votes', 'abstracts']. Sponsors always come. */
+    include?: string[];
   }): Promise<OSPage<OSBill>> {
     return this.get('/bills', {
       jurisdiction: options.jurisdiction,
       session: options.session,
       updated_since: options.updatedSince,
       sort: options.sort ?? 'updated_asc',
-      include: ['sponsorships'],
+      include: ['sponsorships', ...(options.include ?? [])],
       page: options.page ?? 1,
       per_page: 20,
     });

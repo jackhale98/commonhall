@@ -37,6 +37,19 @@ const uniqueHosts = (urls: string[]) => urls.filter((u, i) => urls.findIndex((v)
 const BILL_COLUMNS = 'id,session,identifier,title,latest_action_date,latest_action_text';
 const PAGE = 10;
 
+interface CastVote {
+  option: string;
+  vote: {
+    id: string;
+    vote_date: string | null;
+    motion: string | null;
+    result: string | null;
+    bill: { id: string; identifier: string; title: string } | null;
+  } | null;
+}
+
+const VOTE_WORD: Record<string, string> = { yes: 'Voted yes', no: 'Voted no' };
+
 /**
  * A state legislator: seat, contact details and committees (from Open States' people
  * repository) and the bills they sponsor (from the state bill sync). ?id=ocd-person/…
@@ -45,6 +58,9 @@ export default function StateLegislatorView() {
   const [person, setPerson] = useState<StateLegislatorDetail | null>(null);
   const [seats, setSeats] = useState<Seat[]>([]);
   const [bills, setBills] = useState<SponsoredBill[]>([]);
+  const [votes, setVotes] = useState<CastVote[]>([]);
+  const [votesShown, setVotesShown] = useState(PAGE);
+  const [unity, setUnity] = useState<{ party_votes: number; with_party: number } | null>(null);
   const [shown, setShown] = useState(PAGE);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
 
@@ -57,7 +73,7 @@ export default function StateLegislatorView() {
         select: STATE_LEGISLATOR_COLUMNS,
       });
       if (!row) return setState('missing');
-      const [committeeSeats, sponsorRows, primaryRows] = await Promise.all([
+      const [committeeSeats, sponsorRows, primaryRows, castVotes, unityRows] = await Promise.all([
         select<Seat>('state_committee_members', {
           person_id: `eq.${id}`,
           select: 'role,committee:state_committees(id,name,chamber,classification)',
@@ -73,7 +89,23 @@ export default function StateLegislatorView() {
           select: BILL_COLUMNS,
           limit: 500,
         }),
+        // Roll calls are kept for first-class states (Massachusetts).
+        select<CastVote>('state_vote_positions', {
+          person_id: `eq.${id}`,
+          select: 'option,vote:state_votes(id,vote_date,motion,result,bill:state_bills(id,identifier,title))',
+          limit: 500,
+        }).catch(() => [] as CastVote[]),
+        select<{ party_votes: number; with_party: number }>('state_party_unity', {
+          person_id: `eq.${id}`,
+          select: 'party_votes,with_party',
+        }).catch(() => []),
       ]);
+      setVotes(
+        castVotes
+          .filter((v) => v.vote)
+          .sort((a, b) => (b.vote!.vote_date ?? '').localeCompare(a.vote!.vote_date ?? '')),
+      );
+      setUnity(unityRows[0] ?? null);
       const byId = new Map<string, SponsoredBill>();
       for (const b of primaryRows) byId.set(b.id, { ...b, primary: true });
       for (const s of sponsorRows)
@@ -178,6 +210,43 @@ export default function StateLegislatorView() {
         )}
       </section>
 
+      {votes.length > 0 && (
+        <section aria-labelledby="votes-h">
+          <h2 id="votes-h">Recent votes</h2>
+          {unity && unity.party_votes >= 5 && (
+            <p class="small muted">
+              Voted with their party’s majority on {unity.with_party} of {unity.party_votes} party-line roll calls (
+              {Math.round((unity.with_party / unity.party_votes) * 100)}%), where most Democrats and most Republicans
+              voted on opposite sides.
+            </p>
+          )}
+          <ul class="plain-rows">
+            {votes.slice(0, votesShown).map((v) => (
+              <li>
+                <p class="small muted">
+                  {formatDate(v.vote!.vote_date)} · <strong>{VOTE_WORD[v.option] ?? 'Did not vote yes or no'}</strong>
+                  {v.vote!.result &&
+                    ` · ${v.vote!.result === 'pass' ? 'passed' : v.vote!.result === 'fail' ? 'failed' : v.vote!.result}`}
+                </p>
+                {v.vote!.bill ? (
+                  <p class="state-bill-title">
+                    <a href={stateBillFallbackHref(v.vote!.bill.id)}>
+                      {v.vote!.bill.identifier}: {v.vote!.bill.title}
+                    </a>
+                  </p>
+                ) : null}
+                {v.vote!.motion && <p class="small">{v.vote!.motion}</p>}
+              </li>
+            ))}
+          </ul>
+          {votes.length > votesShown && (
+            <button type="button" onClick={() => setVotesShown(votesShown + PAGE)}>
+              Show more ({(votes.length - votesShown).toLocaleString()} left)
+            </button>
+          )}
+        </section>
+      )}
+
       <section aria-labelledby="bills-h">
         <h2 id="bills-h">Sponsored bills</h2>
         {bills.length === 0 ? (
@@ -190,7 +259,7 @@ export default function StateLegislatorView() {
               {primaryCount.toLocaleString()} as lead sponsor
               {bills.length > primaryCount && `, ${(bills.length - primaryCount).toLocaleString()} as co-sponsor`}
             </p>
-            <ul class="list">
+            <ul class="plain-rows">
               {bills.slice(0, shown).map((b) => (
                 <li>
                   <p class="small muted">

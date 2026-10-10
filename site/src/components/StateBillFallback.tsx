@@ -4,6 +4,7 @@ import { slug, stateBillHref } from '../lib/paths';
 import { redirectIfPrerendered } from '../lib/prerendered';
 import { select } from '../lib/rest';
 import DiscussionRequest from './DiscussionRequest';
+import StateBillDetail from './StateBillDetail';
 import StateBillSponsors from './StateBillSponsors';
 import StateBillView from './StateBillView';
 import Loader from './Loader';
@@ -56,6 +57,7 @@ export default function StateBillFallback() {
       <StateBillView bill={bill}>
         <StateBillSponsors billId={bill.id} />
       </StateBillView>
+      <StateBillDetail billId={bill.id} state={bill.state} />
     </>
   );
 }

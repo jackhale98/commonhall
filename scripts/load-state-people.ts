@@ -1,5 +1,5 @@
 /**
- * Load state legislators' contact details and state committees from Open States'
+ * Load state legislators, statewide officials (governors and others) and state committees from Open States'
  * people repository (github.com/openstates/people, CC0). The "Load state people and
  * committees" workflow runs this weekly and on demand.
  *
@@ -34,6 +34,7 @@ async function download(dir: string): Promise<string> {
     '--wildcards',
     '*/data/*/legislature/*.yml',
     '*/data/*/committees/*.yml',
+    '*/data/*/executive/*.yml',
   ]);
   const root = readdirSync(dir).find((d) => d.startsWith('people-') || d.startsWith('openstates-people'));
   if (!root) throw new Error('The archive had no people-* folder; has the repository changed?');
@@ -68,8 +69,9 @@ async function main() {
     for (const state of states) {
       const people = readYaml<PeoplePerson>(join(data, state, 'legislature'));
       const committees = readYaml<PeopleCommittee>(join(data, state, 'committees'));
+      const executives = readYaml<PeoplePerson>(join(data, state, 'executive'));
       if (!people.length && !committees.length) continue;
-      const r = await writeStatePeople(sql as unknown as Sql, state.toUpperCase(), people, committees);
+      const r = await writeStatePeople(sql as unknown as Sql, state.toUpperCase(), people, committees, executives);
       totals.states++;
       totals.updated += r.legislatorsUpdated;
       totals.added += r.legislatorsAdded;
@@ -77,7 +79,7 @@ async function main() {
       totals.committees += r.committees;
       totals.members += r.members;
       console.log(
-        `${state.toUpperCase()}: ${r.legislatorsUpdated + r.legislatorsAdded} legislators (${r.legislatorsAdded} new, ${r.legislatorsRetired} left office), ${r.committees} committees`,
+        `${state.toUpperCase()}: ${r.legislatorsUpdated + r.legislatorsAdded} legislators (${r.legislatorsAdded} new, ${r.legislatorsRetired} left office), ${r.executives} statewide officials, ${r.committees} committees`,
       );
     }
     console.log(

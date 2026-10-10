@@ -29,7 +29,7 @@ import {
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import type { UnityRow } from './insights';
-import { STATE_COMMITTEE_COLUMNS, type StateCommittee } from './state-people';
+import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type StateSession } from './state-people';
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
@@ -358,6 +358,24 @@ export const loadStateCommittees = memo(async () => {
   const rows = await selectAllOptional<StateCommittee>('state_committees', {
     select: STATE_COMMITTEE_COLUMNS,
     order: 'state.asc,name.asc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
+/** Governors and other statewide officials, by state (from openstates/people). */
+export const loadStateExecutives = memo(async () => {
+  const rows = await selectAllOptional<StateExecutive>('state_executives', {
+    select: 'id,state,name,party,role,photo_url,email,offices,links',
+    order: 'state.asc,name.asc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
+/** Every state's legislative sessions with their dates, by state. */
+export const loadStateSessions = memo(async () => {
+  const rows = await selectAllOptional<StateSession>('state_sessions', {
+    select: 'state,identifier,name,classification,start_date,end_date',
+    order: 'state.asc',
   });
   return groupBy(rows, (r) => r.state);
 });

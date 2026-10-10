@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { chamberLabel, districtLabel, linkHost, roleLabel, roleRank, seatLabel, telHref } from './state-people';
+import {
+  chamberLabel,
+  districtLabel,
+  executiveRank,
+  linkHost,
+  roleLabel,
+  roleRank,
+  seatLabel,
+  sessionStatus,
+  telHref,
+} from './state-people';
 
 describe('state people labels', () => {
   it('names chambers, including one-chamber legislatures', () => {
@@ -38,5 +48,46 @@ describe('state people labels', () => {
     expect(telHref('617-722-1673')).toBe('tel:6177221673');
     expect(telHref('n/a')).toBeNull();
     expect(linkHost('https://www.malegislature.gov/Legislators/Profile/L M0')).toBe('malegislature.gov');
+  });
+});
+
+describe('session status', () => {
+  const s = (identifier: string, start: string | null, end: string | null, classification = 'primary') => ({
+    state: 'TX',
+    identifier,
+    name: `${identifier} Legislature`,
+    classification,
+    start_date: start,
+    end_date: end,
+  });
+
+  it('describes the session under way', () => {
+    expect(sessionStatus([s('194th', '2025-01-01', '2026-12-31')], '2026-10-10')).toBe(
+      'In session: 194th Legislature, January 2025 to December 2026.',
+    );
+  });
+
+  it('says when the last session ended and the next begins', () => {
+    const line = sessionStatus([s('89', '2025-01-14', '2025-06-02'), s('90', '2027-01-12', null)], '2026-10-10');
+    expect(line).toBe('The 89 Legislature ended in June 2025. The 90 Legislature begins in January 2027.');
+  });
+
+  it('ignores special sessions when a regular one exists', () => {
+    expect(
+      sessionStatus(
+        [s('89', '2025-01-14', '2026-12-31'), s('891', '2026-08-01', '2026-09-01', 'special')],
+        '2026-08-15',
+      ),
+    ).toMatch(/^In session: 89 Legislature/);
+  });
+
+  it('orders statewide offices', () => {
+    const roles = ['Treasurer', 'Governor', 'Attorney General', 'Comptroller'];
+    expect([...roles].sort((a, b) => executiveRank(a) - executiveRank(b))).toEqual([
+      'Governor',
+      'Attorney General',
+      'Treasurer',
+      'Comptroller',
+    ]);
   });
 });

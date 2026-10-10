@@ -129,3 +129,70 @@ export function linkHost(url: string): string {
     return url;
   }
 }
+
+export interface StateSession {
+  state: string;
+  identifier: string;
+  name: string | null;
+  classification: string | null;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+export interface StateExecutive {
+  id: string;
+  state: string;
+  name: string;
+  party: string | null;
+  role: string;
+  photo_url: string | null;
+  email: string | null;
+  offices: StateOffice[];
+  links: string[];
+}
+
+const EXEC_ORDER = [
+  'Governor',
+  'Lieutenant Governor',
+  'Attorney General',
+  'Secretary of State',
+  'Treasurer',
+  'Auditor',
+  'Chief Election Officer',
+];
+
+/** Governor first, then the usual order of statewide offices, then anything else by title. */
+export function executiveRank(role: string): number {
+  const i = EXEC_ORDER.indexOf(role);
+  return i < 0 ? EXEC_ORDER.length : i;
+}
+
+const monthYear = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+/**
+ * One line on where the legislature is: the regular session under way (with its
+ * dates), or the last one and when it ended, or the next one if it hasn't begun.
+ */
+export function sessionStatus(sessions: StateSession[], today: string): string | null {
+  const regular = sessions.filter((s) => !s.classification || s.classification === 'primary');
+  const pool = (regular.length ? regular : sessions).filter((s) => s.start_date);
+  if (!pool.length) return null;
+  const label = (s: StateSession) => s.name || s.identifier;
+  const current = pool
+    .filter((s) => s.start_date! <= today && (!s.end_date || s.end_date >= today))
+    .sort((a, b) => b.start_date!.localeCompare(a.start_date!))[0];
+  if (current) {
+    return current.end_date
+      ? `In session: ${label(current)}, ${monthYear(current.start_date!)} to ${monthYear(current.end_date)}.`
+      : `In session: ${label(current)}, since ${monthYear(current.start_date!)}.`;
+  }
+  const next = pool.filter((s) => s.start_date! > today).sort((a, b) => a.start_date!.localeCompare(b.start_date!))[0];
+  const last = pool
+    .filter((s) => s.end_date && s.end_date < today)
+    .sort((a, b) => b.end_date!.localeCompare(a.end_date!))[0];
+  const parts: string[] = [];
+  if (last) parts.push(`The ${label(last)} ended in ${monthYear(last.end_date!)}.`);
+  if (next) parts.push(`The ${label(next)} begins in ${monthYear(next.start_date!)}.`);
+  return parts.length ? parts.join(' ') : null;
+}

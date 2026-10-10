@@ -13,11 +13,13 @@ import {
   loadMembers,
   loadRecentStateBills,
   loadStateCommittees,
+  loadStateExecutives,
   loadStateLegislators,
+  loadStateSessions,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, stateName } from '../../lib/format';
 import { href, stateHref } from '../../lib/paths';
-import { chamberLabel } from '../../lib/state-people';
+import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -65,6 +67,11 @@ const officials = code === 'MA' ? await loadLocalOfficials() : [];
 // Massachusetts discussions (Boston's are on the Boston pages).
 const stateDiscussions =
   code === 'MA' ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === 'ma') : [];
+// Statewide officials, governor first; and where the legislature is in its calendar.
+const executives = ((await loadStateExecutives()).get(code) ?? []).sort(
+  (a, b) => executiveRank(a.role) - executiveRank(b.role) || a.name.localeCompare(b.name),
+);
+const session = sessionStatus((await loadStateSessions()).get(code) ?? [], new Date().toISOString().slice(0, 10));
 // The Overview / Committees tabs, once the weekly people load has committees for this state.
 const committeeCount = ((await loadStateCommittees()).get(code) ?? []).filter(
   (c) => c.classification !== 'subcommittee',
@@ -99,6 +106,8 @@ const legislatorRows = chambers.flatMap((c) =>
   <h1>{name}</h1>
   {committeeCount > 0 && <PageTabs label={name} tabs={tabs} />}
 
+  {session && <p class="small muted session-line">{session}</p>}
+
   {chambers.length > 0 && (
     <section aria-labelledby="glance-h">
       <h2 id="glance-h" class="h-small">
@@ -109,6 +118,34 @@ const legislatorRows = chambers.flatMap((c) =>
           <Hemicycle title={`${c.label} (${c.people.length})`} groups={partyGroups(c.people)} />
         ))}
       </div>
+    </section>
+  )}
+
+  {executives.length > 0 && (
+    <section class="officials-section" aria-labelledby="officials-h">
+      <h2 id="officials-h" class="h-small">
+        Statewide officials
+      </h2>
+      <ul class="plain-rows officials">
+        {executives.map((e) => (
+          <li>
+            <MemberPhoto name={e.name} url={e.photo_url} size={40} />
+            <span class="official-text">
+              {e.links[0] ? (
+                <a href={e.links[0]} rel="noopener" title={`Official site (${linkHost(e.links[0])})`}>
+                  {e.name}
+                </a>
+              ) : (
+                <strong>{e.name}</strong>
+              )}
+              <span class="small muted">
+                {e.role}
+                {e.party && ` · ${e.party}`}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </section>
   )}
 

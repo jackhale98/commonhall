@@ -155,6 +155,9 @@ export function stateBillRow(bill: OSBill): Record<string, unknown> | null {
     primary_sponsor_name: sponsor?.person?.name ?? sponsor?.name ?? null,
     openstates_url: bill.openstates_url ?? null,
     updated_at: bill.updated_at ?? null,
+    subjects: [...new Set((bill.subject ?? []).map((t) => t.trim()).filter(Boolean))].slice(0, 12),
+    // Only when the summary was asked for (first-class states), so others keep theirs.
+    ...(bill.abstracts ? { abstract: bill.abstracts[0]?.abstract?.trim() || null } : {}),
   };
 }
 
@@ -172,6 +175,74 @@ export function stateBillSponsorRows(bill: OSBill): Record<string, unknown>[] {
   }));
 }
 
+/** A first-class bill's actions, oldest first. */
+export function stateBillActionRows(bill: OSBill): Record<string, unknown>[] {
+  return [...(bill.actions ?? [])]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.date ?? '').localeCompare(b.date ?? ''))
+    .map((a, i) => {
+      const chamber = a.organization?.classification;
+      return {
+        bill_id: bill.id,
+        seq: i,
+        action_date: toDate(a.date),
+        description: a.description.trim(),
+        chamber: chamber === 'upper' || chamber === 'lower' || chamber === 'legislature' ? chamber : null,
+        classification: a.classification ?? [],
+      };
+    });
+}
+
+/** A first-class bill's roll calls, each with how every legislator voted. */
+export function stateVoteRows(
+  bill: OSBill,
+  state: string,
+): { vote: Record<string, unknown>; positions: Record<string, unknown>[] }[] {
+  return (bill.votes ?? [])
+    .filter((v) => v.id?.startsWith('ocd-vote/'))
+    .map((v) => {
+      const count = (option: string) => v.counts?.find((c) => c.option === option)?.value ?? 0;
+      const total = (v.counts ?? []).reduce((n, c) => n + c.value, 0);
+      const chamber = v.organization?.classification;
+      return {
+        vote: {
+          id: v.id,
+          bill_id: bill.id,
+          state,
+          vote_date: toDate(v.start_date),
+          motion: v.motion_text?.trim() || null,
+          result: v.result ?? null,
+          chamber: chamber === 'upper' || chamber === 'lower' || chamber === 'legislature' ? chamber : null,
+          yes: count('yes'),
+          no: count('no'),
+          other: total - count('yes') - count('no'),
+        },
+        positions: (v.votes ?? []).map((p, i) => ({
+          vote_id: v.id,
+          seq: i,
+          person_id: p.voter?.id ?? null,
+          name: (p.voter?.name ?? p.voter_name).trim(),
+          option: p.option.toLowerCase(),
+        })),
+      };
+    });
+}
+
+/** Replace a bill's child rows when they have changed; returns rows written. */
+async function replaceChildren(
+  tx: AnySql,
+  table: string,
+  billId: string,
+  rows: Record<string, unknown>[],
+  key: (r: Record<string, unknown>) => string,
+  columns: string,
+): Promise<number> {
+  const existing = await tx.unsafe(`select ${columns} from ${table} where bill_id = $1 order by seq`, [billId]);
+  if ((existing as Record<string, unknown>[]).map(key).join('\n') === rows.map(key).join('\n')) return 0;
+  await tx.unsafe(`delete from ${table} where bill_id = $1`, [billId]);
+  if (rows.length) await tx`insert into ${tx(table)} ${tx(rows as never)}`;
+  return rows.length;
+}
+
 /** Replace a bill's sponsors when the list has changed; returns rows written. */
 async function writeSponsors(tx: AnySql, billId: string, rows: Record<string, unknown>[]): Promise<number> {
   const key = (r: Record<string, unknown>) => `${r.person_id ?? ''}|${r.name}|${r.is_primary}`;
@@ -181,6 +252,23 @@ async function writeSponsors(tx: AnySql, billId: string, rows: Record<string, un
   await tx`delete from public.state_bill_sponsors where bill_id = ${billId}`;
   if (rows.length) await tx`insert into public.state_bill_sponsors ${tx(rows as never)}`;
   return rows.length;
+}
+
+/** Replace a bill's roll calls when the set or any count has changed. */
+async function writeVotes(tx: AnySql, billId: string, votes: ReturnType<typeof stateVoteRows>): Promise<number> {
+  const key = (v: Record<string, unknown>) => `${v.id}|${v.yes}|${v.no}|${v.other}`;
+  const existing = await tx<Record<string, unknown>[]>`
+    select id, yes, no, other from public.state_votes where bill_id = ${billId} order by id`;
+  const next = votes.map((v) => v.vote).sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  if (existing.map(key).join('\n') === next.map(key).join('\n')) return 0;
+  await tx`delete from public.state_votes where bill_id = ${billId}`;
+  let written = 0;
+  for (const v of votes) {
+    await tx`insert into public.state_votes ${tx(v.vote as never)}`;
+    if (v.positions.length) await tx`insert into public.state_vote_positions ${tx(v.positions as never)}`;
+    written += 1 + v.positions.length;
+  }
+  return written;
 }
 
 export function stateLegislatorRow(person: OSPerson): Record<string, unknown> | null {
@@ -261,7 +349,21 @@ async function writeStateBills(sql: Sql, bills: OSBill[], filled: boolean): Prom
     for (const row of rows) {
       if (await upsertIfChanged(tx, 'public.state_bills', ['id'], row)) written += 1;
       const bill = byId.get(row.id as string);
-      if (bill?.sponsorships) written += await writeSponsors(tx, bill.id, stateBillSponsorRows(bill));
+      // Co-sponsors, histories and votes for first-class states only, to keep the database small.
+      if (bill && FIRST_CLASS_STATES.includes(row.state as string)) {
+        if (bill.sponsorships) written += await writeSponsors(tx, bill.id, stateBillSponsorRows(bill));
+        if (bill.actions) {
+          written += await replaceChildren(
+            tx,
+            'public.state_bill_actions',
+            bill.id,
+            stateBillActionRows(bill),
+            (r) => `${String(r.action_date ?? '')}|${r.description}`,
+            "to_char(action_date, 'YYYY-MM-DD') as action_date, description",
+          );
+        }
+        if (bill.votes) written += await writeVotes(tx, bill.id, stateVoteRows(bill, row.state as string));
+      }
       written += await writeFeedEvents(tx, stateBillEvents(row, previous.get(row.id as string), filled));
     }
   });
@@ -270,6 +372,8 @@ async function writeStateBills(sql: Sql, bills: OSBill[], filled: boolean): Prom
 
 /** First-class states: synced first every night and given prerendered bill pages (see docs/decisions.md). */
 export const FIRST_CLASS_STATES = ['MA'];
+/** What first-class states' bill requests also return: full history, roll calls and summary. */
+const FIRST_CLASS_DETAIL = ['actions', 'votes', 'abstracts'];
 
 /** First-class states, then states people follow or saved in their profile, then least recently synced. */
 async function stateOrder(sql: Sql, cursor: StateCursor, only?: string[]): Promise<string[]> {
@@ -305,7 +409,17 @@ async function refreshSessions(sql: Sql, client: OpenStatesClient, cursor: State
   for (const j of result.results) {
     const state = jurisdictionToState(j.id);
     if (!state || !STATES.includes(state)) continue;
-    const session = currentSession(j.legislative_sessions ?? [], now);
+    const all = j.legislative_sessions ?? [];
+    for (const x of all) {
+      await sql`
+        insert into public.state_sessions (state, identifier, name, classification, start_date, end_date)
+        values (${state}, ${x.identifier}, ${x.name ?? null}, ${x.classification ?? null},
+                ${toDate(x.start_date)}, ${toDate(x.end_date)})
+        on conflict (state, identifier) do update set
+          name = excluded.name, classification = excluded.classification,
+          start_date = excluded.start_date, end_date = excluded.end_date`;
+    }
+    const session = currentSession(all, now);
     if (!session) continue;
     if (sessions[state] && sessions[state] !== session.identifier) {
       // A new session: start over for this state and drop the old session's bills.
@@ -352,6 +466,7 @@ async function billPage(
       session,
       sort: 'updated_desc',
       page,
+      include: FIRST_CLASS_STATES.includes(state) ? FIRST_CLASS_DETAIL : undefined,
     });
     if (page === 1) bc.newest = result.results[0]?.updated_at ?? bc.newest;
     run.rowsWritten += await writeStateBills(run.sql, result.results, false);
@@ -377,6 +492,7 @@ async function billPage(
       updatedSince: bc.since,
       sort: 'updated_asc',
       page,
+      include: FIRST_CLASS_STATES.includes(state) ? FIRST_CLASS_DETAIL : undefined,
     });
     run.rowsWritten += await writeStateBills(run.sql, result.results, true);
     const last = result.results.at(-1)?.updated_at;
