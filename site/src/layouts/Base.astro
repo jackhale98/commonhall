@@ -686,7 +686,20 @@ const phoneNav = PHONE_NAV.map((section) => ({
     }
     .phone-nav {
       display: grid;
-      gap: var(--space-4);
+      gap: 0;
+    }
+    /* A line between categories, so each group reads as its own block. */
+    .phone-nav section {
+      padding-block: var(--space-3);
+    }
+    .phone-nav section:first-child {
+      padding-top: 0;
+    }
+    .phone-nav section:last-child {
+      padding-bottom: 0;
+    }
+    .phone-nav section + section {
+      border-top: 1px solid var(--border);
     }
     .phone-nav h2 {
       margin: 0 0 var(--space-1);
