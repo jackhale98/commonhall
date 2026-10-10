@@ -872,7 +872,7 @@ six hours sooner; runs after the budget is spent stop at once.
 
 ## 71. Party unity and campaign-money leaderboards
 
-The members page links to `/members/insights/`, which shows two things.
+The members page shows two things in folded sections (they began on their own page, `/members/insights/`, which now redirects; see §72).
 
 **Party unity** (view `member_party_unity`) uses the usual CQ definition. A party-line
 roll call is one where most voting Democrats and most voting Republicans took opposite
@@ -896,3 +896,25 @@ page states how many members' reports have loaded.
 Also: the orange Massachusetts tile on `/states/` was labelled "Full coverage", which
 read as "fully loaded". It now says "Featured state". All states sync the same data; the
 featured state's bills sync first and get their own pages.
+
+## 72. Members page: find first, list on demand
+
+On a phone the members page listed all 539 members in 56 state cards, about 33,700px,
+and the search box sat below the first screen. Visitors come to find one person, their
+own members, or a state's delegation, so the page now leads with the ways to find them:
+
+- A search box that matches names, states ("Texas", "TX") and seats ("MA-7", "ny 14"),
+  with state, party and chamber filters. It stays pinned under the header while
+  results show. Results are rows of 44px, 25 at a time with "Show more".
+  A state's members are listed by seat (senators, then districts); everyone else by
+  name.
+- "Find your representatives" by address (the shared lookup; signed-in visitors with a
+  saved address see theirs), and the members they follow.
+- A grid of state codes; a tap shows that state's members, linking to its state page.
+- Party unity and campaign money, folded by default.
+
+Filters live in the URL (`?q=`, `?state=`, `?party=`, `?chamber=`), so a state's
+delegation or a search can be linked. Every member is still in the HTML, so search
+engines and readers without JavaScript see the full list; with JavaScript, only
+results show. The chamber charts appear on wider screens; phones get one line of seat
+counts. The page is about 2,500px tall on a phone before a search.

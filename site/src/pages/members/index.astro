@@ -1,46 +1,72 @@
 ---
+import FindMyReps from '../../components/FindMyReps';
 import MemberChip from '../../components/MemberChip';
+import MemberInsights from '../../components/MemberInsights.astro';
 import MemberPhoto from '../../components/MemberPhoto';
+import YourMembers from '../../components/YourMembers';
 import Hemicycle from '../../components/viz/Hemicycle';
 import { chamberGroups } from '../../lib/charts';
 import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadMembers } from '../../lib/build-data';
+import { DEMO } from '../../lib/config';
 import { congressLabel, stateName } from '../../lib/format';
-import { href, stateHref } from '../../lib/paths';
+import { href } from '../../lib/paths';
 
-const members = [...(await loadMembers()).values()].filter((m) => m.current && m.state);
-const byState = new Map<string, typeof members>();
-for (const m of members) byState.set(m.state!, [...(byState.get(m.state!) ?? []), m]);
-const states = [...byState.keys()].sort((a, b) => stateName(a).localeCompare(stateName(b)));
+const all = await loadMembers();
+const sortKey = (m: { sort_name: string | null; name: string }) => m.sort_name ?? m.name;
+const members = [...all.values()]
+  .filter((m) => m.current && m.state)
+  .sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+const states = [...new Set(members.map((m) => m.state!))].sort();
+// Within a state: senators by name, then representatives by district.
+const seatRank = new Map(
+  [...members]
+    .sort(
+      (a, b) =>
+        (a.chamber === 'senate' ? 0 : 1) - (b.chamber === 'senate' ? 0 : 1) ||
+        (a.district ?? 0) - (b.district ?? 0) ||
+        sortKey(a).localeCompare(sortKey(b)),
+    )
+    .map((m, i) => [m.bioguide_id, i]),
+);
 const counts = {
   senate: members.filter((m) => m.chamber === 'senate').length,
   house: members.filter((m) => m.chamber === 'house').length,
 };
-const house = chamberGroups((await loadMembers()).values(), 'house');
-const senate = chamberGroups((await loadMembers()).values(), 'senate');
-const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
+const house = chamberGroups(all.values(), 'house');
+const senate = chamberGroups(all.values(), 'senate');
+const short: Record<string, string> = { Democrats: 'D', Republicans: 'R', Independents: 'I', Vacant: 'vacant' };
+const order = ['Democrats', 'Republicans', 'Independents', 'Vacant'];
+const summary = (groups: typeof house) =>
+  [...groups]
+    .sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label))
+    .filter((g) => g.seats > 0)
+    .map((g) => `${g.seats} ${short[g.label] ?? g.label}`)
+    .join(' · ');
 ---
 
 <Base
   title="Members"
-  description={`Senators and representatives in the ${congressLabel(CURRENT_CONGRESS)}, by state.`}
+  description={`Find any of the ${counts.senate} senators and ${counts.house} representatives in the ${congressLabel(CURRENT_CONGRESS)} by name, state, district or address.`}
   section="members"
 >
   <header class="page-head wash members-head">
     <div>
       <p class="kicker">{congressLabel(CURRENT_CONGRESS)}</p>
       <h1>Members of Congress</h1>
-      <p class="lede">
-        {counts.senate} senators and {counts.house} representatives and delegates. Find anyone by name or state, see how
-        they vote and what they sponsor.
+      <p class="lede">Find anyone by name, state or district, then see how they vote and what they sponsor.</p>
+      <p class="seat-summary small">
+        <span>
+          <strong>House</strong> {summary(house)}
+        </span>
+        <span>
+          <strong>Senate</strong> {summary(senate)}
+        </span>
       </p>
-      <p class="cluster">
-        <a class="see-all" href={href('members/insights/')}>
-          Party unity and campaign money
-        </a>
-        <a class="see-all" href={href('committees/')}>
-          Committees and hearings
-        </a>
+      <p class="cluster small head-links">
+        <a href="#party-unity">Party unity</a>
+        <a href="#campaign-money">Campaign money</a>
+        <a href={href('committees/')}>Committees</a>
       </p>
     </div>
     <div class="panel chambers">
@@ -49,23 +75,41 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
     </div>
   </header>
 
-  <form class="explorer-search" id="member-filter" aria-label="Filter members" role="search">
+  <form class="explorer-search member-search" id="member-filter" aria-label="Find members" role="search">
     <div class="explorer-query">
       <label for="f-name" class="visually-hidden">
-        Name or state
+        Name, state or district
       </label>
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
         <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
         <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
       </svg>
-      <input id="f-name" name="name" type="search" autocomplete="off" placeholder="Name or state" />
+      <input
+        id="f-name"
+        name="q"
+        type="search"
+        autocomplete="off"
+        enterkeyhint="search"
+        placeholder="Name, state or district (MA-7)"
+      />
     </div>
     <div class="explorer-filters">
+      <label for="f-state" class="visually-hidden">
+        State
+      </label>
+      <select id="f-state" name="state">
+        <option value="">Any state</option>
+        {[...states]
+          .sort((a, b) => stateName(a).localeCompare(stateName(b)))
+          .map((s) => (
+            <option value={s}>{stateName(s)}</option>
+          ))}
+      </select>
       <label for="f-party" class="visually-hidden">
         Party
       </label>
       <select id="f-party" name="party">
-        <option value="">All parties</option>
+        <option value="">Any party</option>
         <option value="D">Democrats</option>
         <option value="R">Republicans</option>
         <option value="I">Independents</option>
@@ -74,116 +118,395 @@ const sortKey = (m: (typeof members)[number]) => m.sort_name ?? m.name;
         Chamber
       </label>
       <select id="f-chamber" name="chamber">
-        <option value="">Both chambers</option>
+        <option value="">Chamber</option>
         <option value="senate">Senate</option>
         <option value="house">House</option>
       </select>
     </div>
   </form>
-  <p class="small muted" id="member-count" aria-live="polite"></p>
 
-  <div class="states">
-    {states.map((state) => {
-      const list = byState.get(state)!;
-      const senators = list.filter((m) => m.chamber === 'senate').sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
-      const reps = list.filter((m) => m.chamber === 'house').sort((a, b) => (a.district ?? 0) - (b.district ?? 0));
-      return (
-        <section class="state" data-state={state} aria-labelledby={`st-${state}`}>
-          <h2 id={`st-${state}`} class="h-small">
-            <a href={stateHref(state)}>{stateName(state)}</a>
-          </h2>
-          <ul class="plain-members">
-            {[...senators, ...reps].map((m) => (
-              <li
-                data-party={(m.party ?? '').charAt(0)}
-                data-chamber={m.chamber}
-                data-name={`${m.name} ${stateName(state)} ${state}`.toLowerCase()}
-              >
-                <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={36} />
-                <MemberChip member={m} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      );
-    })}
+  <section class="member-results" id="member-results" aria-labelledby="results-h">
+    <div class="results-head">
+      <h2 id="results-h" class="h-small" aria-live="polite">
+        All {members.length} members
+      </h2>
+      <button type="button" class="link-button" id="member-clear" hidden>
+        Clear
+      </button>
+    </div>
+    <p class="small" id="results-state" hidden></p>
+    <ul class="member-rows" id="member-rows">
+      {members.map((m) => (
+        <li
+          data-party={(m.party ?? '').charAt(0)}
+          data-chamber={m.chamber}
+          data-state={m.state}
+          data-district={m.chamber === 'house' ? (m.district ?? 0) : ''}
+          data-q={`${m.name} ${stateName(m.state)}`.toLowerCase()}
+          data-rank={seatRank.get(m.bioguide_id)}
+        >
+          <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={28} />
+          <MemberChip member={m} />
+          {m.chamber === 'senate' && <span class="small muted">Senator</span>}
+        </li>
+      ))}
+    </ul>
+    <p class="no-match muted" id="member-none" hidden>
+      No members match.
+    </p>
+    <button type="button" class="more-button" id="member-more" hidden>
+      Show more
+    </button>
+  </section>
+
+  <div class="member-landing" id="member-landing">
+    {!DEMO && <FindMyReps saved client:visible />}
+    <YourMembers client:idle />
+    <section aria-labelledby="by-state-h">
+      <h2 id="by-state-h" class="h-small">
+        Browse by state
+      </h2>
+      <ul class="state-picker">
+        {states.map((s) => (
+          <li>
+            <a href={`?state=${s}`} data-state={s} title={stateName(s)} aria-label={stateName(s)}>
+              {s}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
+
+  <section class="member-insights" aria-label="Party unity and campaign money">
+    <MemberInsights />
+  </section>
 </Base>
 
 <script>
-  const form = document.getElementById('member-filter') as HTMLFormElement | null;
-  const count = document.getElementById('member-count');
-  const apply = () => {
-    if (!form) return;
-    const data = new FormData(form);
-    const party = String(data.get('party') ?? '');
-    const chamber = String(data.get('chamber') ?? '');
-    const name = String(data.get('name') ?? '')
-      .trim()
-      .toLowerCase();
-    let shown = 0;
-    document.querySelectorAll<HTMLElement>('.state').forEach((section) => {
-      let visible = 0;
-      section.querySelectorAll<HTMLElement>('li[data-party]').forEach((li) => {
-        const ok =
-          (!party || li.dataset.party === party) &&
-          (!chamber || li.dataset.chamber === chamber) &&
-          (!name || (li.dataset.name ?? '').includes(name));
-        li.hidden = !ok;
-        if (ok) visible += 1;
-      });
-      section.hidden = visible === 0;
-      shown += visible;
-    });
-    if (count) count.textContent = party || chamber || name ? `${shown} members shown` : '';
+  import { stateName } from '../../lib/format';
+  import { stateHref } from '../../lib/paths';
+
+  const PAGE = 25;
+  const form = document.getElementById('member-filter') as HTMLFormElement;
+  const results = document.getElementById('member-results')!;
+  const landing = document.getElementById('member-landing')!;
+  const heading = document.getElementById('results-h')!;
+  const stateLine = document.getElementById('results-state')!;
+  const clear = document.getElementById('member-clear')!;
+  const none = document.getElementById('member-none')!;
+  const more = document.getElementById('member-more')!;
+  const rows = [...document.querySelectorAll<HTMLElement>('#member-rows > li')].map((li, i) => ({
+    li,
+    nameRank: i,
+    seatRank: Number(li.dataset.rank ?? i),
+    q: li.dataset.q ?? '',
+    state: (li.dataset.state ?? '').toLowerCase(),
+    district: li.dataset.district === '' ? null : Number(li.dataset.district),
+    party: li.dataset.party ?? '',
+    chamber: li.dataset.chamber ?? '',
+  }));
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
+  let limit = PAGE;
+
+  /** How well a row matches the typed text: 0 district, 1 state, 2 name; null for no match. */
+  function score(row: (typeof rows)[number], q: string): number | null {
+    if (!q) return 2;
+    const seat = /^([a-z]{2})[\s-]*(\d{1,2}|al)$/.exec(q);
+    if (seat) {
+      const district = seat[2] === 'al' ? 0 : Number(seat[2]);
+      return row.state === seat[1] && row.district === district ? 0 : null;
+    }
+    if (q.length === 2 && row.state === q) return 1;
+    if (q.length > 2 && stateName(row.state.toUpperCase()).toLowerCase().startsWith(q)) return 1;
+    return row.q.includes(q) ? 2 : null;
+  }
+
+  function apply(fromUser = true) {
+    const q = field('q').value.trim().toLowerCase();
+    const state = field('state').value;
+    const party = field('party').value;
+    const chamber = field('chamber').value;
+    const active = Boolean(q || state || party || chamber);
+    const byState = Boolean(state);
+    const matches = rows
+      .map((r) => ({ r, s: score(r, q) }))
+      .filter(
+        ({ r, s }) =>
+          s !== null &&
+          (!state || r.state === state.toLowerCase()) &&
+          (!party || r.party === party) &&
+          (!chamber || r.chamber === chamber),
+      )
+      // A state's members by seat (senators, then districts); everyone else by name.
+      .sort(
+        (a, b) => a.s! - b.s! || (byState || a.s === 1 ? a.r.seatRank - b.r.seatRank : a.r.nameRank - b.r.nameRank),
+      );
+    if (fromUser) limit = PAGE;
+    const shown = new Set(matches.slice(0, limit).map((m) => m.r));
+    // Reorder the list itself, so screen readers and keyboards follow the visible order.
+    const list = document.getElementById('member-rows')!;
+    for (const { r } of matches) list.append(r.li);
+    for (const r of rows) r.li.hidden = !shown.has(r);
+
+    results.classList.toggle('is-active', active);
+    form.classList.toggle('is-sticky', active);
+    landing.hidden = active;
+    clear.hidden = !active;
+    none.hidden = matches.length > 0;
+    more.hidden = matches.length <= limit;
+    more.textContent = `Show more (${matches.length - limit} left)`;
+    const n = matches.length;
+    heading.textContent = active ? `${n} ${n === 1 ? 'member' : 'members'}` : `All ${rows.length} members`;
+    if (state) {
+      const senators = matches.filter((m) => m.r.chamber === 'senate').length;
+      const reps = n - senators;
+      stateLine.innerHTML = '';
+      stateLine.append(
+        `${stateName(state)}: ${senators} ${senators === 1 ? 'senator' : 'senators'}, ${reps} ${reps === 1 ? 'representative' : 'representatives'}. `,
+      );
+      const link = document.createElement('a');
+      link.href = stateHref(state);
+      link.textContent = `More on ${stateName(state)} →`;
+      stateLine.append(link);
+    }
+    stateLine.hidden = !state;
+
+    const params = new URLSearchParams();
+    if (q) params.set('q', field('q').value.trim());
+    if (state) params.set('state', state);
+    if (party) params.set('party', party);
+    if (chamber) params.set('chamber', chamber);
+    const query = params.toString();
+    history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
+  }
+
+  const initial = new URLSearchParams(location.search);
+  for (const name of ['q', 'state', 'party', 'chamber']) {
+    const value = initial.get(name);
+    if (value) field(name).value = name === 'state' ? value.toUpperCase() : value;
+  }
+  apply();
+  results.classList.add('is-ready');
+
+  form.addEventListener('input', () => apply());
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    (document.activeElement as HTMLElement | null)?.blur();
+  });
+  more.addEventListener('click', () => {
+    limit += PAGE;
+    apply(false);
+  });
+  clear.addEventListener('click', () => {
+    form.reset();
+    apply();
+    field('q').focus();
+  });
+  document.querySelectorAll<HTMLAnchorElement>('.state-picker a').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      field('state').value = a.dataset.state ?? '';
+      field('q').value = '';
+      apply();
+      form.scrollIntoView({ block: 'start' });
+    }),
+  );
+
+  // Links to #party-unity or #campaign-money open that section.
+  const openFold = () => {
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    if (target instanceof HTMLDetailsElement) target.open = true;
   };
-  form?.addEventListener('input', apply);
-  form?.addEventListener('submit', (e) => e.preventDefault());
+  openFold();
+  window.addEventListener('hashchange', openFold);
 </script>
 
 <style>
-  .states {
-    columns: 18rem;
-    column-gap: var(--space-4);
-    margin-top: var(--space-5);
-  }
-  .state {
-    break-inside: avoid;
-    margin-bottom: var(--space-5);
-  }
   .members-head {
     display: grid;
-    gap: var(--space-5);
+    gap: var(--space-4);
     align-items: center;
+  }
+  .members-head h1 {
+    margin-bottom: var(--space-2);
+  }
+  .seat-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin: var(--space-2) 0;
+    color: var(--text-muted);
+  }
+  .seat-summary strong {
+    color: var(--text);
+  }
+  .head-links {
+    margin: 0;
+    gap: var(--space-2) var(--space-4);
+  }
+  .head-links a {
+    font-weight: 600;
+  }
+  .chambers {
+    display: none;
+  }
+  @media (min-width: 48rem) {
+    .chambers {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: var(--space-4);
+      align-items: end;
+    }
+    .seat-summary {
+      display: none;
+    }
   }
   @media (min-width: 60rem) {
     .members-head {
       grid-template-columns: 1fr 1fr;
     }
   }
-  .chambers {
+
+  /* The search stays in reach while scrolling results. */
+  .member-search {
+    position: relative;
+  }
+  .member-search.is-sticky {
+    position: sticky;
+    top: 64px;
+    z-index: 5;
+    margin-inline: calc(-1 * var(--space-2));
+    padding: var(--space-2);
+    background: var(--bg);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+  .member-search .explorer-filters select {
+    min-width: 0;
+  }
+  @media (max-width: 40rem) {
+    .member-search .explorer-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-2);
+    }
+    .member-search .explorer-filters select {
+      width: 100%;
+      font-size: 0.85rem;
+      padding-inline: var(--space-2);
+    }
+  }
+
+  /* Without JavaScript every member is listed; with it, only matches once a search starts. */
+  :global(html.js) .member-results:not(.is-active) {
+    display: none;
+  }
+  .member-results {
+    margin-bottom: var(--space-6);
+  }
+  .results-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .results-head h2 {
+    margin: 0;
+  }
+  #results-state {
+    margin: var(--space-1) 0 0;
+  }
+  .member-rows {
+    columns: 20rem;
+    column-gap: var(--space-5);
+    margin-top: var(--space-3);
+  }
+  :global(html.js) .member-rows {
+    columns: auto;
     display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: var(--space-4);
-    align-items: end;
+    gap: 0 var(--space-5);
   }
-  .state {
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-    box-shadow: var(--shadow);
+  @media (min-width: 48rem) {
+    :global(html.js) .member-rows {
+      grid-template-columns: 1fr 1fr;
+    }
   }
-  .state h2 {
+  .more-button {
+    margin-top: var(--space-3);
+  }
+
+  .member-landing {
+    display: grid;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+  .member-landing[hidden] {
+    display: none;
+  }
+  .member-landing :global(.find-reps) {
+    margin: 0;
+  }
+  .member-landing h2 {
     margin-top: 0;
   }
-  .state h2 a {
-    color: var(--text);
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
+  .state-picker {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.25rem, 1fr));
+    gap: var(--space-2);
   }
-  .state h2 a:hover {
+  .state-picker a {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    color: var(--text);
+    font-weight: 650;
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .state-picker a:hover {
+    border-color: var(--link);
     color: var(--link);
+  }
+  .member-insights {
+    margin-top: var(--space-5);
+  }
+</style>
+
+<style is:global>
+  .member-rows {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .member-rows li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding-block: 4px;
+    border-bottom: 1px solid var(--border);
+    break-inside: avoid;
+  }
+  .member-rows li[hidden] {
+    display: none;
+  }
+  .member-rows a {
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .member-rows a:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .member-rows .photo,
+  .member-rows .photo-fallback {
+    flex: none;
   }
 </style>
