@@ -8,7 +8,7 @@ import SearchPalette from '../components/SearchPalette';
 import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
 import AdminLink from '../components/AdminLink';
 import NavStatus from '../components/NavStatus';
-import { activeNav, NAV, orderedItems } from '../lib/nav';
+import { activeNav, NAV, orderedItems, PHONE_NAV } from '../lib/nav';
 import { href } from '../lib/paths';
 
 interface Props {
@@ -63,6 +63,11 @@ const here = activeNav(
   Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname,
 );
 const subnav = here.group?.items ? here.group : undefined;
+const currentKey = here.item?.key ?? here.group?.key;
+const phoneNav = PHONE_NAV.map((section) => ({
+  ...section,
+  items: section.items.filter((i) => !DEMO || !['feed', 'account'].includes(i.key)),
+}));
 ---
 
 <!doctype html>
@@ -143,7 +148,23 @@ const subnav = here.group?.items ? here.group : undefined;
           <span>{SITE_NAME}</span>
         </a>
         <div class="site-menu" id="site-menu">
-          <nav aria-label="Main">
+          <nav aria-label="Main" class="phone-nav">
+            {phoneNav.map((section) => (
+              <section>
+                <h2>{section.heading}</h2>
+                <ul>
+                  {section.items.map((item) => (
+                    <li>
+                      <a href={href(item.path)} aria-current={currentKey === item.key ? 'page' : undefined}>
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </nav>
+          <nav aria-label="Main" class="wide-nav">
             <ul class="nav-list">
               {nav.map((group) =>
                 group.items ? (
@@ -467,6 +488,9 @@ const subnav = here.group?.items ? here.group : undefined;
   .site-menu {
     flex: 1;
   }
+  .phone-nav {
+    display: none;
+  }
   .nav-list {
     display: flex;
     gap: var(--space-1);
@@ -648,8 +672,11 @@ const subnav = here.group?.items ? here.group : undefined;
       right: 0;
       background: var(--bg-raised);
       border-bottom: 1px solid var(--border);
-      padding: var(--space-2) var(--space-4) var(--space-4);
+      padding: var(--space-3) var(--space-4) var(--space-4);
       box-shadow: 0 18px 30px rgb(18 19 31 / 12%);
+      max-height: calc(100dvh - 64px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     :global(html.js) .site-menu:not([data-open]) {
       display: none;
@@ -663,35 +690,45 @@ const subnav = here.group?.items ? here.group : undefined;
       font-size: var(--step-1);
       border-radius: 12px;
     }
-    /* In the phone menu each group is a heading over all of its links, with nothing to open. */
-    .nav-group-button {
+    /* Phones get their own menu (.phone-nav): headings over one link per row. */
+    .wide-nav {
       display: none;
     }
-    .nav-group-label {
-      display: block;
-      margin: var(--space-2) 0 0 0.75rem;
-      font-size: 0.75rem;
+    .phone-nav {
+      display: grid;
+      gap: var(--space-4);
+    }
+    .phone-nav h2 {
+      margin: 0 0 var(--space-1);
+      padding-left: 0.75rem;
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--text-muted);
     }
-    .nav-group .nav-pop,
-    :global(html:not(.js)) .nav-group:not(:focus-within) .nav-pop,
-    :global(html.js) .nav-group-button[aria-expanded='false'] + .nav-pop {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0 var(--space-2);
-      position: static;
-      min-width: 0;
+    .phone-nav ul {
+      list-style: none;
+      margin: 0;
       padding: 0;
-      border: 0;
-      background: none;
-      box-shadow: none;
     }
-    .nav-group .nav-pop a {
+    .phone-nav a {
+      display: flex;
+      align-items: center;
       min-height: 44px;
-      font-size: var(--step-0);
+      padding: 0 0.75rem;
+      border-radius: 12px;
+      color: var(--text);
+      font-weight: 560;
+      text-decoration: none;
+    }
+    .phone-nav a:hover {
+      background: var(--bg-subtle);
+    }
+    .phone-nav a[aria-current='page'] {
+      color: var(--brand-strong);
+      background: var(--brand-soft);
     }
   }
   main {

@@ -932,8 +932,11 @@ were only reachable through States & local. The top bar is now grouped:
 - Pages in a group show its items as a row of tabs under the header, so sibling pages
   stay one tap apart and the active one is marked. For States & local the row reads
   as a trail, which replaces the Massachusetts and Boston breadcrumbs.
-- In the phone menu each group is a heading over all of its links, with nothing to
-  open, so any page is one tap from the menu.
+- Phones get their own menu (`PHONE_NAV`): every page sits under a heading (Congress;
+  White House and courts; States & local; Take part), one link per row, all the same
+  size, with nothing to open, so any page is one tap from the menu. An earlier version
+  reused the header's groups, mixing headed groups with bare links that looked like
+  headings.
 - There's no Congress landing page; the home page already does that job.
 - `lib/nav.ts` holds the structure. A page's group and tab come from its path, so pages
   don't declare them.

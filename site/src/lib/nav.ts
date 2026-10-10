@@ -75,3 +75,42 @@ export function activeNav(path: string): { group?: NavGroup; item?: NavItem } {
   }
   return {};
 }
+
+/**
+ * The phone menu: every page under a heading, one link per row, all the same size.
+ * Keys match NAV's item and group keys, so the current page is marked the same way.
+ */
+export const PHONE_NAV: { heading: string; items: { key: string; label: string; path: string }[] }[] = [
+  {
+    heading: 'Congress',
+    items: [
+      { key: 'bills', label: 'Bills', path: 'bills/' },
+      { key: 'members', label: 'Members', path: 'members/' },
+      { key: 'votes', label: 'Votes', path: 'votes/' },
+      { key: 'committees', label: 'Committees', path: 'committees/' },
+    ],
+  },
+  {
+    heading: 'White House and courts',
+    items: [
+      { key: 'executive', label: 'Executive orders and nominations', path: 'executive/' },
+      { key: 'court', label: 'Supreme Court', path: 'court/' },
+    ],
+  },
+  {
+    heading: 'States & local',
+    items: [
+      { key: 'states', label: 'All states', path: 'states/' },
+      { key: 'ma', label: 'Massachusetts', path: 'states/ma/' },
+      { key: 'boston', label: 'Boston', path: 'boston/' },
+    ],
+  },
+  {
+    heading: 'Take part',
+    items: [
+      { key: 'discuss', label: 'Discussions', path: 'discussions/' },
+      { key: 'feed', label: 'Your feed', path: 'feed/' },
+      { key: 'account', label: 'Account', path: 'account/' },
+    ],
+  },
+];

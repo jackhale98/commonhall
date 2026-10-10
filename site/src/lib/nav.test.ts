@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeNav, NAV, orderedItems } from './nav';
+import { activeNav, NAV, orderedItems, PHONE_NAV } from './nav';
 
 const at = (path: string) => {
   const { group, item } = activeNav(path);
@@ -43,5 +43,13 @@ describe('orderedItems', () => {
   it('reads the local trail from all states down to Boston', () => {
     const local = NAV.find((g) => g.key === 'local')!;
     expect(orderedItems(local).map((i) => i.label)).toEqual(['All states', 'Massachusetts', 'Boston']);
+  });
+});
+
+describe('PHONE_NAV', () => {
+  it('lists every page in the header menus exactly once', () => {
+    const header = NAV.flatMap((g) => (g.items ? g.items.map((i) => i.path) : [g.path!]));
+    const phone = PHONE_NAV.flatMap((s) => s.items.map((i) => i.path));
+    expect([...phone].sort()).toEqual([...header].sort());
   });
 });
