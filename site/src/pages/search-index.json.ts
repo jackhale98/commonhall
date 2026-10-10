@@ -109,7 +109,13 @@ export async function GET() {
         h: href(`committees/${c.code}/`),
       };
     }),
-    { k: 'page', t: 'Boston', s: 'City Council, councilors, district map, meetings', h: href('boston/') },
+    { k: 'page', t: 'Boston', s: 'City Council, meetings, 311, zoning and the budget', h: href('boston/') },
+    {
+      k: 'page',
+      t: 'Boston City Council',
+      s: 'Councilors, district map, ordinances and meetings',
+      h: href('boston/council/'),
+    },
     {
       k: 'page',
       t: 'Boston 311 and zoning',

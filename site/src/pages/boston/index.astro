@@ -1,51 +1,32 @@
 ---
 import BostonHeader from '../../components/BostonHeader.astro';
-import CouncilorFinder from '../../components/CouncilorFinder';
-import FindMyReps from '../../components/FindMyReps';
 import LiveDiscussions from '../../components/LiveDiscussions';
 import LocalMatterItem from '../../components/LocalMatterItem';
 import LocalMeetingRow from '../../components/LocalMeetingRow.astro';
-import DistrictMap from '../../components/viz/DistrictMap';
 import Base from '../../layouts/Base.astro';
 import {
   loadCapitalProjects,
   loadCityBudget,
-  loadCouncilDistricts,
   loadBoston311,
   loadDiscussions,
   loadLocalMeetings,
-  loadLocalOfficials,
   loadRecentLocalMatters,
   loadZbaAppeals,
 } from '../../lib/build-data';
-import { DEMO } from '../../lib/config';
 import { formatMoney } from '../../lib/finance';
 import { formatDate } from '../../lib/format';
 import { CAPITAL_STAGES, capitalStage, change311, closeTime, spentLabel, streetAddress } from '../../lib/local';
-import { capitalProjectHref, href, localOfficialHref } from '../../lib/paths';
+import { capitalProjectHref, href } from '../../lib/paths';
 
-const [officials, matters, meetings, discussions, districts, appeals, report, projects, operating] = await Promise.all([
-  loadLocalOfficials(),
+const [matters, meetings, discussions, appeals, report, projects, operating] = await Promise.all([
   loadRecentLocalMatters(),
   loadLocalMeetings(),
   loadDiscussions(),
-  loadCouncilDistricts(),
   loadZbaAppeals(),
   loadBoston311(),
   loadCapitalProjects(),
   loadCityBudget(),
 ]);
-const features = districts.map((d) => {
-  const o = officials.find((x) => x.district === d.district);
-  return {
-    district: d.district,
-    geojson: d.geojson,
-    href: o ? localOfficialHref(o.id) : undefined,
-    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
-  };
-});
-const byDistrict = officials.filter((o) => o.district !== null).sort((a, b) => a.district! - b.district!);
-const atLarge = officials.filter((o) => o.district === null).sort((a, b) => a.name.localeCompare(b.name));
 const today = new Date().toISOString().slice(0, 10);
 const upcoming = meetings
   .filter((m) => m.date >= today)
@@ -75,38 +56,9 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     lede="Thirteen city councilors: one for each of nine districts and four elected citywide."
   />
 
-  <section aria-labelledby="council-h">
-    <div class="section-head">
-      <h2 id="council-h">Your councilors</h2>
-    </div>
-    {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
-    <div class="council-layout">
-      <div class="panel">
-        <CouncilorFinder
-          client:visible
-          councilors={[...byDistrict, ...atLarge].map((o) => ({
-            id: o.id,
-            name: o.name,
-            seat: o.seat,
-            district: o.district,
-            photo_url: o.photo_url,
-          }))}
-        />
-        {!DEMO && (
-          <details class="by-address">
-            <summary>Find your district by address</summary>
-            <FindMyReps client:visible />
-          </details>
-        )}
-      </div>
-      {features.length > 0 && (
-        <details class="panel map-panel" id="district-map">
-          <summary class="h-small">District map</summary>
-          <DistrictMap features={features} label="Boston City Council districts; select one for its councilor" />
-        </details>
-      )}
-    </div>
-  </section>
+  <p class="councilor-link">
+    <a href={href('boston/council/#council-h')}>Find your councilor and see the district map →</a>
+  </p>
 
   <section aria-labelledby="meet-h">
     <div class="section-head">
@@ -286,50 +238,9 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
 </script>
 
 <style>
-  .council-layout {
-    display: grid;
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
-  }
-  @media (min-width: 60rem) {
-    .council-layout {
-      grid-template-columns: 1.3fr 1fr;
-      align-items: start;
-    }
-  }
-  .map-panel summary,
-  .by-address summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  /* A chevron marks these as boxes that open (the flex layout hides the browser's own). */
-  .map-panel > summary::before,
-  .by-address > summary::before {
-    content: '';
-    flex: none;
-    width: 0.5rem;
-    height: 0.5rem;
-    margin-inline: 0.15rem 0.1rem;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: rotate(-45deg);
-    transition: transform 0.15s ease;
-  }
-  .map-panel[open] > summary::before,
-  .by-address[open] > summary::before {
-    transform: rotate(45deg);
-  }
-  .map-panel > summary::-webkit-details-marker,
-  .by-address > summary::-webkit-details-marker {
-    display: none;
-  }
-  .by-address {
-    margin-top: var(--space-3);
-    border-top: 1px solid var(--border);
-    padding-top: var(--space-2);
+  .councilor-link {
+    margin: 0 0 var(--space-4);
+    font-weight: 600;
   }
   /* Phones show two of the three latest matters and hearings. */
   @media (max-width: 40rem) {
@@ -363,9 +274,5 @@ const bostonDiscussions = discussions.filter((d) => d.jurisdiction === 'boston' 
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-  .by-address summary {
-    color: var(--link);
-    font-weight: 600;
   }
 </style>
