@@ -79,8 +79,9 @@ export default function District311({
           {change && <p class="small muted stat-note">{change} prior 30 days</p>}
         </div>
         <div class="stat">
-          <dt>Closed on time</dt>
-          <dd>{pct(s.closedOnTime, s.closed)}</dd>
+          {/* Cities without target times (Somerville): the share closed so far. */}
+          <dt>{report.onTime === false ? 'Closed so far' : 'Closed on time'}</dt>
+          <dd>{report.onTime === false ? pct(s.closed, s.opened) : pct(s.closedOnTime, s.closed)}</dd>
           {s.typicalHours !== null && <p class="small muted stat-note">typically in {closeTime(s.typicalHours)}</p>}
         </div>
       </dl>

@@ -130,6 +130,46 @@ export const CITY_LIST: City[] = [
     recordLabel: 'The agenda',
     legislationTitle: 'Orders, petitions and communications',
   },
+  {
+    key: 'ma-somerville',
+    state: 'MA',
+    slug: 'somerville',
+    name: 'Somerville',
+    council: 'Somerville City Council',
+    districts: 7,
+    atLarge: 4,
+    districtWord: 'Ward',
+    committeeSession: 'meeting',
+    lede: 'Eleven city councilors: one for each of seven wards and four elected citywide.',
+    summary: 'City Council, committee meetings and 311 requests',
+    sources: {
+      people: { label: 'Somerville’s Legistar', url: 'https://somervillema.legistar.com/', cadence: 'weekly' },
+      meetings: {
+        label: 'Somerville’s Legistar',
+        url: 'https://somervillema.legistar.com/Calendar.aspx',
+        cadence: 'every 15 minutes',
+      },
+      committees: {
+        label: 'Somerville’s Legistar',
+        url: 'https://somervillema.legistar.com/Departments.aspx',
+        cadence: 'every 15 minutes',
+      },
+      legislation: {
+        label: 'Somerville’s Legistar',
+        url: 'https://somervillema.legistar.com/Legislation.aspx',
+        cadence: 'every 15 minutes',
+      },
+      requests: {
+        label: '311 requests on the city’s open data portal',
+        url: 'https://data.somervillema.gov/d/4pyi-uqq6',
+        cadence: 'daily',
+      },
+    },
+    docketPrefix: 'File #',
+    recordLabel: 'Full record on Legistar',
+    legislationTitle: 'Orders, resolutions, ordinances and the mayor’s requests',
+    legistar: 'somervillema',
+  },
 ];
 
 /** "District 3", "Ward 3". */

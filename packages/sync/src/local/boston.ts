@@ -61,6 +61,18 @@ export interface LegistarCity {
   committees: readonly string[];
   /** A matter's citation: "Docket #0123". */
   docketLabel: (file: string) => string;
+  /**
+   * Committees that are Legistar bodies of their own (Somerville), as body name → committee
+   * name: their meetings are read with the council's and filed under that committee.
+   * Without it (Boston), committee hearings are council meetings that name the committee in
+   * their location text (committeesFromLocation).
+   */
+  committeeBodies?: Readonly<Record<string, string>>;
+  /**
+   * A councilor's seat from their office record title, for councils that put it there
+   * ("Ward Three City Councilor"). The seat map, when it lists the person, wins.
+   */
+  seatFromTitle?: (title: string | null) => { seat: string; district: number | null } | null;
 }
 /** First load of meetings: this many days back, plus everything upcoming. */
 const MEETINGS_FIRST_DAYS = 180;
@@ -118,13 +130,16 @@ export interface BostonCursor extends Record<string, unknown> {
   eventsFilled?: boolean;
   /** Bumped when meetings gain new fields; a lower value re-reads the first-load window once. */
   meetingsVersion?: number;
+  /** Legistar body ids of the city's committee bodies (committeeBodies), by body name. */
+  committeeBodyIds?: Record<string, number>;
 }
 
 export interface SyncBostonOptions {
   client: LegistarClient;
   /** The city (default Boston). */
   city?: LegistarCity;
-  seats: SeatMap;
+  /** Seats by Legistar person (Legistar has none); optional for a city with `seatFromTitle`. */
+  seats?: SeatMap;
   /** First load: matters introduced since this date (default: 2024-01-01, the current council term). */
   startDate?: string;
   now?: () => Date;
@@ -181,7 +196,8 @@ const actionLabel = (a: { action_name: string | null; action_text: string | null
   a.action_name ?? a.action_text ?? 'Action recorded';
 
 export function officialRow(r: LegistarOfficeRecord, seats: SeatMap, city: LegistarCity = BOSTON) {
-  const seat = seats.seats.find((s) => s.personId === r.OfficeRecordPersonId);
+  const seat =
+    seats.seats.find((s) => s.personId === r.OfficeRecordPersonId) ?? city.seatFromTitle?.(r.OfficeRecordTitle);
   return {
     id: officialKey(r.OfficeRecordPersonId, city),
     city: city.key,
@@ -355,6 +371,31 @@ async function writeMeetingItems(
   });
 }
 
+/** The committee(s) holding a meeting: its body (cities with committee bodies) or its location text (Boston). */
+export function meetingCommittees(e: Pick<LegistarEvent, 'EventBodyName' | 'EventLocation'>, city: LegistarCity) {
+  if (!city.committeeBodies) return committeesFromLocation(e.EventLocation);
+  const committee = city.committeeBodies[tidyName(e.EventBodyName)];
+  return committee ? [committee] : [];
+}
+
+/** Legistar body names can carry stray spaces ("… Special Committee "). */
+const tidyName = (name: string | null | undefined) => (name ?? '').replace(/\s+/g, ' ').trim();
+
+/** The council body and the city's committee bodies; ids are looked up once and kept in the cursor. */
+async function meetingBodyIds(client: LegistarClient, city: LegistarCity, cursor: BostonCursor, log: JobRun['log']) {
+  const names = Object.keys(city.committeeBodies ?? {});
+  if (names.length === 0) return cursor.bodyId!;
+  const known = cursor.committeeBodyIds ?? {};
+  if (names.some((n) => !(n in known)) || Object.keys(known).length !== names.length) {
+    const byName = new Map((await client.bodies()).map((b) => [tidyName(b.BodyName), b.BodyId]));
+    const missing = names.filter((n) => !byName.has(n));
+    // A renamed committee: its meetings stop arriving until the settings follow.
+    if (missing.length > 0) log(`committee bodies missing from ${city.name}'s Legistar`, { missing });
+    cursor.committeeBodyIds = Object.fromEntries(names.filter((n) => byName.has(n)).map((n) => [n, byName.get(n)!]));
+  }
+  return [cursor.bodyId!, ...Object.values(cursor.committeeBodyIds ?? {})];
+}
+
 async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent, city: LegistarCity): Promise<number> {
   const id = `${city.key}-e${e.EventId}`;
   let written = 0;
@@ -373,7 +414,7 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent, c
       legistar_url: e.EventInSiteURL,
       status: e.EventAgendaStatusName,
       last_modified: legistarUtc(e.EventLastModifiedUtc),
-      committees: committeesFromLocation(e.EventLocation),
+      committees: meetingCommittees(e, city),
     })
   ) {
     written += 1;
@@ -470,7 +511,8 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
 
     const weekAgo = now().getTime() - 7 * 24 * 3_600_000;
     if (!cursor.officialsAt || new Date(cursor.officialsAt).getTime() < weekAgo) {
-      run.rowsWritten += await syncOfficials(run.sql, client, cursor.bodyId, options.seats, now(), run.log, city);
+      const seats = options.seats ?? { seats: [] };
+      run.rowsWritten += await syncOfficials(run.sql, client, cursor.bodyId, seats, now(), run.log, city);
       run.rowsWritten += await syncBostonCommittees(run.sql, city);
       cursor.officialsAt = now().toISOString();
       await run.checkpoint(cursor);
@@ -486,10 +528,11 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
     }
 
     // 1. Meetings. Few and cheap, so they never wait behind the much longer matters load.
+    const bodies = await meetingBodyIds(client, city, cursor, run.log);
     if (!cursor.eventsFilled) {
       const startedAt = now().toISOString();
       const from = new Date(now().getTime() - MEETINGS_FIRST_DAYS * 86_400_000).toISOString();
-      const events = await client.eventsOnOrAfter(cursor.bodyId, from);
+      const events = await client.eventsOnOrAfter(bodies, from);
       for (const e of events) {
         if (run.outOfTime()) break;
         run.rowsWritten += await syncMeeting(run.sql, client, e, city);
@@ -501,7 +544,7 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
       }
       run.log('meetings first load', { listed: events.length, done: cursor.eventsFilled === true });
     } else {
-      const events = await client.eventsModifiedSince(cursor.bodyId, rewind(cursor.eventsSince ?? start));
+      const events = await client.eventsModifiedSince(bodies, rewind(cursor.eventsSince ?? start));
       for (const e of events) {
         if (run.outOfTime()) break;
         run.rowsWritten += await syncMeeting(run.sql, client, e, city);

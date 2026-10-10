@@ -65,7 +65,10 @@ describe('activeNav', () => {
 describe('orderedItems', () => {
   it('reads the local trail from all states down to the cities', () => {
     const local = NAV.find((g) => g.key === 'local')!;
-    expect(orderedItems(local).map((i) => i.label)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    // Then every other city, in registry order.
+    const labels = orderedItems(local).map((i) => i.label);
+    expect(labels.slice(0, 4)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    expect(labels).toContain('Somerville');
   });
 });
 

@@ -25,3 +25,4 @@ export * from './federal/scdb.ts';
 export * from './federal/committees.ts';
 export * from './local/boston-311.ts';
 export * from './local/city-budget.ts';
+export * from './local/somerville.ts';

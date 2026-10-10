@@ -71,7 +71,9 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
   <CityHeader city={city} current="overview" lede={city.lede} />
 
   <p class="councilor-link">
-    <a href={cityHref(city, 'council/#council-h')}>Find your councilor and see the district map →</a>
+    <a href={cityHref(city, 'council/#council-h')}>
+      Find your councilor and see the {(city.districtWord ?? 'District').toLowerCase()} map →
+    </a>
   </p>
 
   <section aria-labelledby="meet-h">
@@ -123,7 +125,7 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
       <div class="section-head">
         <h2 id="h311">311 in the last 30 days</h2>
         <a class="see-all" href={cityHref(city, 'neighborhoods/')}>
-          By district
+          By {(city.districtWord ?? 'District').toLowerCase()}
         </a>
       </div>
       <dl class="stat-grid">
@@ -133,8 +135,17 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
           {change311(report.city) && <p class="small muted stat-note">{change311(report.city)} prior 30 days</p>}
         </div>
         <div class="stat">
-          <dt>Closed on time</dt>
-          <dd>{report.city.closed ? `${Math.round((report.city.closedOnTime / report.city.closed) * 100)}%` : '—'}</dd>
+          {/* Cities without target times (Somerville): the share closed so far. */}
+          <dt>{report.onTime === false ? 'Closed so far' : 'Closed on time'}</dt>
+          <dd>
+            {report.onTime === false
+              ? report.city.opened
+                ? `${Math.round((report.city.closed / report.city.opened) * 100)}%`
+                : '—'
+              : report.city.closed
+                ? `${Math.round((report.city.closedOnTime / report.city.closed) * 100)}%`
+                : '—'}
+          </dd>
           {report.city.typicalHours !== null && (
             <p class="small muted stat-note">typically in {closeTime(report.city.typicalHours)}</p>
           )}

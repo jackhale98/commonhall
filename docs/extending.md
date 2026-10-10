@@ -18,7 +18,12 @@ Neighborhoods and Budget tabs, and a tab appears only when there is data behind 
      client, council body, legislative matter types, committees, docket label) and a
      seat map like `supabase/data/boston-council-seats.json`, then an Edge Function
      calling `syncLegistarCity(run, { client, seats, city })` (copy
-     `supabase/functions/sync-boston/`). No new sync code.
+     `supabase/functions/sync-boston/`). No new sync code. If the office record
+     titles name the seat ("Ward Three City Councilor"), `seatFromTitle` replaces the
+     seat map; if committees are Legistar bodies of their own, list them in
+     `committeeBodies` (Somerville, `packages/sync/src/local/somerville.ts`).
+   - **Socrata** (`data.{city}.gov`) for 311: follow `local/somerville.ts`; ask the
+     portal for counts with SoQL (`$select`, `$group`) rather than reading requests.
    - **PrimeGov**, or a city website: follow `packages/sync/src/local/worcester.ts`.
      Keep the guards: refuse to replace good data with nothing (a minimum count),
      and fail when nothing is recognized.

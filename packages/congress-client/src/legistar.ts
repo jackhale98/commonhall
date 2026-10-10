@@ -155,6 +155,13 @@ export function legistarUtc(value: string | null | undefined): string | null {
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
+/** "EventBodyId eq 138", or "(EventBodyId eq 138 or EventBodyId eq 181)" for several bodies. */
+export function bodyFilter(bodyId: number | readonly number[]): string {
+  const ids = typeof bodyId === 'number' ? [bodyId] : [...bodyId];
+  const terms = ids.map((id) => `EventBodyId eq ${id}`);
+  return terms.length === 1 ? terms[0]! : `(${terms.join(' or ')})`;
+}
+
 export class LegistarClient {
   readonly http: HttpClient;
   readonly client: string;
@@ -192,8 +199,12 @@ export class LegistarClient {
   }
 
   async bodyId(name: string): Promise<number | null> {
-    const bodies = await this.get<{ BodyId: number; BodyName: string }[]>('bodies');
-    return bodies.find((b) => b.BodyName === name)?.BodyId ?? null;
+    return (await this.bodies()).find((b) => b.BodyName === name)?.BodyId ?? null;
+  }
+
+  /** Every body (council, committees, boards); names may carry stray spaces. */
+  async bodies(): Promise<{ BodyId: number; BodyName: string }[]> {
+    return this.get<{ BodyId: number; BodyName: string }[]>('bodies');
   }
 
   /** Matters of a body modified after `since`, oldest change first. */
@@ -216,10 +227,10 @@ export class LegistarClient {
     return checkShape('Legistar matters', rows, LEGISTAR_SHAPES.matter);
   }
 
-  /** A body's meetings held on or after `date` (including upcoming ones), newest first. */
-  async eventsOnOrAfter(bodyId: number, date: string): Promise<LegistarEvent[]> {
+  /** A body's (or several bodies') meetings held on or after `date` (including upcoming ones), newest first. */
+  async eventsOnOrAfter(bodyId: number | readonly number[], date: string): Promise<LegistarEvent[]> {
     const rows = await this.all<LegistarEvent>('events', {
-      $filter: `EventBodyId eq ${bodyId} and EventDate ge ${odataDate(date)}`,
+      $filter: `${bodyFilter(bodyId)} and EventDate ge ${odataDate(date)}`,
       $orderby: 'EventDate desc',
     });
     return checkShape('Legistar events', rows, LEGISTAR_SHAPES.event);
@@ -239,9 +250,9 @@ export class LegistarClient {
     return checkShape('Legistar sponsors', rows, LEGISTAR_SHAPES.sponsor);
   }
 
-  async eventsModifiedSince(bodyId: number, since: string): Promise<LegistarEvent[]> {
+  async eventsModifiedSince(bodyId: number | readonly number[], since: string): Promise<LegistarEvent[]> {
     const rows = await this.all<LegistarEvent>('events', {
-      $filter: `EventBodyId eq ${bodyId} and EventLastModifiedUtc gt ${odataDate(since)}`,
+      $filter: `${bodyFilter(bodyId)} and EventLastModifiedUtc gt ${odataDate(since)}`,
       $orderby: 'EventLastModifiedUtc asc',
     });
     return checkShape('Legistar events', rows, LEGISTAR_SHAPES.event);

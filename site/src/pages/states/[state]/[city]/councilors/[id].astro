@@ -200,7 +200,7 @@ const stats = [
           class="see-all"
           href={cityHref(city, `neighborhoods/${official.district ? `?district=${official.district}` : ''}`)}
         >
-          Every district
+          Every {(city.districtWord ?? 'District').toLowerCase()}
         </a>
       </div>
       <p class="small muted">Requests to the city in the last 30 days.</p>

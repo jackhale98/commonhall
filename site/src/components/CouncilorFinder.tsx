@@ -13,7 +13,14 @@ export interface CouncilorRow {
 type Seat = '' | 'district' | 'at-large';
 
 /** Compact, filterable list of councilors: by name or district number, district or at-large seats. */
-export default function CouncilorFinder({ councilors }: { councilors: CouncilorRow[] }) {
+export default function CouncilorFinder({
+  councilors,
+  districtWord = 'District',
+}: {
+  councilors: CouncilorRow[];
+  /** "District" or "Ward". */
+  districtWord?: string;
+}) {
   const [q, setQ] = useState('');
   const [seat, setSeat] = useState<Seat>('');
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -35,14 +42,14 @@ export default function CouncilorFinder({ councilors }: { councilors: CouncilorR
           id="cf-q"
           type="search"
           value={q}
-          placeholder="Name or district"
+          placeholder={`Name or ${districtWord.toLowerCase()}`}
           onInput={(e) => setQ(e.currentTarget.value)}
         />
         <div class="type-chips" role="group" aria-label="Seat">
           {(
             [
               ['', 'All'],
-              ['district', 'District'],
+              ['district', districtWord],
               ['at-large', 'At-large'],
             ] as const
           ).map(([key, label]) => (

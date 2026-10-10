@@ -85,6 +85,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
     <div class="council-layout">
       <div class="panel">
         <CouncilorFinder
+          districtWord={city.districtWord}
           client:visible
           councilors={officials.map((o) => ({
             id: o.id,
@@ -96,14 +97,14 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
         />
         {!DEMO && (
           <details class="by-address">
-            <summary>Find your district by address</summary>
+            <summary>Find your {(city.districtWord ?? 'District').toLowerCase()} by address</summary>
             <FindMyReps client:visible />
           </details>
         )}
       </div>
       {features.length > 0 && (
         <details class="panel map-panel" id="district-map">
-          <summary class="h-small">District map</summary>
+          <summary class="h-small">{city.districtWord ?? 'District'} map</summary>
           <DistrictMap features={features} label={`${city.council} districts; select one for its councilor`} />
         </details>
       )}
