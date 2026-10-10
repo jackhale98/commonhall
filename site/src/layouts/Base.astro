@@ -45,18 +45,6 @@ const sources = [
   { name: 'OpenFEC', url: 'https://api.open.fec.gov/developers/' },
   { name: 'CourtListener', url: 'https://www.courtlistener.com/' },
 ];
-const explore = [
-  { label: 'Bills', path: 'bills/' },
-  { label: 'Members of Congress', path: 'members/' },
-  { label: 'Committees', path: 'committees/' },
-  { label: 'Votes', path: 'votes/' },
-  { label: 'Executive orders and nominations', path: 'executive/' },
-  { label: 'Supreme Court', path: 'court/' },
-  { label: 'States', path: 'states/' },
-  { label: 'Massachusetts', path: 'states/ma/' },
-  { label: 'Boston', path: 'boston/' },
-  { label: 'Discussions', path: 'discussions/' },
-];
 const nav = NAV.filter((g) => !DEMO || !g.personal);
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const here = activeNav(
@@ -330,16 +318,6 @@ const phoneNav = PHONE_NAV.map((section) => ({
             <span>Dark mode</span>
           </button>
         </div>
-        <nav class="footer-col" aria-label="Explore">
-          <h2>Explore</h2>
-          <ul>
-            {explore.map((item) => (
-              <li>
-                <a href={href(item.path)}>{item.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
         <nav class="footer-col" aria-label="About">
           <h2>About</h2>
           <ul>
@@ -849,7 +827,11 @@ const phoneNav = PHONE_NAV.map((section) => ({
   }
   @media (min-width: 60rem) {
     .footer-grid {
-      grid-template-columns: 2fr 1fr 1fr 1fr;
+      grid-template-columns: 2fr 1fr 2fr;
+    }
+    .footer-sources ul {
+      grid-template-columns: 1fr 1fr;
+      column-gap: var(--space-5);
     }
   }
   .footer-brand p {
@@ -872,34 +854,27 @@ const phoneNav = PHONE_NAV.map((section) => ({
     display: grid;
     gap: var(--space-2);
   }
-  .footer-col a {
+  .footer-col :global(a) {
     color: var(--text);
     text-decoration: none;
   }
-  .footer-col a:hover {
+  .footer-col :global(a:hover) {
     color: var(--link);
     text-decoration: underline;
   }
-  /* Phones: two columns, and the data sources as one wrapped line. */
+  /* Phones: About and the data sources each as wrapped lines. */
   @media (max-width: 40rem) {
     .site-footer {
       padding-block: var(--space-6) var(--space-5);
     }
     .footer-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-5) var(--space-4);
-    }
-    .footer-brand,
-    .footer-sources {
-      grid-column: 1 / -1;
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
     }
     .footer-col ul {
-      gap: var(--space-1);
-    }
-    .footer-sources ul {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-1) var(--space-3);
+      gap: var(--space-2) var(--space-4);
       color: var(--text-muted);
     }
   }
