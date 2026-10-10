@@ -32,12 +32,15 @@ const NONE: Filters = { q: '', type: '', status: '', sponsor: '', all: false };
  * councilor's matters (their page) and the sponsor menu is hidden.
  */
 export default function LocalMatters({
+  city,
   initial,
   facets,
   local = false,
   sponsor,
   total: initialTotal,
 }: {
+  /** The city key ("ma-boston"). */
+  city: string;
   initial: LocalMatter[];
   facets: MatterFacets;
   local?: boolean;
@@ -99,12 +102,12 @@ export default function LocalMatters({
     const request = term
       ? rpc<LocalMatter[]>(
           'search_local_matters',
-          { p_city: 'boston', q: term, max_results: 200 },
+          { p_city: city, q: term, max_results: 200 },
           { select, ...where },
         ).then((rows) => ({ rows: rows.slice((page - 1) * size, page * size), count: rows.length }))
       : selectWithCount<LocalMatter>('local_matters', {
           select,
-          city: 'eq.boston',
+          city: `eq.${city}`,
           ...where,
           order: 'latest_action_date.desc.nullslast,last_modified.desc',
           limit: size,
@@ -125,7 +128,7 @@ export default function LocalMatters({
   useEffect(() => {
     if (local) return;
     rpc<{ facet: string; value: string; n: number }[]>('local_matter_facets', {
-      p_city: 'boston',
+      p_city: city,
       p_type: filters.type || null,
       p_status: filters.status || null,
       p_sponsor: filters.sponsor || null,

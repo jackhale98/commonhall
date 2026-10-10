@@ -1,0 +1,140 @@
+---
+/**
+ * A city's council and committee meetings as rows: when, which committee (linked)
+ * or the full council, cancellations, the dockets on a committee's agenda where the
+ * city records them, and links to the agenda and minutes.
+ */
+import { legistarMatterUrl } from '@civic/congress-client/legistar';
+import type { City } from '../lib/cities';
+import type { CityMeeting } from '../lib/city';
+import { formatDate } from '../lib/format';
+import { idWithinCity } from '../lib/cities';
+import { localCommitteeHref, localMatterFallbackHref } from '../lib/paths';
+
+interface Props {
+  city: City;
+  meetings: CityMeeting[];
+  /** Committee slugs by name, for links. */
+  slugs: Map<string, string>;
+  /** On a committee's own page: name only the other committee of a joint session. */
+  committee?: string;
+  upcoming?: boolean;
+  /** Show the dockets on each committee agenda. */
+  dockets?: boolean;
+  /** Divided rows without the card look, for a list outside a panel. */
+  plain?: boolean;
+}
+
+const { city, meetings, slugs, committee, upcoming = false, dockets = false, plain = false } = Astro.props;
+const FIRST_DOCKETS = 4;
+const session = city.committeeSession;
+---
+
+<ul class:list={[plain ? 'plain-rows' : 'list', 'meeting-list']}>
+  {meetings.map((m) => {
+    const others = m.committees.filter((c) => c !== committee);
+    const name = (c: string) => (slugs.get(c) ? <a href={localCommitteeHref(city, slugs.get(c)!)}>{c}</a> : c);
+    // Boston files a hearing's subject in its location; only a council meeting's location is a place.
+    const place = m.committees.length && city.locationIsSubject ? null : m.location;
+    return (
+      <li class:list={{ cancelled: m.status === 'Cancelled' }}>
+        <p class="meeting-when">
+          <strong>{formatDate(m.date)}</strong>
+          {(upcoming || committee) && m.time && ` · ${m.time}`} ·{' '}
+          {m.committees.length === 0 ? (
+            'City Council'
+          ) : committee && others.length === 0 ? (
+            `Committee ${session}`
+          ) : (
+            <>
+              {committee && 'Jointly with '}
+              {others.map((c, i) => (
+                <>
+                  {i > 0 && ' and '}
+                  {name(c)}
+                </>
+              ))}
+              {!committee && ` ${others.length > 1 ? `joint ${session}` : session}`}
+            </>
+          )}
+          {m.status === 'Cancelled' && <span class="small muted"> · Cancelled</span>}
+          {upcoming && place && <span class="small muted"> · {place}</span>}
+        </p>
+        {dockets && m.items.length > 0 && (
+          <ul class="docket-list small">
+            {m.items.slice(0, FIRST_DOCKETS).map((i) => (
+              <li>
+                {i.matter_id && (i.stored || city.legistar) ? (
+                  <a
+                    href={
+                      i.stored
+                        ? localMatterFallbackHref(i.matter_id)
+                        : legistarMatterUrl(city.legistar!, Number(idWithinCity(i.matter_id)))
+                    }
+                    rel={i.stored ? undefined : 'noopener'}
+                  >
+                    Docket #{i.file_number ?? '?'}
+                  </a>
+                ) : (
+                  <span>Docket #{i.file_number ?? '?'}</span>
+                )}
+                : <span class="docket-title">{i.title}</span>
+              </li>
+            ))}
+            {m.items.length > FIRST_DOCKETS && (
+              <li class="muted">and {m.items.length - FIRST_DOCKETS} more on the agenda</li>
+            )}
+          </ul>
+        )}
+        <p class="cluster small meeting-links">
+          {m.agenda_url && (
+            <a href={m.agenda_url} rel="noopener">
+              Agenda
+            </a>
+          )}
+          {m.minutes_url && (
+            <a href={m.minutes_url} rel="noopener">
+              Minutes
+            </a>
+          )}
+          {!m.agenda_url && !m.minutes_url && m.legistar_url && (
+            <a href={m.legistar_url} rel="noopener">
+              Meeting details
+            </a>
+          )}
+        </p>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .meeting-list > li {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .meeting-list p {
+    margin: 0;
+  }
+  .meeting-list .cancelled strong {
+    text-decoration: line-through;
+  }
+  .docket-list {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .docket-list li {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .docket-title {
+    color: var(--text-muted);
+  }
+  .meeting-links {
+    gap: var(--space-1) var(--space-4);
+  }
+</style>

@@ -106,7 +106,7 @@ describe('sync-boston', () => {
     expect(officials.filter((o) => o.seat === 'At-Large')).toHaveLength(4);
     expect(officials.find((o) => o.name === 'Miniard Culpepper')).toMatchObject({ seat: 'District 7', district: 7 });
 
-    const [matter] = await sql`select * from public.local_matters where id = 'boston-43547'`;
+    const [matter] = await sql`select * from public.local_matters where id = 'ma-boston-43547'`;
     expect(matter).toMatchObject({
       file_number: '2026-1882',
       type: 'Council Legislative Resolution',
@@ -115,8 +115,8 @@ describe('sync-boston', () => {
     });
     expect(matter!.legistar_url).toBe('https://boston.legistar.com/gateway.aspx?M=L&ID=43547');
     const sponsors =
-      await sql`select official_id from public.local_matter_sponsors where matter_id = 'boston-43547' order by sequence`;
-    expect(sponsors.map((s) => s.official_id)).toContain('boston-p256');
+      await sql`select official_id from public.local_matter_sponsors where matter_id = 'ma-boston-43547' order by sequence`;
+    expect(sponsors.map((s) => s.official_id)).toContain('ma-boston-p256');
 
     const meetings = await sql`select id, starts_at, date from public.local_meetings order by date desc`;
     expect(meetings).toHaveLength(3);
@@ -133,7 +133,7 @@ describe('sync-boston', () => {
     const items = await sql`select meeting_id, seq, matter_id from public.local_meeting_items order by meeting_id, seq`;
     expect(items).toHaveLength(3);
     expect(items[0]).toMatchObject({ seq: 1 });
-    expect(items.every((i) => i.matter_id?.startsWith('boston-'))).toBe(true);
+    expect(items.every((i) => i.matter_id?.startsWith('ma-boston-'))).toBe(true);
 
     // First load: no feed events.
     expect(await sql`select * from public.feed_events`).toHaveLength(0);
@@ -179,11 +179,11 @@ describe('sync-boston', () => {
     const events =
       await sql`select kind, target_id, member_type, member_id, summary from public.feed_events order by kind`;
     expect(events.map((e) => [e.kind, e.target_id])).toEqual([
-      ['action', 'boston-43547'],
-      ['new_item', 'boston-50001'],
+      ['action', 'ma-boston-43547'],
+      ['new_item', 'ma-boston-50001'],
     ]);
     expect(events[0]!.summary).toBe('Boston Docket #2026-1882: Referred to the Mayor');
-    expect(events[1]).toMatchObject({ member_type: 'local_official', member_id: 'boston-p324' });
+    expect(events[1]).toMatchObject({ member_type: 'local_official', member_id: 'ma-boston-p324' });
 
     // Followers of the councilor see the new matter.
     const user = await createUser(sql);
@@ -191,10 +191,10 @@ describe('sync-boston', () => {
       sql,
       user,
       (tx) =>
-        tx`insert into public.follows (user_id, target_type, target_id) values (${user}, 'local_official', 'boston-p324')`,
+        tx`insert into public.follows (user_id, target_type, target_id) values (${user}, 'local_official', 'ma-boston-p324')`,
     );
     const feed = await asUser(sql, user, (tx) => tx`select kind, target_id, reason from public.feed`);
-    expect(feed).toEqual([{ kind: 'new_item', target_id: 'boston-50001', reason: 'legislator' }]);
+    expect(feed).toEqual([{ kind: 'new_item', target_id: 'ma-boston-50001', reason: 'legislator' }]);
   });
 
   it('skips non-legislative records (agendas, minutes, reports)', async () => {
@@ -214,7 +214,7 @@ describe('sync-boston', () => {
 describe('council districts', () => {
   it('finds the district for points in Boston and nothing outside it', async () => {
     const at = async (lat: number, lng: number) =>
-      (await sql`select public.council_district_at('boston', ${lat}, ${lng}) as d`)[0]!.d;
+      (await sql`select public.council_district_at('ma-boston', ${lat}, ${lng}) as d`)[0]!.d;
     expect(await at(42.3587, -71.0636)).toBe(8); // State House, Beacon Hill
     expect(await at(42.284, -71.0716)).toBe(4); // Mattapan
     expect(await at(42.3736, -71.1097)).toBeNull(); // Cambridge
@@ -229,13 +229,13 @@ describe('council districts', () => {
 
 describe('council matter filters', () => {
   it('counts each facet given the other filters', async () => {
-    const city = 'facettest';
+    const city = 'zz-facettest';
     await sql`delete from public.local_matters where city = ${city}`;
     const rows = [
-      ['facettest-1', 1, 'Ordinance', 'Passed'],
-      ['facettest-2', 2, 'Ordinance', 'Assigned to Committee'],
-      ['facettest-3', 3, 'Order', 'Passed'],
-      ['facettest-4', 4, 'Order', 'Passed'],
+      ['zz-facettest-1', 1, 'Ordinance', 'Passed'],
+      ['zz-facettest-2', 2, 'Ordinance', 'Assigned to Committee'],
+      ['zz-facettest-3', 3, 'Order', 'Passed'],
+      ['zz-facettest-4', 4, 'Order', 'Passed'],
     ] as const;
     for (const [id, matterId, type, status] of rows) {
       await sql`insert into public.local_matters (id, city, matter_id, title, type, status)

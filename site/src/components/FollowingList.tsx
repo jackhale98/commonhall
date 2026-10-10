@@ -69,8 +69,8 @@ const GROUPS: { type: Follow['target_type']; title: string }[] = [
   { type: 'member', title: 'Members of Congress' },
   { type: 'state_bill', title: 'State bills' },
   { type: 'state_legislator', title: 'State legislators' },
-  { type: 'local_matter', title: 'Boston council matters' },
-  { type: 'local_official', title: 'Boston councilors' },
+  { type: 'local_matter', title: 'City council matters' },
+  { type: 'local_official', title: 'City councilors' },
   { type: 'discussion', title: 'Discussions' },
 ];
 

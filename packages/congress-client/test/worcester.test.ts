@@ -25,24 +25,24 @@ describe('Worcester councilors', () => {
 
   it('keeps names, titles, emails and photos', () => {
     expect(councilors[0]).toMatchObject({
-      id: 'worcester-joseph-petty',
+      id: 'ma-worcester-joseph-petty',
       name: 'Joseph M. Petty',
       title: 'Mayor',
       email: 'mayor@worcesterma.gov',
       photo_url: 'https://www.worcesterma.gov/media/council/petty.jpg',
     });
-    expect(councilors.find((c) => c.id === 'worcester-khrystian-king')).toMatchObject({
+    expect(councilors.find((c) => c.id === 'ma-worcester-khrystian-king')).toMatchObject({
       title: 'Vice Chair',
       email: 'KingK@worcesterma.gov',
     });
     // The page capitalises one name throughout.
-    expect(councilors.find((c) => c.id === 'worcester-kathleen-toomey')?.name).toBe('Kathleen M. Toomey');
+    expect(councilors.find((c) => c.id === 'ma-worcester-kathleen-toomey')?.name).toBe('Kathleen M. Toomey');
     expect(councilors.find((c) => c.district === 2)?.name).toBe('Robert A. Bilotta');
   });
 
   it('makes ids from first and last names', () => {
-    expect(worcesterOfficialId('Jose A. Rivera')).toBe('worcester-jose-rivera');
-    expect(worcesterOfficialId('Gary Rosen')).toBe('worcester-gary-rosen');
+    expect(worcesterOfficialId('Jose A. Rivera')).toBe('ma-worcester-jose-rivera');
+    expect(worcesterOfficialId('Gary Rosen')).toBe('ma-worcester-gary-rosen');
   });
 });
 

@@ -65,7 +65,7 @@ const discussions = await sql`
          created_at
     from public.discussions where status <> 'draft' order by created_at desc`;
 
-const councilDistricts = await sql`select * from public.council_district_shapes('boston')`;
+const councilDistricts = await sql`select * from public.council_district_shapes('ma-boston')`;
 const memberFinance = await sql`
   select member_id, candidate_id, committee_name, election_year, period, to_char(coverage_end, 'YYYY-MM-DD') as coverage_end,
          receipts::float8, disbursements::float8, cash_on_hand::float8, debts::float8, individual_small::float8,

@@ -196,9 +196,9 @@ describe('prerender views', () => {
     ] as never)}`;
     await sql`insert into public.discussions ${sql(discussion('test-pr', 'open', { target_type: 'bill', target_id: '119-hr-99002' }) as never)}`;
     await sql`insert into public.follows (user_id, target_type, target_id) values (${user}, 'bill', '119-hr-99003')`;
-    await sql`insert into public.local_matters (id, city, matter_id, title) values ('boston-1', 'boston', 1, 'Test matter'),
-      ('boston-2', 'boston', 2, 'Quiet matter') on conflict do nothing`;
-    await sql`insert into public.follows (user_id, target_type, target_id) values (${user}, 'local_matter', 'boston-1')`;
+    await sql`insert into public.local_matters (id, city, matter_id, title) values ('ma-boston-1', 'ma-boston', 1, 'Test matter'),
+      ('ma-boston-2', 'ma-boston', 2, 'Quiet matter') on conflict do nothing`;
+    await sql`insert into public.follows (user_id, target_type, target_id) values (${user}, 'local_matter', 'ma-boston-1')`;
 
     const bills = await asAnon(
       sql,
@@ -211,9 +211,9 @@ describe('prerender views', () => {
     ]);
     const matters = await asAnon(
       sql,
-      (tx) => tx`select id from public.local_matters_prerender where id like 'boston-_'`,
+      (tx) => tx`select id from public.local_matters_prerender where id like 'ma-boston-_'`,
     );
-    expect(matters.map((r) => r.id)).toEqual(['boston-1']);
+    expect(matters.map((r) => r.id)).toEqual(['ma-boston-1']);
 
     // The views run with the caller's rights; follows reach them only as "followed by someone".
     const options = await sql`
@@ -232,6 +232,6 @@ describe('prerender views', () => {
     expect(after.map((r) => r.id)).toEqual(['119-hr-99001', '119-hr-99002']);
 
     await sql`delete from public.bills where id like '119-hr-9900%'`;
-    await sql`delete from public.local_matters where id in ('boston-1', 'boston-2')`;
+    await sql`delete from public.local_matters where id in ('ma-boston-1', 'ma-boston-2')`;
   });
 });

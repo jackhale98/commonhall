@@ -18,7 +18,7 @@ export const WORCESTER_COUNCILORS_URL = `${WORCESTER_SITE}/city-council/councilo
 export const WORCESTER_COMMITTEES_URL = `${WORCESTER_SITE}/city-council/standing-committees`;
 
 export interface WorcesterCouncilor {
-  /** "worcester-khrystian-king". */
+  /** "ma-worcester-khrystian-king". */
   id: string;
   name: string;
   /** "At-Large" or "District 2". */
@@ -54,7 +54,7 @@ function tidyName(raw: string): string {
   return name.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
-/** "worcester-khrystian-king": first and last name, middle initials dropped. */
+/** "ma-worcester-khrystian-king": the city key, then first and last name (middle initials dropped). */
 export function worcesterOfficialId(name: string): string {
   const words = name
     .toLowerCase()
@@ -64,7 +64,7 @@ export function worcesterOfficialId(name: string): string {
     .map((w) => w.replace(/[^a-z-]/g, ''))
     .filter((w) => w.length > 1);
   const parts = words.length > 2 ? [words[0], words.at(-1)] : words;
-  return `worcester-${parts.join('-')}`;
+  return `ma-worcester-${parts.join('-')}`;
 }
 
 /** Councilors on the council page, in page order. */

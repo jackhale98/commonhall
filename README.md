@@ -68,7 +68,12 @@ about, and take part in moderated public discussions.
 - State bills, with their own pages for bills that are advancing, and links to the
   full text on malegislature.gov.
 
-**Boston** (tabs: Overview, Council, Neighborhoods, Budget)
+**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
+every city, filled from whatever the city publishes. Tabs (Overview, Council,
+Committees, Neighborhoods, Budget) appear only when there is data behind them; a
+new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code.
+
+**Boston** (tabs: Overview, Council, Committees, Neighborhoods, Budget)
 
 - All 13 councilors, with a clickable map of the nine council districts.
 - Ordinances, orders and hearing orders, with sponsors and history; consent-agenda
@@ -81,6 +86,12 @@ about, and take part in moderated public discussions.
 - The city budget: the operating budget by department and revenue by source, and
   the five-year Capital Plan by department, neighborhood and project, with a page
   per project where people can ask for a discussion.
+
+**Worcester** (tabs: Overview, Council, Committees, Budget)
+
+- All 11 councilors, the district map, standing committees with members.
+- Council and committee meetings with agendas and minutes.
+- The operating budget summary and the capital budget, with a page per project.
 
 **Every state**
 

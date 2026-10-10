@@ -125,19 +125,6 @@ export interface LocalMatterAction {
   passed: string | null;
 }
 
-export interface LocalMeeting {
-  id: string;
-  event_id: number;
-  body: string | null;
-  starts_at: string | null;
-  date: string;
-  time: string | null;
-  location: string | null;
-  agenda_url: string | null;
-  minutes_url: string | null;
-  legistar_url: string | null;
-}
-
 export const LOCAL_MATTER_COLUMNS =
   'id,city,matter_id,file_number,title,type,status,body,intro_date,passed_date,legistar_url,latest_action_date,latest_action_text';
 export const LOCAL_OFFICIAL_COLUMNS = 'id,city,person_id,name,seat,district,title,email,photo_url,current';
@@ -149,7 +136,8 @@ export interface Discussion {
   id: string;
   title: string;
   prompt: string;
-  jurisdiction: 'federal' | 'ma' | 'boston' | 'worcester';
+  /** federal, a state code (ma) or a city key (ma-boston). */
+  jurisdiction: string;
   district: number | null;
   target_type: DiscussionTargetType | null;
   target_id: string | null;

@@ -61,7 +61,7 @@ const geo = JSON.parse(
 for (const f of geo.features) {
   const district = Number(f.properties.DISTRICT ?? f.properties.District ?? f.properties.district);
   out.push(
-    `insert into public.council_districts (city, district, name, geometry, source) values ('boston', ${district}, ${lit(
+    `insert into public.council_districts (city, district, name, geometry, source) values ('ma-boston', ${district}, ${lit(
       `District ${district}`,
     )}, extensions.st_multi(extensions.st_setsrid(extensions.st_geomfromgeojson(${lit(JSON.stringify(f.geometry))}), 4326)), 'Analyze Boston, City Council Districts 2023-2032 (simplified)');\n`,
   );
@@ -69,16 +69,16 @@ for (const f of geo.features) {
 out.push('\n');
 
 // ---- Boston council (from a real Legistar sync) ------------------------------
-const officials = await sql`select * from public.local_officials where city = 'boston' order by id`;
+const officials = await sql`select * from public.local_officials where city = 'ma-boston' order by id`;
 const matters = await sql`
-  select * from public.local_matters where city = 'boston'
+  select * from public.local_matters where city = 'ma-boston'
    order by latest_action_date desc nulls last, last_modified desc limit ${Number(values.matters)}`;
 const ids = matters.map((m) => m.id as string);
 const actions =
   await sql`select * from public.local_matter_actions where matter_id in ${sql(ids)} order by matter_id, seq`;
 const sponsors =
   await sql`select * from public.local_matter_sponsors where matter_id in ${sql(ids)} order by matter_id, sequence`;
-const meetings = await sql`select * from public.local_meetings where city = 'boston' order by date desc limit 12`;
+const meetings = await sql`select * from public.local_meetings where city = 'ma-boston' order by date desc limit 12`;
 if (officials.length === 0 || matters.length === 0) throw new Error('No Boston data: run the boston job first.');
 
 const strip = (rows: Record<string, unknown>[], drop: string[] = []) =>
@@ -147,7 +147,7 @@ out.push(
       id: 'example-boston-ordinance',
       title: `Example: what should the City Council weigh on Docket #${exampleMatter.file_number}?`,
       prompt: `This is an example discussion for local development. Docket #${exampleMatter.file_number}: ${String(exampleMatter.title).slice(0, 400)}\n\nWhat matters most to you about this proposal? Vote on the statements and add your own.`,
-      jurisdiction: 'boston',
+      jurisdiction: 'ma-boston',
       district: null,
       target_type: 'local_matter',
       target_id: exampleMatter.id as string,

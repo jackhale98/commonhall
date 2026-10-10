@@ -31,9 +31,9 @@ const run = (pages?: Record<string, string>) =>
   });
 
 beforeEach(async () => {
-  await sql`delete from public.local_meetings where city = 'worcester'`;
-  await sql`delete from public.local_committees where city = 'worcester'`;
-  await sql`delete from public.local_officials where city = 'worcester'`;
+  await sql`delete from public.local_meetings where city = 'ma-worcester'`;
+  await sql`delete from public.local_committees where city = 'ma-worcester'`;
+  await sql`delete from public.local_officials where city = 'ma-worcester'`;
   await sql`delete from public.sync_state where job = ${WORCESTER_JOB}`;
   await sql`delete from public.sync_lock`;
 });
@@ -43,7 +43,7 @@ describe('sync-worcester', () => {
     const result = await run();
     expect(result.status).toBe('ok');
 
-    const officials = await sql`select id, seat, district from public.local_officials where city = 'worcester'`;
+    const officials = await sql`select id, seat, district from public.local_officials where city = 'ma-worcester'`;
     expect(officials).toHaveLength(11);
     expect(officials.filter((o) => o.district !== null)).toHaveLength(5);
 
@@ -52,13 +52,13 @@ describe('sync-worcester', () => {
         join public.local_committees c on c.id = m.committee_id
        where c.slug = 'traffic-and-parking' order by m.seq`;
     expect(members.map((m) => [m.official_id, m.role])).toEqual([
-      ['worcester-jose-rivera', 'Chair'],
-      ['worcester-luis-ojeda', 'Vice Chair'],
-      ['worcester-robert-bilotta', null],
+      ['ma-worcester-jose-rivera', 'Chair'],
+      ['ma-worcester-luis-ojeda', 'Vice Chair'],
+      ['ma-worcester-robert-bilotta', null],
     ]);
 
     const meetings = await sql<{ committees: string[]; agenda_url: string | null }[]>`
-      select committees, agenda_url from public.local_meetings where city = 'worcester'`;
+      select committees, agenda_url from public.local_meetings where city = 'ma-worcester'`;
     expect(meetings.length).toBeGreaterThan(10);
     // Boards and commissions (License Commission, school councils) are left out.
     expect(meetings.some((m) => m.committees.length === 0)).toBe(true);
@@ -79,7 +79,7 @@ describe('sync-worcester', () => {
     expect(broken.status).toBe('error');
     const [row] = await sql<
       { n: number }[]
-    >`select count(*)::int as n from public.local_officials where city = 'worcester' and current`;
+    >`select count(*)::int as n from public.local_officials where city = 'ma-worcester' and current`;
     expect(row!.n).toBe(11);
   });
 });

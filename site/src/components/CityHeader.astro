@@ -1,0 +1,34 @@
+---
+/**
+ * The header shared by a city's pages: its name, an optional lede and the tab row
+ * (only the tabs the city has data for). Each tab is its own page.
+ */
+import type { City } from '../lib/cities';
+import { cityTabRow, type CityTab } from '../lib/city-pages';
+import PageTabs from './PageTabs.astro';
+
+interface Props {
+  city: City;
+  current: CityTab;
+  lede?: string;
+}
+
+const { city, current, lede } = Astro.props;
+const tabs = await cityTabRow(city, current);
+---
+
+<header class="city-head">
+  <h1>{city.name}</h1>
+  {lede && <p class="lede">{lede}</p>}
+  <PageTabs label={city.name} fill tabs={tabs} />
+</header>
+
+<style>
+  .city-head h1 {
+    margin-bottom: var(--space-2);
+  }
+  .city-head .lede {
+    font-size: var(--step-0);
+    margin: 0 0 var(--space-3);
+  }
+</style>

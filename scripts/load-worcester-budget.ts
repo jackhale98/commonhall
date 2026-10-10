@@ -28,7 +28,7 @@ import {
 
 const HUB = 'https://opendata.worcesterma.gov/api/search/v1/collections/all/items';
 const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
-const CITY = 'worcester';
+const CITY = 'ma-worcester';
 
 interface Document {
   kind: 'capital' | 'operating';

@@ -6,12 +6,13 @@ import {
   loadScotusCases,
   loadCommittees,
   loadDiscussions,
-  loadLocalOfficials,
-  loadWorcesterOfficials,
+  loadCityOfficials,
   loadMembers,
   loadPrerenderBills,
   loadPrerenderStateBills,
 } from '../lib/build-data';
+import { CITIES, CITY_LIST } from '../lib/cities';
+import { cityTabs as tabsOf } from '../lib/city-pages';
 import {
   billDisplayTitle,
   billNumberLabel,
@@ -24,6 +25,7 @@ import {
 import { NOMINATION_STATUS, nominationUrl, splitNomination } from '../lib/executive';
 import {
   billHref,
+  cityHref,
   discussionHref,
   executiveOrderHref,
   href,
@@ -67,7 +69,6 @@ const clip = (text: string, n = 110) => (text.length > n ? `${text.slice(0, n - 
 export async function GET() {
   const [
     members,
-    officials,
     discussions,
     bills,
     stateBills,
@@ -77,10 +78,10 @@ export async function GET() {
     meetings,
     nominations,
     matters,
-    worcesterOfficials,
+    officials,
+    cityTabs,
   ] = await Promise.all([
     loadMembers(),
-    loadLocalOfficials(),
     loadDiscussions(),
     loadPrerenderBills(),
     loadPrerenderStateBills(),
@@ -90,7 +91,8 @@ export async function GET() {
     loadCommitteeMeetings(),
     loadNominations(),
     loadPrerenderLocalMatters(),
-    loadWorcesterOfficials(),
+    Promise.all(CITY_LIST.map((c) => loadCityOfficials(c.key))).then((l) => l.flat()),
+    Promise.all(CITY_LIST.map(async (c) => ({ city: c, tabs: await tabsOf(c) }))),
   ]);
   const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
   const chamberName = (code: string) => (code.startsWith('h') ? 'House' : code.startsWith('s') ? 'Senate' : 'Joint');
@@ -112,33 +114,35 @@ export async function GET() {
         h: href(`committees/${c.code}/`),
       };
     }),
-    { k: 'page', t: 'Boston', s: 'City Council, meetings, 311, zoning and the budget', h: href('boston/') },
-    {
-      k: 'page',
-      t: 'Boston City Council',
-      s: 'Councilors, district map, ordinances and meetings',
-      h: href('boston/council/'),
-    },
-    {
-      k: 'page',
-      t: 'Boston 311 and zoning',
-      s: '311 requests by district, zoning hearings',
-      h: href('boston/neighborhoods/'),
-    },
-    { k: 'page', t: 'Boston Capital Plan', s: 'What the city plans to build, by project', h: href('boston/budget/') },
-    { k: 'page', t: 'Worcester', s: 'City Council, committees, meetings and the budget', h: href('worcester/') },
-    {
-      k: 'page',
-      t: 'Worcester City Council',
-      s: 'Councilors, district map and meetings',
-      h: href('worcester/council/'),
-    },
-    {
-      k: 'page',
-      t: 'Worcester capital budget',
-      s: 'What the city plans to build, by project',
-      h: href('worcester/budget/'),
-    },
+    ...cityTabs.flatMap(({ city, tabs }) => [
+      { k: 'page' as const, t: city.name, s: city.summary, h: cityHref(city) },
+      {
+        k: 'page' as const,
+        t: city.council,
+        s: 'Councilors, district map and meetings',
+        h: cityHref(city, 'council/'),
+      },
+      ...(tabs.has('neighborhoods')
+        ? [
+            {
+              k: 'page' as const,
+              t: `${city.name} 311 and zoning`,
+              s: '311 requests by district, zoning hearings',
+              h: cityHref(city, 'neighborhoods/'),
+            },
+          ]
+        : []),
+      ...(tabs.has('budget')
+        ? [
+            {
+              k: 'page' as const,
+              t: `${city.name} budget`,
+              s: 'What the city spends and plans to build, by project',
+              h: cityHref(city, 'budget/'),
+            },
+          ]
+        : []),
+    ]),
     { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
     ...STATE_CODES.map((code) => ({
       k: 'state' as const,
@@ -154,10 +158,10 @@ export async function GET() {
         s: `${(m.party ?? '').charAt(0)} · ${memberRole(m)}`,
         h: memberHref(m.bioguide_id),
       })),
-    ...[...officials, ...worcesterOfficials].map((o) => ({
+    ...officials.map((o) => ({
       k: 'councilor' as const,
       t: o.name,
-      s: `${o.city === 'worcester' ? 'Worcester' : 'Boston'} City Council · ${o.seat ?? 'Councilor'}`,
+      s: `${CITIES[o.city]?.council ?? 'City Council'} · ${o.seat ?? 'Councilor'}`,
       h: localOfficialHref(o.id),
     })),
     ...discussions.map((d) => ({ k: 'discussion' as const, t: d.title, s: 'Discussion', h: discussionHref(d.id) })),

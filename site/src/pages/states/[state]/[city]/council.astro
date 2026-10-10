@@ -1,0 +1,212 @@
+---
+import CityHeader from '../../../../components/CityHeader.astro';
+import CouncilorFinder from '../../../../components/CouncilorFinder';
+import FindMyReps from '../../../../components/FindMyReps';
+import LocalMatters from '../../../../components/LocalMatters';
+import CityMeetings from '../../../../components/CityMeetings.astro';
+import SourceNote from '../../../../components/SourceNote.astro';
+import DistrictMap from '../../../../components/viz/DistrictMap';
+import Base from '../../../../layouts/Base.astro';
+import {
+  loadCityCommittees,
+  loadCityMeetings,
+  loadCityOfficials,
+  loadCouncilDistricts,
+  loadLocalMatterFacets,
+  loadRecentLocalMatters,
+} from '../../../../lib/build-data';
+import type { City } from '../../../../lib/cities';
+import { cityPaths } from '../../../../lib/city-pages';
+import { DEMO } from '../../../../lib/config';
+import { localOfficialHref } from '../../../../lib/paths';
+
+export const getStaticPaths = () => cityPaths();
+
+interface Props {
+  city: City;
+}
+
+const { city } = Astro.props;
+const [officials, districts, meetings, committees, matters, facets] = await Promise.all([
+  loadCityOfficials(city.key),
+  loadCouncilDistricts(city.key),
+  loadCityMeetings(city.key),
+  loadCityCommittees(city.key),
+  loadRecentLocalMatters(city.key),
+  loadLocalMatterFacets(city.key),
+]);
+const features = districts.map((d) => {
+  const o = officials.find((x) => x.district === d.district);
+  return {
+    district: d.district,
+    geojson: d.geojson,
+    href: o ? localOfficialHref(o.id) : undefined,
+    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+  };
+});
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = meetings.filter((m) => m.date >= today).reverse();
+const recent = meetings.filter((m) => m.date < today);
+const FIRST = 5;
+const slugs = new Map(committees.map((c) => [c.name, c.slug]));
+---
+
+<Base
+  title={city.council}
+  description={`The ${city.council}: councilors, the district map, ${facets.total ? 'ordinances and orders, ' : ''}and council and committee meetings.`}
+  section="states"
+>
+  <CityHeader city={city} current="council" />
+
+  <section aria-labelledby="council-h">
+    <h2 id="council-h">Your councilors</h2>
+    {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
+    <div class="council-layout">
+      <div class="panel">
+        <CouncilorFinder
+          client:visible
+          councilors={officials.map((o) => ({
+            id: o.id,
+            name: o.title === 'Mayor' ? `${o.name} (Mayor)` : o.name,
+            seat: o.seat,
+            district: o.district,
+            photo_url: o.photo_url,
+          }))}
+        />
+        {!DEMO && (
+          <details class="by-address">
+            <summary>Find your district by address</summary>
+            <FindMyReps client:visible />
+          </details>
+        )}
+      </div>
+      {features.length > 0 && (
+        <details class="panel map-panel" id="district-map">
+          <summary class="h-small">District map</summary>
+          <DistrictMap features={features} label={`${city.council} districts; select one for its councilor`} />
+        </details>
+      )}
+    </div>
+  </section>
+
+  {facets.total > 0 && (
+    <section aria-labelledby="matters-h">
+      <h2 id="matters-h">Ordinances, orders and resolutions</h2>
+      <div class="panel">
+        <LocalMatters
+          client:visible
+          city={city.key}
+          initial={matters}
+          local={DEMO}
+          total={facets.total}
+          facets={{
+            ...facets,
+            sponsors: [...officials]
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((o) => ({ id: o.id, name: o.name })),
+          }}
+        />
+      </div>
+    </section>
+  )}
+
+  <section aria-labelledby="meetings-h">
+    <h2 id="meetings-h">Meetings</h2>
+    {upcoming.length > 0 && (
+      <>
+        <h3 class="h-small">Coming up</h3>
+        <div class="panel">
+          <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming />
+        </div>
+      </>
+    )}
+    <h3 class="h-small">Recent</h3>
+    {recent.length === 0 && <p class="muted">None loaded yet.</p>}
+    {recent.length > 0 && (
+      <div class="panel">
+        <CityMeetings city={city} meetings={recent.slice(0, FIRST)} slugs={slugs} />
+        {recent.length > FIRST && (
+          <details class="more-meetings">
+            <summary>{recent.length - FIRST} earlier meetings</summary>
+            <CityMeetings city={city} meetings={recent.slice(FIRST)} slugs={slugs} />
+          </details>
+        )}
+      </div>
+    )}
+  </section>
+
+  <SourceNote
+    parts={[
+      { what: 'Councilors', source: city.sources.people },
+      { what: 'Meetings, agendas and minutes', source: city.sources.meetings },
+    ]}
+  >
+    {facets.total > 0 &&
+      ' Consent-agenda resolutions (mostly congratulations and commendations) are hidden unless you include them.'}
+  </SourceNote>
+</Base>
+
+<script>
+  // The district map starts open on wide screens and folded on phones.
+  const map = document.getElementById('district-map');
+  if (map && window.matchMedia('(min-width: 60rem)').matches) map.setAttribute('open', '');
+</script>
+
+<style>
+  .council-layout {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+  @media (min-width: 60rem) {
+    .council-layout {
+      grid-template-columns: 1.3fr 1fr;
+      align-items: start;
+    }
+  }
+  .map-panel summary,
+  .by-address summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .map-panel > summary::before,
+  .by-address > summary::before {
+    content: '';
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-inline: 0.15rem 0.1rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease;
+  }
+  .map-panel[open] > summary::before,
+  .by-address[open] > summary::before {
+    transform: rotate(45deg);
+  }
+  .map-panel > summary::-webkit-details-marker,
+  .by-address > summary::-webkit-details-marker {
+    display: none;
+  }
+  .by-address {
+    margin-top: var(--space-3);
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-2);
+  }
+  .by-address summary {
+    color: var(--link);
+    font-weight: 600;
+  }
+  .more-meetings summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
+</style>

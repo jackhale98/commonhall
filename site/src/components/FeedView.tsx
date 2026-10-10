@@ -86,7 +86,7 @@ export default function FeedView({ compact = false }: Props) {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [members, setMembers] = useState<Map<string, Pick<Member, 'bioguide_id' | 'name'>>>(new Map());
   const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state' | 'local'>('');
-  // Within Legislators: members of Congress, state legislators or Boston councilors.
+  // Within Legislators: members of Congress, state legislators or city councilors.
   const [level, setLevel] = useState<Level>('');
   const [more, setMore] = useState(false);
   const [follows, setFollows] = useState<number | null>(null);

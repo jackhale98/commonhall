@@ -1,0 +1,230 @@
+---
+import District311 from '../../../../../components/District311';
+import FollowButton from '../../../../../components/FollowButton';
+import LocalMatters from '../../../../../components/LocalMatters';
+import MemberPhoto from '../../../../../components/MemberPhoto';
+import SourceNote from '../../../../../components/SourceNote.astro';
+import DistrictMap from '../../../../../components/viz/DistrictMap';
+import Base from '../../../../../layouts/Base.astro';
+import {
+  loadCity311,
+  loadCityCommittees,
+  loadCityOfficials,
+  loadCouncilDistricts,
+  loadLocalMatterFacets,
+  loadSponsoredMatters,
+} from '../../../../../lib/build-data';
+import { CITY_LIST, idWithinCity, type City } from '../../../../../lib/cities';
+import { DEMO } from '../../../../../lib/config';
+import { HIDDEN_MATTER_TYPES } from '../../../../../lib/local';
+import { cityHref, localCommitteeHref, localOfficialHref } from '../../../../../lib/paths';
+import type { LocalOfficial } from '../../../../../lib/types';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const city of CITY_LIST)
+    for (const official of await loadCityOfficials(city.key))
+      paths.push({
+        params: { state: city.state.toLowerCase(), city: city.slug, id: idWithinCity(official.id) },
+        props: { city, official },
+      });
+  return paths;
+}
+
+interface Props {
+  city: City;
+  official: LocalOfficial;
+}
+
+const { city, official } = Astro.props;
+const [officials, districts, committees, report, cityFacets] = await Promise.all([
+  loadCityOfficials(city.key),
+  loadCouncilDistricts(city.key),
+  loadCityCommittees(city.key),
+  loadCity311(city.key),
+  loadLocalMatterFacets(city.key),
+]);
+// Cities without legislation records have nothing to look up.
+const sponsored = cityFacets.total > 0 ? await loadSponsoredMatters(official.id) : [];
+const features = districts.map((d) => {
+  const o = officials.find((x) => x.district === d.district);
+  return {
+    district: d.district,
+    geojson: d.geojson,
+    href: o ? localOfficialHref(o.id) : undefined,
+    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+  };
+});
+// The default list leaves out consent-agenda resolutions (congratulations and commendations).
+const substantive = sponsored.filter((m) => !HIDDEN_MATTER_TYPES.includes(m.type ?? ''));
+const consent = sponsored.length - substantive.length;
+const passed = substantive.filter((m) => m.passed_date || /adopted|passed/i.test(m.status ?? '')).length;
+const count = (list: typeof sponsored, key: 'type' | 'status') =>
+  [
+    ...Map.groupBy(
+      list.filter((m) => m[key]),
+      (m) => m[key]!,
+    ),
+  ]
+    .map(([value, rows]) => ({ value, count: rows.length }))
+    .sort((a, b) => b.count - a.count);
+const facets = { types: count(sponsored, 'type'), statuses: count(substantive, 'status'), sponsors: [] };
+const seats = committees.flatMap((c) =>
+  c.members.filter((m) => m.official_id === official.id).map((m) => ({ committee: c, role: m.role })),
+);
+const chairs = seats.filter((s) => s.role === 'Chair').length;
+const seat = official.seat ?? 'Councilor';
+const role = official.title ? `${official.title} · ${seat}` : seat;
+const stats = [
+  ...(cityFacets.total > 0
+    ? [
+        { label: 'Ordinances, orders and resolutions', value: substantive.length },
+        { label: 'Passed or adopted', value: passed },
+        { label: 'Consent-agenda resolutions', value: consent },
+      ]
+    : []),
+  ...(seats.length > 0
+    ? [
+        { label: 'Committee seats', value: seats.length },
+        { label: 'Chairs', value: chairs },
+      ]
+    : []),
+];
+---
+
+<Base
+  title={official.name}
+  description={`${official.name}, ${city.council} (${seat})${cityFacets.total > 0 ? ': sponsored ordinances, resolutions and orders' : ''}.`}
+  section="states"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={cityHref(city, 'council/')}>{city.council}</a>
+  </nav>
+  <header class="councilor">
+    <MemberPhoto name={official.name} url={official.photo_url} size={96} />
+    <div>
+      <h1>{official.name}</h1>
+      <p class="muted">
+        {city.council} · {role}
+      </p>
+      <div class="cluster">
+        <FollowButton client:load targetType="local_official" targetId={official.id} label={official.name} />
+        {official.email && (
+          <a class="button" href={`mailto:${official.email}`}>
+            Email
+          </a>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <div class="councilor-glance">
+    {stats.length > 0 && (
+      <dl class="stat-grid">
+        {stats.map((s) => (
+          <div class="stat">
+            <dt>{s.label}</dt>
+            <dd>{s.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+    {features.length > 0 && (
+      <div class="panel">
+        <DistrictMap
+          features={features}
+          highlight={official.district}
+          width={320}
+          label={
+            official.district
+              ? `${city.name} council districts, District ${official.district} outlined`
+              : `${city.name} council districts; at-large councilors represent the whole city`
+          }
+        />
+        <p class="small muted">
+          {official.district ? `Represents District ${official.district}.` : 'Represents the whole city (at-large).'}
+        </p>
+      </div>
+    )}
+  </div>
+
+  {seats.length > 0 && (
+    <section aria-labelledby="committees-h">
+      <h2 id="committees-h">Committees</h2>
+      <ul class="plain-rows">
+        {seats.map((s) => (
+          <li>
+            <a href={localCommitteeHref(city, s.committee.slug)}>{s.committee.name}</a>
+            {s.role && <span class="small muted"> · {s.role}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {cityFacets.total > 0 && (
+    <section aria-labelledby="sp-h">
+      <h2 id="sp-h">Sponsored</h2>
+      {sponsored.length === 0 ? (
+        <p class="muted">No sponsored matters loaded.</p>
+      ) : (
+        <div class="panel">
+          <LocalMatters
+            client:visible
+            city={city.key}
+            initial={substantive.slice(0, 10)}
+            total={substantive.length}
+            local={DEMO}
+            sponsor={official.id}
+            facets={facets}
+          />
+        </div>
+      )}
+    </section>
+  )}
+
+  {report && (
+    <section aria-labelledby="h311">
+      <div class="section-head">
+        <h2 id="h311">{official.district ? `311 in District ${official.district}` : `311 across ${city.name}`}</h2>
+        <a
+          class="see-all"
+          href={cityHref(city, `neighborhoods/${official.district ? `?district=${official.district}` : ''}`)}
+        >
+          Every district
+        </a>
+      </div>
+      <p class="small muted">Requests to the city in the last 30 days.</p>
+      <District311 report={report} fixed={official.district ?? 0} top={5} />
+    </section>
+  )}
+
+  <SourceNote parts={[{ what: 'Councilors', source: city.sources.people }]}>
+    {cityFacets.total > 0
+      ? ` ${city.name} records roll-call votes in meeting minutes rather than item by item, so votes are not listed here.`
+      : ` ${city.name} publishes agendas and minutes rather than individual items and votes, so sponsored items and roll calls are not listed here yet.`}
+  </SourceNote>
+</Base>
+
+<style>
+  .councilor-glance {
+    display: grid;
+    gap: var(--space-4);
+    align-items: start;
+    margin-bottom: var(--space-5);
+  }
+  @media (min-width: 50rem) {
+    .councilor-glance {
+      grid-template-columns: 1fr 22rem;
+    }
+  }
+  .councilor {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    margin-bottom: var(--space-5);
+  }
+  .councilor h1 {
+    margin: 0;
+  }
+</style>

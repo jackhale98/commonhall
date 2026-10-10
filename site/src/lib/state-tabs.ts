@@ -4,17 +4,10 @@
  * Tabs with nothing behind them are left out: territories have no legislature,
  * and Local appears only where we cover a city.
  */
+import { citiesIn } from './cities';
 import { href, stateHref } from './paths';
 
 export type StateTab = 'overview' | 'legislature' | 'bills' | 'committees' | 'congress' | 'local';
-
-/** Cities we cover, by state. */
-export const LOCAL_GOVERNMENTS: Record<string, { name: string; path: string; summary: string }[]> = {
-  MA: [
-    { name: 'Boston', path: 'boston/', summary: 'City Council, committee hearings, zoning appeals and the budget' },
-    { name: 'Worcester', path: 'worcester/', summary: 'City Council, committees and meetings, and the capital budget' },
-  ],
-};
 
 export interface StateTabCounts {
   legislature: boolean;
@@ -43,7 +36,7 @@ export function stateTabs(code: string, current: StateTab, counts: StateTabCount
       show: counts.legislature && counts.committees > 0,
     },
     { key: 'congress', label: 'Congress', href: href(`${base}congress/`), count: counts.congress, show: true },
-    { key: 'local', label: 'Local', href: href(`${base}local/`), show: Boolean(LOCAL_GOVERNMENTS[code]?.length) },
+    { key: 'local', label: 'Local', href: href(`${base}local/`), show: citiesIn(code).length > 0 },
   ];
   return tabs
     .filter((t) => t.show)

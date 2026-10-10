@@ -27,10 +27,19 @@ import { href } from '../lib/paths';
         location.replace(root + 'member/?id=' + member[1]);
         return;
       }
-      const matter = /^\/boston\/matters\/(\d+)\/?$/.exec(path);
+      const matter = /^\/states\/([a-z]{2}\/[a-z-]+)\/matters\/(\d+)\/?$/.exec(path);
       if (matter) {
         document.getElementById('nf-title').textContent = 'Loading council matter…';
-        location.replace(root + 'boston/matter/?id=' + matter[1]);
+        location.replace(root + 'states/' + matter[1] + '/matter/?id=' + matter[2]);
+        return;
+      }
+      // Cities moved under their state (/boston/ → /states/ma/boston/); Boston councilor ids gained a "p".
+      const oldCity = /^\/(boston|worcester)(\/.*)?$/.exec(path);
+      if (oldCity) {
+        const rest = (oldCity[2] || '/')
+          .replace(/^\/councilors\/(\d+)\//, '/councilors/p$1/')
+          .replace(/^\/(council|committees|neighborhoods|budget)\/?$/, '/$1/');
+        location.replace(root + 'states/ma/' + oldCity[1] + rest + location.search + location.hash);
         return;
       }
       const stateBill = /^\/states\/([a-z]{2})\/bills\/([a-z0-9-]+)\/([a-z0-9-]+)\/?$/.exec(path);

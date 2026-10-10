@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { DISCUSSION_COLUMNS } from '../lib/discussions';
 import { hasSupabase } from '../lib/config';
 import { select } from '../lib/rest';
+import { CITY_LIST } from '../lib/cities';
 import type { Discussion } from '../lib/types';
 import DiscussionCardView from './DiscussionCardView';
 
@@ -12,14 +13,14 @@ interface Props {
   initial: Discussion[];
   /** Limit to these jurisdictions (default: all). */
   jurisdictions?: Jurisdiction[];
-  /** Group open discussions under Boston / Massachusetts / National headings, and list closed ones. */
+  /** Group open discussions under city / state / national headings, and list closed ones. */
   grouped?: boolean;
   empty: string;
 }
 
+/** Cities first, then states, then national. */
 const LEVELS: { key: Jurisdiction; title: string }[] = [
-  { key: 'boston', title: 'Boston' },
-  { key: 'worcester', title: 'Worcester' },
+  ...CITY_LIST.map((c) => ({ key: c.key, title: c.name })),
   { key: 'ma', title: 'Massachusetts' },
   { key: 'federal', title: 'National' },
 ];

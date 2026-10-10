@@ -2,14 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { billLabel } from '@civic/congress-client/ids';
 import { DEMO, hasSupabase } from '../lib/config';
 import { rpc } from '../lib/rest';
-import { href } from '../lib/paths';
+import { CITY_LIST } from '../lib/cities';
+import { cityHref, href } from '../lib/paths';
 import { prepare, search, type Searchable } from '../lib/search';
 
 const KIND_LABEL: Record<string, string> = {
   page: 'Page',
   state: 'State',
   member: 'Congress',
-  councilor: 'Boston',
+  councilor: 'Council',
   committee: 'Committee',
   discussion: 'Discussion',
   bill: 'Bill',
@@ -18,7 +19,7 @@ const KIND_LABEL: Record<string, string> = {
   case: 'Court',
   hearing: 'Hearing',
   nomination: 'Nominee',
-  matter: 'Boston',
+  matter: 'Council',
 };
 
 /** Best-matching bills from the database (the instant index holds only notable bills). */
@@ -54,14 +55,7 @@ const QUICK: Searchable[] = [
   { k: 'page', t: 'Bills', s: 'Search and filter every bill', h: href('bills/') },
   { k: 'page', t: 'Votes', s: 'Every House and Senate roll call', h: href('votes/') },
   { k: 'page', t: 'Massachusetts', s: 'Legislature and state bills', h: href('states/ma/') },
-  { k: 'page', t: 'Boston', s: 'City Council, councilors, district map, meetings', h: href('boston/') },
-  {
-    k: 'page',
-    t: 'Boston 311 and zoning',
-    s: '311 requests by district, zoning hearings',
-    h: href('boston/neighborhoods/'),
-  },
-  { k: 'page', t: 'Boston Capital Plan', s: 'What the city plans to build, by project', h: href('boston/budget/') },
+  ...CITY_LIST.map((c) => ({ k: 'page', t: c.name, s: c.summary, h: cityHref(c) })),
   { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
 ];
 

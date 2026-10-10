@@ -1,0 +1,395 @@
+---
+import CapitalExplorer from '../../../../components/CapitalExplorer';
+import CityHeader from '../../../../components/CityHeader.astro';
+import BarList from '../../../../components/viz/BarList';
+import Base from '../../../../layouts/Base.astro';
+import { loadCityCapital, loadCityOperating } from '../../../../lib/build-data';
+import type { City } from '../../../../lib/cities';
+import { inCurrentBudget, isBuilding, projectRow } from '../../../../lib/city';
+import { cityPaths } from '../../../../lib/city-pages';
+import { formatMoney } from '../../../../lib/finance';
+import { budgetChange } from '../../../../lib/local';
+import { cityHref } from '../../../../lib/paths';
+
+export const getStaticPaths = () => cityPaths('budget');
+
+interface Props {
+  city: City;
+}
+
+const { city } = Astro.props;
+const [operating, capital] = await Promise.all([loadCityOperating(city.key), loadCityCapital(city.key)]);
+const fy = (y: number) => `FY${String(y).slice(2)}`;
+const share = (v: number, of: number) => (of > 0 ? `${Math.round((v / of) * 100)}%` : '');
+// The largest parts of a list, the rest folded into one bar.
+const topBars = (items: { label: string; value: number; note?: string }[], top: number, restLabel: string) => {
+  const rest = items.slice(top);
+  return rest.length
+    ? [
+        ...items.slice(0, top),
+        { label: restLabel, value: rest.reduce((n, r) => n + r.value, 0), note: `(${rest.length} more)` },
+      ]
+    : items;
+};
+
+// Operating budget
+const opChange = operating ? operating.total - operating.prev : 0;
+const revenueBars = operating
+  ? topBars(
+      operating.revenue.map((r) => ({ ...r, note: share(r.value, operating.revenueTotal) })),
+      5,
+      'Everything else',
+    )
+  : [];
+const spendingBars = operating
+  ? topBars(
+      operating.spending.map((d) => ({ label: d.label, value: d.value, note: budgetChange(d.value, d.prev) })),
+      8,
+      operating.spendingUnit === 'departments' ? 'Every other department' : 'Everything else',
+    )
+  : [];
+const propertyTax = operating?.revenue.find((r) => /property tax/i.test(r.label))?.value ?? 0;
+
+// Capital
+const projects = capital ? capital.projects.filter((p) => inCurrentBudget(p, capital)) : [];
+const plan = capital?.kind === 'plan';
+const size = (p: (typeof projects)[number]) => p.total ?? p.thisYear;
+const sum = (list: typeof projects, f: (p: (typeof projects)[number]) => number) => list.reduce((n, p) => n + f(p), 0);
+const thisYear = sum(projects, (p) => p.thisYear);
+const departments = new Set(projects.map((p) => p.department).filter(Boolean)).size;
+// Totals by a field, largest first; the long tail folds into one bar.
+const totalsBy = (key: 'department' | 'area', value: (p: (typeof projects)[number]) => number, rest: string) =>
+  topBars(
+    [...Map.groupBy(projects, (p) => p[key] ?? 'Not given')]
+      .map(([label, list]) => ({ label, value: sum(list, value), note: `(${list.length})` }))
+      .sort((a, b) => b.value - a.value),
+    8,
+    rest,
+  );
+// Annual budgets: this year's new borrowing, and the previous budget's total for comparison.
+const newAuth = sum(projects, (p) => p.years[0]?.authorized ?? 0);
+const byBudget = new Map<string, number>();
+for (const p of capital?.projects ?? [])
+  for (const y of p.years) byBudget.set(y.label, (byBudget.get(y.label) ?? 0) + y.spend);
+const previous = [...byBudget].sort((a, b) => b[0].localeCompare(a[0]))[1];
+const distinct = (key: 'department' | 'area' | 'status') =>
+  [...new Set(projects.map((p) => p[key]).filter((v): v is string => !!v))].sort();
+const stats = capital
+  ? plan
+    ? [
+        { label: 'Total budget, all projects', value: formatMoney(sum(projects, (p) => p.total ?? 0)) },
+        { label: `Planned spending, ${capital.yearLabel}`, value: formatMoney(thisYear) },
+        { label: 'Projects', value: String(projects.length) },
+        { label: 'Under construction or underway', value: String(projects.filter(isBuilding).length) },
+      ]
+    : [
+        {
+          label: 'Borrowing and cash this year',
+          value: formatMoney(thisYear),
+          note: previous && previous[1] > 0 ? `${formatMoney(previous[1])} in ${previous[0]}` : undefined,
+        },
+        { label: 'Projects', value: String(projects.length), note: `in ${departments} departments` },
+        ...(newAuth > 0 ? [{ label: 'New borrowing approved', value: formatMoney(newAuth) }] : []),
+      ]
+  : [];
+const proposed = (stage: string | undefined) => stage === 'proposed';
+---
+
+<Base
+  title={`${city.name} budget`}
+  description={`${city.name}’s city budget: ${operating ? 'what it spends to run departments, where the money comes from, and ' : ''}what it plans to build.`}
+  section="states"
+>
+  <CityHeader
+    city={city}
+    current="budget"
+    lede={`What the city spends${operating ? ' to run itself, where the money comes from,' : ''} and what it plans to build.`}
+  />
+
+  {operating && (
+    <section aria-labelledby="op-h">
+      <h2 id="op-h">
+        Operating budget, {fy(operating.fiscalYear)}
+        {proposed(operating.stage) && <span class="pill status-pill">Proposed</span>}
+      </h2>
+      <p class="small muted section-note">
+        Salaries, services and running costs for a year (July {operating.fiscalYear - 1} to June {operating.fiscalYear})
+        {proposed(operating.stage) ? ', as proposed to the council' : ', as adopted'}.
+      </p>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Operating budget</dt>
+          <dd>{formatMoney(operating.total)}</dd>
+          {operating.prev > 0 && (
+            <p class="small muted stat-note">
+              {opChange >= 0 ? '+' : '−'}
+              {formatMoney(Math.abs(opChange))} ({budgetChange(operating.total, operating.prev)}) on{' '}
+              {operating.prevLabel}
+            </p>
+          )}
+        </div>
+        {propertyTax > 0 && (
+          <div class="stat">
+            <dt>Paid for by property tax</dt>
+            <dd>{share(propertyTax, operating.revenueTotal)}</dd>
+            <p class="small muted stat-note">of {formatMoney(operating.revenueTotal)} in revenue</p>
+          </div>
+        )}
+      </dl>
+      <div class="budget-charts">
+        {revenueBars.length > 0 && (
+          <section class="panel" aria-labelledby="rev-h">
+            <h3 id="rev-h" class="h-small">
+              Where the money comes from
+            </h3>
+            <BarList
+              items={revenueBars}
+              label={`Revenue by source, ${fy(operating.fiscalYear)}`}
+              format={formatMoney}
+            />
+          </section>
+        )}
+        <section class="panel" aria-labelledby="spend-h">
+          <h3 id="spend-h" class="h-small">
+            Where it goes
+          </h3>
+          <BarList
+            items={spendingBars}
+            label={`Operating budget by ${operating.spendingUnit === 'departments' ? 'department' : 'line'}, ${fy(operating.fiscalYear)}`}
+            tone="fill-sky"
+            format={formatMoney}
+          />
+          <p class="small muted">Change on {operating.prevLabel}.</p>
+          <details class="all-depts">
+            <summary>
+              All {operating.spending.length} {operating.spendingUnit}
+            </summary>
+            <table class="dept-table">
+              <thead>
+                <tr>
+                  <th scope="col">{operating.spendingUnit === 'departments' ? 'Department' : 'Line'}</th>
+                  <th scope="col">{fy(operating.fiscalYear)}</th>
+                  <th scope="col">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                {operating.spending.map((d) => (
+                  <tr>
+                    <th scope="row">
+                      {d.label}
+                      {d.group && <span class="muted small"> · {d.group}</span>}
+                    </th>
+                    <td>{formatMoney(d.value)}</td>
+                    <td>{budgetChange(d.value, d.prev)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        </section>
+      </div>
+      <p class="small muted">
+        From{' '}
+        {operating.sources.map((s, i) => (
+          <>
+            {i > 0 && ' and '}
+            <a href={s.url} rel="noopener">
+              {s.label}
+            </a>
+          </>
+        ))}
+        {operating.spendingUnit === 'departments'
+          ? ' on the city’s open data, checked weekly.'
+          : ', read from the printed summary; every group adds up to its printed total.'}
+      </p>
+    </section>
+  )}
+
+  {!capital ? (
+    !operating && <p class="muted">The budget hasn’t loaded yet.</p>
+  ) : (
+    <section aria-labelledby="cap-h">
+      <h2 id="cap-h">
+        {capital.title}
+        {proposed(capital.stage) && <span class="pill status-pill">Proposed</span>}
+      </h2>
+      <p class="small muted section-note">
+        {plan
+          ? 'What the city plans to build and repair over five years.'
+          : proposed(capital.stage)
+            ? `The proposal for ${capital.yearLabel}; the council votes on it, and the adopted budget replaces it here. Borrowing is paid back over years from the operating budget.`
+            : `As adopted for ${capital.yearLabel}. Borrowing is paid back over years from the operating budget.`}{' '}
+        Open a project to ask for a discussion on it.
+      </p>
+      <dl class="stat-grid">
+        {stats.map((s) => (
+          <div class="stat">
+            <dt>{s.label}</dt>
+            <dd>{s.value}</dd>
+            {'note' in s && s.note && <p class="small muted stat-note">{s.note}</p>}
+          </div>
+        ))}
+      </dl>
+
+      <details class="cap-charts" id="cap-charts">
+        <summary class="h-small">
+          {capital.name} by department
+          {plan ? ` and ${capital.areaLabel.toLowerCase()}` : capital.planYears.length > 0 ? ' and year' : ''}
+        </summary>
+        <div class="budget-charts">
+          <section class="panel" aria-labelledby="dept-h">
+            <h3 id="dept-h" class="h-small">
+              {plan ? 'By department' : 'Where it goes this year'}
+            </h3>
+            <BarList
+              items={totalsBy('department', size, 'Every other department')}
+              label={`${capital.name} by department`}
+              format={formatMoney}
+            />
+          </section>
+          {plan ? (
+            <section class="panel" aria-labelledby="area-h">
+              <h3 id="area-h" class="h-small">
+                By {capital.areaLabel.toLowerCase()}
+              </h3>
+              <BarList
+                items={totalsBy('area', size, 'Everything else')}
+                label={`${capital.name} by ${capital.areaLabel.toLowerCase()}`}
+                tone="fill-sky"
+                format={formatMoney}
+              />
+            </section>
+          ) : (
+            capital.planYears.length > 0 && (
+              <section class="panel" aria-labelledby="plan-h">
+                <h3 id="plan-h" class="h-small">
+                  Five-year plan, {capital.planYears[0]!.label}–{capital.planYears.at(-1)!.label}
+                </h3>
+                <BarList
+                  items={capital.planYears}
+                  label="Capital plan by year, all departments"
+                  tone="fill-sky"
+                  format={formatMoney}
+                />
+                <p class="small muted">As printed in the plan, before state and other credits.</p>
+              </section>
+            )
+          )}
+        </div>
+      </details>
+
+      <section aria-labelledby="proj-h">
+        <h3 id="proj-h">Projects</h3>
+        <CapitalExplorer
+          client:visible
+          initial={[...projects]
+            .sort((a, b) => size(b) - size(a))
+            .slice(0, 10)
+            .map(projectRow)}
+          jsonUrl={cityHref(city, 'capital.json')}
+          departments={distinct('department')}
+          areas={distinct('area')}
+          areaLabel={capital.areaLabel}
+          statuses={distinct('status')}
+          yearLabel={capital.yearLabel}
+          spentText={capital.projects[0]?.spentText}
+        />
+      </section>
+
+      <p class="small muted tab-note">
+        From{' '}
+        {capital.sources.map((s, i) => (
+          <>
+            {i > 0 && ' and '}
+            <a href={s.url} rel="noopener">
+              {s.label}
+            </a>
+          </>
+        ))}
+        {plan
+          ? ', on the city’s open data, checked weekly, with amounts as the city published them. A project’s total budget covers the whole project: money spent in earlier years, what is budgeted for each year of the plan, and outside grants. Many projects are citywide or span several neighborhoods.'
+          : ', read from the published PDF; every department’s projects add up to its printed sub-total.'}
+      </p>
+    </section>
+  )}
+</Base>
+
+<script>
+  // The capital charts start open on wide screens and folded on phones.
+  const charts = document.getElementById('cap-charts');
+  if (charts && window.matchMedia('(min-width: 60rem)').matches) charts.setAttribute('open', '');
+</script>
+
+<style>
+  .cap-charts > summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    margin-bottom: var(--space-3);
+  }
+  .stat-grid {
+    margin-bottom: var(--space-5);
+  }
+  .section-note {
+    margin-top: 0;
+    max-width: 70ch;
+  }
+  .all-depts summary {
+    cursor: pointer;
+    color: var(--link);
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .dept-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step--1);
+  }
+  .dept-table th,
+  .dept-table td {
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .dept-table th[scope='row'],
+  .dept-table thead th:first-child {
+    text-align: left;
+    font-weight: 500;
+  }
+  .budget-charts {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .budget-charts {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .budget-charts .h-small {
+    margin-top: 0;
+  }
+  .status-pill {
+    margin-left: var(--space-2);
+    font-size: var(--step--1);
+    vertical-align: middle;
+  }
+  section + section {
+    margin-top: var(--space-5);
+  }
+  :global(.capital-list p) {
+    margin: 0;
+  }
+  :global(.capital-scope) {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

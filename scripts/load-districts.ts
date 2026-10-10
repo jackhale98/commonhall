@@ -22,7 +22,7 @@ export async function loadDistricts(
   sql: postgres.Sql,
   geojson: { features: Feature[] },
   source: string,
-  city = 'boston',
+  city = 'ma-boston',
 ) {
   const rows = geojson.features
     .map((f) => ({ district: Number(f.properties.DISTRICT), name: f.properties.LONGNAME ?? null, f }))

@@ -10,9 +10,10 @@ import {
   loadStateSessions,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, formatDate, stateName } from '../../lib/format';
-import { href, stateBillHref } from '../../lib/paths';
+import { cityHref, href, stateBillHref } from '../../lib/paths';
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
-import { LOCAL_GOVERNMENTS, legislatureChambers, partyGroups } from '../../lib/state-tabs';
+import { legislatureChambers, partyGroups } from '../../lib/state-tabs';
+import { citiesIn } from '../../lib/cities';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -35,7 +36,7 @@ const executives = ((await loadStateExecutives()).get(code) ?? []).sort(
   (a, b) => executiveRank(a.role) - executiveRank(b.role) || a.name.localeCompare(b.name),
 );
 const session = sessionStatus((await loadStateSessions()).get(code) ?? [], new Date().toISOString().slice(0, 10));
-const cities = LOCAL_GOVERNMENTS[code] ?? [];
+const cities = citiesIn(code);
 ---
 
 <Base
@@ -120,7 +121,7 @@ const cities = LOCAL_GOVERNMENTS[code] ?? [];
   )}
 
   {cities.map((c) => (
-    <a class="card local-card" href={href(c.path)}>
+    <a class="card local-card" href={cityHref(c)}>
       <span class="kicker">Local government</span>
       <strong>{c.name}</strong>
       <span class="small muted">{c.summary} →</span>

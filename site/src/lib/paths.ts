@@ -1,4 +1,5 @@
 import { DEMO } from './config';
+import { CITIES, cityOf, idWithinCity, type City } from './cities';
 
 /** Base-aware internal links (the site may live under /<repo>/ on GitHub Pages). */
 const BASE = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
@@ -40,36 +41,43 @@ export function scotusCaseHref(clusterId: string | number): string {
   return href(`court/cases/${clusterId}/`);
 }
 
-/** A Boston Capital Plan project's page, by the city's project id. */
-/** A capital project's page: Boston's by the city's project id, Worcester's by worcester-{slug}. */
-export function capitalProjectHref(projId: string): string {
-  if (projId.startsWith('worcester-')) return href(`worcester/projects/${projId.slice('worcester-'.length)}/`);
-  return href(`boston/projects/${encodeURIComponent(projId)}/`);
+/** A city's pages: states/ma/boston/ plus an optional sub-path ("council/"). */
+export function cityHref(city: City | string, sub = ''): string {
+  const c = typeof city === 'string' ? CITIES[city] : city;
+  if (!c) return href('states/');
+  return href(`states/${c.state.toLowerCase()}/${c.slug}/${sub}`);
 }
 
+/** A page for something that belongs to a city, by its id ("ma-boston-p324" → …/councilors/p324/). */
+function withinCity(id: string, section: string): string {
+  const city = cityOf(id);
+  return city ? cityHref(city, `${section}/${encodeURIComponent(idWithinCity(id))}/`) : href('states/');
+}
+
+/** A capital project's page: ma-boston-{the city's project id}, ma-worcester-{slug}. */
+export function capitalProjectHref(id: string): string {
+  return withinCity(id, 'projects');
+}
+
+/** A council matter's prerendered page. */
 export function localMatterHref(id: string): string {
-  const matterId = id.replace(/^boston-/, '');
-  return href(`boston/matters/${matterId}/`);
+  return withinCity(id, 'matters');
 }
 
+/** A council matter's page built in the browser (any matter, prerendered or not). */
 export function localMatterFallbackHref(id: string): string {
-  return href(`boston/matter/?id=${encodeURIComponent(id.replace(/^boston-/, ''))}`);
+  const city = cityOf(id);
+  return city ? cityHref(city, `matter/?id=${encodeURIComponent(idWithinCity(id))}`) : href('states/');
 }
 
-/** A Boston City Council committee's page, by its slug ("ways-and-means"). */
-export function localCommitteeHref(slug: string): string {
-  return href(`boston/committees/${slug}/`);
+/** A council committee's page, by its city and slug. */
+export function localCommitteeHref(city: City | string, slug: string): string {
+  return cityHref(city, `committees/${slug}/`);
 }
 
-/** A councilor's page: boston-p324 → boston/councilors/324/, worcester-gary-rosen → worcester/councilors/gary-rosen/. */
+/** A councilor's page. */
 export function localOfficialHref(id: string): string {
-  if (id.startsWith('worcester-')) return href(`worcester/councilors/${id.slice('worcester-'.length)}/`);
-  return href(`boston/councilors/${id.replace(/^boston-p/, '')}/`);
-}
-
-/** A Worcester council committee's page, by slug. */
-export function worcesterCommitteeHref(slug: string): string {
-  return href(`worcester/committees/${slug}/`);
+  return withinCity(id, 'councilors');
 }
 
 /** "H 1234" → "h-1234"; "194th" → "194th". */

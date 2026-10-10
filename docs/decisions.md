@@ -1158,3 +1158,31 @@ Agenda items and roll-call votes aren't in a structured form yet (agenda pages o
   optional council district, 1–5); the residency check compares the saved address's
   city with the discussion's. The admin form now defaults a capital project request
   to its city (it had defaulted Boston projects to "United States").
+
+## 84. City keys and one set of city pages
+
+- **Keys carry the state.** A city's key is its state and slug (`ma-boston`,
+  `ma-worcester`), so two towns with one name in different states can't collide.
+  The key is the `city` column on every local table, the prefix of every id that
+  belongs to the city (`ma-boston-p324`, `ma-worcester-gary-rosen`,
+  `ma-boston-CAR24715`), and the jurisdiction of its discussions. Migration 041
+  renamed existing rows in place (foreign keys among local tables cascade on
+  update) and rewrote the ids that follows, feed events and discussions point at.
+  The Boston-only datasets (311, zoning, Capital Plan, operating budget) gained a
+  `city` column defaulting to `ma-boston`, so every page reads by city.
+- **One skeleton.** Pages live under the state: `/states/{st}/{city}/` with
+  council, committees, neighborhoods, budget, councilor, committee, project and
+  matter pages, built for every city in the registry (`site/src/lib/cities.ts`:
+  name, council, seats, what a committee session is called, sources). Loaders
+  turn each city's sources into shared shapes (`site/src/lib/city.ts`): Boston's
+  line-item operating budget and Worcester's printed summary both become an
+  operating summary; Boston's five-year plan and Worcester's annual budgets both
+  become a list of projects. A tab and its pages exist only when the city has data
+  for them; sections without data are left out rather than shown empty.
+- **Old addresses** (`/boston/…`, `/worcester/…`) redirect from the 404 page,
+  which already sends uncached pages to their fallbacks; Boston councilor pages
+  moved from the Legistar person id (`/boston/councilors/324/`) to the id within
+  the city (`…/councilors/p324/`).
+- Boston's 22 standing committees are now rows in `local_committees` like
+  Worcester's (without members: Legistar doesn't list them), so committees have
+  one model.

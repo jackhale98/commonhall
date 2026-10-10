@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { accountUrl, getClient, getSession, isAdmin } from '../lib/auth';
+import { CITIES, CITY_LIST, cityOf } from '../lib/cities';
 import { hasSupabase } from '../lib/config';
 import { DISCUSSION_COLUMNS, targetHref } from '../lib/discussions';
 import { formatDate } from '../lib/format';
@@ -35,7 +36,7 @@ const EMPTY: Draft = {
   id: '',
   title: '',
   prompt: '',
-  jurisdiction: 'boston',
+  jurisdiction: CITY_LIST[0]!.key,
   district: null,
   target_type: null,
   target_id: null,
@@ -109,9 +110,7 @@ export default function AdminDiscussions() {
         r.target_type === 'state_bill'
           ? 'ma'
           : r.target_type === 'local_matter' || r.target_type === 'capital_project'
-            ? r.target_id.startsWith('worcester-')
-              ? 'worcester'
-              : 'boston'
+            ? (cityOf(r.target_id)?.key ?? 'federal')
             : 'federal',
     });
     window.scrollTo({ top: 0 });
@@ -124,7 +123,7 @@ export default function AdminDiscussions() {
     const client = await getClient();
     const row = {
       ...draft,
-      district: draft.jurisdiction === 'boston' || draft.jurisdiction === 'worcester' ? draft.district : null,
+      district: CITIES[draft.jurisdiction] ? draft.district : null,
       target_id: draft.target_type ? draft.target_id?.trim() || null : null,
       opens_at: draft.opens_at || null,
       closes_at: draft.closes_at || null,
@@ -216,18 +215,19 @@ export default function AdminDiscussions() {
               >
                 <option value="federal">United States</option>
                 <option value="ma">Massachusetts</option>
-                <option value="boston">Boston</option>
-                <option value="worcester">Worcester</option>
+                {CITY_LIST.map((c) => (
+                  <option value={c.key}>{c.name}</option>
+                ))}
               </select>
             </div>
-            {(draft.jurisdiction === 'boston' || draft.jurisdiction === 'worcester') && (
+            {CITIES[draft.jurisdiction] && (
               <div class="field">
                 <label for="d-district">Council district (blank = citywide)</label>
                 <input
                   id="d-district"
                   type="number"
                   min={1}
-                  max={draft.jurisdiction === 'worcester' ? 5 : 9}
+                  max={CITIES[draft.jurisdiction]!.districts}
                   value={draft.district ?? ''}
                   onInput={(e) => set('district', e.currentTarget.value ? Number(e.currentTarget.value) : null)}
                 />

@@ -7,13 +7,13 @@ import LocalMatterView, { loadMatter, type MatterData } from './LocalMatterView'
 import Loader from './Loader';
 
 /** Client-rendered page for council matters without a prerendered page (?id=MatterId). */
-export default function LocalMatterFallback() {
+export default function LocalMatterFallback({ city, cityName }: { city: string; cityName: string }) {
   const [data, setData] = useState<MatterData | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'invalid' | 'error'>('loading');
   useEffect(() => {
     const raw = new URLSearchParams(window.location.search).get('id') ?? '';
     if (!/^\d+$/.test(raw)) return setState('invalid');
-    const id = `boston-${raw}`;
+    const id = `${city}-${raw}`;
     redirectIfPrerendered((i) => (i.localMatters.includes(id) ? localMatterHref(id) : null))
       .then((redirecting) => (redirecting ? undefined : loadMatter(id)))
       .then((d) => {
@@ -24,14 +24,14 @@ export default function LocalMatterFallback() {
         document.title = `${d.matter.file_number ? `Docket #${d.matter.file_number}` : 'Council matter'} · ${document.title.split(' · ').pop()}`;
       })
       .catch(() => setState('error'));
-  }, []);
+  }, [city]);
   if (state === 'loading') return <Loader label="Loading council matter" />;
   if (state === 'invalid') return <p class="notice error">That isn’t a valid matter id.</p>;
   if (state === 'missing') {
     return (
       <p class="notice">
         {DEMO
-          ? 'This demo includes only a sample of Boston City Council matters, and that one isn’t among them.'
+          ? `This demo includes only a sample of ${cityName} council matters, and that one isn’t among them.`
           : 'We don’t have that council matter. It may not be council legislation, or it may not be synced yet.'}
       </p>
     );

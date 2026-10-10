@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { formatDate } from '../lib/format';
 import type { ZbaRow } from '../lib/local';
-import { href } from '../lib/paths';
 
 const PAGE = 10;
 const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches ? 5 : PAGE);
@@ -9,6 +8,8 @@ const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max
 interface Props {
   /** Prerendered rows: the next hearings. */
   initial: ZbaRow[];
+  /** The city's zoning.json, with every case. */
+  jsonUrl: string;
   neighborhoods: string[];
   /** YYYY-MM-DD at build time; the browser's own date replaces it. */
   today: string;
@@ -19,7 +20,7 @@ interface Props {
  * or project and filtered by neighborhood. Loads the full list (zoning.json) when
  * it comes into view. Past cases are not listed by address (see decisions.md).
  */
-export default function ZoningExplorer({ initial, neighborhoods, today: buildDay }: Props) {
+export default function ZoningExplorer({ initial, jsonUrl, neighborhoods, today: buildDay }: Props) {
   const [rows, setRows] = useState<ZbaRow[] | null>(null);
   const [q, setQ] = useState('');
   const [hood, setHood] = useState('');
@@ -31,11 +32,11 @@ export default function ZoningExplorer({ initial, neighborhoods, today: buildDay
     setShown(pageSize());
     setMounted(true);
     setToday(new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }));
-    fetch(href('boston/zoning.json'))
+    fetch(jsonUrl)
       .then((r) => (r.ok ? (r.json() as Promise<ZbaRow[]>) : Promise.reject(new Error(String(r.status)))))
       .then(setRows)
       .catch(() => undefined);
-  }, []);
+  }, [jsonUrl]);
 
   const hits = useMemo(() => {
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);

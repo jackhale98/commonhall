@@ -1,0 +1,292 @@
+---
+import CityHeader from '../../../../components/CityHeader.astro';
+import LiveDiscussions from '../../../../components/LiveDiscussions';
+import LocalMatterItem from '../../../../components/LocalMatterItem';
+import CityMeetings from '../../../../components/CityMeetings.astro';
+import Base from '../../../../layouts/Base.astro';
+import {
+  loadCity311,
+  loadCityCapital,
+  loadCityCommittees,
+  loadCityMeetings,
+  loadCityOperating,
+  loadDiscussions,
+  loadRecentLocalMatters,
+  loadZbaAppeals,
+} from '../../../../lib/build-data';
+import type { City } from '../../../../lib/cities';
+import { inCurrentBudget, isBuilding } from '../../../../lib/city';
+import { cityPaths } from '../../../../lib/city-pages';
+import { formatMoney } from '../../../../lib/finance';
+import { formatDate } from '../../../../lib/format';
+import { CAPITAL_STAGES, capitalStage, change311, closeTime, streetAddress } from '../../../../lib/local';
+import { capitalProjectHref, cityHref } from '../../../../lib/paths';
+
+export const getStaticPaths = () => cityPaths();
+
+interface Props {
+  city: City;
+}
+
+const { city } = Astro.props;
+const [matters, meetings, committees, discussions, appeals, report, capital, operating] = await Promise.all([
+  loadRecentLocalMatters(city.key),
+  loadCityMeetings(city.key),
+  loadCityCommittees(city.key),
+  loadDiscussions(),
+  loadZbaAppeals(city.key),
+  loadCity311(city.key),
+  loadCityCapital(city.key),
+  loadCityOperating(city.key),
+]);
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = meetings
+  .filter((m) => m.date >= today && m.status !== 'Cancelled')
+  .reverse()
+  .slice(0, 2);
+const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 2);
+const slugs = new Map(committees.map((c) => [c.name, c.slug]));
+// The budget at a glance: the operating budget, the capital plan or budget, and this year's biggest projects.
+const projects = capital ? capital.projects.filter((p) => inCurrentBudget(p, capital)) : [];
+const capitalTotal = capital
+  ? capital.kind === 'plan'
+    ? projects.reduce((n, p) => n + (p.total ?? 0), 0)
+    : projects.reduce((n, p) => n + p.thisYear, 0)
+  : 0;
+const building = projects.filter(isBuilding).length;
+const biggest = [...projects].sort((a, b) => b.thisYear - a.thisYear).slice(0, 3);
+const hearings = appeals
+  .filter((z) => z.hearing_date && z.hearing_date >= today)
+  .sort((a, b) => a.hearing_date!.localeCompare(b.hearing_date!))
+  .slice(0, 3);
+const open = discussions.filter((d) => d.jurisdiction === city.key && d.status === 'open');
+const fy = (y: number) => `FY${String(y).slice(2)}`;
+---
+
+<Base
+  title={city.name}
+  description={`${city.name} city government: the ${city.council}, your councilor, meetings, committees and the city's budget.`}
+  section="states"
+>
+  <CityHeader city={city} current="overview" lede={city.lede} />
+
+  <p class="councilor-link">
+    <a href={cityHref(city, 'council/#council-h')}>Find your councilor and see the district map →</a>
+  </p>
+
+  <section aria-labelledby="meet-h">
+    <div class="section-head">
+      <h2 id="meet-h">Council meetings</h2>
+      <a class="see-all" href={cityHref(city, 'council/#meetings-h')}>
+        All meetings
+      </a>
+    </div>
+    {upcoming.length + recent.length === 0 ? (
+      <p class="muted">None loaded yet.</p>
+    ) : (
+      <div class="panel">
+        {upcoming.length > 0 && <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming />}
+        {recent.length > 0 && <CityMeetings city={city} meetings={recent} slugs={slugs} />}
+      </div>
+    )}
+  </section>
+
+  {matters.length > 0 && (
+    <section aria-labelledby="latest-h">
+      <div class="section-head">
+        <h2 id="latest-h">Latest from the council</h2>
+        <a class="see-all" href={cityHref(city, 'council/#matters-h')}>
+          All ordinances and orders
+        </a>
+      </div>
+      <div class="panel">
+        <ul class="list phone-two">
+          {matters.slice(0, 3).map((m) => (
+            <LocalMatterItem matter={m} />
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {report && (
+    <section aria-labelledby="h311">
+      <div class="section-head">
+        <h2 id="h311">311 in the last 30 days</h2>
+        <a class="see-all" href={cityHref(city, 'neighborhoods/')}>
+          By district
+        </a>
+      </div>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Requests</dt>
+          <dd>{report.city.opened.toLocaleString()}</dd>
+          {change311(report.city) && <p class="small muted stat-note">{change311(report.city)} prior 30 days</p>}
+        </div>
+        <div class="stat">
+          <dt>Closed on time</dt>
+          <dd>{report.city.closed ? `${Math.round((report.city.closedOnTime / report.city.closed) * 100)}%` : '—'}</dd>
+          {report.city.typicalHours !== null && (
+            <p class="small muted stat-note">typically in {closeTime(report.city.typicalHours)}</p>
+          )}
+        </div>
+      </dl>
+      <p class="small muted top-requests">
+        Most asked for:{' '}
+        {report.city.top
+          .slice(0, 3)
+          .map((t) => t.type.toLowerCase())
+          .join(', ')}
+        .
+      </p>
+    </section>
+  )}
+
+  {(operating || capital) && (
+    <section aria-labelledby="budget-h">
+      <div class="section-head">
+        <h2 id="budget-h">The city’s budget</h2>
+        <a class="see-all" href={cityHref(city, 'budget/')}>
+          Budget
+        </a>
+      </div>
+      <dl class="stat-grid">
+        {operating && (
+          <div class="stat">
+            <dt>
+              Operating budget, {fy(operating.fiscalYear)}
+              {operating.stage === 'proposed' && ' (proposed)'}
+            </dt>
+            <dd>{formatMoney(operating.total)}</dd>
+            <p class="small muted stat-note">to run the city for a year</p>
+          </div>
+        )}
+        {capital && (
+          <div class="stat">
+            <dt>
+              {capital.stage === 'proposed' ? 'Proposed' : 'Adopted'} {capital.name}
+            </dt>
+            <dd>{formatMoney(capitalTotal)}</dd>
+            <p class="small muted stat-note">
+              {projects.length} projects
+              {capital.kind === 'plan' ? `, ${building} under construction or underway` : ', borrowing and cash'}
+            </p>
+          </div>
+        )}
+      </dl>
+      {biggest.length > 0 && (
+        <div class="panel budget-top">
+          <h3 class="h-small">Biggest capital projects in {capital!.yearLabel}</h3>
+          <ul class="list phone-two">
+            {biggest.map((p) => (
+              <li>
+                <p class="meta">{[p.department, p.area].filter(Boolean).join(' · ')}</p>
+                <p class="hearing-addr">
+                  <a href={capitalProjectHref(p.id)}>
+                    <strong>{p.title}</strong>
+                  </a>
+                </p>
+                {p.status && (
+                  <p class="small hearing-addr">
+                    {capitalStage(p.status) !== null && (
+                      <span class="stage-dots" aria-hidden="true">
+                        {CAPITAL_STAGES.map((_, i) => (
+                          <span class={i <= capitalStage(p.status)! ? 'on' : ''} />
+                        ))}
+                      </span>
+                    )}
+                    {p.status}
+                  </p>
+                )}
+                {p.total !== null && (
+                  <div class="funding-bar compact" aria-hidden="true">
+                    {(p.spent ?? 0) > 0 && <span class="fund-1" style={{ flex: `${p.spent} 1 0` }} />}
+                    <span class="fund-rest" style={{ flex: `${Math.max(0, p.total - (p.spent ?? 0))} 1 0` }} />
+                  </div>
+                )}
+                <p class="small muted hearing-addr">
+                  {formatMoney(p.thisYear)} in {capital!.yearLabel}
+                  {p.total !== null && ` · ${formatMoney(p.spent ?? 0)} ${p.spentText} of ${formatMoney(p.total)}`}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  )}
+
+  {hearings.length > 0 && (
+    <section aria-labelledby="zoning-h">
+      <div class="section-head">
+        <h2 id="zoning-h">Upcoming zoning hearings</h2>
+        <a class="see-all" href={cityHref(city, 'neighborhoods/')}>
+          All hearings
+        </a>
+      </div>
+      <div class="panel">
+        <ul class="list hearings phone-two">
+          {hearings.map((z) => (
+            <li>
+              <p class="meta">{[formatDate(z.hearing_date), z.neighborhood].filter(Boolean).join(' · ')}</p>
+              <p class="hearing-addr">
+                <strong>{streetAddress(z.address, z.neighborhood) ?? z.boa_apno}</strong>
+              </p>
+              {z.description && <p class="small hearing-desc">{z.description}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section aria-labelledby="disc-h">
+    <h2 id="disc-h">Have your say on {city.name}</h2>
+    <LiveDiscussions
+      client:idle
+      initial={open}
+      jurisdictions={[city.key]}
+      empty={`No ${city.name} discussion is open right now. Ask for one from a council matter’s or capital project’s page.`}
+    />
+  </section>
+</Base>
+
+<style>
+  .councilor-link {
+    margin: 0 0 var(--space-4);
+    font-weight: 600;
+  }
+  /* Phones show two of the three latest matters, projects and hearings. */
+  @media (max-width: 40rem) {
+    .phone-two > :global(li:nth-child(n + 3)) {
+      display: none;
+    }
+    .phone-two > :global(li:nth-child(2)) {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
+  .budget-top {
+    margin-top: var(--space-3);
+  }
+  .budget-top .h-small {
+    margin: 0;
+  }
+  .budget-top .meta {
+    margin: 0;
+  }
+  .top-requests {
+    margin-top: var(--space-2);
+  }
+  .hearings .meta,
+  .hearing-addr,
+  .hearing-desc {
+    margin: 0;
+  }
+  .hearing-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

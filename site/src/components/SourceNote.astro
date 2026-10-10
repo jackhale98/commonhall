@@ -1,0 +1,26 @@
+---
+/** "Councilors from the city's website, checked weekly. Meetings from …" — where a page's data comes from. */
+import type { Source } from '../lib/cities';
+
+interface Props {
+  parts: { what: string; source?: Source }[];
+}
+
+const parts = Astro.props.parts.filter((p) => p.source);
+---
+
+<p class="small muted tab-note">
+  {parts.map((p, i) => (
+    <>
+      {i > 0 && ' '}
+      <span>
+        {p.what} from{' '}
+        <a href={p.source!.url} rel="noopener">
+          {p.source!.label}
+        </a>
+        {p.source!.cadence && `, checked ${p.source!.cadence}`}.
+      </span>
+    </>
+  ))}
+  <slot />
+</p>

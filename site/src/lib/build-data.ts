@@ -43,20 +43,25 @@ import {
   docketTitle,
   report311,
   type Boston311Day,
-  type BostonHearing,
   type CapitalProject,
   type CityBudgetLine,
   type ZbaAppeal,
   type ZbaDecisionCount,
 } from './local';
-import type {
-  CapitalDocument,
-  CapitalItem,
-  CityCommittee,
-  CityMeeting,
-  OperatingBudget,
-  OperatingLine,
-} from './worcester';
+import {
+  annualCapital,
+  bostonCapital,
+  bostonOperating,
+  printedOperating,
+  type CapitalDocument,
+  type CapitalItem,
+  type CapitalView,
+  type CityCommittee,
+  type CityMeeting,
+  type OperatingLine,
+  type OperatingSummary,
+} from './city';
+import { committeeSlug } from '@civic/congress-client/boston-committees';
 import {
   RestError,
   inList,
@@ -77,7 +82,6 @@ import {
   type Discussion,
   type LocalMatter,
   type LocalMatterAction,
-  type LocalMeeting,
   type LocalOfficial,
   type Member,
   STATE_BILL_COLUMNS,
@@ -573,13 +577,26 @@ export const loadCaseAbout = memo(async () => {
   return about;
 });
 
-// ---- Boston -----------------------------------------------------------------
+// ---- Cities -----------------------------------------------------------------
+// Every loader takes a city key ("ma-boston"); each city's sources are turned into
+// the shared shapes in lib/city.ts, so its pages are filled from whatever it has.
 
-/** Boston 311 for the last 30 days and the 30 before, citywide and per district (null before the first sync). */
-export const loadBoston311 = memo(async () => {
+/** memo for loaders that take a city key. */
+function memoByCity<T>(fn: (city: string) => Promise<T>): (city: string) => Promise<T> {
+  const cache = new Map<string, Promise<T>>();
+  return (city) => {
+    let p = cache.get(city);
+    if (!p) cache.set(city, (p = fn(city)));
+    return p;
+  };
+}
+
+/** 311 for the last 30 days and the 30 before, citywide and per district (null without 311 data). */
+export const loadCity311 = memoByCity(async (city) => {
   const since = new Date(Date.now() - 62 * 86_400_000).toISOString().slice(0, 10);
   const rows = await selectAllOptional<Boston311Day>('boston_311_daily', {
     select: BOSTON_311_COLUMNS,
+    city: `eq.${city}`,
     day: `gte.${since}`,
     order: 'day.asc,district.asc,request_type.asc,source.asc',
   });
@@ -592,65 +609,121 @@ export const loadBoston311 = memo(async () => {
 });
 
 /** Zoning decisions in the last year, counted per neighborhood and outcome. */
-export const loadZbaDecisionCounts = memo(async () =>
+export const loadZbaDecisionCounts = memoByCity((city) =>
   selectAllOptional<ZbaDecisionCount>('zba_decision_counts', {
     select: 'neighborhood,decision,cases',
+    city: `eq.${city}`,
     order: 'neighborhood.asc,decision.asc',
   }),
 );
 
-/** Zoning Board of Appeal cases with a hearing still to come. */
-export const loadZbaAppeals = memo(async () =>
+/** Zoning appeals with a hearing still to come. */
+export const loadZbaAppeals = memoByCity((city) =>
   selectAllOptional<ZbaAppeal>('zba_appeals', {
     select: ZBA_COLUMNS,
+    city: `eq.${city}`,
     order: 'hearing_date.asc,boa_apno.asc',
   }),
 );
 
-/** Boston's newest adopted operating budget and its revenue (null before the first sync). */
-export const loadCityBudget = memo(async () =>
-  budgetSummary(
-    (
-      await selectAllOptional<CityBudgetLine>('city_budget_lines', {
-        select: CITY_BUDGET_COLUMNS,
-        order: 'kind.asc,fiscal_year.asc,dept.asc,grouping.asc,line.asc,basis.asc',
-      })
-    ).map((l) => ({ ...l, amount: Number(l.amount) })),
-  ),
-);
+/** The operating budget, from line-item data (Boston) or a printed summary (Worcester); null without either. */
+export const loadCityOperating = memoByCity(async (city): Promise<OperatingSummary | null> => {
+  const [lines, docs, printed] = await Promise.all([
+    selectAllOptional<CityBudgetLine>('city_budget_lines', {
+      select: CITY_BUDGET_COLUMNS,
+      city: `eq.${city}`,
+      order: 'kind.asc,fiscal_year.asc,dept.asc,grouping.asc,line.asc,basis.asc',
+    }),
+    selectAllOptional<{
+      fiscal_year: number;
+      stage: 'proposed' | 'adopted';
+      title: string;
+      source_url: string;
+      columns: string[];
+    }>('local_operating_documents', {
+      select: 'fiscal_year,stage,title,source_url,columns',
+      city: `eq.${city}`,
+      order: 'fiscal_year.desc',
+    }),
+    selectAllOptional<OperatingLine & { fiscal_year: number }>('local_operating_lines', {
+      select: 'fiscal_year,kind,seq,grp,label,amounts',
+      city: `eq.${city}`,
+      order: 'kind.asc,seq.asc',
+    }),
+  ]);
+  if (lines.length) return bostonOperating(budgetSummary(lines.map((l) => ({ ...l, amount: Number(l.amount) }))));
+  const doc = docs[0];
+  if (!doc) return null;
+  return printedOperating(
+    doc,
+    printed.filter((l) => l.fiscal_year === doc.fiscal_year).map((l) => ({ ...l, amounts: l.amounts.map(Number) })),
+  );
+});
 
-/** Boston Capital Plan projects, largest budget first. */
-export const loadCapitalProjects = memo(async () =>
-  (
-    await selectAllOptional<CapitalProject>('capital_projects', {
+/** Capital projects: a multi-year plan (Boston) or annual budgets (Worcester); null without either. */
+export const loadCityCapital = memoByCity(async (city): Promise<CapitalView | null> => {
+  const [plan, docs, items] = await Promise.all([
+    selectAllOptional<CapitalProject>('capital_projects', {
       select: CAPITAL_COLUMNS,
+      city: `eq.${city}`,
       order: 'total_budget.desc,proj_id.asc',
-    })
-  ).map((p) => ({
-    ...p,
-    total_budget: Number(p.total_budget),
-    spent: Number(p.spent),
-    year0: Number(p.year0),
-    year1: Number(p.year1),
-    years_2_5: Number(p.years_2_5),
-    external_funds: Number(p.external_funds),
-  })),
-);
+    }),
+    selectAllOptional<CapitalDocument>('local_capital_documents', {
+      select: 'fiscal_year,stage,title,source_url,plan_years,plan',
+      city: `eq.${city}`,
+      order: 'fiscal_year.desc',
+    }),
+    selectAllOptional<CapitalItem>('local_capital_items', {
+      select:
+        'fiscal_year,stage,seq,department,category,title,description,borrowing,cash,new_authorization,prior_authorization,grants',
+      city: `eq.${city}`,
+      order: 'fiscal_year.desc,seq.asc',
+    }),
+  ]);
+  if (plan.length)
+    return bostonCapital(
+      plan.map((p) => ({
+        ...p,
+        total_budget: Number(p.total_budget),
+        spent: Number(p.spent),
+        year0: Number(p.year0),
+        year1: Number(p.year1),
+        years_2_5: Number(p.years_2_5),
+        external_funds: Number(p.external_funds),
+      })),
+      city,
+    );
+  const num = (i: CapitalItem): CapitalItem => ({
+    ...i,
+    borrowing: Number(i.borrowing),
+    cash: Number(i.cash),
+    new_authorization: Number(i.new_authorization),
+    prior_authorization: Number(i.prior_authorization),
+    grants: Number(i.grants),
+  });
+  return annualCapital(
+    docs.map((doc) => ({
+      doc,
+      items: items.filter((i) => i.fiscal_year === doc.fiscal_year && i.stage === doc.stage).map(num),
+    })),
+    city,
+  );
+});
 
-export const loadLocalOfficials = memo(async () =>
-  selectAll<LocalOfficial>('local_officials', {
+export const loadCityOfficials = memoByCity((city) =>
+  (DEMO ? select : selectAllOptional)<LocalOfficial>('local_officials', {
     select: LOCAL_OFFICIAL_COLUMNS,
-    city: 'eq.boston',
+    city: `eq.${city}`,
     current: 'eq.true',
-    order: 'id.asc',
+    order: 'district.asc.nullslast,name.asc',
   }),
 );
 
 /** Most recently active council matters, consent-agenda resolutions left out (the default list). */
-export const loadRecentLocalMatters = memo(async () =>
+export const loadRecentLocalMatters = memoByCity((city) =>
   select<LocalMatter>('local_matters', {
     select: LOCAL_MATTER_COLUMNS,
-    city: 'eq.boston',
+    city: `eq.${city}`,
     type: hiddenTypesFilter(),
     order: 'latest_action_date.desc.nullslast,last_modified.desc',
     limit: 10,
@@ -658,13 +731,13 @@ export const loadRecentLocalMatters = memo(async () =>
 );
 
 /**
- * Counts for the Boston matters filters: every type; statuses and the total over
+ * Counts for the council matters filters: every type; statuses and the total over
  * the default list (consent-agenda resolutions left out), so they match it.
  */
-export const loadLocalMatterFacets = memo(async () => {
-  const rows = await selectAll<{ type: string | null; status: string | null }>('local_matters', {
+export const loadLocalMatterFacets = memoByCity(async (city) => {
+  const rows = await selectAllOptional<{ type: string | null; status: string | null }>('local_matters', {
     select: 'type,status',
-    city: 'eq.boston',
+    city: `eq.${city}`,
     order: 'id.asc',
   });
   const shown = rows.filter((r) => !HIDDEN_MATTER_TYPES.includes(r.type ?? ''));
@@ -677,25 +750,38 @@ export const loadLocalMatterFacets = memo(async () => {
 });
 
 /**
- * Every stored Boston committee hearing, newest first, with the dockets on its
- * agenda (empty before the committees migration and its first sync).
+ * Council and committee meetings, newest first, with the dockets on committee
+ * agendas where the city records them. A joint meeting some systems list once per
+ * committee is kept once.
  */
-export const loadBostonHearings = memo(async (): Promise<BostonHearing[]> => {
-  const meetings = (
-    await selectAllOptional<Omit<BostonHearing, 'items'>>('local_meetings', {
-      select: 'id,date,time,starts_at,location,agenda_url,minutes_url,legistar_url,committees',
-      city: 'eq.boston',
-      committees: 'neq.{}',
-      order: 'date.desc,id.asc',
-    })
-  ).filter((m) => (m.committees ?? []).length > 0);
-  const items = meetings.length
-    ? await selectByIds<BostonHearing['items'][number] & { meeting_id: string }>(
+export const loadCityMeetings = memoByCity(async (city): Promise<CityMeeting[]> => {
+  const rows = await (DEMO ? select : selectAllOptional)<
+    Omit<CityMeeting, 'items' | 'committees' | 'status'> & {
+      committees?: string[] | null;
+      status?: string | null;
+    }
+  >('local_meetings', {
+    select: 'id,date,time,starts_at,location,agenda_url,minutes_url,legistar_url,status,committees',
+    city: `eq.${city}`,
+    order: 'date.desc,id.desc',
+  });
+  const seen = new Set<string>();
+  const meetings = rows
+    .map((m) => ({ ...m, committees: m.committees ?? [], status: m.status ?? null }))
+    .filter((m) => {
+      const key = `${m.date}|${m.time}|${[...m.committees].sort().join('+')}`;
+      if (m.committees.length && seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  const withCommittee = meetings.filter((m) => m.committees.length > 0).map((m) => m.id);
+  const items = withCommittee.length
+    ? await selectByIds<CityMeeting['items'][number] & { meeting_id: string }>(
         'local_meeting_items',
         'meeting_id',
-        meetings.map((m) => m.id),
+        withCommittee,
         { select: 'meeting_id,seq,matter_id,file_number,title', order: 'meeting_id.asc,seq.asc' },
-      )
+      ).catch(() => [])
     : [];
   // Agenda lines are often procedural ("On the message and order, referred on…"); use the docket's own title.
   const matterIds = [...new Set(items.map((i) => i.matter_id).filter((id): id is string => Boolean(id)))];
@@ -718,19 +804,37 @@ export const loadBostonHearings = memo(async (): Promise<BostonHearing[]> => {
   return meetings.map((m) => ({ ...m, items: byMeeting.get(m.id) ?? [] }));
 });
 
-/** Recent council meetings and committee hearings, each with its committees (none for a full council meeting). */
-export const loadLocalMeetings = memo(async (): Promise<(LocalMeeting & { committees: string[] })[]> => {
-  const [meetings, hearings] = await Promise.all([
-    select<LocalMeeting>('local_meetings', {
-      select: 'id,event_id,body,starts_at,date,time,location,agenda_url,minutes_url,legistar_url',
-      city: 'eq.boston',
-      order: 'date.desc',
-      limit: 40,
+/**
+ * The council's committees: those the city lists (with members and descriptions
+ * where it publishes them), plus any other committee its meetings name.
+ */
+export const loadCityCommittees = memoByCity(async (city): Promise<CityCommittee[]> => {
+  const [committees, meetings] = await Promise.all([
+    selectAllOptional<Omit<CityCommittee, 'members'>>('local_committees', {
+      select: 'id,slug,name,description,url',
+      city: `eq.${city}`,
+      order: 'name.asc',
     }),
-    loadBostonHearings(),
+    loadCityMeetings(city),
   ]);
-  const committees = new Map(hearings.map((h) => [h.id, h.committees]));
-  return meetings.map((m) => ({ ...m, committees: committees.get(m.id) ?? [] }));
+  const members = committees.length
+    ? await selectByIds<CityCommittee['members'][number] & { committee_id: string }>(
+        'local_committee_members',
+        'committee_id',
+        committees.map((c) => c.id),
+        { select: 'committee_id,seq,official_id,name,role', order: 'committee_id.asc,seq.asc' },
+      )
+    : [];
+  const by = groupBy(members, (m) => m.committee_id);
+  const listed = committees.map((c) => ({ ...c, members: by.get(c.id) ?? [] }));
+  const known = new Set(listed.map((c) => c.name));
+  const others = [...new Set(meetings.flatMap((m) => m.committees))]
+    .filter((name) => !known.has(name))
+    .map((name) => {
+      const slug = committeeSlug(name);
+      return { id: `${city}-${slug}`, slug, name, description: null, url: null, members: [] };
+    });
+  return [...listed, ...others].sort((a, b) => a.name.localeCompare(b.name));
 });
 
 export interface LocalSponsorship {
@@ -740,7 +844,7 @@ export interface LocalSponsorship {
   sequence: number | null;
 }
 
-/** Council matters with a prerendered page (all of them in demo mode). */
+/** Council matters with a prerendered page, every city (all of them in demo mode). */
 export const loadPrerenderLocalMatters = memo(async () => {
   const ids = DEMO
     ? (DEMO_TABLES.local_matters as unknown as LocalMatter[]).map((m) => m.id)
@@ -762,7 +866,7 @@ export const loadPrerenderLocalMatters = memo(async () => {
   }));
 });
 
-/** Matters each councilor sponsored, newest first (councilor pages). */
+/** Matters a councilor sponsored, newest first (councilor pages). */
 export async function loadSponsoredMatters(officialId: string): Promise<LocalMatter[]> {
   if (DEMO) {
     const ids = new Set(
@@ -772,7 +876,7 @@ export async function loadSponsoredMatters(officialId: string): Promise<LocalMat
     );
     return (DEMO_TABLES.local_matters as unknown as LocalMatter[]).filter((m) => ids.has(m.id));
   }
-  const rows = await selectAll<{ matter: LocalMatter | null }>('local_matter_sponsors', {
+  const rows = await selectAllOptional<{ matter: LocalMatter | null }>('local_matter_sponsors', {
     select: `matter:local_matters(${LOCAL_MATTER_COLUMNS})`,
     official_id: `eq.${officialId}`,
   });
@@ -789,117 +893,13 @@ export interface DistrictShape {
   geojson: string;
 }
 
-/** Council district outlines for the Boston map. */
-// ---- Worcester -------------------------------------------------------------
-
-export const loadWorcesterOfficials = memo(async () =>
-  selectAllOptional<LocalOfficial>('local_officials', {
-    select: LOCAL_OFFICIAL_COLUMNS,
-    city: 'eq.worcester',
-    current: 'eq.true',
-    order: 'district.asc.nullslast,name.asc',
-  }),
-);
-
-/** Standing committees with their members (chair, vice chair, member). */
-export const loadWorcesterCommittees = memo(async (): Promise<CityCommittee[]> => {
-  const committees = await selectAllOptional<Omit<CityCommittee, 'members'>>('local_committees', {
-    select: 'id,slug,name,description,url',
-    city: 'eq.worcester',
-    order: 'name.asc',
-  });
-  const members = committees.length
-    ? await selectByIds<CityCommittee['members'][number] & { committee_id: string }>(
-        'local_committee_members',
-        'committee_id',
-        committees.map((c) => c.id),
-        { select: 'committee_id,seq,official_id,name,role', order: 'committee_id.asc,seq.asc' },
-      )
-    : [];
-  const by = groupBy(members, (m) => m.committee_id);
-  return committees.map((c) => ({ ...c, members: by.get(c.id) ?? [] }));
-});
-
-/**
- * Council and standing committee meetings, newest first. PrimeGov lists a joint
- * meeting once under each committee; it is shown once.
- */
-export const loadWorcesterMeetings = memo(async () => {
-  const rows = await selectAllOptional<CityMeeting>('local_meetings', {
-    select: 'id,date,time,location,agenda_url,minutes_url,legistar_url,status,committees',
-    city: 'eq.worcester',
-    order: 'date.desc,id.desc',
-  });
-  const seen = new Set<string>();
-  return rows.filter((m) => {
-    const key = `${m.date}|${m.time}|${[...m.committees].sort().join('+')}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-});
-
-/** The newest capital budget (adopted or proposed) and the one before it, newest first. */
-export const loadWorcesterCapital = memo(async () => {
-  const [docs, items] = await Promise.all([
-    selectAllOptional<CapitalDocument>('local_capital_documents', {
-      select: 'fiscal_year,stage,title,source_url,plan_years,plan',
-      city: 'eq.worcester',
-      order: 'fiscal_year.desc',
-    }),
-    selectAllOptional<CapitalItem>('local_capital_items', {
-      select:
-        'fiscal_year,stage,seq,department,category,title,description,borrowing,cash,new_authorization,prior_authorization,grants',
-      city: 'eq.worcester',
-      order: 'fiscal_year.desc,seq.asc',
-    }),
-  ]);
-  const num = (i: CapitalItem): CapitalItem => ({
-    ...i,
-    borrowing: Number(i.borrowing),
-    cash: Number(i.cash),
-    new_authorization: Number(i.new_authorization),
-    prior_authorization: Number(i.prior_authorization),
-    grants: Number(i.grants),
-  });
-  return docs.map((doc) => ({
-    doc,
-    items: items.filter((i) => i.fiscal_year === doc.fiscal_year && i.stage === doc.stage).map(num),
-  }));
-});
-
-/** The newest operating budget's revenue and spending summaries (null before it loads). */
-export const loadWorcesterOperating = memo(async (): Promise<OperatingBudget | null> => {
-  const [docs, lines] = await Promise.all([
-    selectAllOptional<Omit<OperatingBudget, 'lines'>>('local_operating_documents', {
-      select: 'fiscal_year,stage,title,source_url,columns',
-      city: 'eq.worcester',
-      order: 'fiscal_year.desc',
-    }),
-    selectAllOptional<OperatingLine & { fiscal_year: number }>('local_operating_lines', {
-      select: 'fiscal_year,kind,seq,grp,label,amounts',
-      city: 'eq.worcester',
-      order: 'kind.asc,seq.asc',
-    }),
-  ]);
-  const doc = docs[0];
-  if (!doc) return null;
-  return {
-    ...doc,
-    lines: lines
-      .filter((l) => l.fiscal_year === doc.fiscal_year)
-      .map((l) => ({ ...l, amounts: l.amounts.map(Number) })),
-  };
-});
-
-export const loadWorcesterDistricts = memo(async () =>
-  DEMO ? [] : rpc<DistrictShape[]>('council_district_shapes', { p_city: 'worcester' }),
-);
-
-export const loadCouncilDistricts = memo(async () =>
+/** A city's council district outlines, for its map. */
+export const loadCouncilDistricts = memoByCity(async (city) =>
   DEMO
-    ? (DEMO_TABLES.council_districts as unknown as DistrictShape[])
-    : rpc<DistrictShape[]>('council_district_shapes', { p_city: 'boston' }),
+    ? city === 'ma-boston'
+      ? (DEMO_TABLES.council_districts as unknown as DistrictShape[])
+      : []
+    : rpc<DistrictShape[]>('council_district_shapes', { p_city: city }).catch(() => [] as DistrictShape[]),
 );
 
 // ---- Massachusetts and other state bills -----------------------------------

@@ -1,0 +1,57 @@
+---
+import DiscussionLink from '../../../../../components/DiscussionLink.astro';
+import LocalMatterView from '../../../../../components/LocalMatterView';
+import Base from '../../../../../layouts/Base.astro';
+import {
+  loadCityOfficials,
+  loadDiscussionsByTarget,
+  loadPrerenderLocalMatters,
+  type LocalSponsorship,
+} from '../../../../../lib/build-data';
+import { cityOf, idWithinCity, type City } from '../../../../../lib/cities';
+import { DEMO } from '../../../../../lib/config';
+import { cityHref } from '../../../../../lib/paths';
+import type { LocalMatter, LocalMatterAction } from '../../../../../lib/types';
+
+export async function getStaticPaths() {
+  return (await loadPrerenderLocalMatters()).flatMap((data) => {
+    const city = cityOf(data.matter.id);
+    return city
+      ? [
+          {
+            params: { state: city.state.toLowerCase(), city: city.slug, id: idWithinCity(data.matter.id) },
+            props: { ...data, city },
+          },
+        ]
+      : [];
+  });
+}
+
+interface Props {
+  city: City;
+  matter: LocalMatter;
+  actions: LocalMatterAction[];
+  sponsors: LocalSponsorship[];
+}
+
+const { city, matter, actions, sponsors } = Astro.props;
+const officialIds = (await loadCityOfficials(city.key)).map((o) => o.id);
+const discussion = (await loadDiscussionsByTarget()).get(`local_matter:${matter.id}`);
+const label = matter.file_number ? `Docket #${matter.file_number}` : `Matter ${matter.matter_id}`;
+const description = `${city.council} ${label}: ${matter.title}`.slice(0, 300);
+---
+
+<Base title={`${label}: ${matter.title.slice(0, 80)}`} description={description} section="states">
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={cityHref(city, 'council/')}>{city.council}</a> › {label}
+  </nav>
+  <DiscussionLink discussion={discussion} targetType="local_matter" targetId={matter.id} />
+  <LocalMatterView
+    client:load
+    matter={matter}
+    actions={actions}
+    sponsors={sponsors}
+    officialIds={officialIds}
+    live={!DEMO}
+  />
+</Base>

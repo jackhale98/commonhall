@@ -8,31 +8,6 @@ export const HIDDEN_MATTER_TYPES = ['Consent Agenda Resolution'];
 /** PostgREST filter value excluding the hidden types, e.g. not.in.("Consent Agenda Resolution"). */
 export const hiddenTypesFilter = () => `not.in.(${HIDDEN_MATTER_TYPES.map((t) => `"${t}"`).join(',')})`;
 
-/** Boston's sub-pages, in tab order. */
-export const BOSTON_TABS = [
-  { key: 'overview', label: 'Overview', path: 'boston/' },
-  { key: 'council', label: 'Council', path: 'boston/council/' },
-  { key: 'committees', label: 'Committees', path: 'boston/committees/' },
-  { key: 'neighborhoods', label: 'Neighborhoods', path: 'boston/neighborhoods/' },
-  { key: 'budget', label: 'Budget', path: 'boston/budget/' },
-] as const;
-export type BostonTab = (typeof BOSTON_TABS)[number]['key'];
-
-/** A council meeting with its committees ([] for a full council meeting) and the dockets on its agenda. */
-export interface BostonHearing {
-  id: string;
-  date: string;
-  time: string | null;
-  starts_at: string | null;
-  location: string | null;
-  agenda_url: string | null;
-  minutes_url: string | null;
-  legistar_url: string | null;
-  committees: string[];
-  /** `stored`: we hold the matter (link our page); otherwise link Legistar. */
-  items: { seq: number; matter_id: string | null; file_number: string | null; title: string; stored?: boolean }[];
-}
-
 /**
  * A hearing agenda line without its procedural lead-in. Legistar files what a
  * committee heard as "On the message and order, referred on September 30, 2026,

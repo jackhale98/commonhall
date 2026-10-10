@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { formatMoney } from '../lib/finance';
-import { CAPITAL_STAGES, capitalStage, type CapitalRow } from '../lib/local';
-import { capitalProjectHref, href } from '../lib/paths';
+import type { ProjectRow } from '../lib/city';
+import { CAPITAL_STAGES, capitalStage } from '../lib/local';
+import { capitalProjectHref } from '../lib/paths';
 
 const PAGE = 10;
 
@@ -21,30 +22,38 @@ const pageSize = () => (typeof window !== 'undefined' && window.matchMedia('(max
 
 interface Props {
   /** Prerendered rows: the largest projects. */
-  initial: CapitalRow[];
+  initial: ProjectRow[];
+  /** The city's capital.json, with every project. */
+  jsonUrl: string;
   departments: string[];
-  neighborhoods: string[];
+  /** Neighborhoods (Boston) or categories (Worcester). */
+  areas: string[];
+  areaLabel: string;
   statuses: string[];
-  /** e.g. FY27, the plan's first year. */
+  /** e.g. FY27, the plan's first year or the budget's year. */
   yearLabel: string;
-  /** e.g. "spent through FY25". */
-  spentText: string;
+  /** e.g. "spent through FY25", when projects have whole-project totals. */
+  spentText?: string;
 }
 
 /**
- * Capital Plan projects: search (name, scope, department), filters (department,
- * neighbourhood, status), sorted by budget. Loads the full list (capital.json,
- * built with the site) when it comes into view.
+ * A city's capital projects: search (name, description, department), filters
+ * (department, area, stage where the city gives stages), largest first. Loads the
+ * full list (the city's capital.json, built with the site) when it comes into view.
+ * Whole-project totals and stages show where the city publishes them (Boston's
+ * plan); otherwise each project shows this year's money (Worcester's budget).
  */
 export default function CapitalExplorer({
   initial,
+  jsonUrl,
   departments,
-  neighborhoods,
+  areas,
+  areaLabel,
   statuses,
   yearLabel,
   spentText,
 }: Props) {
-  const [rows, setRows] = useState<CapitalRow[] | null>(null);
+  const [rows, setRows] = useState<ProjectRow[] | null>(null);
   const [q, setQ] = useState('');
   const [dept, setDept] = useState('');
   const [hood, setHood] = useState('');
@@ -55,11 +64,11 @@ export default function CapitalExplorer({
   useEffect(() => {
     setShown(pageSize());
     setMounted(true);
-    fetch(href('boston/capital.json'))
-      .then((r) => (r.ok ? (r.json() as Promise<CapitalRow[]>) : Promise.reject(new Error(String(r.status)))))
+    fetch(jsonUrl)
+      .then((r) => (r.ok ? (r.json() as Promise<ProjectRow[]>) : Promise.reject(new Error(String(r.status)))))
       .then(setRows)
       .catch(() => undefined);
-  }, []);
+  }, [jsonUrl]);
 
   const all = rows ?? initial;
   const hits = useMemo(() => {
@@ -72,7 +81,8 @@ export default function CapitalExplorer({
       return words.every((w) => text.includes(w));
     });
   }, [all, q, dept, hood, status]);
-  const total = hits.reduce((n, p) => n + p.t, 0);
+  const hasTotals = all.some((p) => p.t !== null);
+  const total = hits.reduce((n, p) => n + (hasTotals ? (p.t ?? 0) : p.y), 0);
   const set =
     <T,>(fn: (v: T) => void) =>
     (v: T) => {
@@ -122,8 +132,8 @@ export default function CapitalExplorer({
         </div>
         <div class="explorer-filters matter-filters" role="group" aria-label="Filters">
           {select('cap-dept', 'Any department', dept, departments, set(setDept))}
-          {select('cap-hood', 'Any area', hood, neighborhoods, set(setHood))}
-          {select('cap-status', 'Any stage', status, statuses, set(setStatus))}
+          {areas.length > 0 && select('cap-hood', areaLabel, hood, areas, set(setHood))}
+          {statuses.length > 0 && select('cap-status', 'Any stage', status, statuses, set(setStatus))}
           {active && (
             <button type="button" class="link-button clear-filters" onClick={reset}>
               Clear
@@ -132,7 +142,8 @@ export default function CapitalExplorer({
         </div>
       </form>
       <p class="small muted" aria-live="polite">
-        {hits.length.toLocaleString()} {hits.length === 1 ? 'project' : 'projects'} · {formatMoney(total)} in total
+        {hits.length.toLocaleString()} {hits.length === 1 ? 'project' : 'projects'} · {formatMoney(total)}{' '}
+        {hasTotals ? 'in total' : `this year`}
       </p>
       {hits.length > 0 && (
         <div class="panel">
@@ -146,23 +157,39 @@ export default function CapitalExplorer({
                   </a>
                 </p>
                 {p.w && <p class="small capital-scope">{p.w}</p>}
-                <p class="small capital-stage">
-                  <StageDots status={p.s} />
-                  {p.s}
-                </p>
-                <div class="funding-bar compact" aria-hidden="true">
-                  {p.p > 0 && <span class="fund-1" style={{ flex: `${p.p} 1 0` }} />}
-                  <span class="fund-rest" style={{ flex: `${Math.max(0, p.t - p.p)} 1 0` }} />
-                </div>
-                <p class="small muted">
-                  <strong>{formatMoney(p.p)}</strong> {spentText} of {formatMoney(p.t)}
-                  {p.y > 0 && (
-                    <>
-                      {' '}
-                      · {formatMoney(p.y)} planned in {yearLabel}
-                    </>
-                  )}
-                </p>
+                {p.s && (
+                  <p class="small capital-stage">
+                    <StageDots status={p.s} />
+                    {p.s}
+                  </p>
+                )}
+                {p.t !== null ? (
+                  <>
+                    <div class="funding-bar compact" aria-hidden="true">
+                      {(p.p ?? 0) > 0 && <span class="fund-1" style={{ flex: `${p.p} 1 0` }} />}
+                      <span class="fund-rest" style={{ flex: `${Math.max(0, p.t - (p.p ?? 0))} 1 0` }} />
+                    </div>
+                    <p class="small muted">
+                      <strong>{formatMoney(p.p ?? 0)}</strong> {spentText} of {formatMoney(p.t)}
+                      {p.y > 0 && (
+                        <>
+                          {' '}
+                          · {formatMoney(p.y)} planned in {yearLabel}
+                        </>
+                      )}
+                    </p>
+                  </>
+                ) : (
+                  <p class="small muted">
+                    {p.y > 0 ? (
+                      <>
+                        <strong>{formatMoney(p.y)}</strong> in borrowing and cash, {yearLabel}
+                      </>
+                    ) : (
+                      `No new money in ${yearLabel}`
+                    )}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

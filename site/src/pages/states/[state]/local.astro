@@ -1,20 +1,17 @@
 ---
 import StateHeader from '../../../components/StateHeader.astro';
 import Base from '../../../layouts/Base.astro';
-import {
-  loadBostonHearings,
-  loadLocalMeetings,
-  loadLocalOfficials,
-  loadWorcesterMeetings,
-  loadWorcesterOfficials,
-} from '../../../lib/build-data';
+import { loadCityMeetings, loadCityOfficials } from '../../../lib/build-data';
+import { CITY_LIST, citiesIn } from '../../../lib/cities';
 import { formatDate, stateName } from '../../../lib/format';
-import { href } from '../../../lib/paths';
-import { LOCAL_GOVERNMENTS } from '../../../lib/state-tabs';
+import { cityHref } from '../../../lib/paths';
 
 /** Only states with a city we cover. */
 export function getStaticPaths() {
-  return Object.keys(LOCAL_GOVERNMENTS).map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
+  return [...new Set(CITY_LIST.map((c) => c.state))].map((code) => ({
+    params: { state: code.toLowerCase() },
+    props: { code },
+  }));
 }
 
 interface Props {
@@ -23,45 +20,37 @@ interface Props {
 
 const { code } = Astro.props;
 const name = stateName(code);
-const cities = LOCAL_GOVERNMENTS[code] ?? [];
 // Each city's next council meeting and committee meeting make its card useful at a glance.
 const today = new Date().toISOString().slice(0, 10);
-const [bostonOfficials, bostonMeetings, hearings, worcesterOfficials, worcesterMeetings] = await Promise.all([
-  loadLocalOfficials(),
-  loadLocalMeetings(),
-  loadBostonHearings(),
-  loadWorcesterOfficials(),
-  loadWorcesterMeetings(),
-]);
-const upcoming = <T extends { date: string }>(list: T[]) => list.filter((m) => m.date >= today).at(-1);
-const glance: Record<string, { councilors: number; meeting?: string; committee?: string }> = {
-  Boston: {
-    councilors: bostonOfficials.length || 13,
-    meeting: upcoming(bostonMeetings.filter((m) => m.committees.length === 0))?.date,
-    committee: upcoming(hearings)?.date,
-  },
-  Worcester: {
-    councilors: worcesterOfficials.length || 11,
-    meeting: upcoming(worcesterMeetings.filter((m) => m.committees.length === 0 && m.status !== 'Cancelled'))?.date,
-    committee: upcoming(worcesterMeetings.filter((m) => m.committees.length > 0 && m.status !== 'Cancelled'))?.date,
-  },
-};
+const cities = await Promise.all(
+  citiesIn(code).map(async (city) => {
+    const [officials, meetings] = await Promise.all([loadCityOfficials(city.key), loadCityMeetings(city.key)]);
+    const next = (committee: boolean) =>
+      meetings
+        .filter((m) => m.date >= today && m.status !== 'Cancelled' && m.committees.length > 0 === committee)
+        .at(-1)?.date;
+    return {
+      city,
+      councilors: officials.length || city.districts + city.atLarge,
+      meeting: next(false),
+      committee: next(true),
+    };
+  }),
+);
 ---
 
 <Base title={`Local government in ${name}`} description={`Cities in ${name} that CommonHall covers.`} section="states">
   <StateHeader code={code} current="local" />
   <h2 class="h-small">Cities</h2>
-  {cities.map((c) => (
-    <a class="card local-card" href={href(c.path)}>
-      <strong>{c.name}</strong>
-      <span class="small muted">{c.summary}</span>
-      {glance[c.name] && (
-        <span class="small">
-          {glance[c.name]!.councilors} councilors
-          {glance[c.name]!.meeting && ` · Next council meeting ${formatDate(glance[c.name]!.meeting!)}`}
-          {glance[c.name]!.committee && ` · Next committee meeting ${formatDate(glance[c.name]!.committee!)}`}
-        </span>
-      )}
+  {cities.map(({ city, councilors, meeting, committee }) => (
+    <a class="card local-card" href={cityHref(city)}>
+      <strong>{city.name}</strong>
+      <span class="small muted">{city.summary}</span>
+      <span class="small">
+        {councilors} councilors
+        {meeting && ` · Next council meeting ${formatDate(meeting)}`}
+        {committee && ` · Next committee ${city.committeeSession} ${formatDate(committee)}`}
+      </span>
     </a>
   ))}
   <p class="small muted tab-note">More cities as their records become available in a form we can read.</p>

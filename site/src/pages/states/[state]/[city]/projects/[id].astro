@@ -1,0 +1,214 @@
+---
+import CapitalStages from '../../../../../components/CapitalStages.astro';
+import DiscussionLink from '../../../../../components/DiscussionLink.astro';
+import FundingBar from '../../../../../components/viz/FundingBar.astro';
+import Base from '../../../../../layouts/Base.astro';
+import { loadCityCapital, loadDiscussionsByTarget } from '../../../../../lib/build-data';
+import { CITY_LIST, idWithinCity, type City } from '../../../../../lib/cities';
+import type { CapitalView, ProjectView } from '../../../../../lib/city';
+import { formatMoney } from '../../../../../lib/finance';
+import { cityHref } from '../../../../../lib/paths';
+
+/** One page per project, across every plan or budget we hold (a program funded every year keeps one page). */
+export async function getStaticPaths() {
+  const paths = [];
+  for (const city of CITY_LIST) {
+    const view = await loadCityCapital(city.key);
+    for (const p of view?.projects ?? [])
+      paths.push({
+        params: { state: city.state.toLowerCase(), city: city.slug, id: idWithinCity(p.id) },
+        props: { city, view, p },
+      });
+  }
+  return paths;
+}
+
+interface Props {
+  city: City;
+  view: CapitalView;
+  p: ProjectView;
+}
+
+const { city, view, p } = Astro.props;
+const discussion = (await loadDiscussionsByTarget()).get(`capital_project:${p.id}`);
+const plan = view.kind === 'plan';
+const spentPct = p.total && p.spent !== null ? Math.round((p.spent / p.total) * 100) : 0;
+const latest = p.years[0];
+const where = [p.department, p.area].filter(Boolean).join(' · ');
+---
+
+<Base
+  title={`${p.title} (${city.name} capital project)`}
+  description={`${p.title}: ${p.department ?? `City of ${city.name}`} capital project${plan && p.area ? ` in ${p.area}` : ''}, ${
+    p.total !== null
+      ? `${formatMoney(p.total)} in the ${view.name}`
+      : `${formatMoney(p.thisYear)} in ${city.name}'s ${view.name}`
+  }.`}
+  section="states"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={cityHref(city, 'budget/')}>{city.name} budget</a> › {view.name}
+  </nav>
+  <header class="page-head">
+    {where && <p class="kicker">{where}</p>}
+    <h1>{p.title}</h1>
+    {p.description && <p class="lede scope">{p.description}</p>}
+  </header>
+
+  <DiscussionLink discussion={discussion} targetType="capital_project" targetId={p.id} />
+
+  <div class="project-grid">
+    {p.status && (
+      <section class="panel" aria-labelledby="stage-h">
+        <h2 id="stage-h" class="h-small">
+          Where it stands
+        </h2>
+        <CapitalStages status={p.status} />
+      </section>
+    )}
+
+    <section class="panel" aria-labelledby="money-h">
+      <h2 id="money-h" class="h-small">
+        {plan
+          ? 'Money'
+          : latest
+            ? latest.label.replace(/ proposed$/, ' proposal').replace(/ adopted$/, ' budget')
+            : 'Money'}
+      </h2>
+      {p.total !== null && p.spent !== null ? (
+        <>
+          <p class="money-head">
+            <span class="money-big">{formatMoney(p.spent)}</span>
+            <span class="muted">
+              {p.spentText}, of a <strong>{formatMoney(p.total)}</strong> total budget
+              {p.total > 0 && ` (${spentPct < 1 && p.spent > 0 ? '<1' : spentPct}%)`}
+            </span>
+          </p>
+          {p.segments && (
+            <FundingBar
+              segments={p.segments}
+              total={p.total}
+              label={`${p.title}: ${formatMoney(p.spent)} ${p.spentText} of a ${formatMoney(p.total)} total budget`}
+            />
+          )}
+        </>
+      ) : (
+        <p class="money-head">
+          <span class="money-big">{formatMoney(p.thisYear)}</span>
+          <span class="muted">
+            in borrowing and cash{latest?.label.startsWith(view.yearLabel) ? ' this year' : ` in ${latest?.label}`}
+          </span>
+        </p>
+      )}
+      {p.money.length > 0 && (
+        <dl class="money-rows">
+          {p.money.map((m) => (
+            <div>
+              <dt>{m.label}</dt>
+              <dd>{formatMoney(m.value)}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </section>
+
+    {p.years.length > 1 && (
+      <section class="panel" aria-labelledby="years-h">
+        <h2 id="years-h" class="h-small">
+          Year by year
+        </h2>
+        <table class="year-table">
+          <thead>
+            <tr>
+              <th scope="col">Budget</th>
+              <th scope="col">Borrowing and cash</th>
+              <th scope="col">New borrowing approved</th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.years.map((y) => (
+              <tr>
+                <th scope="row">{y.label}</th>
+                <td>{formatMoney(y.spend)}</td>
+                <td>{formatMoney(y.authorized)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )}
+  </div>
+
+  <p class="small muted">
+    From{' '}
+    {view.sources.map((s, i) => (
+      <>
+        {i > 0 && ' and '}
+        <a href={s.url} rel="noopener">
+          {s.label}
+        </a>
+      </>
+    ))}
+    {plan
+      ? ` (project ${idWithinCity(p.id)}). The total budget covers the whole project, including years before this plan and outside grants. Amounts are as the city published them.`
+      : ', as published. Borrowing is repaid over years from the operating budget; “new borrowing approved” is loan authority the council grants for the project.'}{' '}
+    <a href={cityHref(city, 'budget/#proj-h')}>All projects</a>.
+  </p>
+</Base>
+
+<style>
+  .scope {
+    max-width: 65ch;
+  }
+  .project-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-4) 0;
+  }
+  @media (min-width: 60rem) {
+    .project-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .money-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-3);
+  }
+  .money-big {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .money-rows {
+    display: grid;
+    gap: var(--space-1);
+    margin: var(--space-3) 0 0;
+  }
+  .money-rows div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border-bottom: 1px solid var(--border);
+    padding-block: var(--space-1);
+  }
+  .money-rows dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .year-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .year-table th,
+  .year-table td {
+    text-align: left;
+    padding: var(--space-1) var(--space-2) var(--space-1) 0;
+    border-bottom: 1px solid var(--border);
+  }
+</style>

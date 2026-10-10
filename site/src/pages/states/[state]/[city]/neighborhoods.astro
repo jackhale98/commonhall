@@ -1,19 +1,29 @@
 ---
-import BostonHeader from '../../../components/BostonHeader.astro';
-import District311 from '../../../components/District311';
-import ZoningExplorer from '../../../components/ZoningExplorer';
-import BarList from '../../../components/viz/BarList';
-import Base from '../../../layouts/Base.astro';
-import { loadBoston311, loadLocalOfficials, loadZbaAppeals, loadZbaDecisionCounts } from '../../../lib/build-data';
-import { zbaRow } from '../../../lib/local';
+import CityHeader from '../../../../components/CityHeader.astro';
+import District311 from '../../../../components/District311';
+import ZoningExplorer from '../../../../components/ZoningExplorer';
+import BarList from '../../../../components/viz/BarList';
+import Base from '../../../../layouts/Base.astro';
+import { loadCity311, loadCityOfficials, loadZbaAppeals, loadZbaDecisionCounts } from '../../../../lib/build-data';
+import type { City } from '../../../../lib/cities';
+import { cityPaths } from '../../../../lib/city-pages';
+import { zbaRow } from '../../../../lib/local';
+import { cityHref } from '../../../../lib/paths';
 
+export const getStaticPaths = () => cityPaths('neighborhoods');
+
+interface Props {
+  city: City;
+}
+
+const { city } = Astro.props;
 const [appeals, report, officials, decisions] = await Promise.all([
-  loadZbaAppeals(),
-  loadBoston311(),
-  loadLocalOfficials(),
-  loadZbaDecisionCounts(),
+  loadZbaAppeals(city.key),
+  loadCity311(city.key),
+  loadCityOfficials(city.key),
+  loadZbaDecisionCounts(city.key),
 ]);
-const districtLabels = Array.from({ length: 9 }, (_, i) => {
+const districtLabels = Array.from({ length: city.districts }, (_, i) => {
   const o = officials.find((x) => x.district === i + 1);
   return { district: i + 1, label: `District ${i + 1}${o ? ` · ${o.name}` : ''}` };
 });
@@ -45,45 +55,45 @@ if (restHoods.length)
     note: `(${restHoods.length} more)`,
   });
 const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n): n is string => !!n))].sort();
+const zoning = appeals.length > 0 || decided > 0;
+const { requests, zoning: zoningSource } = city.sources;
 ---
 
 <Base
-  title="Boston neighborhoods: 311 and zoning"
-  description="Boston by district: 311 requests and how fast the city closes them, and Zoning Board of Appeal hearings and decisions."
+  title={`${city.name} neighborhoods${report && zoning ? ': 311 and zoning' : ''}`}
+  description={`${city.name} by district: ${report ? '311 requests and how fast the city closes them' : ''}${report && zoning ? ', and ' : ''}${zoning ? 'zoning appeal hearings and decisions' : ''}.`}
   section="states"
   noindex
 >
-  <BostonHeader
+  <CityHeader
+    city={city}
     current="neighborhoods"
-    lede="Your street: what neighbors ask the city to fix, and what is being built."
+    lede={`Your street: ${report ? 'what neighbors ask the city to fix' : ''}${report && zoning ? ', and ' : ''}${zoning ? 'what is being built' : ''}.`}
   />
 
-  <section aria-labelledby="h311">
-    <h2 id="h311">311 requests, last 30 days</h2>
-    {report ? (
+  {report && (
+    <section aria-labelledby="h311">
+      <h2 id="h311">311 requests, last 30 days</h2>
       <District311 client:visible report={report} districts={districtLabels} />
-    ) : (
-      <p class="muted">311 requests have not loaded yet.</p>
-    )}
-  </section>
+    </section>
+  )}
 
-  <section aria-labelledby="zba-h">
-    <h2 id="zba-h">Upcoming zoning hearings</h2>
-    <p class="small muted lede-note">
-      Building something the zoning code doesn’t allow (an extra unit, a taller roof, a new use) needs the board’s
-      approval at a public hearing, where neighbors can speak. Cases are listed here until their hearing.
-    </p>
-    {appeals.length === 0 ? (
-      <p class="muted">No upcoming hearings loaded.</p>
-    ) : (
+  {appeals.length > 0 && (
+    <section aria-labelledby="zba-h">
+      <h2 id="zba-h">Upcoming zoning hearings</h2>
+      <p class="small muted lede-note">
+        Building something the zoning code doesn’t allow (an extra unit, a taller roof, a new use) needs the board’s
+        approval at a public hearing, where neighbors can speak. Cases are listed here until their hearing.
+      </p>
       <ZoningExplorer
         client:visible
         initial={upcoming.slice(0, 10).map(zbaRow)}
+        jsonUrl={cityHref(city, 'zoning.json')}
         neighborhoods={neighborhoods}
         today={today}
       />
-    )}
-  </section>
+    </section>
+  )}
 
   {decided > 0 && (
     <section aria-labelledby="zbad-h">
@@ -112,19 +122,32 @@ const neighborhoods = [...new Set(appeals.map((z) => z.neighborhood).filter((n):
         <BarList items={topHoods} label="Zoning decisions in the last 12 months by neighborhood" tone="fill-sky" />
       </div>
       <p class="small muted">
-        Totals only: CommonHall doesn’t keep a list of past cases by address. Look up a past decision in the city’s
-        <a href="https://www.boston.gov/departments/inspectional-services/zoning-board-appeal">board records</a>.
+        Totals only: CommonHall doesn’t keep a list of past cases by address.
+        {zoningSource && (
+          <>
+            {' '}
+            Look up a past decision in the city’s <a href={zoningSource.board}>board records</a>.
+          </>
+        )}
       </p>
     </section>
   )}
 
-  <p class="small muted">
-    From the City of Boston on Analyze Boston, checked daily:
-    <a href="https://data.boston.gov/dataset/311-service-requests">311 requests</a> (summaries only; the city runs two
-    311 systems for different departments, counted together here) and the
-    <a href="https://data.boston.gov/dataset/zoning-board-of-appeal-tracker">Zoning Board of Appeal tracker</a>. Hearing
-    times, documents and how to comment are on the{' '}
-    <a href="https://www.boston.gov/departments/inspectional-services/zoning-board-appeal">board’s page</a>.
+  <p class="small muted tab-note">
+    {requests && report && (
+      <>
+        311 summaries from <a href={requests.url}>{requests.label}</a>
+        {requests.cadence && `, checked ${requests.cadence}`}; where the city runs more than one 311 system, they are
+        counted together.{' '}
+      </>
+    )}
+    {zoningSource && zoning && (
+      <>
+        Zoning cases from <a href={zoningSource.url}>{zoningSource.label}</a>
+        {zoningSource.cadence && `, checked ${zoningSource.cadence}`}. Hearing times, documents and how to comment are
+        on the <a href={zoningSource.board}>board’s page</a>.
+      </>
+    )}
   </p>
 </Base>
 

@@ -44,7 +44,7 @@ await admin('/rest/v1/profiles', {
     address_label: address,
     state: 'MA',
     congressional_district: 8,
-    city: 'boston',
+    city: 'ma-boston',
     council_district: 1,
   }),
 });

@@ -18,7 +18,9 @@
  * stopped; re-reading an unchanged matter writes nothing.
  */
 import {
+  BOSTON_COMMITTEES,
   BudgetExhaustedError,
+  committeeSlug,
   committeesFromLocation,
   legistarMatterUrl,
   legistarUtc,
@@ -37,7 +39,10 @@ import type { JobRun } from '../job.ts';
 import { toDate } from '../text.ts';
 
 export const BOSTON_JOB = 'boston';
-export const CITY = 'boston';
+/** The city key (state and name); every Boston id starts with it. */
+export const CITY = 'ma-boston';
+/** Boston's Legistar client name (its web addresses). */
+const LEGISTAR_CLIENT = 'boston';
 export const COUNCIL_BODY = 'City Council';
 /** First load of meetings: this many days back, plus everything upcoming. */
 const MEETINGS_FIRST_DAYS = 180;
@@ -106,7 +111,7 @@ export function matterRow(m: LegistarMatter, latest?: { date: string | null; tex
     intro_date: toDate(m.MatterIntroDate),
     agenda_date: toDate(m.MatterAgendaDate),
     passed_date: toDate(m.MatterPassedDate),
-    legistar_url: legistarMatterUrl(CITY, m.MatterId),
+    legistar_url: legistarMatterUrl(LEGISTAR_CLIENT, m.MatterId),
     last_modified: legistarUtc(m.MatterLastModifiedUtc),
     latest_action_date: latest?.date ?? null,
     latest_action_text: latest?.text ?? null,
@@ -386,6 +391,27 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): 
   return written;
 }
 
+/**
+ * The council's standing committees, in the table every city shares. Legistar lists no
+ * members, so Boston's committees are names only; their hearings come from meetings.
+ */
+export async function syncBostonCommittees(sql: Sql): Promise<number> {
+  let written = 0;
+  for (const name of BOSTON_COMMITTEES) {
+    const slug = committeeSlug(name);
+    if (
+      await upsertIfChanged(sql, 'public.local_committees', ['id'], {
+        id: `${CITY}-${slug}`,
+        city: CITY,
+        slug,
+        name,
+      })
+    )
+      written += 1;
+  }
+  return written;
+}
+
 export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonOptions): Promise<BostonCursor> {
   const { client } = options;
   const now = options.now ?? (() => new Date());
@@ -399,6 +425,7 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
     const weekAgo = now().getTime() - 7 * 24 * 3_600_000;
     if (!cursor.officialsAt || new Date(cursor.officialsAt).getTime() < weekAgo) {
       run.rowsWritten += await syncOfficials(run.sql, client, cursor.bodyId, options.seats, now(), run.log);
+      run.rowsWritten += await syncBostonCommittees(run.sql);
       cursor.officialsAt = now().toISOString();
       await run.checkpoint(cursor);
     }

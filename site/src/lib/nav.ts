@@ -4,7 +4,14 @@
  * tabs on its pages; the rest are single links. Which group and item a page
  * belongs to comes from its path, so pages don't have to declare it.
  */
+import { CITY_LIST } from './cities';
 import { stateName } from './format';
+
+/** Each city we cover: a menu item under States & local, keyed by its city key. */
+const CITY_ITEMS: NavItem[] = CITY_LIST.map((c) => {
+  const path = `states/${c.state.toLowerCase()}/${c.slug}/`;
+  return { key: c.key, label: c.name, path, match: [path] };
+});
 
 export interface NavItem {
   key: string;
@@ -46,10 +53,9 @@ export const NAV: NavGroup[] = [
     label: 'States & local',
     trail: true,
     items: [
-      // More specific first: Massachusetts pages also start with states/.
+      // More specific first: a city's pages start with its state's path, and Massachusetts' with states/.
+      ...CITY_ITEMS,
       { key: 'ma', label: 'Massachusetts', path: 'states/ma/', match: ['states/ma/'] },
-      { key: 'boston', label: 'Boston', path: 'boston/', match: ['boston/'] },
-      { key: 'worcester', label: 'Worcester', path: 'worcester/', match: ['worcester/'] },
       {
         key: 'states',
         label: 'All states',
@@ -66,25 +72,27 @@ export const NAV: NavGroup[] = [
 /**
  * The States & local trail under the header, which follows where you are:
  * "All states › Delaware" on a state's pages, "All states › Massachusetts › Boston"
- * on Boston's (likewise Worcester's). It only leads back up: Massachusetts' own
- * pages end at Massachusetts, and its cities are on its Local tab. Empty on the all-states page itself and on pages that only
- * learn their state in the browser; those carry their own breadcrumb.
+ * on a city's. It only leads back up: a state's own pages end at the state, and
+ * its cities are on its Local tab. Empty on the all-states page itself and on pages
+ * that only learn their state in the browser; those carry their own breadcrumb.
  */
 export function localTrail(path: string): NavItem[] {
   const p = path.replace(/^\/+/, '');
   const local = NAV.find((g) => g.key === 'local')!;
   const { item } = activeNav(p);
-  // A city's pages: All states › Massachusetts › the city. Massachusetts' own pages list both cities.
   const by = new Map((local.items ?? []).map((i) => [i.key, i]));
-  if (item?.key === 'boston' || item?.key === 'worcester') return ['states', 'ma', item.key].map((k) => by.get(k)!);
-  if (item?.key === 'ma') return ['states', 'ma'].map((k) => by.get(k)!);
+  const all = by.get('states')!;
   const state = /^states\/([a-z]{2})(\/|$)/.exec(p)?.[1];
   if (!state) return [];
-  const all = local.items!.find((i) => i.key === 'states')!;
-  return [
-    all,
-    { key: `state-${state}`, label: stateName(state), path: `states/${state}/`, match: [`states/${state}/`] },
-  ];
+  const stateItem = by.get(state) ?? {
+    key: `state-${state}`,
+    label: stateName(state),
+    path: `states/${state}/`,
+    match: [`states/${state}/`],
+  };
+  // A city's pages: All states › its state › the city.
+  const city = item && CITY_ITEMS.find((c) => c.key === item.key);
+  return city ? [all, stateItem, city] : [all, stateItem];
 }
 
 /** Items in reading order (the trail runs All states › Massachusetts › Boston). */
@@ -92,7 +100,7 @@ export function orderedItems(group: NavGroup): NavItem[] {
   const items = group.items ?? [];
   if (group.key !== 'local') return items;
   const by = new Map(items.map((i) => [i.key, i]));
-  return ['states', 'ma', 'boston', 'worcester'].map((k) => by.get(k)!).filter(Boolean);
+  return ['states', 'ma', ...CITY_ITEMS.map((c) => c.key)].map((k) => by.get(k)!).filter(Boolean);
 }
 
 /** The group and item a page belongs to, from its path relative to the site root. */
@@ -133,8 +141,7 @@ export const PHONE_NAV: { heading: string; items: { key: string; label: string; 
     items: [
       { key: 'states', label: 'All states', path: 'states/' },
       { key: 'ma', label: 'Massachusetts', path: 'states/ma/' },
-      { key: 'boston', label: 'Boston', path: 'boston/' },
-      { key: 'worcester', label: 'Worcester', path: 'worcester/' },
+      ...CITY_ITEMS.map(({ key, label, path }) => ({ key, label, path })),
     ],
   },
   {

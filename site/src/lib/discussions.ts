@@ -1,5 +1,6 @@
 import { billLabel, parseBillId } from '@civic/congress-client/ids';
 import type { PolisProfile } from './auth';
+import { CITIES, cityOf, idWithinCity } from './cities';
 import { congressLabel, stateName } from './format';
 import {
   billFallbackHref,
@@ -17,8 +18,8 @@ export const DISCUSSION_COLUMNS =
 
 export function jurisdictionLabel(d: Pick<Discussion, 'jurisdiction' | 'district'>): string {
   if (d.jurisdiction === 'federal') return 'United States';
-  if (d.jurisdiction === 'ma') return stateName('MA');
-  const city = d.jurisdiction === 'worcester' ? 'Worcester' : 'Boston';
+  if (/^[a-z]{2}$/.test(d.jurisdiction)) return stateName(d.jurisdiction.toUpperCase());
+  const city = CITIES[d.jurisdiction]?.name ?? d.jurisdiction;
   return d.district ? `${city}, District ${d.district}` : city;
 }
 
@@ -41,7 +42,7 @@ export function meetsResidency(
   if (!d.residency_required) return true;
   if (!p?.state) return false;
   if (d.jurisdiction === 'federal') return true;
-  if (d.jurisdiction === 'ma') return p.state === 'MA';
+  if (/^[a-z]{2}$/.test(d.jurisdiction)) return p.state === d.jurisdiction.toUpperCase();
   if (p.city !== d.jurisdiction) return false;
   return d.district === null || p.councilDistrict === d.district;
 }
@@ -69,7 +70,6 @@ export function targetLabel(type: Discussion['target_type'], id: string | null):
   if (type === 'state_bill') return 'the state bill';
   if (type === 'executive_order') return 'the executive order';
   if (type === 'scotus_case') return 'the Supreme Court decision';
-  if (type === 'capital_project')
-    return id.startsWith('worcester-') ? 'the Worcester capital project' : 'the Boston capital project';
-  return `Boston council matter ${id.replace(/^boston-/, '')}`;
+  if (type === 'capital_project') return `the ${cityOf(id)?.name ?? 'city'} capital project`;
+  return `${cityOf(id)?.name ?? 'City'} council matter ${idWithinCity(id)}`;
 }

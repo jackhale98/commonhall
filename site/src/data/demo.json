@@ -19435,8 +19435,8 @@
   "stateBills": [],
   "localOfficials": [
     {
-      "id": "boston-p204",
-      "city": "boston",
+      "id": "ma-boston-p204",
+      "city": "ma-boston",
       "person_id": 204,
       "name": "Gabriela Coletta Zapata",
       "seat": "District 1",
@@ -19447,8 +19447,8 @@
       "current": true
     },
     {
-      "id": "boston-p220",
-      "city": "boston",
+      "id": "ma-boston-p220",
+      "city": "ma-boston",
       "person_id": 220,
       "name": "Julia Mejia",
       "seat": "At-Large",
@@ -19459,8 +19459,8 @@
       "current": true
     },
     {
-      "id": "boston-p223",
-      "city": "boston",
+      "id": "ma-boston-p223",
+      "city": "ma-boston",
       "person_id": 223,
       "name": "Ed Flynn",
       "seat": "District 2",
@@ -19471,8 +19471,8 @@
       "current": true
     },
     {
-      "id": "boston-p229",
-      "city": "boston",
+      "id": "ma-boston-p229",
+      "city": "ma-boston",
       "person_id": 229,
       "name": "Liz Breadon",
       "seat": "District 9",
@@ -19483,8 +19483,8 @@
       "current": true
     },
     {
-      "id": "boston-p249",
-      "city": "boston",
+      "id": "ma-boston-p249",
+      "city": "ma-boston",
       "person_id": 249,
       "name": "Erin Murphy",
       "seat": "At-Large",
@@ -19495,8 +19495,8 @@
       "current": true
     },
     {
-      "id": "boston-p252",
-      "city": "boston",
+      "id": "ma-boston-p252",
+      "city": "ma-boston",
       "person_id": 252,
       "name": "Ruthzee Louijeune",
       "seat": "At-Large",
@@ -19507,8 +19507,8 @@
       "current": true
     },
     {
-      "id": "boston-p256",
-      "city": "boston",
+      "id": "ma-boston-p256",
+      "city": "ma-boston",
       "person_id": 256,
       "name": "Brian Worrell",
       "seat": "District 4",
@@ -19519,8 +19519,8 @@
       "current": true
     },
     {
-      "id": "boston-p310",
-      "city": "boston",
+      "id": "ma-boston-p310",
+      "city": "ma-boston",
       "person_id": 310,
       "name": "Sharon Durkan",
       "seat": "District 8",
@@ -19531,8 +19531,8 @@
       "current": true
     },
     {
-      "id": "boston-p321",
-      "city": "boston",
+      "id": "ma-boston-p321",
+      "city": "ma-boston",
       "person_id": 321,
       "name": "Henry Santana",
       "seat": "At-Large",
@@ -19543,8 +19543,8 @@
       "current": true
     },
     {
-      "id": "boston-p322",
-      "city": "boston",
+      "id": "ma-boston-p322",
+      "city": "ma-boston",
       "person_id": 322,
       "name": "John FitzGerald",
       "seat": "District 3",
@@ -19555,8 +19555,8 @@
       "current": true
     },
     {
-      "id": "boston-p323",
-      "city": "boston",
+      "id": "ma-boston-p323",
+      "city": "ma-boston",
       "person_id": 323,
       "name": "Enrique Pepén",
       "seat": "District 5",
@@ -19567,8 +19567,8 @@
       "current": true
     },
     {
-      "id": "boston-p324",
-      "city": "boston",
+      "id": "ma-boston-p324",
+      "city": "ma-boston",
       "person_id": 324,
       "name": "Benjamin Jacob Weber",
       "seat": "District 6",
@@ -19579,8 +19579,8 @@
       "current": true
     },
     {
-      "id": "boston-p369",
-      "city": "boston",
+      "id": "ma-boston-p369",
+      "city": "ma-boston",
       "person_id": 369,
       "name": "Miniard Culpepper",
       "seat": "District 7",
@@ -19593,8 +19593,8 @@
   ],
   "localMatters": [
     {
-      "id": "boston-43547",
-      "city": "boston",
+      "id": "ma-boston-43547",
+      "city": "ma-boston",
       "matter_id": 43547,
       "file_number": "2026-1882",
       "title": "Emergency resolution calling for immediate relief for businesses devastated by the six-alarm fire at the historic Edison Building in Nubian Square.",
@@ -19608,8 +19608,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43522",
-      "city": "boston",
+      "id": "ma-boston-43522",
+      "city": "ma-boston",
       "matter_id": 43522,
       "file_number": "2026-1855",
       "title": "Order requesting certain information under Section 17F regarding the status of the Boston Reparations Task Force’s research, reports, and future work.",
@@ -19623,8 +19623,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43495",
-      "city": "boston",
+      "id": "ma-boston-43495",
+      "city": "ma-boston",
       "matter_id": 43495,
       "file_number": "2026-1839",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Four Thousand Three Hundred Fifty Dollars ($4,350.00) in the form of a grant, The National Alliance of Preservation Commissions Scholarship, awarded by the Massachusetts Historical Commission to be administered by the Office of Historic Preservation. The grant would fund the cost of historical and historic district commission members, and municipal staff attending the National Alliance of Preservation Commissions (NAPC) FORUM conference.\nOn motion of Councilor Durkan, the rules were suspended; the order was passed: yeas 13 (Breadon, Coletta Zapata, Culpepper, Durkan, FitzGerald, Flynn, Louijeune, Mejia, Murphy, Pepén, Santana, Weber, Worrell).",
@@ -19638,8 +19638,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43515",
-      "city": "boston",
+      "id": "ma-boston-43515",
+      "city": "ma-boston",
       "matter_id": 43515,
       "file_number": "2026-1857",
       "title": "Resolution in support of the U.S. Army Corps of Engineers' Boston Harbor Coastal Storm Risk Management Comprehensive System Plan and the City of Boston's application for federal authorization.",
@@ -19653,8 +19653,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43514",
-      "city": "boston",
+      "id": "ma-boston-43514",
+      "city": "ma-boston",
       "matter_id": 43514,
       "file_number": "2026-1854",
       "title": "Order requesting certain information under Section 17F regarding roadway alterations and the City's response at Tremont Street and Parker Street.",
@@ -19668,8 +19668,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43524",
-      "city": "boston",
+      "id": "ma-boston-43524",
+      "city": "ma-boston",
       "matter_id": 43524,
       "file_number": "2026-1853",
       "title": "Order requesting certain information under Section 17F regarding Boston Public Schools procurement, contracting, payment controls and implementation of the State Inspector General's recommendations.",
@@ -19683,8 +19683,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43512",
-      "city": "boston",
+      "id": "ma-boston-43512",
+      "city": "ma-boston",
       "matter_id": 43512,
       "file_number": "2026-1852",
       "title": "Order requesting certain information under Section 17F regarding BPS residency requirements, remote work, contractor classification, and payments to a former senior environmental engineer.",
@@ -19698,8 +19698,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43498",
-      "city": "boston",
+      "id": "ma-boston-43498",
+      "city": "ma-boston",
       "matter_id": 43498,
       "file_number": "2026-1860",
       "title": "Resolution celebrating the 103rd Anniversary of the Declaration of Republic of Türkiye and the 31st Annual Boston Turkish Arts & Culture Festival.",
@@ -19713,8 +19713,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43519",
-      "city": "boston",
+      "id": "ma-boston-43519",
+      "city": "ma-boston",
       "matter_id": 43519,
       "file_number": "2026-1861",
       "title": "Resolution recognizing October 1, 2026, as Nigerian Independence Day.",
@@ -19728,8 +19728,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43479",
-      "city": "boston",
+      "id": "ma-boston-43479",
+      "city": "ma-boston",
       "matter_id": 43479,
       "file_number": "2026-1863",
       "title": "Resolution recognizing October 2026 as Domestic Violence Awareness Month.",
@@ -19743,8 +19743,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43435",
-      "city": "boston",
+      "id": "ma-boston-43435",
+      "city": "ma-boston",
       "matter_id": 43435,
       "file_number": "2026-1862",
       "title": "Resolution recognizing October as Pedestrian Safety Month in the City of Boston.",
@@ -19758,8 +19758,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43497",
-      "city": "boston",
+      "id": "ma-boston-43497",
+      "city": "ma-boston",
       "matter_id": 43497,
       "file_number": "2026-1859",
       "title": "Resolution recognizing Tu Hispanidad Flag Day.",
@@ -19773,8 +19773,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43508",
-      "city": "boston",
+      "id": "ma-boston-43508",
+      "city": "ma-boston",
       "matter_id": 43508,
       "file_number": "2026-1858",
       "title": "Resolution in support of H.1544 / S.998: An Act to Guarantee a Tenant's First Right of Refusal.",
@@ -19788,8 +19788,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43503",
-      "city": "boston",
+      "id": "ma-boston-43503",
+      "city": "ma-boston",
       "matter_id": 43503,
       "file_number": "2026-1856",
       "title": "Resolution in support of Question 6 to create a natural resource conservation fund.",
@@ -19803,8 +19803,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43493",
-      "city": "boston",
+      "id": "ma-boston-43493",
+      "city": "ma-boston",
       "matter_id": 43493,
       "file_number": "2026-1851",
       "title": "WITHDRAWN.",
@@ -19818,8 +19818,8 @@
       "latest_action_text": "Withdrawn."
     },
     {
-      "id": "boston-43491",
-      "city": "boston",
+      "id": "ma-boston-43491",
+      "city": "ma-boston",
       "matter_id": 43491,
       "file_number": "2026-1828",
       "title": "Resolution in support of Governor Healey's proposal to temporarily suspend the state gas tax.",
@@ -19833,8 +19833,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43334",
-      "city": "boston",
+      "id": "ma-boston-43334",
+      "city": "ma-boston",
       "matter_id": 43334,
       "file_number": "2026-1811",
       "title": "Resolution recognizing October as Italian American Heritage Month.",
@@ -19848,8 +19848,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43417",
-      "city": "boston",
+      "id": "ma-boston-43417",
+      "city": "ma-boston",
       "matter_id": 43417,
       "file_number": "2026-1810",
       "title": "Resolution honoring Dolly Parton and naming September 25, 2026 as \"9 to 5 Day\" in the City of Boston.",
@@ -19863,8 +19863,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43464",
-      "city": "boston",
+      "id": "ma-boston-43464",
+      "city": "ma-boston",
       "matter_id": 43464,
       "file_number": "2026-1807",
       "title": "Resolution in support of reviving the Codman Square Merchants Association.",
@@ -19878,8 +19878,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43475",
-      "city": "boston",
+      "id": "ma-boston-43475",
+      "city": "ma-boston",
       "matter_id": 43475,
       "file_number": "2026-1806",
       "title": "Resolution supporting Boston Medical Center Resident Physicians and their efforts to secure a fair contract.",
@@ -19893,8 +19893,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43442",
-      "city": "boston",
+      "id": "ma-boston-43442",
+      "city": "ma-boston",
       "matter_id": 43442,
       "file_number": "2026-1790",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Ten Thousand Dollars ($10,000.00) in the form of a grant, FY23 National Violent Death Reporting System, awarded by MA Department of Public Health to be administered by the Police Department. The grant would fund data collection by the Bureau of Investigative Services and the Drug Control Unit.",
@@ -19908,8 +19908,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43440",
-      "city": "boston",
+      "id": "ma-boston-43440",
+      "city": "ma-boston",
       "matter_id": 43440,
       "file_number": "2026-1789",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Fifteen Thousand Dollars ($15,000.00) in the form of a grant, BTHC Program, awarded by Donor Group to be administered by the Office of Workforce Development. The grant would fund free tax preparation and filing services to low-moderate income Boston residents.",
@@ -19923,8 +19923,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43432",
-      "city": "boston",
+      "id": "ma-boston-43432",
+      "city": "ma-boston",
       "matter_id": 43432,
       "file_number": "2026-1784",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Fifty Thousand Dollars ($50,000.00) in the form of a grant, Bloomberg Youth Climate Action Fund, awarded by Bloomberg Philanthropies to be administered by the OYEO Admin. The grant would fund the launch of open innovation competitions and mobilize young people ages 15-24 to design, develop, and implement youth-driven solutions that address pressing local needs and align with the city's climate goals.",
@@ -19938,8 +19938,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43448",
-      "city": "boston",
+      "id": "ma-boston-43448",
+      "city": "ma-boston",
       "matter_id": 43448,
       "file_number": "2026-1783",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Ninety-Two Thousand One Hundred One Dollars and Forty Cents ($92,101.40) in the form of a grant, WIOA Dislocated Workers Admin Grant, awarded by the United States Department of Labor, passed through the MassHire Department of Career Services, to be administered by the Office of Workforce Development. The grant would fund individualized career services and training services for dislocated workers to rejoin the workforce as early as possible and overcome barriers to employment.",
@@ -19953,8 +19953,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43438",
-      "city": "boston",
+      "id": "ma-boston-43438",
+      "city": "ma-boston",
       "matter_id": 43438,
       "file_number": "2026-1782",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of One Hundred Ten Thousand Dollars ($110,000.00) in the form of a grant, the FY27 DMH Co-Response Grant, awarded by MA Department of Mental Health to be administered by the Police Department. The grant would fund one full-time recovery coach hired through BEST.",
@@ -19968,8 +19968,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43434",
-      "city": "boston",
+      "id": "ma-boston-43434",
+      "city": "ma-boston",
       "matter_id": 43434,
       "file_number": "2026-1781",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of One Hundred Twenty-Five Thousand Dollars ($125,000.00) in the form of a grant, the Liberty Mutual Climate Resiliency Grant, awarded by Liberty Mutual Foundation INC, passed through the Boston Local Development Corporation, to be administered by the Office of Workforce Development. The grant would fund mitigative and adaptive approaches to climate change. By supporting innovative solutions, scaling proven strategies, and promoting nature-based initiatives, this funding empowers grassroots efforts to tackle environmental challenges.",
@@ -19983,8 +19983,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43430",
-      "city": "boston",
+      "id": "ma-boston-43430",
+      "city": "ma-boston",
       "matter_id": 43430,
       "file_number": "2026-1780",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of One Hundred Fifty Thousand Dollars ($150,000.00) in the form of a grant, Mayor's Office of Human Services' Connect, Learn and Explore Initiative, awarded by Boston Children's Hospital to be administered by the Office of Human Services. The grant would fund an annual citywide activation summit for youth, host recurring professional development sessions and network convenings for youth workers, and conduct a youth needs assessment.",
@@ -19998,8 +19998,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43447",
-      "city": "boston",
+      "id": "ma-boston-43447",
+      "city": "ma-boston",
       "matter_id": 43447,
       "file_number": "2026-1779",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of One Hundred Fifty Thousand Dollars ($150,000.00) in the form of a grant, the Boston Family Days Grant, awarded by The Boston Foundation, to be administered by the Office of Arts & Culture. The grant would fund the Boston Family Days program from 2026-2027, provided by the James M. and Cathleen D. Stone Foundation.",
@@ -20013,8 +20013,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43449",
-      "city": "boston",
+      "id": "ma-boston-43449",
+      "city": "ma-boston",
       "matter_id": 43449,
       "file_number": "2026-1778",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Two Hundred Two Thousand Five Hundred Thirty-Seven Dollars and Eighty Cents ($202,537.80) in the form of a grant, WIOA Adult Activities Admin Grant, awarded by the United States Department of Labor, passed through the MassHire Department of Career Services, to be administered by the Office of Workforce Development. The grant would fund the creation of a seamless system of adult education workforce preparation and training services.",
@@ -20028,8 +20028,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43439",
-      "city": "boston",
+      "id": "ma-boston-43439",
+      "city": "ma-boston",
       "matter_id": 43439,
       "file_number": "2026-1777",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Two Hundred Fifty Thousand Dollars ($250,000.00) in the form of a grant, Boston Family Days Program Support, awarded by The Boston Foundation to be administered by the Office of Arts & Culture. The grant would fund support of the Boston Family Days Program from Amazon via the Boston Foundation. The previous instance of this grantor's support for the program (via project code ART24026) occurred when the program was known as the Cultural Access Pilot Program, or BPS Sundays.",
@@ -20043,8 +20043,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43452",
-      "city": "boston",
+      "id": "ma-boston-43452",
+      "city": "ma-boston",
       "matter_id": 43452,
       "file_number": "2026-1771",
       "title": "Message and order authorizing an appropriation order to amend the FY27 Community Preservation Fund’s (“the Fund”) appropriation in the amount of Forty-Seven Million Two Hundred Sixty-Five Thousand Six Hundred Fifty-Five Dollars ($47,265,655.00) from the Fund’s estimated annual revenues for Fiscal Year 2027, to be appropriated and reserved for future recommendation by the CPC and appropriation by City Council consistent with the Act. This number includes both the originally approved FY27 revenue of Thirty-Nine Million Five Hundred Eighty-Seven Thousand Seven Hundred Ninety-Eight Dollars ($39,587,798.00), as well as Seven Million Six Hundred Seventy-Seven Thousand Eight Hundred Fifty-Seven Dollars ($7,677,857.00) in unused revenues from projects in previous fiscal years.",
@@ -20058,8 +20058,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43380",
-      "city": "boston",
+      "id": "ma-boston-43380",
+      "city": "ma-boston",
       "matter_id": 43380,
       "file_number": "2026-1685",
       "title": "Message and order authorizing the City of Boston Procurement Department to enter into a contract for a period of up to six (6) years for the purchase of Fire Apparatus (ladder, pumper, and tower trucks). The contract term would begin in September 2026 and end December 31, 2031. The City Council’s permission to enter into a contract of this type for a period of more than three years is required by section twelve of Chapter 30B of the General Laws. A term longer than three years will enable the City to ensure that the contract is in effect while the apparatus are being built for all three (3) fiscal year orders. Year 1 will be ordered in August of 2026, year 2 ordered in July of 2027, and year 3 ordered in July of 2028. The expected lead time for the apparatus is between twenty-four (24) to thirty-six (36) months, with delivery and payment for the final apparatus expected during 2031.",
@@ -20073,8 +20073,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43321",
-      "city": "boston",
+      "id": "ma-boston-43321",
+      "city": "ma-boston",
       "matter_id": 43321,
       "file_number": "2026-1676",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of One Million Dollars ($1,000,000.00) in the form of a grant, the BPS Sundays Support Grant, awarded by the Barr Foundation to be administered by the Office of Arts & Culture. The grant would fund MOAC's Cultural Access Program (Museum Sundays), allocating 60% of the funds to the Innovation Fund and 40% to unrestricted project expenses.",
@@ -20088,8 +20088,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43425",
-      "city": "boston",
+      "id": "ma-boston-43425",
+      "city": "ma-boston",
       "matter_id": 43425,
       "file_number": "2026-1770",
       "title": "Resolution to honor those killed in the Cape Verde bus crash and to support victims' families.",
@@ -20103,8 +20103,8 @@
       "latest_action_text": "The rules were suspended; the resolution was adopted."
     },
     {
-      "id": "boston-43381",
-      "city": "boston",
+      "id": "ma-boston-43381",
+      "city": "ma-boston",
       "matter_id": 43381,
       "file_number": "2026-1714",
       "title": "Petition for a Special Law re: An Act Directing the City of Boston Police Department to Waive the Maximum Age Requirement for Police Officers for Melvin Casseus.",
@@ -20118,8 +20118,8 @@
       "latest_action_text": "The rules were suspended; the petition was passed."
     },
     {
-      "id": "boston-43326",
-      "city": "boston",
+      "id": "ma-boston-43326",
+      "city": "ma-boston",
       "matter_id": 43326,
       "file_number": "2026-1684",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of One Thousand Eight Hundred Ninety Dollars ($1,890.00) in the form of a grant, Project VOICE, awarded by the National Science Foundation, passed through the Georgia Institute of Technology, to be administered by the Department of Innovation & Technology. The grant would fund co-designing civic technology tools with and for youth in communities across Boston, MA, with the goal of strengthening neighborhood social cohesion and supporting youth mental health and resilience.",
@@ -20133,8 +20133,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43378",
-      "city": "boston",
+      "id": "ma-boston-43378",
+      "city": "ma-boston",
       "matter_id": 43378,
       "file_number": "2026-1683",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Fifty Thousand Dollars ($50,000.00) in the form of a grant, Tuition Free Community College Expansion, awarded by the United States Department of Labor to be administered by the Office of Workforce Development. The grant would fund the Community Project - Tuition-Free Community College Initiative.",
@@ -20148,8 +20148,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43322",
-      "city": "boston",
+      "id": "ma-boston-43322",
+      "city": "ma-boston",
       "matter_id": 43322,
       "file_number": "2026-1682",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Fifty Thousand Dollars ($50,000.00) in the form of a grant, Food, Fuel and Shelter, awarded by The Boston Foundation to be administered by the Office of Food Justice. The grant would fund the expansion of the Boston Double Up Food Bucks Program to more communities.",
@@ -20163,8 +20163,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43324",
-      "city": "boston",
+      "id": "ma-boston-43324",
+      "city": "ma-boston",
       "matter_id": 43324,
       "file_number": "2026-1681",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Fifty-One Thousand Nine Hundred Eighty Dollars and Thirty Cents ($51,980.30) in the form of a grant, FFY26 State Administrative Matching Grants for SNAP, awarded by USDA - Food & Nutrition Service, passed through the MA Executive Office of Health & Human Services, to be administered by the Age Strong Commission. The grant would fund costs incurred to operate SNAP, including outreach and application assistance.",
@@ -20178,8 +20178,8 @@
       "latest_action_text": "The rules were suspended; the order was passed."
     },
     {
-      "id": "boston-43323",
-      "city": "boston",
+      "id": "ma-boston-43323",
+      "city": "ma-boston",
       "matter_id": 43323,
       "file_number": "2026-1679",
       "title": "Message and order authorizing the City of Boston to accept and expend the amount of Two Hundred Thousand Dollars ($200,000.00) in the form of a grant, BHCCI/Connect, Learn, Explore & CEF, awarded by Boston Children's Hospital to be administered by the Office of Early Childhood. The grant would fund the BHCCI/Connect, Learn & Explore and Child Entrepreneur Fund (CEF) Grant.",
@@ -20195,7 +20195,7 @@
   ],
   "localMatterActions": [
     {
-      "matter_id": "boston-43321",
+      "matter_id": "ma-boston-43321",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20204,7 +20204,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43322",
+      "matter_id": "ma-boston-43322",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20213,7 +20213,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43323",
+      "matter_id": "ma-boston-43323",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20222,7 +20222,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43324",
+      "matter_id": "ma-boston-43324",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20231,7 +20231,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43326",
+      "matter_id": "ma-boston-43326",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20240,7 +20240,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43334",
+      "matter_id": "ma-boston-43334",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20249,7 +20249,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43378",
+      "matter_id": "ma-boston-43378",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20258,7 +20258,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43380",
+      "matter_id": "ma-boston-43380",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20267,7 +20267,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43381",
+      "matter_id": "ma-boston-43381",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the petition was passed.",
@@ -20276,7 +20276,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43417",
+      "matter_id": "ma-boston-43417",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20285,7 +20285,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43425",
+      "matter_id": "ma-boston-43425",
       "seq": 1,
       "action_date": "2026-09-16",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20294,7 +20294,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43430",
+      "matter_id": "ma-boston-43430",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20303,7 +20303,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43432",
+      "matter_id": "ma-boston-43432",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20312,7 +20312,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43434",
+      "matter_id": "ma-boston-43434",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20321,7 +20321,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43435",
+      "matter_id": "ma-boston-43435",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20330,7 +20330,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43438",
+      "matter_id": "ma-boston-43438",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20339,7 +20339,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43439",
+      "matter_id": "ma-boston-43439",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20348,7 +20348,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43440",
+      "matter_id": "ma-boston-43440",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20357,7 +20357,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43442",
+      "matter_id": "ma-boston-43442",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20366,7 +20366,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43447",
+      "matter_id": "ma-boston-43447",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20375,7 +20375,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43448",
+      "matter_id": "ma-boston-43448",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20384,7 +20384,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43449",
+      "matter_id": "ma-boston-43449",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20393,7 +20393,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43452",
+      "matter_id": "ma-boston-43452",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20402,7 +20402,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43464",
+      "matter_id": "ma-boston-43464",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20411,7 +20411,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43475",
+      "matter_id": "ma-boston-43475",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20420,7 +20420,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43479",
+      "matter_id": "ma-boston-43479",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20429,7 +20429,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43491",
+      "matter_id": "ma-boston-43491",
       "seq": 1,
       "action_date": "2026-09-23",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20438,7 +20438,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43493",
+      "matter_id": "ma-boston-43493",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "Withdrawn.",
@@ -20447,7 +20447,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43495",
+      "matter_id": "ma-boston-43495",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20456,7 +20456,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43497",
+      "matter_id": "ma-boston-43497",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20465,7 +20465,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43498",
+      "matter_id": "ma-boston-43498",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20474,7 +20474,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43503",
+      "matter_id": "ma-boston-43503",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20483,7 +20483,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43508",
+      "matter_id": "ma-boston-43508",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20492,7 +20492,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43512",
+      "matter_id": "ma-boston-43512",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20501,7 +20501,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43514",
+      "matter_id": "ma-boston-43514",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20510,7 +20510,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43515",
+      "matter_id": "ma-boston-43515",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20519,7 +20519,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43519",
+      "matter_id": "ma-boston-43519",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20528,7 +20528,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43522",
+      "matter_id": "ma-boston-43522",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20537,7 +20537,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43524",
+      "matter_id": "ma-boston-43524",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the order was passed.",
@@ -20546,7 +20546,7 @@
       "passed": null
     },
     {
-      "matter_id": "boston-43547",
+      "matter_id": "ma-boston-43547",
       "seq": 1,
       "action_date": "2026-09-30",
       "action_name": "The rules were suspended; the resolution was adopted.",
@@ -20556,208 +20556,273 @@
     }
   ],
   "localMatterSponsors": [
-    { "matter_id": "boston-43334", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 0 },
-    { "matter_id": "boston-43334", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 1 },
-    { "matter_id": "boston-43334", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 2 },
-    { "matter_id": "boston-43334", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 3 },
-    { "matter_id": "boston-43334", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 4 },
-    { "matter_id": "boston-43334", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 5 },
-    { "matter_id": "boston-43334", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 6 },
-    { "matter_id": "boston-43334", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 7 },
-    { "matter_id": "boston-43334", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 8 },
-    { "matter_id": "boston-43334", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 9 },
-    { "matter_id": "boston-43334", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 10 },
-    { "matter_id": "boston-43334", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43334", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 },
-    { "matter_id": "boston-43381", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 0 },
-    { "matter_id": "boston-43381", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 1 },
-    { "matter_id": "boston-43381", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 2 },
-    { "matter_id": "boston-43381", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 3 },
-    { "matter_id": "boston-43381", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 4 },
-    { "matter_id": "boston-43381", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 5 },
-    { "matter_id": "boston-43381", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 6 },
-    { "matter_id": "boston-43381", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 7 },
-    { "matter_id": "boston-43381", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 8 },
-    { "matter_id": "boston-43381", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 9 },
-    { "matter_id": "boston-43381", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 10 },
-    { "matter_id": "boston-43381", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43417", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 0 },
-    { "matter_id": "boston-43417", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 1 },
-    { "matter_id": "boston-43417", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 2 },
-    { "matter_id": "boston-43417", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43417", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 4 },
-    { "matter_id": "boston-43417", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
-    { "matter_id": "boston-43417", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 6 },
-    { "matter_id": "boston-43417", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 7 },
-    { "matter_id": "boston-43417", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 8 },
-    { "matter_id": "boston-43417", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 9 },
-    { "matter_id": "boston-43417", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 10 },
-    { "matter_id": "boston-43417", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43417", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 },
-    { "matter_id": "boston-43425", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 0 },
-    { "matter_id": "boston-43425", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 1 },
-    { "matter_id": "boston-43425", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 2 },
-    { "matter_id": "boston-43425", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43425", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 4 },
-    { "matter_id": "boston-43425", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
-    { "matter_id": "boston-43425", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 6 },
-    { "matter_id": "boston-43425", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 7 },
-    { "matter_id": "boston-43425", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 8 },
-    { "matter_id": "boston-43425", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 9 },
-    { "matter_id": "boston-43425", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 10 },
-    { "matter_id": "boston-43425", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 11 },
-    { "matter_id": "boston-43425", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 12 },
-    { "matter_id": "boston-43435", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 0 },
-    { "matter_id": "boston-43435", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 1 },
-    { "matter_id": "boston-43435", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 2 },
-    { "matter_id": "boston-43435", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43435", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 4 },
-    { "matter_id": "boston-43435", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
-    { "matter_id": "boston-43435", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 6 },
-    { "matter_id": "boston-43435", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 7 },
-    { "matter_id": "boston-43435", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 8 },
-    { "matter_id": "boston-43435", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 9 },
-    { "matter_id": "boston-43435", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 10 },
-    { "matter_id": "boston-43435", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 11 },
-    { "matter_id": "boston-43435", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 },
-    { "matter_id": "boston-43464", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 0 },
-    { "matter_id": "boston-43464", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 1 },
-    { "matter_id": "boston-43464", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 2 },
-    { "matter_id": "boston-43464", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43464", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 4 },
-    { "matter_id": "boston-43464", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
-    { "matter_id": "boston-43464", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 6 },
-    { "matter_id": "boston-43464", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 7 },
-    { "matter_id": "boston-43464", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 8 },
-    { "matter_id": "boston-43464", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 9 },
-    { "matter_id": "boston-43464", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 10 },
-    { "matter_id": "boston-43464", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 11 },
-    { "matter_id": "boston-43464", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 12 },
-    { "matter_id": "boston-43475", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 0 },
-    { "matter_id": "boston-43475", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 1 },
-    { "matter_id": "boston-43475", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 2 },
-    { "matter_id": "boston-43475", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 3 },
-    { "matter_id": "boston-43475", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
-    { "matter_id": "boston-43475", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 5 },
-    { "matter_id": "boston-43475", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 6 },
-    { "matter_id": "boston-43475", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 7 },
-    { "matter_id": "boston-43475", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 8 },
-    { "matter_id": "boston-43475", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 9 },
-    { "matter_id": "boston-43475", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 10 },
-    { "matter_id": "boston-43475", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43475", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 },
-    { "matter_id": "boston-43479", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 0 },
-    { "matter_id": "boston-43479", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 1 },
-    { "matter_id": "boston-43479", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 2 },
-    { "matter_id": "boston-43479", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43479", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
-    { "matter_id": "boston-43479", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 5 },
-    { "matter_id": "boston-43479", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 6 },
-    { "matter_id": "boston-43479", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 7 },
-    { "matter_id": "boston-43479", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 8 },
-    { "matter_id": "boston-43479", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 9 },
-    { "matter_id": "boston-43479", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 10 },
-    { "matter_id": "boston-43479", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 11 },
-    { "matter_id": "boston-43491", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 0 },
-    { "matter_id": "boston-43491", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 1 },
-    { "matter_id": "boston-43491", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 2 },
-    { "matter_id": "boston-43491", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 3 },
-    { "matter_id": "boston-43491", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 4 },
-    { "matter_id": "boston-43491", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 5 },
-    { "matter_id": "boston-43497", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 0 },
-    { "matter_id": "boston-43497", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 1 },
-    { "matter_id": "boston-43497", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 2 },
-    { "matter_id": "boston-43497", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 3 },
-    { "matter_id": "boston-43497", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 4 },
-    { "matter_id": "boston-43497", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 5 },
-    { "matter_id": "boston-43497", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 6 },
-    { "matter_id": "boston-43497", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 7 },
-    { "matter_id": "boston-43497", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 8 },
-    { "matter_id": "boston-43497", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 9 },
-    { "matter_id": "boston-43497", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 10 },
-    { "matter_id": "boston-43497", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 11 },
-    { "matter_id": "boston-43498", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 0 },
-    { "matter_id": "boston-43498", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 1 },
-    { "matter_id": "boston-43498", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 2 },
-    { "matter_id": "boston-43498", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 3 },
-    { "matter_id": "boston-43498", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 4 },
-    { "matter_id": "boston-43498", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 5 },
-    { "matter_id": "boston-43498", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 6 },
-    { "matter_id": "boston-43498", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 7 },
-    { "matter_id": "boston-43498", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 8 },
-    { "matter_id": "boston-43498", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 9 },
-    { "matter_id": "boston-43498", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 10 },
-    { "matter_id": "boston-43503", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 0 },
-    { "matter_id": "boston-43503", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 1 },
-    { "matter_id": "boston-43503", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 2 },
-    { "matter_id": "boston-43503", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 3 },
-    { "matter_id": "boston-43503", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
-    { "matter_id": "boston-43503", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 5 },
-    { "matter_id": "boston-43503", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 6 },
-    { "matter_id": "boston-43503", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 7 },
-    { "matter_id": "boston-43503", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 8 },
-    { "matter_id": "boston-43503", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 9 },
-    { "matter_id": "boston-43503", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 10 },
-    { "matter_id": "boston-43503", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43508", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 0 },
-    { "matter_id": "boston-43508", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 1 },
-    { "matter_id": "boston-43508", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 2 },
-    { "matter_id": "boston-43508", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 3 },
-    { "matter_id": "boston-43508", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
-    { "matter_id": "boston-43508", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 5 },
-    { "matter_id": "boston-43508", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 6 },
-    { "matter_id": "boston-43508", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 7 },
-    { "matter_id": "boston-43508", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 8 },
-    { "matter_id": "boston-43508", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 9 },
-    { "matter_id": "boston-43508", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 10 },
-    { "matter_id": "boston-43508", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43508", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 },
-    { "matter_id": "boston-43512", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 0 },
-    { "matter_id": "boston-43514", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 0 },
-    { "matter_id": "boston-43515", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 0 },
-    { "matter_id": "boston-43515", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 1 },
-    { "matter_id": "boston-43515", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 2 },
-    { "matter_id": "boston-43515", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43515", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
-    { "matter_id": "boston-43515", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 5 },
-    { "matter_id": "boston-43515", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 6 },
-    { "matter_id": "boston-43515", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 7 },
-    { "matter_id": "boston-43515", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 8 },
-    { "matter_id": "boston-43515", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 9 },
-    { "matter_id": "boston-43515", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 10 },
-    { "matter_id": "boston-43515", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43515", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 },
-    { "matter_id": "boston-43519", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 0 },
-    { "matter_id": "boston-43519", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 1 },
-    { "matter_id": "boston-43519", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 2 },
-    { "matter_id": "boston-43519", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43519", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 4 },
-    { "matter_id": "boston-43519", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 5 },
-    { "matter_id": "boston-43519", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 6 },
-    { "matter_id": "boston-43519", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 7 },
-    { "matter_id": "boston-43519", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 8 },
-    { "matter_id": "boston-43519", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 9 },
-    { "matter_id": "boston-43519", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 10 },
-    { "matter_id": "boston-43522", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 0 },
-    { "matter_id": "boston-43524", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 0 },
-    { "matter_id": "boston-43547", "official_id": "boston-p369", "name": "Miniard Culpepper", "sequence": 0 },
-    { "matter_id": "boston-43547", "official_id": "boston-p321", "name": "Henry Santana", "sequence": 1 },
-    { "matter_id": "boston-43547", "official_id": "boston-p252", "name": "Ruthzee Louijeune", "sequence": 2 },
-    { "matter_id": "boston-43547", "official_id": "boston-p229", "name": "Liz Breadon", "sequence": 3 },
-    { "matter_id": "boston-43547", "official_id": "boston-p204", "name": "Gabriela Coletta Zapata", "sequence": 4 },
-    { "matter_id": "boston-43547", "official_id": "boston-p310", "name": "Sharon Durkan", "sequence": 5 },
-    { "matter_id": "boston-43547", "official_id": "boston-p322", "name": "John FitzGerald", "sequence": 6 },
-    { "matter_id": "boston-43547", "official_id": "boston-p223", "name": "Ed Flynn", "sequence": 7 },
-    { "matter_id": "boston-43547", "official_id": "boston-p220", "name": "Julia Mejia", "sequence": 8 },
-    { "matter_id": "boston-43547", "official_id": "boston-p249", "name": "Erin Murphy", "sequence": 9 },
-    { "matter_id": "boston-43547", "official_id": "boston-p323", "name": "Enrique Pepén", "sequence": 10 },
-    { "matter_id": "boston-43547", "official_id": "boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
-    { "matter_id": "boston-43547", "official_id": "boston-p256", "name": "Brian Worrell", "sequence": 12 }
+    {
+      "matter_id": "ma-boston-43334",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 0
+    },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 1 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 2 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 3 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 4 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 5 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 6 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 7 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 8 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 9 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 10 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43334", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 0 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 1 },
+    {
+      "matter_id": "ma-boston-43381",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 2
+    },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 3 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 4 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 5 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 6 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 7 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 8 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 9 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 10 },
+    { "matter_id": "ma-boston-43381", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 0 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 1 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 2 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    {
+      "matter_id": "ma-boston-43417",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 4
+    },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 6 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 7 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 8 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 9 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 10 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43417", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 0 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 1 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 2 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    {
+      "matter_id": "ma-boston-43425",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 4
+    },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 6 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 7 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 8 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 9 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 10 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 11 },
+    { "matter_id": "ma-boston-43425", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 12 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 0 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 1 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 2 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    {
+      "matter_id": "ma-boston-43435",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 4
+    },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 6 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 7 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 8 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 9 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 10 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 11 },
+    { "matter_id": "ma-boston-43435", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 0 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 1 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 2 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    {
+      "matter_id": "ma-boston-43464",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 4
+    },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 5 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 6 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 7 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 8 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 9 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 10 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 11 },
+    { "matter_id": "ma-boston-43464", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 12 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 0 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 1 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 2 },
+    {
+      "matter_id": "ma-boston-43475",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 3
+    },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 5 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 6 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 7 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 8 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 9 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 10 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43475", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 0 },
+    {
+      "matter_id": "ma-boston-43479",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 1
+    },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 2 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 5 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 6 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 7 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 8 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 9 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 10 },
+    { "matter_id": "ma-boston-43479", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 11 },
+    { "matter_id": "ma-boston-43491", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 0 },
+    { "matter_id": "ma-boston-43491", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 1 },
+    { "matter_id": "ma-boston-43491", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 2 },
+    {
+      "matter_id": "ma-boston-43491",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 3
+    },
+    { "matter_id": "ma-boston-43491", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 4 },
+    { "matter_id": "ma-boston-43491", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 5 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 0 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 1 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 2 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 3 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 4 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 5 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 6 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 7 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 8 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 9 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 10 },
+    { "matter_id": "ma-boston-43497", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 11 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 0 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 1 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 2 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 3 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 4 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 5 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 6 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 7 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 8 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 9 },
+    { "matter_id": "ma-boston-43498", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 10 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 0 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 1 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 2 },
+    {
+      "matter_id": "ma-boston-43503",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 3
+    },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 5 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 6 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 7 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 8 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 9 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 10 },
+    { "matter_id": "ma-boston-43503", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 0 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 1 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 2 },
+    {
+      "matter_id": "ma-boston-43508",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 3
+    },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 5 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 6 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 7 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 8 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 9 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 10 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43508", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 },
+    { "matter_id": "ma-boston-43512", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 0 },
+    { "matter_id": "ma-boston-43514", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 0 },
+    {
+      "matter_id": "ma-boston-43515",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 0
+    },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 1 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 2 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 4 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 5 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 6 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 7 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 8 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 9 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 10 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43515", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 0 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 1 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 2 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 4 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 5 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 6 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 7 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 8 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 9 },
+    { "matter_id": "ma-boston-43519", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 10 },
+    { "matter_id": "ma-boston-43522", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 0 },
+    { "matter_id": "ma-boston-43524", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 0 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p369", "name": "Miniard Culpepper", "sequence": 0 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p321", "name": "Henry Santana", "sequence": 1 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p252", "name": "Ruthzee Louijeune", "sequence": 2 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p229", "name": "Liz Breadon", "sequence": 3 },
+    {
+      "matter_id": "ma-boston-43547",
+      "official_id": "ma-boston-p204",
+      "name": "Gabriela Coletta Zapata",
+      "sequence": 4
+    },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p310", "name": "Sharon Durkan", "sequence": 5 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p322", "name": "John FitzGerald", "sequence": 6 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p223", "name": "Ed Flynn", "sequence": 7 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p220", "name": "Julia Mejia", "sequence": 8 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p249", "name": "Erin Murphy", "sequence": 9 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p323", "name": "Enrique Pepén", "sequence": 10 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p324", "name": "Benjamin Jacob Weber", "sequence": 11 },
+    { "matter_id": "ma-boston-43547", "official_id": "ma-boston-p256", "name": "Brian Worrell", "sequence": 12 }
   ],
   "localMeetings": [
     {
-      "id": "boston-e14263",
-      "city": "boston",
+      "id": "ma-boston-e14263",
+      "city": "ma-boston",
       "event_id": 14263,
       "body": "City Council",
       "starts_at": "2026-10-07T16:00:00.000Z",
@@ -20769,8 +20834,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14263&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14269",
-      "city": "boston",
+      "id": "ma-boston-e14269",
+      "city": "ma-boston",
       "event_id": 14269,
       "body": "City Council",
       "starts_at": "2026-10-06T14:00:00.000Z",
@@ -20782,8 +20847,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14269&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14267",
-      "city": "boston",
+      "id": "ma-boston-e14267",
+      "city": "ma-boston",
       "event_id": 14267,
       "body": "City Council",
       "starts_at": "2026-10-02T14:00:00.000Z",
@@ -20795,8 +20860,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14267&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14256",
-      "city": "boston",
+      "id": "ma-boston-e14256",
+      "city": "ma-boston",
       "event_id": 14256,
       "body": "City Council",
       "starts_at": "2026-09-30T16:00:00.000Z",
@@ -20808,8 +20873,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14256&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14266",
-      "city": "boston",
+      "id": "ma-boston-e14266",
+      "city": "ma-boston",
       "event_id": 14266,
       "body": "City Council",
       "starts_at": "2026-09-29T14:30:00.000Z",
@@ -20821,8 +20886,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14266&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14264",
-      "city": "boston",
+      "id": "ma-boston-e14264",
+      "city": "ma-boston",
       "event_id": 14264,
       "body": "City Council",
       "starts_at": "2026-09-28T14:00:00.000Z",
@@ -20834,8 +20899,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14264&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14262",
-      "city": "boston",
+      "id": "ma-boston-e14262",
+      "city": "ma-boston",
       "event_id": 14262,
       "body": "City Council",
       "starts_at": "2026-09-25T14:00:00.000Z",
@@ -20847,8 +20912,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14262&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14261",
-      "city": "boston",
+      "id": "ma-boston-e14261",
+      "city": "ma-boston",
       "event_id": 14261,
       "body": "City Council",
       "starts_at": "2026-09-24T14:00:00.000Z",
@@ -20860,8 +20925,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14261&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14248",
-      "city": "boston",
+      "id": "ma-boston-e14248",
+      "city": "ma-boston",
       "event_id": 14248,
       "body": "City Council",
       "starts_at": "2026-09-23T16:00:00.000Z",
@@ -20873,8 +20938,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14248&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14260",
-      "city": "boston",
+      "id": "ma-boston-e14260",
+      "city": "ma-boston",
       "event_id": 14260,
       "body": "City Council",
       "starts_at": "2026-09-22T18:00:00.000Z",
@@ -20886,8 +20951,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14260&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14259",
-      "city": "boston",
+      "id": "ma-boston-e14259",
+      "city": "ma-boston",
       "event_id": 14259,
       "body": "City Council",
       "starts_at": "2026-09-22T14:00:00.000Z",
@@ -20899,8 +20964,8 @@
       "legistar_url": "https://boston.legistar.com/MeetingDetail.aspx?LEGID=14259&GID=847&G=AC4A50E2-9128-4EA8-8ACF-04F7A6E02E82"
     },
     {
-      "id": "boston-e14257",
-      "city": "boston",
+      "id": "ma-boston-e14257",
+      "city": "ma-boston",
       "event_id": 14257,
       "body": "City Council",
       "starts_at": "2026-09-21T14:00:00.000Z",
@@ -20917,10 +20982,10 @@
       "id": "example-boston-ordinance",
       "title": "Example: what should the City Council weigh on Docket #2026-1882?",
       "prompt": "This is an example discussion for local development. Docket #2026-1882: Emergency resolution calling for immediate relief for businesses devastated by the six-alarm fire at the historic Edison Building in Nubian Square.\n\nWhat matters most to you about this proposal? Vote on the statements and add your own.",
-      "jurisdiction": "boston",
+      "jurisdiction": "ma-boston",
       "district": null,
       "target_type": "local_matter",
-      "target_id": "boston-43547",
+      "target_id": "ma-boston-43547",
       "status": "open",
       "residency_required": true,
       "opens_at": null,

@@ -10,22 +10,23 @@ import {
   loadCommitteeMeetings,
   loadDiscussions,
   loadExecutiveOrders,
-  loadLocalMeetings,
+  loadCityMeetings,
   loadScotusCases,
   loadScotusOutcomeMap,
   loadVotes,
 } from '../lib/build-data';
 import { voteSegments } from '../lib/charts';
 import { outcomeSummary } from '../lib/court';
+import { CITY_LIST } from '../lib/cities';
 import { DEMO } from '../lib/config';
 import { formatDate } from '../lib/format';
-import { billHref, executiveOrderHref, href, scotusCaseHref, voteHref } from '../lib/paths';
+import { billHref, cityHref, executiveOrderHref, href, scotusCaseHref, voteHref } from '../lib/paths';
 
 const [bills, votes, discussions, meetings, orders, cases, hearings, outcomes] = await Promise.all([
   loadBills(),
   loadVotes(),
   loadDiscussions(),
-  loadLocalMeetings(),
+  Promise.all(CITY_LIST.map(async (city) => (await loadCityMeetings(city.key)).map((m) => ({ ...m, city })))),
   loadExecutiveOrders(),
   loadScotusCases(),
   loadCommitteeMeetings(),
@@ -37,7 +38,11 @@ const latestLaw = [...laws].sort((a, b) => (b.latest_action_date ?? '').localeCo
 const latestVote = votes[0];
 const openDiscussions = discussions.filter((d) => d.status === 'open');
 const today = new Date().toISOString().slice(0, 10);
-const nextMeeting = [...meetings].reverse().find((m) => m.date >= today);
+// The soonest full council meeting in any city we cover.
+const nextMeeting = meetings
+  .flat()
+  .filter((m) => m.date >= today && m.committees.length === 0 && m.status !== 'Cancelled')
+  .sort((a, b) => (a.starts_at ?? a.date).localeCompare(b.starts_at ?? b.date))[0];
 
 // Executive orders in the current presidential term (terms start January 20 after a leap-year election).
 const latestOrder = orders.find((o) => o.signing_date);
@@ -150,10 +155,10 @@ const stats = [
         </a>
       )}
       {nextMeeting && (
-        <a class="pulse-card pulse-city" href={href('boston/')}>
+        <a class="pulse-card pulse-city" href={cityHref(nextMeeting.city, 'council/')}>
           <span class="pulse-label">
             <span class="dot dot-city" aria-hidden="true" />
-            Boston City Council · {formatDate(nextMeeting.date)}
+            {nextMeeting.city.council} · {formatDate(nextMeeting.date)}
           </span>
           <strong>Next council meeting{nextMeeting.time ? ` at ${nextMeeting.time}` : ''}</strong>
         </a>

@@ -29,7 +29,8 @@ import type { JobRun } from '../job.ts';
 import { meetingStart } from './boston.ts';
 
 export const WORCESTER_JOB = 'worcester';
-export const WORCESTER = 'worcester';
+/** The city key (state and name); every Worcester id starts with it. */
+export const WORCESTER = 'ma-worcester';
 const MIN_COUNCILORS = 9;
 const MIN_COMMITTEES = 5;
 

@@ -51,7 +51,7 @@ async function verifyBoston(sql: Sql, deps: Parameters<typeof findReps>[1], cong
     const atLarge = r?.localOfficials.filter((o) => o.seat === 'At-Large') ?? [];
     const ok =
       r !== null &&
-      r.city === 'boston' &&
+      r.city === 'ma-boston' &&
       r.councilDistrict === council &&
       Boolean(districtCouncilor) &&
       atLarge.length === 4 &&

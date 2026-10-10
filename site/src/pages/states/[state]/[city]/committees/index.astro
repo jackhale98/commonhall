@@ -1,0 +1,118 @@
+---
+import CityHeader from '../../../../../components/CityHeader.astro';
+import CityMeetings from '../../../../../components/CityMeetings.astro';
+import SourceNote from '../../../../../components/SourceNote.astro';
+import Base from '../../../../../layouts/Base.astro';
+import { loadCityCommittees, loadCityMeetings } from '../../../../../lib/build-data';
+import type { City } from '../../../../../lib/cities';
+import { cityPaths } from '../../../../../lib/city-pages';
+import { formatDate } from '../../../../../lib/format';
+import { localCommitteeHref, localOfficialHref } from '../../../../../lib/paths';
+
+export const getStaticPaths = () => cityPaths('committees');
+
+interface Props {
+  city: City;
+}
+
+const { city } = Astro.props;
+const [committees, meetings] = await Promise.all([loadCityCommittees(city.key), loadCityMeetings(city.key)]);
+const today = new Date().toISOString().slice(0, 10);
+const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
+const held = meetings.filter((m) => m.committees.length > 0 && m.status !== 'Cancelled');
+const upcoming = held.filter((m) => m.date >= today).reverse();
+const slugs = new Map(committees.map((c) => [c.name, c.slug]));
+const session = city.committeeSession;
+const rows = committees.map((c) => {
+  const own = held.filter((m) => m.committees.includes(c.name));
+  return {
+    c,
+    chair: c.members.find((m) => m.role === 'Chair'),
+    next: own.filter((m) => m.date >= today).at(-1)?.date ?? null,
+    last: own.find((m) => m.date < today)?.date ?? null,
+    year: own.filter((m) => m.date >= yearAgo && m.date < today).length,
+  };
+});
+const plural = `${session}s`;
+const hasMembers = committees.some((c) => c.members.length > 0);
+---
+
+<Base
+  title={`${city.council} committees`}
+  description={`${city.council} committees: ${hasMembers ? 'members, ' : ''}upcoming ${plural} and what they take up.`}
+  section="states"
+>
+  <CityHeader
+    city={city}
+    current="committees"
+    lede={`Council committees hold public ${plural} on what the council refers to them before the full council votes.`}
+  />
+
+  <section aria-labelledby="upcoming-h">
+    <h2 id="upcoming-h">Upcoming {plural}</h2>
+    {upcoming.length === 0 ? (
+      <p class="muted">None scheduled yet.</p>
+    ) : (
+      <div class="panel">
+        <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming dockets />
+      </div>
+    )}
+  </section>
+
+  <section aria-labelledby="committees-h">
+    <h2 id="committees-h">Committees</h2>
+    <ul class="plain-rows city-committees">
+      {rows.map(({ c, chair, next, last, year }) => (
+        <li>
+          <a class="committee-name" href={localCommitteeHref(city, c.slug)}>
+            {c.name}
+          </a>
+          <span class="small muted">
+            {chair && (
+              <>
+                Chair:{' '}
+                {chair.official_id ? <a href={localOfficialHref(chair.official_id)}>{chair.name}</a> : chair.name}
+                {' · '}
+              </>
+            )}
+            {next
+              ? `Next ${session} ${formatDate(next)}`
+              : last
+                ? `Last ${session} ${formatDate(last)}`
+                : `No ${plural} on file`}
+            {year > 0 && ` · ${year} in the past year`}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <SourceNote
+    parts={[
+      { what: 'Members and descriptions', source: city.sources.committees },
+      { what: `${session[0]!.toUpperCase()}${session.slice(1)}s and agendas`, source: city.sources.meetings },
+    ]}
+  >
+    {!hasMembers && ' The city doesn’t publish committee members in a form we can read.'}
+  </SourceNote>
+</Base>
+
+<style>
+  .city-committees li {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .committee-name {
+    font-size: var(--step-0);
+    font-weight: 650;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .committee-name:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .city-committees .muted a {
+    color: inherit;
+  }
+</style>

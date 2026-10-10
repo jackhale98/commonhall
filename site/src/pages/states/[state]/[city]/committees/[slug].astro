@@ -1,0 +1,144 @@
+---
+import CityHeader from '../../../../../components/CityHeader.astro';
+import CityMeetings from '../../../../../components/CityMeetings.astro';
+import MemberPhoto from '../../../../../components/MemberPhoto';
+import SourceNote from '../../../../../components/SourceNote.astro';
+import Base from '../../../../../layouts/Base.astro';
+import { loadCityCommittees, loadCityMeetings, loadCityOfficials } from '../../../../../lib/build-data';
+import { CITY_LIST, type City } from '../../../../../lib/cities';
+import type { CityCommittee } from '../../../../../lib/city';
+import { cityHref, localOfficialHref } from '../../../../../lib/paths';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const city of CITY_LIST)
+    for (const committee of await loadCityCommittees(city.key))
+      paths.push({
+        params: { state: city.state.toLowerCase(), city: city.slug, slug: committee.slug },
+        props: { city, committee },
+      });
+  return paths;
+}
+
+interface Props {
+  city: City;
+  committee: CityCommittee;
+}
+
+const { city, committee: c } = Astro.props;
+const [meetings, officials, committees] = await Promise.all([
+  loadCityMeetings(city.key),
+  loadCityOfficials(city.key),
+  loadCityCommittees(city.key),
+]);
+const own = meetings.filter((m) => m.committees.includes(c.name));
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = own.filter((m) => m.date >= today).reverse();
+const past = own.filter((m) => m.date < today && m.status !== 'Cancelled');
+const FIRST = 8;
+const slugs = new Map(committees.map((x) => [x.name, x.slug]));
+const photo = (id: string | null) => officials.find((o) => o.id === id)?.photo_url ?? null;
+const session = city.committeeSession;
+const dockets = new Set(past.flatMap((m) => m.items.map((i) => i.matter_id ?? i.title))).size;
+---
+
+<Base
+  title={`${c.name} · ${city.council}`}
+  description={`The ${city.council}'s ${c.name} committee: ${c.members.length ? 'members, ' : ''}${session}s and what it takes up.`}
+  section="states"
+>
+  <CityHeader city={city} current="committees" />
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={cityHref(city, 'committees/')}>Committees</a> › {c.name}
+  </nav>
+  <h2 class="committee-title">{c.name}</h2>
+  <p class="small muted">
+    {past.length}
+    {past.length === 1 ? session : `${session}s`} on file
+    {dockets > 0 && ` on ${dockets} ${dockets === 1 ? 'docket' : 'dockets'}`}
+    {upcoming.length > 0 && `, ${upcoming.length} coming up`}.
+  </p>
+  {c.description && <p class="committee-about">{c.description}</p>}
+
+  {c.members.length > 0 && (
+    <section aria-labelledby="members-h">
+      <h3 id="members-h" class="h-small">
+        Members
+      </h3>
+      <ul class="plain-members">
+        {c.members.map((m) => (
+          <li>
+            <MemberPhoto name={m.name} url={photo(m.official_id)} size={36} />
+            <span>
+              {m.official_id ? <a href={localOfficialHref(m.official_id)}>{m.name}</a> : m.name}
+              {m.role && <span class="small muted"> · {m.role}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {upcoming.length > 0 && (
+    <section aria-labelledby="upcoming-h">
+      <h3 id="upcoming-h" class="h-small">
+        Upcoming {session}s
+      </h3>
+      <div class="panel">
+        <CityMeetings city={city} meetings={upcoming} slugs={slugs} committee={c.name} upcoming dockets />
+      </div>
+    </section>
+  )}
+
+  <section aria-labelledby="past-h">
+    <h3 id="past-h" class="h-small">
+      Past {session}s
+    </h3>
+    {past.length === 0 ? (
+      <p class="muted">None on file.</p>
+    ) : (
+      <>
+        <CityMeetings city={city} meetings={past.slice(0, FIRST)} slugs={slugs} committee={c.name} dockets plain />
+        {past.length > FIRST && (
+          <details class="more-meetings">
+            <summary>
+              {past.length - FIRST} earlier {session}s
+            </summary>
+            <CityMeetings city={city} meetings={past.slice(FIRST)} slugs={slugs} committee={c.name} dockets plain />
+          </details>
+        )}
+      </>
+    )}
+  </section>
+
+  <SourceNote
+    parts={[
+      {
+        what: 'Members and description',
+        source: c.members.length || c.description ? city.sources.committees : undefined,
+      },
+      { what: `${session[0]!.toUpperCase()}${session.slice(1)}s and agendas`, source: city.sources.meetings },
+    ]}
+  />
+</Base>
+
+<style>
+  .committee-title {
+    font-size: var(--step-2);
+    margin-top: var(--space-2);
+  }
+  .committee-about {
+    max-width: 70ch;
+  }
+  section + section {
+    margin-top: var(--space-5);
+  }
+  .more-meetings summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
+</style>

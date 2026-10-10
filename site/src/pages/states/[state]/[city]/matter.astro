@@ -1,0 +1,28 @@
+---
+import LocalMatterFallback from '../../../../components/LocalMatterFallback';
+import Base from '../../../../layouts/Base.astro';
+import type { City } from '../../../../lib/cities';
+import { cityPaths } from '../../../../lib/city-pages';
+import { cityHref } from '../../../../lib/paths';
+
+/** Only cities whose council legislation we keep. */
+export const getStaticPaths = async () => (await cityPaths()).filter((p) => p.props.city.sources.legislation);
+
+interface Props {
+  city: City;
+}
+
+const { city } = Astro.props;
+---
+
+<Base title="Council matter" section="states" noindex>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={cityHref(city, 'council/')}>{city.council}</a>
+  </nav>
+  <noscript>
+    <p class="notice">
+      This page needs JavaScript. Try the <a href={cityHref(city, 'council/')}>{city.council} page</a>.
+    </p>
+  </noscript>
+  <LocalMatterFallback client:load city={city.key} cityName={city.name} />
+</Base>

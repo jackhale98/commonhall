@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { isAcceptingInput, meetsResidency } from './discussions';
 
-const boston = { jurisdiction: 'boston' as const, district: 7, residency_required: true };
+const boston = { jurisdiction: 'ma-boston', district: 7, residency_required: true };
 
 describe('discussion rules', () => {
   it('requires a saved address in the jurisdiction and district when residency is required', () => {
     expect(meetsResidency(boston, null)).toBe(false);
     expect(meetsResidency(boston, { state: 'MA', city: null, councilDistrict: null })).toBe(false);
-    expect(meetsResidency(boston, { state: 'MA', city: 'boston', councilDistrict: 4 })).toBe(false);
-    expect(meetsResidency(boston, { state: 'MA', city: 'boston', councilDistrict: 7 })).toBe(true);
-    expect(meetsResidency({ ...boston, district: null }, { state: 'MA', city: 'boston', councilDistrict: 4 })).toBe(
+    expect(meetsResidency(boston, { state: 'MA', city: 'ma-boston', councilDistrict: 4 })).toBe(false);
+    expect(meetsResidency(boston, { state: 'MA', city: 'ma-boston', councilDistrict: 7 })).toBe(true);
+    expect(meetsResidency({ ...boston, district: null }, { state: 'MA', city: 'ma-boston', councilDistrict: 4 })).toBe(
       true,
     );
     expect(

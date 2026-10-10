@@ -17,8 +17,8 @@ describe('localTrail', () => {
 
   it('leads back up through Massachusetts, never down to its cities', () => {
     expect(labels('states/ma/')).toEqual(['All states', 'Massachusetts']);
-    expect(labels('boston/council/')).toEqual(['All states', 'Massachusetts', 'Boston']);
-    expect(labels('worcester/budget/')).toEqual(['All states', 'Massachusetts', 'Worcester']);
+    expect(labels('states/ma/boston/council/')).toEqual(['All states', 'Massachusetts', 'Boston']);
+    expect(labels('states/ma/worcester/budget/')).toEqual(['All states', 'Massachusetts', 'Worcester']);
   });
 
   it('is empty where there is no state to show', () => {
@@ -43,7 +43,8 @@ describe('activeNav', () => {
     expect(at('states/tx/')).toEqual(['local', 'states']);
     expect(at('states/ma/')).toEqual(['local', 'ma']);
     expect(at('states/ma/bills/2025/h-1/')).toEqual(['local', 'ma']);
-    expect(at('boston/budget/')).toEqual(['local', 'boston']);
+    expect(at('states/ma/boston/budget/')).toEqual(['local', 'ma-boston']);
+    expect(at('states/ma/worcester/')).toEqual(['local', 'ma-worcester']);
     expect(at('state-bill/')).toEqual(['local', 'states']);
   });
 

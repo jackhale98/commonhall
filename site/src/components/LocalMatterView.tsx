@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { formatDate } from '../lib/format';
+import { cityOf } from '../lib/cities';
 import { localOfficialHref } from '../lib/paths';
 import { select } from '../lib/rest';
 import { LOCAL_MATTER_COLUMNS, type LocalMatter, type LocalMatterAction } from '../lib/types';
@@ -39,7 +40,7 @@ interface Props extends MatterData {
   officialIds?: string[];
 }
 
-/** A Boston City Council matter: status, latest action, actions, sponsors. */
+/** A city council matter: status, latest action, actions, sponsors. */
 export default function LocalMatterView(props: Props) {
   const [data, setData] = useState<MatterData>(props);
   useEffect(() => {
@@ -52,10 +53,12 @@ export default function LocalMatterView(props: Props) {
   const { matter, actions, sponsors } = data;
   const known = new Set(props.officialIds ?? sponsors.map((s) => s.official_id));
   const label = matter.file_number ? `Docket #${matter.file_number}` : `Matter ${matter.matter_id}`;
+  const city = cityOf(matter.id);
   return (
     <article>
       <p class="eyebrow">
-        {label} · Boston City Council{matter.type ? ` · ${matter.type}` : ''}
+        {label} · {city?.council ?? 'City Council'}
+        {matter.type ? ` · ${matter.type}` : ''}
       </p>
       <h1 class="matter-title">{matter.title}</h1>
       <p class="meta cluster small">
@@ -118,8 +121,8 @@ export default function LocalMatterView(props: Props) {
         )}
       </section>
       <p class="small muted">
-        Boston records roll-call votes in meeting minutes rather than in Legistar, so individual councilors’ votes are
-        not shown. See the full record on Legistar.
+        {city?.name ?? 'The city'} records roll-call votes in meeting minutes rather than item by item, so individual
+        councilors’ votes are not shown. See the full record on the city’s site.
       </p>
     </article>
   );
