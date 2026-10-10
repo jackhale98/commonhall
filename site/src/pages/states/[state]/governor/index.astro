@@ -1,5 +1,6 @@
 ---
 import StateHeader from '../../../../components/StateHeader.astro';
+import RecordExplorer from '../../../../components/RecordExplorer';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateOrders } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
@@ -22,11 +23,19 @@ const name = stateName(code);
 const [all, discussions] = await Promise.all([loadStateOrders(), loadDiscussionsByTarget()]);
 const orders = all.get(code) ?? [];
 const id = (n: number) => `${code.toLowerCase()}-${n}`;
-const FIRST = 15;
 const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
 const thisYear = orders.filter((o) => o.signed_date && o.signed_date >= yearAgo).length;
 const byGovernor = [...Map.groupBy(orders, (o) => o.governor ?? 'Unknown')].map(([g, list]) => ({ g, n: list.length }));
 const discussed = (n: number) => discussions.get(`state_order:${id(n)}`);
+const rows = orders.map((o) => ({
+  id: id(o.number),
+  meta: [`No. ${o.number}`, o.signed_date && formatDate(o.signed_date), o.governor].filter(Boolean).join(' · '),
+  title: o.title,
+  href: stateOrderHref(id(o.number)),
+  note: o.revokes ? `Revokes ${o.revokes.replace(/^Executive Order /i, 'order ')}` : undefined,
+  tags: discussed(o.number) ? ['Discussion open'] : undefined,
+  group: o.signed_date?.slice(0, 4) ?? '',
+}));
 ---
 
 <Base
@@ -55,36 +64,14 @@ const discussed = (n: number) => discussions.get(`state_order:${id(n)}`);
     Orders the governor issues to run the executive branch: creating councils and task forces, directing agencies, and
     revoking earlier orders. Open one to read it or ask for a public discussion on it.
   </p>
-  <ol class="plain-rows exec-list">
-    {orders.slice(0, FIRST).map((o) => (
-      <li>
-        <span class="small muted">
-          No. {o.number}
-          {o.signed_date && ` · ${formatDate(o.signed_date)}`}
-          {o.governor && ` · ${o.governor}`}
-          {discussed(o.number) && ' · Discussion open'}
-        </span>
-        <a href={stateOrderHref(id(o.number))}>{o.title}</a>
-      </li>
-    ))}
-  </ol>
-  {orders.length > FIRST && (
-    <details class="more-rows">
-      <summary>{orders.length - FIRST} earlier orders</summary>
-      <ol class="plain-rows exec-list">
-        {orders.slice(FIRST).map((o) => (
-          <li>
-            <span class="small muted">
-              No. {o.number}
-              {o.signed_date && ` · ${formatDate(o.signed_date)}`}
-              {o.governor && ` · ${o.governor}`}
-            </span>
-            <a href={stateOrderHref(id(o.number))}>{o.title}</a>
-          </li>
-        ))}
-      </ol>
-    </details>
-  )}
+  <RecordExplorer
+    client:visible
+    rows={rows}
+    searchLabel="Search executive orders"
+    placeholder="Title, number or governor"
+    groupLabel="Any year"
+    noun={['order', 'orders']}
+  />
   <p class="small muted tab-note">
     From the Trial Court Law Libraries’ list on{' '}
     <a href="https://www.mass.gov/massachusetts-executive-orders" rel="noopener">
@@ -101,30 +88,5 @@ const discussed = (n: number) => discussions.get(`state_order:${id(n)}`);
   .section-note {
     margin-top: 0;
     max-width: 65ch;
-  }
-  .exec-list {
-    list-style: none;
-    padding: 0;
-  }
-  .exec-list li {
-    display: grid;
-    gap: 0.15rem;
-  }
-  .exec-list a {
-    color: var(--text);
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .exec-list a:hover {
-    color: var(--link);
-    text-decoration: underline;
-  }
-  .more-rows summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    color: var(--link);
-    font-weight: 600;
   }
 </style>

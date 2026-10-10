@@ -1,5 +1,6 @@
 ---
 import StateHeader from '../../../../components/StateHeader.astro';
+import RecordExplorer from '../../../../components/RecordExplorer';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateCourtCases } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
@@ -24,7 +25,6 @@ const [all, discussions] = await Promise.all([loadStateCourtCases(), loadDiscuss
 const cases = all.get(code) ?? [];
 const court = STATE_COURT_NAMES[cases[0]?.court_id ?? ''] ?? 'Supreme Court';
 const id = (cluster: number) => `${code.toLowerCase()}-${cluster}`;
-const FIRST = 15;
 const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
 const thisYear = cases.filter((c) => c.date_filed >= yearAgo);
 const divided = thisYear.filter((c) => c.dissents > 0).length;
@@ -36,6 +36,16 @@ const split = (c: (typeof cases)[number]) =>
   ]
     .filter(Boolean)
     .join(' · ');
+const rows = cases.map((c) => ({
+  id: id(c.cluster_id),
+  meta: [formatDate(c.date_filed), c.docket_number, c.citations[0]].filter(Boolean).join(' · '),
+  title: c.case_name,
+  href: stateCourtCaseHref(id(c.cluster_id)),
+  note: split(c) || undefined,
+  tags: discussions.get(`state_court_case:${id(c.cluster_id)}`) ? ['Discussion open'] : undefined,
+  group: c.date_filed.slice(0, 4),
+  flag: c.dissents > 0,
+}));
 ---
 
 <Base
@@ -62,36 +72,15 @@ const split = (c: (typeof cases)[number]) =>
     The state’s highest court: its decisions settle what state law and the state constitution mean. Open one to read it
     or ask for a public discussion on it.
   </p>
-  <ol class="plain-rows exec-list">
-    {cases.slice(0, FIRST).map((c) => (
-      <li>
-        <span class="small muted">
-          {formatDate(c.date_filed)}
-          {c.docket_number && ` · ${c.docket_number}`}
-          {c.citations[0] && ` · ${c.citations[0]}`}
-          {discussions.get(`state_court_case:${id(c.cluster_id)}`) && ' · Discussion open'}
-        </span>
-        <a href={stateCourtCaseHref(id(c.cluster_id))}>{c.case_name}</a>
-        {split(c) && <span class="small muted">{split(c)}</span>}
-      </li>
-    ))}
-  </ol>
-  {cases.length > FIRST && (
-    <details class="more-rows">
-      <summary>{cases.length - FIRST} earlier decisions</summary>
-      <ol class="plain-rows exec-list">
-        {cases.slice(FIRST).map((c) => (
-          <li>
-            <span class="small muted">
-              {formatDate(c.date_filed)}
-              {c.docket_number && ` · ${c.docket_number}`}
-            </span>
-            <a href={stateCourtCaseHref(id(c.cluster_id))}>{c.case_name}</a>
-          </li>
-        ))}
-      </ol>
-    </details>
-  )}
+  <RecordExplorer
+    client:visible
+    rows={rows}
+    searchLabel="Search decisions"
+    placeholder="Case name, docket or citation"
+    groupLabel="Any year"
+    flagLabel="With a dissent"
+    noun={['decision', 'decisions']}
+  />
   <p class="small muted tab-note">
     From{' '}
     <a href="https://www.courtlistener.com/" rel="noopener">
@@ -108,30 +97,5 @@ const split = (c: (typeof cases)[number]) =>
   .section-note {
     margin-top: 0;
     max-width: 65ch;
-  }
-  .exec-list {
-    list-style: none;
-    padding: 0;
-  }
-  .exec-list li {
-    display: grid;
-    gap: 0.15rem;
-  }
-  .exec-list a {
-    color: var(--text);
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .exec-list a:hover {
-    color: var(--link);
-    text-decoration: underline;
-  }
-  .more-rows summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    color: var(--link);
-    font-weight: 600;
   }
 </style>

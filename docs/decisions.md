@@ -1204,7 +1204,10 @@ half an hour, which the nightly rebuild absorbs anyway.
   `state_court_cases`. Titles, dates, citations, dissent counts and a link to the
   opinions; no opinion text. The free tier (50 requests an hour, 125 a day) is
   shared with `sync-scotus`, so `sync-state-courts` runs every three hours with at
-  most four requests: the first load is a month per request, then one request a run.
+  most eight requests (and only what the shared hourly and daily limits leave): the
+  first load is a month per request, newest month first so recent decisions appear
+  at once (an early version loaded oldest first and showed only early 2024 for its
+  first day), then one request a run.
   More states are a line in `STATE_COURTS` and `STATE_COURT_NAMES`.
 - **Governor's executive orders:** from the Trial Court Law Libraries' list on
   mass.gov (approved by the owner as a new source). mass.gov answers plain requests
@@ -1212,7 +1215,8 @@ half an hour, which the nightly rebuild absorbs anyway.
   the two newest index pages (orders 500 and up), and each new order's page for its
   date, governor and what it revokes. It refuses a read of fewer than 20 orders
   rather than load nothing. About 150 rows; a handful a year after that.
-- Each has its own state tab, Governor and Courts, shown only when there is something
+- Each has its own state tab, Governor and Courts, listed like the Bills tab:
+  searchable, filtered by year (and "With a dissent" for decisions), ten to a page, shown only when there is something
   on file, with the latest of each on the state Overview. Every order and decision
   has its own page (`states/ma/governor/635/`, `states/ma/courts/{cluster}/`) where
   people can ask for a discussion: target types `state_order` (`ma-635`) and

@@ -1,8 +1,8 @@
 /**
  * State high court decisions from CourtListener: one row per decided case
- * (opinion cluster). The first load reads a month per request, oldest first,
- * from each court's start date; after that each run re-reads the last month
- * (citations and opinions are filled in after release). CourtListener's free
+ * (opinion cluster). The first load reads a month per request, newest first, back
+ * to each court's start date, so recent decisions show up first; after that each
+ * run re-reads the last month (citations and opinions are filled in after release). CourtListener's free
  * tier is small (50 requests an hour, 125 a day, shared with the Supreme Court
  * sync), so this runs every few hours with a few requests each time.
  */
@@ -23,8 +23,12 @@ export const STATE_COURTS = [{ court: 'mass', state: 'MA', since: '2024-01-01' }
 
 export interface StateCourtsCursor {
   [key: string]: unknown;
-  /** Per court: the last day of the newest month loaded, and the newest decision seen. */
-  courts?: Record<string, { filledThrough?: string; newest?: string }>;
+  /**
+   * Per court: the newest decision seen; `loadedFrom`, the first day of the oldest month
+   * the newest-first load has read; `filledThrough`, how far an earlier oldest-first
+   * load got (those months aren't read again); `filled` once the first load is done.
+   */
+  courts?: Record<string, { filledThrough?: string; loadedFrom?: string; newest?: string; filled?: boolean }>;
   pausedUntil?: string;
 }
 
@@ -81,15 +85,20 @@ export async function syncStateCourts(
         }
         return seen;
       };
-      if (!at.filledThrough || at.filledThrough < today) {
-        for (const [first, last] of monthWindows(at.filledThrough ?? since, today)) {
+      if (!at.filled) {
+        // Newest month first, back to the start date, skipping months already read.
+        const months = monthWindows(since, today).reverse();
+        for (const [first, last] of months) {
           if (at.filledThrough && last <= at.filledThrough) continue;
+          if (at.loadedFrom && first >= at.loadedFrom) continue;
           if (run.outOfTime()) return cursor;
           const seen = await read(first, last);
           run.log('state-courts: month', { court, first, seen });
-          at.filledThrough = last;
+          at.loadedFrom = first;
           await run.checkpoint(cursor);
         }
+        at.filled = true;
+        await run.checkpoint(cursor);
         continue;
       }
       const from = new Date(Date.parse(at.newest ?? today) - 30 * 86_400_000).toISOString().slice(0, 10);

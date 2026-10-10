@@ -53,13 +53,27 @@ describe('sync-state-courts', () => {
     expect(first.status).toBe('ok');
     expect(first.rowsWritten).toBe(2);
     expect(api.calls).toHaveLength(3);
-    expect(api.calls[0]!.searchParams.get('q')).toBe('court_id:mass AND dateFiled:[2024-06-01 TO 2024-06-30]');
+    // Newest month first.
+    expect(api.calls[0]!.searchParams.get('q')).toBe('court_id:mass AND dateFiled:[2024-08-01 TO 2024-08-31]');
+    expect(api.calls[2]!.searchParams.get('q')).toBe('court_id:mass AND dateFiled:[2024-06-01 TO 2024-06-30]');
 
     api.calls.length = 0;
     const second = await run(api.fetch);
     expect(second.rowsWritten).toBe(0);
     expect(api.calls).toHaveLength(1);
     expect(api.calls[0]!.searchParams.get('q')).toContain('[2024-07-03 TO *]');
+  });
+
+  it('finishes an older oldest-first load newest first, without re-reading its months', async () => {
+    await sql`
+      insert into public.sync_state (job, cursor)
+      values (${STATE_COURTS_JOB}, ${sql.json({ courts: { mass: { filledThrough: '2024-06-30' } } })})`;
+    const api = fake();
+    await run(api.fetch);
+    expect(api.calls.map((u) => u.searchParams.get('q'))).toEqual([
+      'court_id:mass AND dateFiled:[2024-08-01 TO 2024-08-31]',
+      'court_id:mass AND dateFiled:[2024-07-01 TO 2024-07-31]',
+    ]);
   });
 
   it('is public to read', async () => {
