@@ -1186,3 +1186,13 @@ Agenda items and roll-call votes aren't in a structured form yet (agenda pages o
 - Boston's 22 standing committees are now rows in `local_committees` like
   Worcester's (without members: Legistar doesn't list them), so committees have
   one model.
+
+## 85. Member stats are stored, not computed per read
+
+`member_vote_stats`, `member_party_unity` and `member_cosponsor_counts` were views
+over every vote position and cosponsorship. The site build reads them in pages, so
+each page re-ran the whole aggregate; with a full Congress of roll calls one read
+passed the anon statement timeout and failed a deploy. They are now materialized
+views with unique keys, refreshed concurrently by pg_cron every 30 minutes
+(`private.refresh_member_stats()`). Member pages can lag new roll calls by up to
+half an hour, which the nightly rebuild absorbs anyway.

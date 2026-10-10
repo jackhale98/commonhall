@@ -134,6 +134,7 @@ describe('vote sync', () => {
 describe('vote views and feed', () => {
   it('computes party agreement and shows followed members’ votes in their feed', async () => {
     await run(fakeHouse(), fakeSenate([]).client);
+    await sql`select private.refresh_member_stats()`;
     const [stats] = await sql`select * from public.member_vote_stats where member_id = 'A000055'`;
     expect(stats).toMatchObject({ total_votes: 1, votes_cast: 1, missed: 0, with_party: 1, party_line_votes: 1 });
 
