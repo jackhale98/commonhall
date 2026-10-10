@@ -7,6 +7,7 @@ import {
   loadCommittees,
   loadDiscussions,
   loadLocalOfficials,
+  loadWorcesterOfficials,
   loadMembers,
   loadPrerenderBills,
   loadPrerenderStateBills,
@@ -76,6 +77,7 @@ export async function GET() {
     meetings,
     nominations,
     matters,
+    worcesterOfficials,
   ] = await Promise.all([
     loadMembers(),
     loadLocalOfficials(),
@@ -88,6 +90,7 @@ export async function GET() {
     loadCommitteeMeetings(),
     loadNominations(),
     loadPrerenderLocalMatters(),
+    loadWorcesterOfficials(),
   ]);
   const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
   const chamberName = (code: string) => (code.startsWith('h') ? 'House' : code.startsWith('s') ? 'Senate' : 'Joint');
@@ -123,6 +126,19 @@ export async function GET() {
       h: href('boston/neighborhoods/'),
     },
     { k: 'page', t: 'Boston Capital Plan', s: 'What the city plans to build, by project', h: href('boston/budget/') },
+    { k: 'page', t: 'Worcester', s: 'City Council, committees, meetings and the budget', h: href('worcester/') },
+    {
+      k: 'page',
+      t: 'Worcester City Council',
+      s: 'Councilors, district map and meetings',
+      h: href('worcester/council/'),
+    },
+    {
+      k: 'page',
+      t: 'Worcester capital budget',
+      s: 'What the city plans to build, by project',
+      h: href('worcester/budget/'),
+    },
     { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
     ...STATE_CODES.map((code) => ({
       k: 'state' as const,
@@ -138,10 +154,10 @@ export async function GET() {
         s: `${(m.party ?? '').charAt(0)} · ${memberRole(m)}`,
         h: memberHref(m.bioguide_id),
       })),
-    ...officials.map((o) => ({
+    ...[...officials, ...worcesterOfficials].map((o) => ({
       k: 'councilor' as const,
       t: o.name,
-      s: `Boston City Council · ${o.seat ?? 'Councilor'}`,
+      s: `${o.city === 'worcester' ? 'Worcester' : 'Boston'} City Council · ${o.seat ?? 'Councilor'}`,
       h: localOfficialHref(o.id),
     })),
     ...discussions.map((d) => ({ k: 'discussion' as const, t: d.title, s: 'Discussion', h: discussionHref(d.id) })),

@@ -1,0 +1,139 @@
+---
+import CityMeetingList from '../../components/CityMeetingList.astro';
+import WorcesterHeader from '../../components/WorcesterHeader.astro';
+import Base from '../../layouts/Base.astro';
+import {
+  loadWorcesterCapital,
+  loadWorcesterCommittees,
+  loadWorcesterMeetings,
+  loadWorcesterOfficials,
+} from '../../lib/build-data';
+import { formatMoney } from '../../lib/finance';
+import { href } from '../../lib/paths';
+import { spendByDepartment, yearSpend } from '../../lib/worcester';
+
+const [officials, meetings, committees, budgets] = await Promise.all([
+  loadWorcesterOfficials(),
+  loadWorcesterMeetings(),
+  loadWorcesterCommittees(),
+  loadWorcesterCapital(),
+]);
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = meetings
+  .filter((m) => m.date >= today && m.status !== 'Cancelled')
+  .reverse()
+  .slice(0, 3);
+const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 3);
+const slugs = new Map(committees.map((c) => [c.name, c.slug]));
+const budget = budgets[0];
+const fy = (y: number) => `FY${String(y).slice(2)}`;
+const thisYear = budget ? budget.items.reduce((n, i) => n + yearSpend(i), 0) : 0;
+const topDepartments = budget ? spendByDepartment(budget.items).slice(0, 3) : [];
+const biggest = budget ? [...budget.items].sort((a, b) => yearSpend(b) - yearSpend(a)).slice(0, 3) : [];
+const districts = officials.filter((o) => o.district !== null).length || 5;
+const WORDS: Record<number, string> = { 4: 'four', 5: 'five', 6: 'six', 7: 'seven' };
+---
+
+<Base
+  title="Worcester"
+  description="Worcester city government: the City Council, its committees and meetings, and the city's capital budget."
+  section="states"
+>
+  <WorcesterHeader
+    current="overview"
+    lede={`Eleven city councilors: one for each of ${WORDS[districts] ?? districts} districts and six elected citywide, including the mayor.`}
+  />
+
+  <p class="councilor-link">
+    <a href={href('worcester/council/#council-h')}>Find your councilor and see the district map →</a>
+  </p>
+
+  <section aria-labelledby="meet-h">
+    <div class="section-head">
+      <h2 id="meet-h">Council meetings</h2>
+      <a class="see-all" href={href('worcester/council/#meetings-h')}>
+        All meetings
+      </a>
+    </div>
+    {upcoming.length + recent.length === 0 ? (
+      <p class="muted">None loaded yet.</p>
+    ) : (
+      <div class="panel">
+        {upcoming.length > 0 && <CityMeetingList meetings={upcoming} slugs={slugs} upcoming />}
+        {recent.length > 0 && <CityMeetingList meetings={recent} slugs={slugs} />}
+      </div>
+    )}
+  </section>
+
+  {budget && (
+    <section aria-labelledby="budget-h">
+      <div class="section-head">
+        <h2 id="budget-h">The capital budget</h2>
+        <a class="see-all" href={href('worcester/budget/')}>
+          Budget
+        </a>
+      </div>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>
+            {fy(budget.doc.fiscal_year)} {budget.doc.stage === 'proposed' ? 'proposal' : 'capital budget'}
+          </dt>
+          <dd>{formatMoney(thisYear)}</dd>
+          <p class="small muted stat-note">borrowing and cash for {budget.items.length} projects</p>
+        </div>
+        <div class="stat">
+          <dt>Largest departments</dt>
+          <dd class="stat-list">
+            {topDepartments.map((d) => (
+              <span>
+                {d.department} <span class="muted">{formatMoney(d.amount)}</span>
+              </span>
+            ))}
+          </dd>
+        </div>
+      </dl>
+      <h3 class="h-small budget-top">Biggest projects this year</h3>
+      <ul class="plain-rows">
+        {biggest.map((i) => (
+          <li>
+            <p class="meta">
+              {i.department} · {formatMoney(yearSpend(i))}
+            </p>
+            <p>
+              <strong>{i.title}</strong>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section aria-labelledby="committees-h">
+    <div class="section-head">
+      <h2 id="committees-h">Committees</h2>
+      <a class="see-all" href={href('worcester/committees/')}>
+        All committees
+      </a>
+    </div>
+    <p>
+      {committees.length || 10} standing committees of three councilors each take up what the council refers to them,
+      from traffic and parking to public works and economic development.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .councilor-link {
+    margin: 0 0 var(--space-4);
+    font-weight: 600;
+  }
+  .stat-list {
+    display: grid;
+    gap: 0.2rem;
+    font-size: var(--step-0);
+    font-weight: 600;
+  }
+  .budget-top {
+    margin-top: var(--space-4);
+  }
+</style>

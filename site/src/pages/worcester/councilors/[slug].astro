@@ -1,0 +1,89 @@
+---
+import FollowButton from '../../../components/FollowButton';
+import MemberPhoto from '../../../components/MemberPhoto';
+import WorcesterHeader from '../../../components/WorcesterHeader.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadWorcesterCommittees, loadWorcesterOfficials } from '../../../lib/build-data';
+import { href, worcesterCommitteeHref } from '../../../lib/paths';
+import type { LocalOfficial } from '../../../lib/types';
+
+export async function getStaticPaths() {
+  return (await loadWorcesterOfficials()).map((official) => ({
+    params: { slug: official.id.replace(/^worcester-/, '') },
+    props: { official },
+  }));
+}
+
+interface Props {
+  official: LocalOfficial;
+}
+
+const { official: o } = Astro.props;
+const seats = (await loadWorcesterCommittees()).flatMap((c) =>
+  c.members.filter((m) => m.official_id === o.id).map((m) => ({ committee: c, role: m.role })),
+);
+const role = o.title === 'Mayor' ? 'Mayor and Councilor-at-Large' : `Councilor, ${o.seat ?? 'Worcester'}`;
+---
+
+<Base
+  title={`${o.name} · Worcester City Council`}
+  description={`${o.name}, ${role}, Worcester City Council.`}
+  section="states"
+>
+  <WorcesterHeader current="council" />
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href('worcester/council/')}>Council</a> › {o.name}
+  </nav>
+  <header class="person-head">
+    <MemberPhoto name={o.name} url={o.photo_url} size={96} eager />
+    <div>
+      <h2 class="person-name">{o.name}</h2>
+      <p class="person-meta">
+        {role}
+        {o.title === 'Vice Chair' && ' · Vice Chair of the Council'}
+      </p>
+      <FollowButton client:idle targetType="local_official" targetId={o.id} label={o.name} />
+    </div>
+  </header>
+
+  {o.email && (
+    <p>
+      <a href={`mailto:${o.email}`}>{o.email}</a>
+    </p>
+  )}
+
+  <section aria-labelledby="committees-h">
+    <h3 id="committees-h" class="h-small">
+      Committees
+    </h3>
+    {seats.length === 0 ? (
+      <p class="muted">No standing committee seats listed.</p>
+    ) : (
+      <ul class="plain-rows">
+        {seats.map((s) => (
+          <li>
+            <a href={worcesterCommitteeHref(s.committee.slug)}>{s.committee.name}</a>
+            {s.role && <span class="small muted"> · {s.role}</span>}
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+
+  <p class="small muted tab-note">
+    <span>
+      From{' '}
+      <a href="https://www.worcesterma.gov/city-council/councilors" rel="noopener">
+        the city’s website
+      </a>
+      , checked weekly.
+    </span>
+  </p>
+</Base>
+
+<style>
+  .person-name {
+    font-size: var(--step-2);
+    margin: 0 0 var(--space-1);
+  }
+</style>

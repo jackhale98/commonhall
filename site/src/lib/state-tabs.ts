@@ -10,7 +10,10 @@ export type StateTab = 'overview' | 'legislature' | 'bills' | 'committees' | 'co
 
 /** Cities we cover, by state. */
 export const LOCAL_GOVERNMENTS: Record<string, { name: string; path: string; summary: string }[]> = {
-  MA: [{ name: 'Boston', path: 'boston/', summary: 'City Council, committee hearings, zoning appeals and the budget' }],
+  MA: [
+    { name: 'Boston', path: 'boston/', summary: 'City Council, committee hearings, zoning appeals and the budget' },
+    { name: 'Worcester', path: 'worcester/', summary: 'City Council, committees and meetings, and the capital budget' },
+  ],
 };
 
 export interface StateTabCounts {

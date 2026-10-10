@@ -16,8 +16,9 @@ describe('localTrail', () => {
   });
 
   it('runs through Massachusetts to Boston on their pages', () => {
-    expect(labels('states/ma/')).toEqual(['All states', 'Massachusetts', 'Boston']);
+    expect(labels('states/ma/')).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
     expect(labels('boston/council/')).toEqual(['All states', 'Massachusetts', 'Boston']);
+    expect(labels('worcester/budget/')).toEqual(['All states', 'Massachusetts', 'Worcester']);
   });
 
   it('is empty where there is no state to show', () => {
@@ -61,9 +62,9 @@ describe('activeNav', () => {
 });
 
 describe('orderedItems', () => {
-  it('reads the local trail from all states down to Boston', () => {
+  it('reads the local trail from all states down to the cities', () => {
     const local = NAV.find((g) => g.key === 'local')!;
-    expect(orderedItems(local).map((i) => i.label)).toEqual(['All states', 'Massachusetts', 'Boston']);
+    expect(orderedItems(local).map((i) => i.label)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
   });
 });
 

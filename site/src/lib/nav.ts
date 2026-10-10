@@ -49,6 +49,7 @@ export const NAV: NavGroup[] = [
       // More specific first: Massachusetts pages also start with states/.
       { key: 'ma', label: 'Massachusetts', path: 'states/ma/', match: ['states/ma/'] },
       { key: 'boston', label: 'Boston', path: 'boston/', match: ['boston/'] },
+      { key: 'worcester', label: 'Worcester', path: 'worcester/', match: ['worcester/'] },
       {
         key: 'states',
         label: 'All states',
@@ -65,15 +66,18 @@ export const NAV: NavGroup[] = [
 /**
  * The States & local trail under the header, which follows where you are:
  * "All states › Delaware" on a state's pages, "All states › Massachusetts › Boston"
- * on Massachusetts and Boston pages (Boston is the one city we cover, so it sits
- * under its state). Empty on the all-states page itself and on pages that only
+ * on Boston's (likewise Worcester's), and both cities after Massachusetts on its
+ * own pages, since the cities we cover sit under their state. Empty on the all-states page itself and on pages that only
  * learn their state in the browser; those carry their own breadcrumb.
  */
 export function localTrail(path: string): NavItem[] {
   const p = path.replace(/^\/+/, '');
   const local = NAV.find((g) => g.key === 'local')!;
   const { item } = activeNav(p);
-  if (item?.key === 'ma' || item?.key === 'boston') return orderedItems(local);
+  // A city's pages: All states › Massachusetts › the city. Massachusetts' own pages list both cities.
+  const by = new Map((local.items ?? []).map((i) => [i.key, i]));
+  if (item?.key === 'boston' || item?.key === 'worcester') return ['states', 'ma', item.key].map((k) => by.get(k)!);
+  if (item?.key === 'ma') return orderedItems(local);
   const state = /^states\/([a-z]{2})(\/|$)/.exec(p)?.[1];
   if (!state) return [];
   const all = local.items!.find((i) => i.key === 'states')!;
@@ -88,7 +92,7 @@ export function orderedItems(group: NavGroup): NavItem[] {
   const items = group.items ?? [];
   if (group.key !== 'local') return items;
   const by = new Map(items.map((i) => [i.key, i]));
-  return ['states', 'ma', 'boston'].map((k) => by.get(k)!).filter(Boolean);
+  return ['states', 'ma', 'boston', 'worcester'].map((k) => by.get(k)!).filter(Boolean);
 }
 
 /** The group and item a page belongs to, from its path relative to the site root. */
@@ -130,6 +134,7 @@ export const PHONE_NAV: { heading: string; items: { key: string; label: string; 
       { key: 'states', label: 'All states', path: 'states/' },
       { key: 'ma', label: 'Massachusetts', path: 'states/ma/' },
       { key: 'boston', label: 'Boston', path: 'boston/' },
+      { key: 'worcester', label: 'Worcester', path: 'worcester/' },
     ],
   },
   {

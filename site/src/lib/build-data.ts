@@ -49,6 +49,7 @@ import {
   type ZbaAppeal,
   type ZbaDecisionCount,
 } from './local';
+import type { CapitalDocument, CapitalItem, CityCommittee, CityMeeting } from './worcester';
 import {
   RestError,
   inList,
@@ -782,6 +783,88 @@ export interface DistrictShape {
 }
 
 /** Council district outlines for the Boston map. */
+// ---- Worcester -------------------------------------------------------------
+
+export const loadWorcesterOfficials = memo(async () =>
+  selectAllOptional<LocalOfficial>('local_officials', {
+    select: LOCAL_OFFICIAL_COLUMNS,
+    city: 'eq.worcester',
+    current: 'eq.true',
+    order: 'district.asc.nullslast,name.asc',
+  }),
+);
+
+/** Standing committees with their members (chair, vice chair, member). */
+export const loadWorcesterCommittees = memo(async (): Promise<CityCommittee[]> => {
+  const committees = await selectAllOptional<Omit<CityCommittee, 'members'>>('local_committees', {
+    select: 'id,slug,name,description,url',
+    city: 'eq.worcester',
+    order: 'name.asc',
+  });
+  const members = committees.length
+    ? await selectByIds<CityCommittee['members'][number] & { committee_id: string }>(
+        'local_committee_members',
+        'committee_id',
+        committees.map((c) => c.id),
+        { select: 'committee_id,seq,official_id,name,role', order: 'committee_id.asc,seq.asc' },
+      )
+    : [];
+  const by = groupBy(members, (m) => m.committee_id);
+  return committees.map((c) => ({ ...c, members: by.get(c.id) ?? [] }));
+});
+
+/**
+ * Council and standing committee meetings, newest first. PrimeGov lists a joint
+ * meeting once under each committee; it is shown once.
+ */
+export const loadWorcesterMeetings = memo(async () => {
+  const rows = await selectAllOptional<CityMeeting>('local_meetings', {
+    select: 'id,date,time,location,agenda_url,minutes_url,legistar_url,status,committees',
+    city: 'eq.worcester',
+    order: 'date.desc,id.desc',
+  });
+  const seen = new Set<string>();
+  return rows.filter((m) => {
+    const key = `${m.date}|${m.time}|${[...m.committees].sort().join('+')}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+});
+
+/** The newest capital budget (adopted or proposed) and the one before it, newest first. */
+export const loadWorcesterCapital = memo(async () => {
+  const [docs, items] = await Promise.all([
+    selectAllOptional<CapitalDocument>('local_capital_documents', {
+      select: 'fiscal_year,stage,title,source_url,plan_years,plan',
+      city: 'eq.worcester',
+      order: 'fiscal_year.desc',
+    }),
+    selectAllOptional<CapitalItem>('local_capital_items', {
+      select:
+        'fiscal_year,stage,seq,department,category,title,description,borrowing,cash,new_authorization,prior_authorization,grants',
+      city: 'eq.worcester',
+      order: 'fiscal_year.desc,seq.asc',
+    }),
+  ]);
+  const num = (i: CapitalItem): CapitalItem => ({
+    ...i,
+    borrowing: Number(i.borrowing),
+    cash: Number(i.cash),
+    new_authorization: Number(i.new_authorization),
+    prior_authorization: Number(i.prior_authorization),
+    grants: Number(i.grants),
+  });
+  return docs.map((doc) => ({
+    doc,
+    items: items.filter((i) => i.fiscal_year === doc.fiscal_year && i.stage === doc.stage).map(num),
+  }));
+});
+
+export const loadWorcesterDistricts = memo(async () =>
+  DEMO ? [] : rpc<DistrictShape[]>('council_district_shapes', { p_city: 'worcester' }),
+);
+
 export const loadCouncilDistricts = memo(async () =>
   DEMO
     ? (DEMO_TABLES.council_districts as unknown as DistrictShape[])

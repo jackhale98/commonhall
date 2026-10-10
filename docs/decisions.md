@@ -1108,3 +1108,33 @@ cache moot.
 The syncs' Congress.gov ceiling drops from 4,800 to 4,500 requests an hour, so the
 syncs (4,500) and visitors' on-demand lookups (capped at 300) together stay under
 the key's 5,000.
+
+## 82. Worcester, the second city
+
+Worcester is the state's second-largest city and its records are readable, though
+not through Legistar, so it gets its own sources (approved by the owner):
+
+- **PrimeGov** (worcesterma.primegov.com), the city's agenda system, has a public
+  JSON feed of meetings with their agendas and minutes. `sync-worcester` keeps
+  City Council and standing committee meetings hourly; boards, commissions and
+  school councils on the same feed are left out. Joint meetings appear once per
+  committee there and once on our pages.
+- **The city's website** lists the eleven councilors (seat, email, photo) and, unlike
+  Boston's Legistar, each standing committee's chair, vice-chair, members and
+  description. Parsed weekly; a page that reads short (under nine councilors or
+  five committees) fails the job instead of emptying the city.
+- **Worcester open data** has the council district map (2020 Census, in use since
+  2022), loaded in the migration, and the capital budget, which is published only
+  as a PDF. The "Load Worcester budget" workflow reads it monthly with `pdftotext`,
+  places amounts by column (some cells are blank, not "-"), and refuses a document
+  unless every department's projects add up to its printed sub-total. The five-year
+  plan's area totals are only reported: the FY26 plan prints a Facility
+  Improvements total $1.4M above its own rows. FY24 and FY25 use older layouts the
+  parser doesn't read; it loads the newest two years, preferring adopted to proposed.
+
+Councilors have no numeric id, so `local_officials.id` now also allows
+`{city}-{name slug}` (worcester-khrystian-king), and `person_id` is optional. The
+address lookup matches any city's district map. Worcester's pages mirror Boston's
+tabs (Overview, Council, Committees, Budget) and sit under Massachusetts' Local tab.
+Agenda items and roll-call votes aren't in a structured form yet (agenda pages only);
+311 work orders are on the open data site for a later phase.
