@@ -40,11 +40,11 @@ const [matters, meetings, committees, discussions, appeals, report, capital, ope
   loadCityOperating(city.key),
 ]);
 const today = new Date().toISOString().slice(0, 10);
-const upcoming = meetings
-  .filter((m) => m.date >= today && m.status !== 'Cancelled')
-  .reverse()
-  .slice(0, 2);
-const recent = meetings.filter((m) => m.date < today).slice(0, upcoming.length > 0 ? 1 : 2);
+// The next full council meeting and the next committee session; the lists live on their tabs.
+const next = (committee: boolean) =>
+  meetings.filter((m) => m.date >= today && m.status !== 'Cancelled' && m.committees.length > 0 === committee).at(-1);
+const comingUp = [next(false), next(true)].filter((m) => m !== undefined);
+const lastCouncil = meetings.find((m) => m.date < today && m.committees.length === 0 && m.status !== 'Cancelled');
 const slugs = new Map(committees.map((c) => [c.name, c.slug]));
 // The budget at a glance: the operating budget, the capital plan or budget, and this year's biggest projects.
 const projects = capital ? capital.projects.filter((p) => inCurrentBudget(p, capital)) : [];
@@ -76,17 +76,26 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
 
   <section aria-labelledby="meet-h">
     <div class="section-head">
-      <h2 id="meet-h">Council meetings</h2>
+      <h2 id="meet-h">Coming up</h2>
       <a class="see-all" href={cityHref(city, 'council/#meetings-h')}>
-        All meetings
+        Council meetings
       </a>
     </div>
-    {upcoming.length + recent.length === 0 ? (
+    {comingUp.length === 0 && !lastCouncil ? (
       <p class="muted">None loaded yet.</p>
     ) : (
       <div class="panel">
-        {upcoming.length > 0 && <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming />}
-        {recent.length > 0 && <CityMeetings city={city} meetings={recent} slugs={slugs} />}
+        <CityMeetings
+          city={city}
+          meetings={comingUp.length > 0 ? comingUp : [lastCouncil!]}
+          slugs={slugs}
+          upcoming={comingUp.length > 0}
+        />
+        {committees.length > 0 && (
+          <p class="small more-link">
+            <a href={cityHref(city, 'committees/')}>Every committee {city.committeeSession} →</a>
+          </p>
+        )}
       </div>
     )}
   </section>
@@ -252,6 +261,9 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
 </Base>
 
 <style>
+  .more-link {
+    margin: var(--space-2) 0 0;
+  }
   .councilor-link {
     margin: 0 0 var(--space-4);
     font-weight: 600;

@@ -21,6 +21,8 @@ const today = new Date().toISOString().slice(0, 10);
 const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
 const held = meetings.filter((m) => m.committees.length > 0 && m.status !== 'Cancelled');
 const upcoming = held.filter((m) => m.date >= today).reverse();
+const recent = held.filter((m) => m.date < today);
+const FIRST = 5;
 const slugs = new Map(committees.map((c) => [c.name, c.slug]));
 const session = city.committeeSession;
 const rows = committees.map((c) => {
@@ -58,6 +60,23 @@ const hasMembers = committees.some((c) => c.members.length > 0);
       </div>
     )}
   </section>
+
+  {recent.length > 0 && (
+    <section aria-labelledby="recent-h">
+      <h2 id="recent-h">Recent {plural}</h2>
+      <div class="panel">
+        <CityMeetings city={city} meetings={recent.slice(0, FIRST)} slugs={slugs} dockets />
+        {recent.length > FIRST && (
+          <details class="more-meetings">
+            <summary>
+              {recent.length - FIRST} earlier {plural}
+            </summary>
+            <CityMeetings city={city} meetings={recent.slice(FIRST)} slugs={slugs} dockets />
+          </details>
+        )}
+      </div>
+    </section>
+  )}
 
   <section aria-labelledby="committees-h">
     <h2 id="committees-h">Committees</h2>
@@ -98,6 +117,14 @@ const hasMembers = committees.some((c) => c.members.length > 0);
 </Base>
 
 <style>
+  .more-meetings summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
   .city-committees li {
     display: grid;
     gap: 0.15rem;

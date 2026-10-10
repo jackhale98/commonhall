@@ -19,7 +19,7 @@ import {
 import type { City } from '../../../../lib/cities';
 import { cityPaths } from '../../../../lib/city-pages';
 import { DEMO } from '../../../../lib/config';
-import { localOfficialHref } from '../../../../lib/paths';
+import { cityHref, localOfficialHref } from '../../../../lib/paths';
 
 export const getStaticPaths = () => cityPaths();
 
@@ -46,8 +46,10 @@ const features = districts.map((d) => {
   };
 });
 const today = new Date().toISOString().slice(0, 10);
-const upcoming = meetings.filter((m) => m.date >= today).reverse();
-const recent = meetings.filter((m) => m.date < today);
+// Committee sessions have their own tab; without one, they stay here.
+const own = committees.length > 0 ? meetings.filter((m) => m.committees.length === 0) : meetings;
+const upcoming = own.filter((m) => m.date >= today).reverse();
+const recent = own.filter((m) => m.date < today);
 const FIRST = 5;
 const slugs = new Map(committees.map((c) => [c.name, c.slug]));
 ---
@@ -124,7 +126,12 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
   )}
 
   <section aria-labelledby="meetings-h">
-    <h2 id="meetings-h">Meetings</h2>
+    <h2 id="meetings-h">{committees.length > 0 ? 'Council meetings' : 'Meetings'}</h2>
+    {committees.length > 0 && (
+      <p class="small muted">
+        Committee {city.committeeSession}s are on the <a href={cityHref(city, 'committees/')}>Committees</a> tab.
+      </p>
+    )}
     {upcoming.length > 0 && (
       <>
         <h3 class="h-small">Coming up</h3>
