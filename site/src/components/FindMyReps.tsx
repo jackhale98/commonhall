@@ -278,7 +278,7 @@ export default function FindMyReps({ saved = false }: Props) {
             id="reps-address"
             type="text"
             autocomplete="street-address"
-            placeholder="Street address or ZIP"
+            placeholder="Street address, city and state"
             required
             minLength={5}
             maxLength={200}
