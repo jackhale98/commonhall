@@ -1760,3 +1760,9 @@ and Census TIGERweb; PrimeGov is the same vendor and kind of source as Worcester
   district 0 (Census TIGERweb incorporated places, GEOID 2511000), so an address in
   Cambridge finds all nine councillors. The Council tab draws no district map and
   offers no "find your district" for a city with `districts: 0`.
+
+First full load (October 2026): 218 meetings (123 from IQM2), 1,313 matters (774 from
+2025), 2,501 actions, 1,629 sponsors and 790 named roll calls (66 split) with 7,100
+positions, in about 20 minutes; a rerun writes nothing. 311: 2,073 requests in the
+last 30 days. Budget: FY25–27 operating and revenue lines ($1.03B in FY27); capital:
+56 projects in the FY27–31 plan.
