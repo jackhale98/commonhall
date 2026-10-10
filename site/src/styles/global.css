@@ -3079,3 +3079,85 @@ button .ch-loader,
 .tab-note {
   margin-top: var(--space-5);
 }
+
+/* A bill's sponsor, committees and subjects: three boxes that open on a tap. */
+.bill-facts {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+@media (min-width: 50rem) {
+  .bill-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+.bill-fact {
+  padding: 0;
+}
+.bill-fact > summary {
+  cursor: pointer;
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.6rem;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+}
+.bill-fact > summary::-webkit-details-marker {
+  display: none;
+}
+/* A chevron that turns when the box opens. */
+.bill-fact > summary::before {
+  content: '';
+  grid-row: span 2;
+  align-self: center;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  color: var(--text-muted);
+}
+.bill-fact[open] > summary::before {
+  transform: rotate(45deg);
+}
+.fact-label {
+  font-size: var(--step--1);
+  font-weight: 650;
+  color: var(--text-muted);
+}
+.fact-gist {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fact-body {
+  padding: 0 var(--space-3) var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+.fact-body p {
+  margin: 0;
+}
+.fact-sub {
+  margin-top: var(--space-2);
+}
+.fact-body .plain-list,
+.fact-body .chips {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.fact-body .chips {
+  display: flex;
+  flex-wrap: wrap;
+}
+.fact-body .chip {
+  white-space: normal;
+}

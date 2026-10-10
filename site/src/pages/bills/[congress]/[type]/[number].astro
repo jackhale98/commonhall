@@ -1,12 +1,9 @@
 ---
-import BillCommittees from '../../../../components/BillCommittees';
 import DiscussionLink from '../../../../components/DiscussionLink.astro';
+import BillFacts from '../../../../components/BillFacts';
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
-import MemberChip from '../../../../components/MemberChip';
 import VoteList from '../../../../components/VoteList';
-import StackedBar from '../../../../components/viz/StackedBar';
-import { partySegments } from '../../../../lib/charts';
 import Base from '../../../../layouts/Base.astro';
 import {
   loadActions,
@@ -59,11 +56,6 @@ const sponsor = bill.sponsor_id ? members.get(bill.sponsor_id) : undefined;
 const title = billDisplayTitle(bill);
 const label = billNumberLabel(bill);
 const summary = paragraphs(bill.summary_text);
-const partyCounts = cosponsors.reduce<Record<string, number>>((acc, c) => {
-  const p = members.get(c.member_id)?.party ?? '?';
-  acc[p] = (acc[p] ?? 0) + 1;
-  return acc;
-}, {});
 const description = `${label} (${congressLabel(bill.congress)}): ${bill.title}`.slice(0, 300);
 const liveActions = actions.map(({ seq, action_date, text, chamber, source_system }) => ({
   seq,
@@ -104,6 +96,18 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
         </a>
       )}
     </div>
+    <BillFacts
+      sponsor={sponsor ?? null}
+      cosponsors={cosponsors.map((c) => ({
+        member_id: c.member_id,
+        is_original: c.is_original,
+        member: members.get(c.member_id) ?? null,
+      }))}
+      withdrawn={withdrawn.length}
+      committees={billCommittees}
+      knownCommittees={new Set(committeeIndex.keys())}
+      subjects={subjects}
+    />
   </header>
 
   <div class="bill-layout">
@@ -168,72 +172,6 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
         </section>
       )}
     </div>
-
-    <aside class="bill-side">
-      <section aria-labelledby="sponsor-h" class="card">
-        <h2 id="sponsor-h" class="h-small">
-          Sponsor
-        </h2>
-        {sponsor ? <MemberChip member={sponsor} /> : <p class="muted">Not recorded.</p>}
-
-        <h2 class="h-small" id="cosponsors-h">
-          Cosponsors <span class="muted">({cosponsors.length})</span>
-        </h2>
-        {cosponsors.length > 0 ? (
-          <>
-            <StackedBar
-              segments={partySegments(partyCounts)}
-              label={`Cosponsors by party: ${Object.entries(partyCounts)
-                .map(([p, n]) => `${n} ${p}`)
-                .join(', ')}`}
-              legend
-            />
-            <details class="more" open={cosponsors.length <= 10}>
-              <summary>Show cosponsors</summary>
-              <ul class="plain-list">
-                {cosponsors.map((c) => {
-                  const m = members.get(c.member_id);
-                  return (
-                    <li>
-                      {m ? <MemberChip member={m} /> : c.member_id}
-                      {c.is_original && <span class="small muted"> · original</span>}
-                    </li>
-                  );
-                })}
-              </ul>
-            </details>
-          </>
-        ) : (
-          <p class="muted">None.</p>
-        )}
-        {withdrawn.length > 0 && <p class="small muted">{withdrawn.length} withdrew their cosponsorship.</p>}
-      </section>
-
-      {billCommittees.length > 0 && (
-        <section aria-labelledby="committees-h" class="card">
-          <h2 id="committees-h" class="h-small">
-            Committees
-          </h2>
-          <BillCommittees rows={billCommittees} known={new Set(committeeIndex.keys())} />
-        </section>
-      )}
-
-      {subjects.length > 0 && (
-        <section aria-labelledby="subjects-h" class="card">
-          <h2 id="subjects-h" class="h-small">
-            Subjects <span class="muted">({subjects.length})</span>
-          </h2>
-          <details class="more" open={subjects.length <= 12}>
-            <summary>Show subjects</summary>
-            <ul class="chips">
-              {subjects.map((s) => (
-                <li class="chip">{s}</li>
-              ))}
-            </ul>
-          </details>
-        </section>
-      )}
-    </aside>
   </div>
 </Base>
 
@@ -250,35 +188,7 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
     gap: var(--space-6);
     margin-top: var(--space-5);
   }
-  @media (min-width: 60rem) {
-    .bill-layout {
-      grid-template-columns: minmax(0, 1fr) 20rem;
-    }
-  }
-  .bill-side {
-    display: grid;
-    gap: var(--space-4);
-    align-content: start;
-  }
   .summary ul {
     max-width: var(--measure);
-  }
-  .plain-list {
-    list-style: none;
-    padding: 0;
-    margin: var(--space-2) 0 0;
-    display: grid;
-    gap: var(--space-2);
-  }
-  .chips {
-    list-style: none;
-    padding: 0;
-    margin: var(--space-2) 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-  .chips .chip {
-    white-space: normal;
   }
 </style>

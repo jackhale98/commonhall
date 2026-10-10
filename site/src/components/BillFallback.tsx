@@ -8,10 +8,9 @@ import { select } from '../lib/rest';
 import { BILL_PAGE_COLUMNS, type Bill, type BillAction, type Member } from '../lib/types';
 import { BILL_COMMITTEE_COLUMNS, type BillCommittee } from '../lib/committees';
 import ActionTimeline from './ActionTimeline';
-import BillCommittees from './BillCommittees';
+import BillFacts from './BillFacts';
 import DiscussionRequest from './DiscussionRequest';
 import FollowButton from './FollowButton';
-import MemberChip from './MemberChip';
 import StatusTracker from './StatusTracker';
 import Loader from './Loader';
 import VoteList, { type VoteListItemData } from './VoteList';
@@ -160,6 +159,12 @@ export default function BillFallback() {
         {view.source === 'archive' && (
           <p class="small muted">Fetched from Congress.gov on request; not tracked for updates.</p>
         )}
+        <BillFacts
+          sponsor={view.sponsor}
+          cosponsors={active}
+          committees={view.committees ?? []}
+          subjects={view.subjects}
+        />
       </header>
 
       <section aria-label="Status" style={{ marginTop: '1.5rem' }}>
@@ -180,23 +185,6 @@ export default function BillFallback() {
       </section>
 
       <section>
-        <h2>Sponsor and cosponsors</h2>
-        <p>{view.sponsor ? <MemberChip member={view.sponsor} /> : <span class="muted">Sponsor not recorded.</span>}</p>
-        {active.length > 0 ? (
-          <details class="more" open={active.length <= 10}>
-            <summary>{active.length} cosponsors</summary>
-            <ul class="list">
-              {active.map((c) => (
-                <li>{c.member ? <MemberChip member={c.member} /> : c.member_id}</li>
-              ))}
-            </ul>
-          </details>
-        ) : (
-          <p class="muted">No cosponsors.</p>
-        )}
-      </section>
-
-      <section>
         <h2>Actions</h2>
         <ActionTimeline actions={view.actions} />
       </section>
@@ -205,20 +193,6 @@ export default function BillFallback() {
         <section aria-labelledby="votes-h">
           <h2 id="votes-h">Roll-call votes</h2>
           <VoteList votes={view.votes!} />
-        </section>
-      )}
-
-      {(view.committees?.length ?? 0) > 0 && (
-        <section>
-          <h2>Committees</h2>
-          <BillCommittees rows={view.committees!} />
-        </section>
-      )}
-
-      {view.subjects.length > 0 && (
-        <section>
-          <h2>Subjects</h2>
-          <p>{view.subjects.join(' · ')}</p>
         </section>
       )}
     </article>
