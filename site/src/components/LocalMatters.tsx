@@ -260,7 +260,7 @@ export default function LocalMatters({
       {total !== null && (
         <p class="small muted" aria-live="polite">
           {total.toLocaleString()} {total === 1 ? 'matter' : 'matters'}
-          {hiding && ' (consent-agenda resolutions hidden)'}
+          {hiding && ' · consent agenda hidden'}
           {filters.q && total >= 200 && ' (top 200 search results)'}
         </p>
       )}

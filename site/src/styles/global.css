@@ -2144,9 +2144,45 @@ summary:has(.inline-h) {
   .matter-filters select {
     width: 100%;
   }
-  .matter-filters select:first-of-type {
+  /* Type and status share a row; the councilor list, with its longer names, gets its own. */
+  .matter-filters #lm-sponsor,
+  .matter-filters .filter-toggle {
     grid-column: 1 / -1;
   }
+  .matter-filters .clear-filters {
+    margin: 0;
+    justify-self: start;
+  }
+}
+/* The smallest phones: one filter per row, and panels give the width back. */
+@media (max-width: 22rem) {
+  .matter-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .panel {
+    padding: var(--space-3);
+  }
+}
+/* "Include consent agenda" reads as a checkbox: a box that fills when it's on. */
+.matter-filters .filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+.matter-filters .filter-toggle::before {
+  content: '';
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 4px;
+}
+.matter-filters .filter-toggle[aria-pressed='true']::before {
+  border-color: var(--brand);
+  background: var(--brand)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3.5 8.5 3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 0.8rem no-repeat;
 }
 /* The committees explorer uses labelled fields in a grid rather than filter pills. */
 .committee-explorer .explorer-filters {

@@ -67,4 +67,20 @@ const { current, lede } = Astro.props;
     color: var(--brand-strong);
     background: var(--brand-soft);
   }
+  /* All four tabs fit across a phone. */
+  @media (max-width: 30rem) {
+    .local-tabs {
+      justify-content: space-between;
+      gap: 0;
+    }
+    .local-tabs a {
+      padding-inline: 0.6rem;
+    }
+  }
+  @media (max-width: 22rem) {
+    .local-tabs a {
+      padding-inline: 0.4rem;
+      font-size: 0.8rem;
+    }
+  }
 </style>
