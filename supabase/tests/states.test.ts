@@ -564,6 +564,51 @@ describe('sync-state', () => {
     expect(tx[0]!.n).toBe(0);
   });
 
+  it('reads a state made first-class once more, for the detail its stored bills lack', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ct: '2026', tx: '89' };
+    api.bills = { ct: [], tx: [] };
+    api.addBills('ct', 30);
+    api.addBills('tx', 1);
+    // Connecticut was loaded slim (as every state was), and its session has ended.
+    await sql`insert into public.state_bills ${sql(
+      api.bills.ct!.map((b) => ({
+        id: b.id,
+        state: 'CT',
+        session: '2026',
+        identifier: b.identifier,
+        title: b.title,
+        updated_at: b.updated_at,
+        latest_action_date: b.latest_action_date,
+        latest_action_text: b.latest_action_description,
+      })),
+    )}`;
+    const newest = [...api.bills.ct!].sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0]!.updated_at;
+    await sql`insert into public.sync_state (job, cursor) values (${STATE_JOB}, ${sql.json({
+      sessions: { CT: '2026', TX: '89' },
+      sessionsCheckedAt: '2026-10-08T00:00:00Z',
+      bills: { CT: { session: '2026', filled: true, since: newest, page: 1, totalAt: '2026-10-08T00:00:00Z' } },
+    })})`;
+    await runState(api, 1000, ['CT', 'TX']);
+    const ct = api.requests.filter((u) => u.pathname === '/bills' && u.search.includes('state%3Act'));
+    // Two pages newest first with the detail, then the usual catch-up.
+    expect(ct.slice(0, 2).map((u) => [u.searchParams.get('sort'), u.searchParams.get('page')])).toEqual([
+      ['updated_desc', '1'],
+      ['updated_desc', '2'],
+    ]);
+    const withHistory = await sql`
+      select count(distinct bill_id)::int as n from public.state_bill_actions where bill_id like 'ocd-bill/ct-%'`;
+    expect(withHistory[0]!.n).toBe(30);
+    // No feed events for bills already on file.
+    expect(await sql`select 1 from public.feed_events`).toHaveLength(0);
+
+    // Once is enough.
+    api.requests.length = 0;
+    await runState(api, 1000, ['CT', 'TX'], '2026-10-09T07:00:00Z');
+    const again = api.requests.filter((u) => u.pathname === '/bills' && u.search.includes('state%3Act'));
+    expect(again.map((u) => u.searchParams.get('sort'))).toEqual(['updated_asc']);
+  });
+
   it('prerenders Connecticut bills that passed, not those still in committee', async () => {
     const api = new FakeOpenStates();
     api.sessions = { ct: '2026', tx: '89' };

@@ -70,6 +70,14 @@ about, and take part in moderated public discussions.
 - The governor's executive orders and Supreme Judicial Court decisions (Governor
   and Courts tabs), each with a page where people can ask for a discussion.
 
+**Connecticut** (in depth, like Massachusetts)
+
+- State bills with their full history, floor roll calls (how each legislator voted)
+  and summaries, with their own pages for bills that passed, and links to each bill's
+  status page on cga.ct.gov.
+- The governor's executive orders (from portal.ct.gov) and Connecticut Supreme Court
+  decisions, with pages where people can ask for a discussion.
+
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,
 Committees, Neighborhoods, Budget) appear only when there is data behind them; a
@@ -134,11 +142,12 @@ automatically.
 | Executive orders | [Federal Register API](https://www.federalregister.gov/developers/documentation/api/v1) | hourly |
 | Nominations | Congress.gov | hourly |
 | Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
-| Massachusetts Supreme Judicial Court decisions | [CourtListener](https://www.courtlistener.com/) | every 3 hours |
+| Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) | every 3 hours |
 | Massachusetts governor's executive orders | [mass.gov](https://www.mass.gov/massachusetts-executive-orders) (Trial Court Law Libraries' list) | weekly |
+| Connecticut governor's executive orders | [portal.ct.gov](https://portal.ct.gov/governor/governors-actions/executive-orders) (Governor's office list and PDFs) | weekly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
-| State bills | [Open States](https://openstates.org/) (CC0) | hourly within a daily request budget, Massachusetts first |
+| State bills | [Open States](https://openstates.org/) (CC0) | hourly within a daily request budget, Massachusetts and Connecticut first |
 | State legislators and committees | [openstates/people](https://github.com/openstates/people) (CC0) | weekly |
 | Boston City Council | [Boston Legistar](https://boston.legistar.com/) | every 15 minutes |
 | Boston council districts | [Analyze Boston](https://data.boston.gov/) | on redistricting |
@@ -175,7 +184,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 
 - **A fast static site.** Pages are built ahead of time and served by GitHub
   Pages. Members, councilors, discussions and notable items (bills past
-  committee, advancing Massachusetts bills, anything followed or discussed) get
+  committee, advancing Massachusetts and Connecticut bills, anything followed or discussed) get
   their own prebuilt pages; everything else loads on request at the same kind of
   link, so every bill still has a shareable page.
 - **Always current.** Each page fetches its latest status and actions when you
@@ -191,12 +200,13 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | --- | --- | --- |
 | `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events |
 | `sync-members` | daily | Members of Congress |
-| `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
+| `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts and Connecticut first (with histories and floor roll calls) |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
-| `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
+| `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
+| Load CT governor orders (GitHub Action) | weekly | Connecticut governors' executive orders from portal.ct.gov; a short summary from each new order's PDF (`pdftotext`) |
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |
@@ -241,7 +251,7 @@ create them from the site; Pol.is creates the poll the first time its page loads
 2. Fill in the form: a short **id** (it becomes the address and the Pol.is page
    id, and cannot change), a neutral question as the **title**, a one-paragraph
    **prompt**, the **jurisdiction**, and what it is **about** (a bill, Massachusetts
-   bill, council matter, executive order or Supreme Court decision).
+   or Connecticut bill, council matter, executive order or Supreme Court decision).
 3. Save it as a **draft** and open its page from the admin list while signed in to
    Pol.is. That first load creates the poll in your Pol.is account.
 4. In the Pol.is dashboard, turn on **strict moderation** and add 6–10 balanced
@@ -282,6 +292,7 @@ The full guide is [docs/discussions.md](docs/discussions.md).
 | Campaign finance (FEC) | Ready; fills in over the first week after deploy (about 535 members, refreshed weekly) |
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
 | Massachusetts bills | Arriving with the nightly Open States sync |
+| Connecticut bills, orders and Supreme Court | Bills and decisions arrive with the hourly syncs; orders after the first "Load CT governor orders" run |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
 | Committees, rosters, hearings | Ready; rosters load on the first hourly run, referrals fill in as bills load |
 | Executive orders and nominations | Ready; load on the first hourly run after deploy |

@@ -1488,3 +1488,100 @@ the health check flags it after four days. Migration 055 drops `boston_311_daily
 
 Trade-off: there is no 311 history to chart over months. If we want that later, a
 monthly count per district (about 120 rows a year per city) is enough.
+
+## 101. Connecticut in depth
+
+Connecticut is the second state covered like Massachusetts (approved by the owner:
+Open States detail, CourtListener's `conn`, and the Governor's orders on
+portal.ct.gov). It is settings and one loader, following docs/extending.md.
+
+**Bills.** `CT` joins `FIRST_CLASS_STATES`. Its bill requests ask for actions, votes
+and abstracts in the same request (`include=`), so the detail costs no extra
+requests per page. What changes in the Open States budget (450 a day, at most 200 a
+run, hourly):
+
+- Steady state: a first-class state is checked every run (others once a day), so
+  Connecticut adds one catch-up request an hour, about 24 a day, plus pages when bills
+  move (about 10 a day at the height of a session). Before: about 24 (Massachusetts) +
+  51 (one check per state) + 7 (weekly session counts) ≈ 82 a day; now about 106,
+  leaving about 340 a day for first loads.
+- Fairness: a round used to put every first-class state before each other state, so
+  two first-class states would have taken two thirds of a round. Now first-class
+  states take turns in the odd slots (`billRound`): together about half the requests,
+  each about a quarter, and every other state still moves every night.
+- Bills already stored slim: Connecticut's 2026 session (1,283 bills) was loaded
+  without detail and has ended, so nothing would update it. A first-class state whose
+  stored session has no histories is read once more, newest first, with the detail
+  (`detail` in its cursor; Massachusetts, which has its histories, is not re-read):
+  about 65 pages, under a day.
+- Session rollover is unchanged: Connecticut's sessions are annual ("2025", "2026"),
+  so each January the previous year's bills, histories and roll calls are dropped and
+  the new session loads as bills are filed. Storage therefore never holds more than one
+  Connecticut session.
+- Votes: only floor votes are stored (`isFloorVote`: a vote whose organization is a
+  chamber or a one-house legislature; a vote with no organization is kept, which is
+  how Massachusetts behaves). Connecticut records committee votes on most bills; they
+  would roughly double the vote rows and the site shows chamber votes.
+
+**Storage.** Floor roll-call positions dominate. A short session (1,283 bills in 2026,
+about 9 actions a bill, about 400 floor roll calls of 36 senators or 151
+representatives, about 110 positions each): actions about 11,500 rows (2–3 MB),
+sponsors and abstracts 2–3 MB, roll calls 45,000–90,000 positions (5–10 MB), with
+indexes about **17–25 MB**. A long session (about 4,000 bills, 1,000+ roll calls):
+**40–60 MB**. Against §77's 400 MB limit (expected 290–325 MB) the long-session peak
+leaves little room; the yearly rollover bounds it, and dropping committee votes keeps
+it there.
+
+**Pages.** Connecticut bills that passed a chamber or became law (latest passage date,
+or a latest action saying passed, Public Act, Special Act, signed, vetoed or
+transmitted to the Governor) get prerendered pages, like Massachusetts bills that
+moved; bills still in committee (most of them) open from the shared fallback page.
+That is a few hundred pages a session at about 30–40 KB each, well under 20 MB of the
+300 MB site budget. Bill pages link to the bill's status page on cga.ct.gov
+(`ctLegislatureUrl`: `cgabillstatus.asp?selBillType=Bill&which_year=2026&bill_num=5001`;
+the number alone picks HB or SB, checked live). The CGA's CSV files were approved too,
+but Open States has what the pages need, and cga.ct.gov sends an incomplete TLS chain
+(a server would have to bundle the GoDaddy G2 intermediate), so they are not used.
+
+**Supreme Court.** `{ court: 'conn', state: 'CT', since: '2024-01-01' }` in
+`STATE_COURTS`. CourtListener math, state-courts share 50 a day (of 110), runs every
+three hours with at most 8 requests: steady state is one listing request per court per
+run (16 a day for two courts) plus one opinion text per new decision (Massachusetts and
+Connecticut together about 1 a day). The first load is one request a month since
+January 2024 (34), done in a day, then about 280 opinion texts at up to six a run,
+about 9 days from what the share leaves. The share does not need to change. The
+Appellate Court (`connappct`, several hundred decisions a year) is left out: its texts
+would outrun the share. The opinion-text reader was written for Massachusetts slip
+opinions; on Connecticut's it will mostly find the opening paragraph and no subject
+keywords (untested on real Connecticut text: CourtListener needs a key we don't have
+here). Page titles name the court once ("Connecticut Supreme Court").
+
+**Governor's orders.** The Governor's office list (portal.ct.gov, plain requests work)
+has every order since 1971 with its date, a one-line description and a link to the
+signed PDF. Numbering doesn't fit an integer: Governor Lamont's first orders run 1 … 7,
+7A … 7ZZ, 7AAA … 7OOO, 9A … 14F, then by year ("26-3", the third of 2026); earlier
+governors' numbers repeat his. So (migration 060):
+
+- `label` (text, unique per state, case-insensitive) is what the order is called; its
+  page is `states/ct/governor/26-3/` and its discussion id `ct-26-3`. Massachusetts'
+  labels are its numbers, so its addresses and discussion ids don't change.
+- `number` stays the integer key and sorts: year-numbered orders as YYYY×100 + n
+  (202603), the early series as base×100 + letters (A…Z 1–26, AA…ZZ 27–52, AAA…ZZZ
+  53–78: 7OOO is 767). The site lists orders by date.
+- Only governors' own folders are read (Lamont's 141 orders); earlier governors'
+  ("others") collide with his numbers and are left out. A new governor whose labels
+  repeat Lamont's fails the loader with a message rather than overwriting.
+- Title: the office's one-line description (always clean). Summary and reason: from
+  the PDF (`pdftotext`), as for Massachusetts (§91), only when its text reads cleanly.
+  Many PDFs are scans: some have no text, some OCR text with errors ("inf01med"),
+  which is not quoted. On the live run 107 of 141 orders had a summary.
+- `scripts/load-ct-orders.ts` (weekly, "Load CT governor orders"): about five list
+  pages, and a PDF only for a new order or a changed file (its URL carries a revision).
+  It fails on fewer than 100 orders.
+- Health: Connecticut issues one to three orders a year, so a 180-day limit would
+  flag it most of the time. A state with fewer than eight orders in two years may go
+  450 days (`data_freshness`, migration 060).
+
+The Governor and Courts tabs, the state's Overview, search, Data status, the menu and
+the states page pick Connecticut up from data and `STATE_FEATURES`; discussions can be
+opened on its bills, orders and decisions (jurisdiction `ct`, already allowed).

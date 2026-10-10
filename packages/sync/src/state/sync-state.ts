@@ -112,6 +112,8 @@ export interface StateBillsCursor {
   stopAt?: string;
   /** When Open States' count of the session's bills was last recorded (state_bill_counts). */
   totalAt?: string;
+  /** First-class states: the stored bills carry their detail (histories, roll calls). */
+  detail?: boolean;
 }
 
 /** Open States' count of a session's bills is recorded about weekly per state (one request). */
@@ -478,6 +480,17 @@ async function refreshSessions(sql: Sql, client: OpenStatesClient, cursor: State
   return written;
 }
 
+/** Whether any of a state's bills in a session has its history stored. */
+async function hasActions(sql: JobRun<StateCursor>['sql'], state: string, session: string): Promise<boolean> {
+  const [row] = await sql<{ any: boolean }[]>`
+    select exists (
+      select 1 from public.state_bills b
+       where b.state = ${state} and b.session = ${session}
+         and exists (select 1 from public.state_bill_actions a where a.bill_id = b.id)
+    ) as any`;
+  return Boolean(row?.any);
+}
+
 /**
  * One page of a state's bills: newest first during its first load, then the nightly
  * catch-up (oldest update first since the last one seen). Returns true when the state
@@ -492,6 +505,17 @@ async function billPage(
 ): Promise<boolean> {
   const session = cursor.sessions![state]!;
   const bc: StateBillsCursor = { ...(cursor.bills?.[state] ?? { session }) };
+  if (FIRST_CLASS_STATES.includes(state) && !bc.detail) {
+    // A state made first-class after its bills were loaded without their detail: read
+    // the session once more, newest first, with histories and roll calls. (Checked once:
+    // Massachusetts already has its histories.)
+    if (bc.filled && !(await hasActions(run.sql, state, session))) {
+      run.log('sync-state: reading the session again with its detail', { state });
+      bc.filled = false;
+      for (const key of ['since', 'page', 'backPage', 'stopAt', 'newest'] as const) delete bc[key];
+    }
+    bc.detail = true;
+  }
   let done: boolean;
   if (!bc.filled) {
     // First load, newest first. A state part-loaded by the older oldest-first load keeps

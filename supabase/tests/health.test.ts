@@ -60,13 +60,13 @@ describe('sync_health', () => {
   });
 
   it('gives a governor who issues few orders a longer quiet spell', async () => {
-    await sql`delete from public.state_executive_orders where state in ('CT', 'ZZ')`;
+    await sql`delete from public.state_executive_orders where state in ('ZY', 'ZZ')`;
     try {
-      // Connecticut: a few orders a year, the newest eight months old.
+      // Like Connecticut: a few orders a year, the newest eight months old.
       await sql`
         insert into public.state_executive_orders (state, number, label, title, url, signed_date) values
-          ('CT', 202603, '26-3', 'A', 'https://example.test/1', current_date - 240),
-          ('CT', 202501, '25-1', 'B', 'https://example.test/2', current_date - 600)`;
+          ('ZY', 202603, '26-3', 'A', 'https://example.test/1', current_date - 240),
+          ('ZY', 202501, '25-1', 'B', 'https://example.test/2', current_date - 600)`;
       // A busy governor (ten in two years) whose newest is as old.
       await sql`
         insert into public.state_executive_orders (state, number, label, title, url, signed_date)
@@ -75,13 +75,13 @@ describe('sync_health', () => {
       const rows = await sql<{ name: string; problem: string | null; max_age: string }[]>`
         select h.name, h.problem, f.max_age::text
           from private.health_rows() h join private.data_freshness() f using (name)
-         where h.name in ('governor:CT', 'governor:ZZ') order by h.name`;
+         where h.name in ('governor:ZY', 'governor:ZZ') order by h.name`;
       expect(rows).toEqual([
-        { name: 'governor:CT', problem: null, max_age: '450 days' },
+        { name: 'governor:ZY', problem: null, max_age: '450 days' },
         { name: 'governor:ZZ', problem: expect.stringMatching(/^nothing new since/), max_age: '180 days' },
       ]);
     } finally {
-      await sql`delete from public.state_executive_orders where state in ('CT', 'ZZ')`;
+      await sql`delete from public.state_executive_orders where state in ('ZY', 'ZZ')`;
     }
   });
 });
