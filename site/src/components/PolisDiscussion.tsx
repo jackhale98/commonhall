@@ -112,7 +112,7 @@ export default function PolisDiscussion(props: Props) {
       ) : notice === 'not-resident' ? (
         <p class="notice">
           This discussion is for residents of {jurisdictionLabel(props)}. Save your address under{' '}
-          <a href={href('#reps-h')}>Find my reps</a> to take part; you can still read along.
+          <a href={href('reps/')}>Find my reps</a> to take part; you can still read along.
         </p>
       ) : (
         notice && <p class="notice">{notice}</p>

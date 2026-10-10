@@ -851,7 +851,10 @@ button.danger {
   font-weight: 600;
 }
 .discussion-request {
-  margin: var(--space-2) 0;
+  margin: var(--space-4) 0;
+}
+.discussion-request button {
+  font-size: var(--step--1);
 }
 .discussion-embed {
   margin: var(--space-4) 0;
@@ -1237,6 +1240,11 @@ button.danger {
   background: var(--brand);
   border-radius: 999px;
 }
+.vote-list .vote-about {
+  margin: 0.15rem 0 0;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
 .vote-list .stacked {
   max-width: 22rem;
   margin-top: var(--space-2);
@@ -1252,9 +1260,23 @@ button.danger {
 }
 .party-bar {
   display: grid;
-  grid-template-columns: 8rem 1fr 4.5rem;
+  grid-template-columns: 7rem 1fr 7.5rem;
   gap: var(--space-3);
   align-items: center;
+}
+.party-name {
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+@media (max-width: 30rem) {
+  .party-bar {
+    grid-template-columns: 1fr auto;
+    row-gap: var(--space-1);
+  }
+  .party-bar .stacked {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 }
 .latest-action .stacked {
   margin-top: var(--space-2);
@@ -1899,15 +1921,18 @@ nav[aria-label='Breadcrumb'] {
   margin-left: var(--space-2);
 }
 @media (max-width: 40rem) {
+  /* Phones: filters wrap two to a row, so none hide off the edge of the screen. */
   .explorer-filters {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    margin-inline: calc(-1 * var(--space-4));
-    padding: 2px var(--space-4) var(--space-2);
-    scrollbar-width: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .explorer-filters > * {
-    flex: none;
+  .explorer-filters select,
+  .explorer-filters .filter-toggle {
+    width: 100%;
+    min-width: 0;
+  }
+  .explorer-filters .clear-filters {
+    justify-self: start;
   }
 }
 
@@ -2132,10 +2157,12 @@ summary:has(.inline-h) {
 }
 /* Explorer lists prerender 10 rows; phones show 5 until the component takes over. */
 @media (max-width: 40rem) {
-  .trimmable > li:nth-child(n + 6) {
+  .trimmable > li:nth-child(n + 6),
+  .trimmable > .list > li:nth-child(n + 6) {
     display: none;
   }
-  .trimmable.is-live > li:nth-child(n + 6) {
+  .trimmable.is-live > li:nth-child(n + 6),
+  .trimmable.is-live > .list > li:nth-child(n + 6) {
     display: revert;
   }
 }
@@ -3542,4 +3569,14 @@ button .ch-loader,
 }
 .feed-avatar .photo {
   border-radius: 12px;
+}
+
+/* Signed-out feed and following pages. */
+.follow-pitch {
+  max-width: 44rem;
+}
+.follow-starts {
+  padding-left: 1.2rem;
+  display: grid;
+  gap: var(--space-2);
 }

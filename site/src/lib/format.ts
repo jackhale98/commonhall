@@ -185,3 +185,40 @@ export function paragraphs(text: string | null | undefined): string[] {
     .map((p) => p.trim())
     .filter(Boolean);
 }
+
+const SMALL_WORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'as',
+  'at',
+  'by',
+  'for',
+  'from',
+  'in',
+  'into',
+  'of',
+  'on',
+  'or',
+  'the',
+  'to',
+  'with',
+]);
+
+/**
+ * Titles some legislatures publish in capitals ("AN ACT TO AMEND TITLE 15 OF THE
+ * DELAWARE CODE…") in title case, which is easier to read; anything with lower-case
+ * letters is left as written.
+ */
+export function tidyTitle(title: string): string {
+  if (/[a-z]/.test(title) || !/[A-Z]{4}/.test(title)) return title;
+  return title
+    .toLowerCase()
+    .split(/(\s+)/)
+    .map((word, i) =>
+      i > 0 && SMALL_WORDS.has(word)
+        ? word
+        : word.replace(/^([^a-z]*)([a-z])/, (_, pre: string, c: string) => pre + c.toUpperCase()),
+    )
+    .join('');
+}

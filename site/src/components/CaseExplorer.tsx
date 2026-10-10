@@ -240,7 +240,9 @@ export default function CaseExplorer({ initial, terms, authors, outcomes = false
 
       <p class="small muted" aria-live="polite">
         {rows === null && !failed
-          ? 'Loading every decision…'
+          ? mounted
+            ? 'Loading every decision…'
+            : `The latest ${initial.length} decisions`
           : `${hits.length.toLocaleString()} decision${hits.length === 1 ? '' : 's'}${term ? ` in the ${termName(Number(term))}` : ''}`}
         {failed && ' Showing the latest decisions only; the full list didn’t load.'}
       </p>

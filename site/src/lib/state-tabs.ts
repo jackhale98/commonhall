@@ -94,3 +94,29 @@ export function partyGroups(people: { party: string | null }[]) {
     { label: 'Republicans', seats: n.R, tone: 'fill-party-r' },
   ];
 }
+
+/** A state's legislators as list rows (Legislature tab, legislators.json), chamber by chamber. */
+export function legislatorRows(
+  code: string,
+  legislators: (ChamberPerson & {
+    id: string;
+    name: string;
+    party: string | null;
+    district: string | null;
+    openstates_url: string | null;
+    photo_url: string | null;
+  })[],
+  label: (chamber: 'upper' | 'lower' | 'legislature') => string,
+) {
+  return legislatureChambers(code, legislators, label).flatMap((c) =>
+    c.people.map((l) => ({
+      id: l.id,
+      name: l.name,
+      party: l.party,
+      district: l.district,
+      chamber: c.key as string,
+      url: l.openstates_url,
+      photo_url: l.photo_url,
+    })),
+  );
+}

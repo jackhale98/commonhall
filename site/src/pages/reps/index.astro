@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import FindMyReps from '../../components/FindMyReps';
+import { DEMO } from '../../lib/config';
+import { href } from '../../lib/paths';
+---
+
+<Base
+  title="Find your representatives"
+  description="Enter your address to see who represents you in Congress, your state legislature and, where we cover it, your city council."
+>
+  <h1>Your representatives</h1>
+  <p class="lede">
+    Enter your street address to see who represents you in Congress, in your state legislature and, in{' '}
+    <a href={href('states/ma/local/')}>the cities we cover</a>, on your city council. Follow them to see their votes and
+    bills in your feed.
+  </p>
+  {DEMO ? <p class="notice">Address lookups aren’t available in the demo.</p> : <FindMyReps client:load />}
+  <p class="muted small">
+    Or browse: <a href={href('members/')}>every member of Congress</a> ·<a href={href('states/')}>state legislatures</a>
+  </p>
+</Base>

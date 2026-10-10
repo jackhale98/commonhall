@@ -1,4 +1,5 @@
 ---
+import { CITY_LIST } from '../../lib/cities';
 import StateTiles from '../../components/viz/StateTiles';
 import Base from '../../layouts/Base.astro';
 import { loadMembers, loadStateBillCoverage } from '../../lib/build-data';
@@ -37,7 +38,7 @@ const tiles = LEGISLATURE_STATES.map((code) => {
 
 <Base
   title="States and local government"
-  description="Congressional delegations, legislators and bills for every state, plus the Boston City Council."
+  description={`Congressional delegations, legislators and bills for every state, plus city councils in ${CITY_LIST.map((c) => c.name).join(' and ')}.`}
   section="states"
 >
   <header class="page-head wash">
@@ -52,11 +53,13 @@ const tiles = LEGISLATURE_STATES.map((code) => {
       <strong>Massachusetts</strong>
       <span class="small muted">Bills with their full history, roll-call votes and co-sponsors.</span>
     </a>
-    <a class="card feature" href={cityHref('ma-boston')}>
-      <span class="kicker">Local government</span>
-      <strong>Boston City Council</strong>
-      <span class="small muted">City Council, zoning hearings and the capital budget.</span>
-    </a>
+    {CITY_LIST.map((c) => (
+      <a class="card feature" href={cityHref(c)}>
+        <span class="kicker">Local government</span>
+        <strong>{c.council}</strong>
+        <span class="small muted">{c.summary}.</span>
+      </a>
+    ))}
   </div>
 
   <section aria-labelledby="map-h">

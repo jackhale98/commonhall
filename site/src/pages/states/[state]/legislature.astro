@@ -1,13 +1,12 @@
 ---
 import StateHeader from '../../../components/StateHeader.astro';
-import StateLegislators from '../../../components/StateLegislators';
-import PinnedPeople from '../../../components/PinnedPeople';
+import StateLegislature from '../../../components/StateLegislature';
 import Base from '../../../layouts/Base.astro';
 import { loadStateLegislators } from '../../../lib/build-data';
 import { LEGISLATURE_STATES, stateName } from '../../../lib/format';
-import { href, stateLegislatorHref } from '../../../lib/paths';
+import { href } from '../../../lib/paths';
 import { chamberLabel } from '../../../lib/state-people';
-import { legislatureChambers } from '../../../lib/state-tabs';
+import { legislatorRows, legislatureChambers } from '../../../lib/state-tabs';
 
 export function getStaticPaths() {
   return LEGISLATURE_STATES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -21,17 +20,7 @@ const { code } = Astro.props;
 const name = stateName(code);
 const legislators = (await loadStateLegislators()).get(code) ?? [];
 const chambers = legislatureChambers(code, legislators, (c) => chamberLabel(code, c));
-const rows = chambers.flatMap((c) =>
-  c.people.map((l) => ({
-    id: l.id,
-    name: l.name,
-    party: l.party,
-    district: l.district,
-    chamber: c.key,
-    url: l.openstates_url,
-    photo_url: l.photo_url,
-  })),
-);
+const rows = legislatorRows(code, legislators, (c) => chamberLabel(code, c));
 ---
 
 <Base
@@ -40,42 +29,22 @@ const rows = chambers.flatMap((c) =>
   section="states"
 >
   <StateHeader code={code} current="legislature" />
-  <PinnedPeople
-    client:idle
-    targetType="state_legislator"
-    scope={{ kind: 'legislature', state: code }}
-    mineTitle="Your state legislators"
-    followedTitle="Legislators you follow"
-    people={chambers.flatMap((c) =>
-      c.people.map((l) => ({
-        id: l.id,
-        name: l.name,
-        photo_url: l.photo_url,
-        chamber: c.key,
-        district: l.district,
-        detail: [
-          l.party?.charAt(0),
-          c.label,
-          l.district && (/^\d+$/.test(l.district) ? `District ${l.district}` : l.district),
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        href: stateLegislatorHref(l.id),
-      })),
-    )}
-  />
-  <h2 class="h-small">State legislators</h2>
   {legislators.length === 0 ? (
-    <p class="muted">Not loaded yet.</p>
+    <>
+      <h2 class="h-small">State legislators</h2>
+      <p class="muted">Not loaded yet.</p>
+    </>
   ) : (
-    <StateLegislators
+    <StateLegislature
       client:load
-      legislators={rows}
+      code={code}
+      src={href(`states/${code.toLowerCase()}/legislators.json`)}
+      initial={rows.slice(0, 10)}
       chambers={chambers.map((c) => ({ key: c.key, label: c.label, count: c.people.length }))}
     />
   )}
   <p class="small muted tab-note">
-    Not sure who represents you? <a href={href('#reps-h')}>Find yours by address</a>. Members of Congress are on the{' '}
+    Not sure who represents you? <a href={href('reps/')}>Find yours by address</a>. Members of Congress are on the{' '}
     <a href={href(`states/${code.toLowerCase()}/congress/`)}>Congress</a> tab. Legislators from{' '}
     <a href="https://github.com/openstates/people" rel="noopener">
       Open States

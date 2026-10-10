@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { billLabel } from '@civic/congress-client/ids';
 import { DEMO, hasSupabase } from '../lib/config';
-import { rpc } from '../lib/rest';
+import { rpc, select } from '../lib/rest';
+import { stateName } from '../lib/format';
 import { CITY_LIST } from '../lib/cities';
-import { cityHref, href } from '../lib/paths';
+import { cityHref, href, stateLegislatorHref } from '../lib/paths';
 import { prepare, search, type Searchable } from '../lib/search';
 
 const KIND_LABEL: Record<string, string> = {
@@ -20,6 +21,8 @@ const KIND_LABEL: Record<string, string> = {
   hearing: 'Hearing',
   nomination: 'Nominee',
   matter: 'Council',
+  official: 'State',
+  legislator: 'Legislator',
 };
 
 /** Best-matching bills from the database (the instant index holds only notable bills). */
@@ -38,6 +41,31 @@ async function liveBills(q: string): Promise<Searchable[]> {
   }));
 }
 
+/** State legislators (about 7,500, too many for the instant index), by name. */
+async function liveLegislators(q: string): Promise<Searchable[]> {
+  const name = q.replace(/[^\p{L}\s'.-]/gu, '').trim();
+  if (name.length < 3) return [];
+  const rows = await select<{
+    id: string;
+    name: string;
+    state: string;
+    chamber: string | null;
+    district: string | null;
+  }>('state_legislators', {
+    select: 'id,name,state,chamber,district',
+    current: 'eq.true',
+    name: `ilike.*${name.replace(/\s+/g, '*')}*`,
+    order: 'name.asc',
+    limit: 4,
+  });
+  return rows.map((l) => ({
+    k: 'legislator',
+    t: l.name,
+    s: `${stateName(l.state)} ${l.chamber === 'upper' ? 'Senate' : l.chamber === 'lower' ? 'House' : 'Legislature'}${l.district ? `, district ${l.district}` : ''}`,
+    h: stateLegislatorHref(l.id),
+  }));
+}
+
 let indexPromise: Promise<ReturnType<typeof prepare<Searchable>>> | undefined;
 function loadIndex() {
   indexPromise ??= fetch(href('search-index.json'))
@@ -51,13 +79,16 @@ function loadIndex() {
 }
 
 const QUICK: Searchable[] = [
-  ...(DEMO ? [] : [{ k: 'page', t: 'Find my representatives', s: 'From your address', h: href('#reps-h') }]),
+  ...(DEMO ? [] : [{ k: 'page', t: 'Find my representatives', s: 'From your address', h: href('reps/') }]),
   { k: 'page', t: 'Bills', s: 'Search and filter every bill', h: href('bills/') },
   { k: 'page', t: 'Votes', s: 'Every House and Senate roll call', h: href('votes/') },
   { k: 'page', t: 'Massachusetts', s: 'Legislature and state bills', h: href('states/ma/') },
   ...CITY_LIST.map((c) => ({ k: 'page', t: c.name, s: c.summary, h: cityHref(c) })),
   { k: 'page', t: 'Discussions', s: 'Have your say', h: href('discussions/') },
 ];
+
+/** Looks like a street address or a ZIP code ("02139", "24 Beacon St, Boston"). */
+export const looksLikeAddress = (q: string) => /^\d{5}(-\d{4})?$/.test(q) || /^\d+[a-z]?\s+\S+\s+\S/i.test(q);
 
 /**
  * Header search: a button that opens a dialog with instant results across people,
@@ -78,8 +109,8 @@ export default function SearchPalette() {
     const term = q.trim();
     if (!hasSupabase || term.length < 2) return;
     const timer = setTimeout(() => {
-      liveBills(term)
-        .then((items) => setLive({ q: term, items }))
+      Promise.all([liveLegislators(term).catch(() => []), liveBills(term).catch(() => [])])
+        .then(([people, bills]) => setLive({ q: term, items: [...people, ...bills] }))
         .catch(() => undefined);
     }, 250);
     return () => clearTimeout(timer);
@@ -122,7 +153,20 @@ export default function SearchPalette() {
     const seen = new Set(hits.map((h) => h.h));
     const bills =
       live.q === term ? live.items.filter((b) => !seen.has(b.h)).slice(0, Math.max(3, 10 - hits.length)) : [];
+    // An address or ZIP: who represents it comes first.
+    const reps: Searchable[] =
+      !DEMO && looksLikeAddress(term)
+        ? [
+            {
+              k: 'page',
+              t: `Find representatives for “${term}”`,
+              s: 'Congress, your legislature and city council',
+              h: `${href('reps/')}?address=${encodeURIComponent(term)}`,
+            },
+          ]
+        : [];
     return [
+      ...reps,
       ...hits,
       ...bills,
       {

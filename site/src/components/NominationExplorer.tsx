@@ -141,7 +141,9 @@ export default function NominationExplorer({ initial, agencies }: Props) {
 
       <p class="small muted" aria-live="polite">
         {rows === null && !failed
-          ? 'Loading every nomination…'
+          ? mounted
+            ? 'Loading every nomination…'
+            : `The latest ${initial.length} nominations`
           : `${hits.length.toLocaleString()} · ${groupLabel.toLowerCase()}${agency ? ` · ${agency}` : ''}`}
         {failed && ' Showing the first nominations only; the full list didn’t load.'}
       </p>

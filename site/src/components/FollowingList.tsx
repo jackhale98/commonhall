@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { parseBillId } from '@civic/congress-client/ids';
-import { accountUrl, getClient, hasStoredSession, unfollow } from '../lib/auth';
+import { getClient, hasStoredSession, unfollow } from '../lib/auth';
 import { matterLabel } from '../lib/cities';
 import { billDisplayTitle, billNumberLabel } from '../lib/format';
 import {
@@ -13,6 +13,7 @@ import {
   stateBillFallbackHref,
   stateLegislatorHref,
 } from '../lib/paths';
+import FollowPitch from './FollowPitch';
 import Loader from './Loader';
 
 interface Follow {
@@ -206,11 +207,7 @@ export default function FollowingList() {
 
   if (state === 'loading') return <Loader label="Loading what you follow" />;
   if (state === 'signed-out') {
-    return (
-      <p class="notice">
-        <a href={accountUrl(href('following/'))}>Sign in</a> to manage what you follow.
-      </p>
-    );
+    return <FollowPitch returnTo={href('following/')} />;
   }
   if (state === 'error') return <p class="notice error">Couldn’t load your follows.</p>;
   if (rows.length === 0) {

@@ -64,6 +64,30 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
   chamber,
   source_system,
 }));
+
+// Long summaries (H.R. 1's runs to tens of thousands of words) open with their first
+// paragraphs; the rest is a tap away, so the page doesn't scroll for minutes on a phone.
+const SUMMARY_LEAD_CHARS = 1200;
+let leadChars = 0;
+const leadCount = summary.findIndex((p, i) => {
+  leadChars += p.length;
+  return i >= 1 && leadChars > SUMMARY_LEAD_CHARS;
+});
+const summaryLead = leadCount === -1 ? summary : summary.slice(0, leadCount);
+const summaryRest = leadCount === -1 ? [] : summary.slice(leadCount);
+const summaryWords = summary.join(' ').split(/\s+/).length;
+/** A summary paragraph, or a bulleted list ("• " lines). */
+const summaryBlock = (p: string) =>
+  p.includes('\n• ') || p.startsWith('• ')
+    ? {
+        items: p
+          .split('\n')
+          .map((line) => line.replace(/^• /, '').trim())
+          .filter(Boolean),
+      }
+    : { text: p };
+const leadBlocks = summaryLead.map(summaryBlock);
+const restBlocks = summaryRest.map(summaryBlock);
 ---
 
 <Base title={`${label}: ${title}`} description={description} section="bills">
@@ -71,7 +95,6 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
     <a href={href('bills/')}>Bills</a> › {congressLabel(bill.congress)} › {label}
   </nav>
 
-  <DiscussionLink discussion={discussion} targetType="bill" targetId={bill.id} />
   <header class="bill-header">
     <p class="eyebrow">
       {label} · {congressLabel(bill.congress)}
@@ -109,6 +132,7 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
       subjects={subjects}
     />
   </header>
+  <DiscussionLink discussion={discussion} targetType="bill" targetId={bill.id} />
 
   <div class="bill-layout">
     <div class="bill-main">
@@ -129,20 +153,32 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
         <h2 id="summary-h">Summary</h2>
         {summary.length > 0 ? (
           <div class="summary">
-            {summary.map((p) =>
-              p.includes('\n• ') || p.startsWith('• ') ? (
+            {leadBlocks.map((b) =>
+              b.items ? (
                 <ul>
-                  {p
-                    .split('\n')
-                    .map((line) => line.replace(/^• /, '').trim())
-                    .filter(Boolean)
-                    .map((line) => (
-                      <li>{line}</li>
-                    ))}
+                  {b.items.map((line) => (
+                    <li>{line}</li>
+                  ))}
                 </ul>
               ) : (
-                <p>{p}</p>
+                <p>{b.text}</p>
               ),
+            )}
+            {restBlocks.length > 0 && (
+              <details class="summary-more">
+                <summary>Read the full summary ({summaryWords.toLocaleString()} words)</summary>
+                {restBlocks.map((b) =>
+                  b.items ? (
+                    <ul>
+                      {b.items.map((line) => (
+                        <li>{line}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>{b.text}</p>
+                  ),
+                )}
+              </details>
             )}
             <p class="small muted">Summary by the Congressional Research Service.</p>
           </div>
@@ -190,5 +226,15 @@ const liveActions = actions.map(({ seq, action_date, text, chamber, source_syste
   }
   .summary ul {
     max-width: var(--measure);
+  }
+  .summary-more > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--brand-strong);
+    padding-block: var(--space-2);
+    min-height: 2.75rem;
+  }
+  .summary-more[open] > summary {
+    margin-bottom: var(--space-3);
   }
 </style>

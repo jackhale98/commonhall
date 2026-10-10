@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { STATE_BILL_COLUMNS, type StateBill } from '../lib/types';
 import { stateBillHref } from '../lib/paths';
-import { formatDate } from '../lib/format';
+import { formatDate, tidyTitle } from '../lib/format';
 import { selectWithCount } from '../lib/rest';
 
 const PAGE = 10;
@@ -94,7 +94,7 @@ export default function StateBills({
                     {b.primary_sponsor_name && <> · {b.primary_sponsor_name}</>}
                   </p>
                   <p class="bill-title-sm">
-                    <a href={stateBillHref(b.state, b.session, b.identifier)}>{b.title}</a>
+                    <a href={stateBillHref(b.state, b.session, b.identifier)}>{tidyTitle(b.title)}</a>
                   </p>
                   {b.latest_action_text && (
                     <p class="meta">

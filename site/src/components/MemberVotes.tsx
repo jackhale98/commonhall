@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { select } from '../lib/rest';
+import { voteAbout } from '../lib/votes';
 import VoteList, { type VoteListItemData } from './VoteList';
 import Loader from './Loader';
 
@@ -11,6 +12,9 @@ interface Row {
   date: string | null;
   question: string | null;
   result: string | null;
+  title: string | null;
+  bill_id: string | null;
+  bill_title: string | null;
   yea_total: number;
   nay_total: number;
 }
@@ -29,6 +33,7 @@ const toItem = (d: Row): VoteListItemData => ({
   position: d.position,
   yea_total: d.yea_total,
   nay_total: d.nay_total,
+  ...voteAbout(d, d.bill_title),
 });
 
 /**
@@ -45,7 +50,7 @@ export default function MemberVotes({ memberId, initial }: { memberId: string; i
   const load = (offset: number) =>
     select<Row>('member_votes', {
       member_id: `eq.${memberId}`,
-      select: 'vote_id,position,chamber,roll_number,date,question,result,yea_total,nay_total',
+      select: 'vote_id,position,chamber,roll_number,date,question,title,bill_id,bill_title,result,yea_total,nay_total',
       order: 'date.desc.nullslast,vote_id.desc',
       limit: BATCH,
       offset,

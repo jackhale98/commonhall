@@ -265,7 +265,15 @@ export default function LocalMatters({
       {total !== null && (
         <p class="small muted" aria-live="polite">
           {total.toLocaleString()} {total === 1 ? 'matter' : 'matters'}
-          {hiding && ' · consent agenda hidden'}
+          {hiding && (
+            <>
+              {' · '}
+              <abbr title="Routine resolutions the council passes in one vote without debate: mostly congratulations, condolences and commendations.">
+                consent agenda
+              </abbr>{' '}
+              hidden
+            </>
+          )}
           {filters.q && total >= 200 && ' (top 200 search results)'}
         </p>
       )}

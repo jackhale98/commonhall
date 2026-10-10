@@ -5,7 +5,7 @@ import { CITIES, CITY_LIST, numberWord } from '../lib/cities';
 import { accountUrl, followMany, getClient, getSession, hasStoredSession, savePendingFollows } from '../lib/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from '../lib/config';
 import { memberRole, partyClass, partyLabel, stateName } from '../lib/format';
-import { localOfficialHref, memberHref, stateLegislatorHref } from '../lib/paths';
+import { href, localOfficialHref, memberHref, stateLegislatorHref } from '../lib/paths';
 import { select } from '../lib/rest';
 import FollowButton from './FollowButton';
 import MemberPhoto from './MemberPhoto';
@@ -136,6 +136,15 @@ export default function FindMyReps({ saved = false }: Props) {
   const [savedLabel, setSavedLabel] = useState<string | null>(null);
   const [status, setStatus] = useState('');
 
+  // Arriving from search with an address (reps/?address=…): fill it in and look it up.
+  useEffect(() => {
+    if (saved) return;
+    const given = new URLSearchParams(window.location.search).get('address')?.trim();
+    if (!given) return;
+    setAddress(given);
+    void lookupAddress(given);
+  }, [saved]);
+
   useEffect(() => {
     if (!hasStoredSession()) return;
     (async () => {
@@ -156,8 +165,12 @@ export default function FindMyReps({ saved = false }: Props) {
     })().catch(() => undefined);
   }, [saved]);
 
-  async function lookup(e: Event) {
+  function lookup(e: Event) {
     e.preventDefault();
+    void lookupAddress(address);
+  }
+
+  async function lookupAddress(address: string) {
     if (!hasSupabase) {
       setMessage('Lookups are not available on this build.');
       setState('error');
@@ -166,7 +179,7 @@ export default function FindMyReps({ saved = false }: Props) {
     // The Census geocoder matches street addresses only, and a ZIP code can span districts.
     if (!/\d+\s+\S/.test(address.replace(/\b\d{5}(-\d{4})?\b/g, '').trim())) {
       setMessage(
-        'A ZIP code alone isn’t enough: one ZIP can cover several districts. Enter your street address, for example “123 Main St, Boston, MA”.',
+        'A ZIP code alone isn’t enough: one ZIP can cover several districts. Enter your street address, for example “123 Main St, Boston, MA”, or browse your state below.',
       );
       setState('error');
       return;
@@ -181,11 +194,16 @@ export default function FindMyReps({ saved = false }: Props) {
         body: JSON.stringify({ address }),
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error ?? 'Lookup failed.');
+      if (!response.ok) throw new Error(body.error ?? 'We couldn’t look up that address. Check it and try again.');
       setResult(body as Result);
       setState('idle');
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Lookup failed.');
+      // A network failure ("Failed to fetch") says nothing useful to a reader.
+      setMessage(
+        err instanceof TypeError || !(err instanceof Error)
+          ? 'We couldn’t reach the address lookup just now. Try again in a minute, or browse your state below.'
+          : err.message,
+      );
       setState('error');
     }
   }
@@ -305,7 +323,7 @@ export default function FindMyReps({ saved = false }: Props) {
       </form>
       {state === 'error' && (
         <p class="notice error" role="alert">
-          {message}
+          {message} <a href={href('states/')}>Browse by state</a>
         </p>
       )}
 

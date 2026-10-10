@@ -2,7 +2,9 @@
 /**
  * A row of tabs for the pages of one place (Boston's Overview, Council…; a state's
  * Overview and Committees). Each tab is its own page, so it can be linked to. It
- * sticks under the header while scrolling.
+ * sticks under the header while scrolling. When the row is wider than the screen it
+ * scrolls sideways: the current tab is scrolled into view, and the edges fade where
+ * there are more tabs, so they can be found.
  */
 interface Props {
   /** Names the row for screen readers, e.g. "Boston". */
@@ -16,23 +18,38 @@ const { label, tabs, fill = false } = Astro.props;
 ---
 
 <nav class:list={['page-tabs', { 'page-tabs-fill': fill }]} aria-label={label}>
-  {tabs.map((t) => (
-    <a href={t.href} aria-current={t.current ? 'page' : undefined}>
-      {t.label}
-      {t.count !== undefined && <span class="tab-count">{t.count}</span>}
-    </a>
-  ))}
+  <div class="tabs-scroll">
+    {tabs.map((t) => (
+      <a href={t.href} aria-current={t.current ? 'page' : undefined}>
+        {t.label}
+        {t.count !== undefined && <span class="tab-count">{t.count}</span>}
+      </a>
+    ))}
+  </div>
 </nav>
+
+<script>
+  for (const row of document.querySelectorAll<HTMLElement>('.page-tabs .tabs-scroll')) {
+    const edges = () => {
+      row.classList.toggle('more-before', row.scrollLeft > 2);
+      row.classList.toggle('more-after', row.scrollLeft + row.clientWidth < row.scrollWidth - 2);
+    };
+    const current = row.querySelector<HTMLElement>('[aria-current="page"]');
+    if (current && row.scrollWidth > row.clientWidth) {
+      // Centre the current tab without moving the page.
+      row.scrollLeft = current.offsetLeft - (row.clientWidth - current.offsetWidth) / 2;
+    }
+    edges();
+    row.addEventListener('scroll', edges, { passive: true });
+    window.addEventListener('resize', edges, { passive: true });
+  }
+</script>
 
 <style>
   .page-tabs {
     position: sticky;
     top: var(--header-h, 4rem);
     z-index: 5;
-    display: flex;
-    gap: var(--space-1);
-    overflow-x: auto;
-    scrollbar-width: none;
     margin: 0 calc(-1 * var(--space-4)) var(--space-5);
     padding: var(--space-2) var(--space-4);
     background: color-mix(in srgb, var(--bg) 92%, transparent);
@@ -40,8 +57,36 @@ const { label, tabs, fill = false } = Astro.props;
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border);
   }
+  .tabs-scroll {
+    position: relative;
+    display: flex;
+    gap: var(--space-1);
+    overflow-x: auto;
+    scrollbar-width: none;
+    --fade-start: 0px;
+    --fade-end: 0px;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fade-start),
+      #000 calc(100% - var(--fade-end)),
+      transparent
+    );
+  }
+  .tabs-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs-scroll.more-before {
+    --fade-start: 2rem;
+  }
+  .tabs-scroll.more-after {
+    --fade-end: 2rem;
+  }
   .page-tabs a {
     flex: none;
+    min-height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
     padding: 0.45rem 0.95rem;
     border-radius: 999px;
     font-weight: 600;
@@ -60,11 +105,10 @@ const { label, tabs, fill = false } = Astro.props;
   .tab-count {
     margin-left: 0.35em;
     font-weight: 500;
-    opacity: 0.75;
   }
   /* Four tabs fit across a phone. */
   @media (max-width: 30rem) {
-    .page-tabs-fill {
+    .page-tabs-fill .tabs-scroll {
       justify-content: space-between;
       gap: 0;
     }

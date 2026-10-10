@@ -610,6 +610,13 @@ const phoneNav = PHONE_NAV.map((section) => ({
       display: none;
     }
   }
+  /* Narrow desktops: tighter menu so every section fits beside the logo. */
+  @media (min-width: 64rem) and (max-width: 72rem) {
+    .nav-list a,
+    .nav-group-button {
+      padding-inline: 0.5rem;
+    }
+  }
   @media (max-width: 63.99rem) {
     .icon-link {
       display: none;
@@ -916,11 +923,14 @@ const phoneNav = PHONE_NAV.map((section) => ({
     margin: 0;
     padding: 0;
     display: grid;
-    gap: var(--space-2);
+    gap: 0;
   }
   .footer-col :global(a) {
     color: var(--text);
     text-decoration: none;
+    /* A comfortable tap target on phones without spreading the list out. */
+    display: inline-block;
+    padding-block: 0.3rem;
   }
   .footer-col :global(a:hover) {
     color: var(--link);
@@ -938,7 +948,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
     .footer-col ul {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-2) var(--space-4);
+      gap: 0 var(--space-4);
       color: var(--text-muted);
     }
   }

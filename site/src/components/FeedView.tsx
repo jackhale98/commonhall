@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { parseBillId } from '@civic/congress-client/ids';
-import { accountUrl, getClient, hasStoredSession } from '../lib/auth';
+import { getClient, hasStoredSession } from '../lib/auth';
 import { formatDate } from '../lib/format';
 import {
   billHref,
@@ -19,6 +19,7 @@ import {
 } from '../lib/paths';
 import { LEVELS, legislatorFilter, type Level } from '../lib/feed-filters';
 import { voteSubject } from '../lib/vote-subject';
+import FollowPitch from './FollowPitch';
 import Loader from './Loader';
 import MemberPhoto from './MemberPhoto';
 
@@ -210,11 +211,7 @@ export default function FeedView({ compact = false }: Props) {
 
   if (state === 'loading') return compact ? null : <Loader label="Loading your feed" />;
   if (state === 'signed-out') {
-    return compact ? null : (
-      <p class="notice">
-        <a href={accountUrl(href('feed/'))}>Sign in</a> to see updates on the bills and legislators you follow.
-      </p>
-    );
+    return compact ? null : <FollowPitch returnTo={href('feed/')} />;
   }
   if (state === 'error') return <p class="notice error">Couldn’t load your feed. Please try again.</p>;
 

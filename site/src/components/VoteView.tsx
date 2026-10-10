@@ -135,10 +135,12 @@ export default function VoteView({ initial }: Props) {
       </div>
 
       <h2>By party</h2>
+      {/* Party names without party colours: the bars' green and red mean yea and nay here. */}
+      <p class="small muted">Green is yea, red is nay, gold is present, grey did not vote.</p>
       <div class="party-bars">
         {byParty.map(([party, t]) => (
           <div class="party-bar">
-            <span class={`party party-${party.toLowerCase()}`}>{partyLabel(party)}</span>
+            <span class="party-name">{partyLabel(party)}</span>
             <StackedBar
               segments={voteSegments({
                 yea_total: t.yea,
@@ -148,8 +150,8 @@ export default function VoteView({ initial }: Props) {
               })}
               label={`${partyLabel(party)}: ${t.yea} yea, ${t.nay} nay, ${t.present} present, ${t.not_voting} not voting`}
             />
-            <span class="small muted">
-              {t.yea}–{t.nay}
+            <span class="small">
+              <strong>{t.yea}</strong> yea · <strong>{t.nay}</strong> nay
             </span>
           </div>
         ))}

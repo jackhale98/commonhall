@@ -178,7 +178,9 @@ export default function OrderExplorer({ terms, initial }: Props) {
 
       <p class="small muted" aria-live="polite">
         {rows === null && !failed
-          ? 'Loading every order…'
+          ? mounted
+            ? 'Loading every order…'
+            : `The latest ${initial.length} orders`
           : `${hits.length.toLocaleString()} order${hits.length === 1 ? '' : 's'}${
               termLabel ? ` by ${termLabel.name}` : ' since 2009'
             }${year ? ` in ${year}` : ''}`}

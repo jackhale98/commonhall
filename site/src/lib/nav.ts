@@ -47,7 +47,7 @@ export const NAV: NavGroup[] = [
     ],
   },
   { key: 'executive', label: 'Executive', path: 'executive/', match: ['executive/'] },
-  { key: 'court', label: 'Court', path: 'court/', match: ['court/'] },
+  { key: 'court', label: 'Supreme Court', path: 'court/', match: ['court/'] },
   {
     key: 'local',
     label: 'States & local',
@@ -64,6 +64,7 @@ export const NAV: NavGroup[] = [
       },
     ],
   },
+  { key: 'reps', label: 'Your reps', path: 'reps/', match: ['reps/'] },
   { key: 'discuss', label: 'Discuss', path: 'discussions/', match: ['discussions/', 'discussion/'] },
   { key: 'feed', label: 'Feed', path: 'feed/', match: ['feed/', 'following/'], personal: true },
   { key: 'account', label: 'Account', path: 'account/', match: ['account/'], personal: true },
@@ -147,6 +148,7 @@ export const PHONE_NAV: { heading: string; items: { key: string; label: string; 
   {
     heading: 'Take part',
     items: [
+      { key: 'reps', label: 'Find your representatives', path: 'reps/' },
       { key: 'discuss', label: 'Discussions', path: 'discussions/' },
       { key: 'feed', label: 'Your feed', path: 'feed/' },
       { key: 'account', label: 'Account', path: 'account/' },

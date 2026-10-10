@@ -14,7 +14,7 @@ import {
   loadPositionsByMember,
   loadSponsored,
   loadVoteStats,
-  loadVotes,
+  loadVotesAbout,
   loadCommitteeMembers,
   loadCommittees,
 } from '../../lib/build-data';
@@ -58,7 +58,7 @@ const stats = voteStats.get(member.bioguide_id);
 // Demo mode has no live database, so the member's votes are rendered from the bundled data.
 let demoVotes: import('../../components/VoteList').VoteListItemData[] | undefined;
 if (DEMO) {
-  const [votes, positions] = await Promise.all([loadVotes(), loadPositionsByMember()]);
+  const [votes, positions] = await Promise.all([loadVotesAbout(), loadPositionsByMember()]);
   const byId = new Map(votes.map((v) => [v.id, v]));
   demoVotes = (positions.get(member.bioguide_id) ?? [])
     .map((p) => ({ ...byId.get(p.vote_id)!, position: p.position }))

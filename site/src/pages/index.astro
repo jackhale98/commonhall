@@ -14,7 +14,7 @@ import {
   loadCityMeetings,
   loadScotusCases,
   loadScotusOutcomeMap,
-  loadVotes,
+  loadVotesAbout,
 } from '../lib/build-data';
 import { voteSegments } from '../lib/charts';
 import { outcomeSummary } from '../lib/court';
@@ -25,7 +25,7 @@ import { billHref, cityHref, executiveOrderHref, href, scotusCaseHref, voteHref 
 
 const [bills, votes, discussions, meetings, orders, cases, hearings, outcomes] = await Promise.all([
   loadBills(),
-  loadVotes(),
+  loadVotesAbout(),
   loadDiscussions(),
   Promise.all(CITY_LIST.map(async (city) => (await loadCityMeetings(city.key)).map((m) => ({ ...m, city })))),
   loadExecutiveOrders(),
@@ -33,7 +33,12 @@ const [bills, votes, discussions, meetings, orders, cases, hearings, outcomes] =
   loadCommitteeMeetings(),
   loadScotusOutcomeMap(),
 ]);
-const recent = bills.slice(0, 6);
+// Bills that moved past committee, newest action first; simple resolutions (mostly
+// commemorative) and bills still in committee only when fewer than six have moved.
+const simple = (b: (typeof bills)[number]) => b.bill_type === 'hres' || b.bill_type === 'sres';
+const moved = bills.filter((b) => b.status !== 'introduced' && b.status !== 'in_committee' && !simple(b));
+const recent =
+  moved.length >= 6 ? moved.slice(0, 6) : [...moved, ...bills.filter((b) => !moved.includes(b))].slice(0, 6);
 const laws = bills.filter((b) => b.status === 'law');
 const latestLaw = [...laws].sort((a, b) => (b.latest_action_date ?? '').localeCompare(a.latest_action_date ?? ''))[0];
 const latestVote = votes[0];
@@ -117,8 +122,13 @@ const stats = [
             <span class="dot dot-live" aria-hidden="true" />
             {latestVote.chamber === 'house' ? 'House' : 'Senate'} vote · {formatDate(latestVote.date)}
           </span>
-          <strong>{latestVote.question ?? 'Roll-call vote'}</strong>
+          <strong>
+            {latestVote.bill || latestVote.subject
+              ? [latestVote.bill, latestVote.subject].filter(Boolean).join(': ')
+              : (latestVote.question ?? 'Roll-call vote')}
+          </strong>
           <span class="pulse-meta">
+            {(latestVote.bill || latestVote.subject) && latestVote.question ? `${latestVote.question} · ` : ''}
             {latestVote.result} · {latestVote.yea_total}–{latestVote.nay_total}
           </span>
           <StackedBar size="sm" segments={voteSegments(latestVote)} />
@@ -177,6 +187,8 @@ const stats = [
     </div>
   </section>
 
+  {!DEMO && <FindMyReps client:visible />}
+
   <ul class="stat-strip" aria-label="By the numbers">
     {stats.map((s) => (
       <li>
@@ -190,7 +202,6 @@ const stats = [
 
   <YourCity client:idle />
   <FeedView client:idle compact />
-  {!DEMO && <FindMyReps client:visible />}
 
   <section aria-labelledby="recent-h">
     <div class="section-head">
@@ -336,6 +347,12 @@ const stats = [
     transition:
       transform 0.15s ease,
       box-shadow 0.15s ease;
+  }
+  /* Phones: the three newest items, so finding your reps isn't far below. */
+  @media (max-width: 40rem) {
+    .this-week a.pulse-card:nth-of-type(n + 4) {
+      display: none;
+    }
   }
   .pulse-card:hover {
     transform: translateY(-2px);

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { getSession, hasRequestedDiscussion, hasStoredSession, setDiscussionRequest } from '../lib/auth';
 import { hasSupabase } from '../lib/config';
 import { discussionHref } from '../lib/paths';
-import { rpc, select } from '../lib/rest';
+import { rpc } from '../lib/rest';
 import type { DiscussionTargetType } from '../lib/types';
 
 interface Props {
@@ -41,32 +41,23 @@ export default function DiscussionRequest({ targetType, targetId }: Props) {
 
   useEffect(() => {
     if (!hasSupabase) return;
-    select<{ id: string; title: string; status: string }>('discussions', {
-      select: 'id,title,status',
-      target_type: `eq.${targetType}`,
-      target_id: `eq.${targetId}`,
-      status: 'neq.draft',
-      limit: 1,
-    })
-      .then((rows) => setLive(rows[0] ?? null))
+    // One call: any discussion opened since the build, the count, and (signed out) whether this browser asked.
+    const signedIn = hasStoredSession();
+    rpc<{ count: number; mine: boolean | null; discussion: { id: string; title: string; status: string } | null }>(
+      'discussion_request_state',
+      { p_target_type: targetType, p_target_id: targetId, p_client_id: signedIn ? null : browserId() },
+    )
+      .then((state) => {
+        setLive(state.discussion);
+        setCount(state.count);
+        if (!signedIn) setMine(Boolean(state.mine));
+      })
       .catch(() => undefined);
-    rpc<number>('discussion_request_count', { p_target_type: targetType, p_target_id: targetId })
-      .then(setCount)
-      .catch(() => undefined);
-    const anonymous = async () => {
-      const id = browserId();
-      return id
-        ? rpc<boolean>('has_anonymous_discussion_request', {
-            p_client_id: id,
-            p_target_type: targetType,
-            p_target_id: targetId,
-          })
-        : false;
-    };
-    (hasStoredSession() ? getSession() : Promise.resolve(null))
-      .then((s) => (s ? hasRequestedDiscussion(targetType, targetId) : anonymous()))
-      .then(setMine)
-      .catch(() => setMine(false));
+    if (signedIn)
+      getSession()
+        .then((s) => (s ? hasRequestedDiscussion(targetType, targetId) : false))
+        .then(setMine)
+        .catch(() => setMine(false));
   }, [targetType, targetId]);
 
   if (!hasSupabase) return null;
@@ -109,7 +100,7 @@ export default function DiscussionRequest({ targetType, targetId }: Props) {
 
   return (
     <div class="discussion-request cluster small">
-      <button type="button" class="link-button" aria-pressed={mine ?? undefined} disabled={busy} onClick={toggle}>
+      <button type="button" aria-pressed={mine ?? undefined} disabled={busy} onClick={toggle}>
         {mine ? '✓ You asked for a discussion' : 'Ask for a public discussion of this'}
       </button>
       {count !== null && count > 0 && (

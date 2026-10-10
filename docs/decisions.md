@@ -1358,3 +1358,54 @@ What changed:
 GitHub disables scheduled workflows after 60 days without commits, the health check
 included; docs/deployment.md says to re-enable them.
 
+
+## 93. Audit fixes: phones, finding things, clearer lists
+
+From the October 2026 audit (phones at 390 px, desktops at 1366 px):
+
+- **Photos.** Officials' photos stay hotlinked (never copied), but some were huge (a
+  10 MB lieutenant governor portrait on the Massachusetts page; 700 KB PNGs shown at
+  40 px). The weekly people loader checks each photo once (`state/photos.ts`) and
+  records in `private.photo_variants` what to show instead: the source's own smaller
+  copy (Wikimedia's 240 px thumbnail, WordPress's 300 or 150 px crop), the original if
+  it is at most 250 KB (600 KB with no smaller copy), or nothing (initials). A trigger
+  (migration 051) applies the choice on every write, so the hourly state sync, which
+  writes the original URL, can't bring the heavy one back.
+- **Tabs.** A state's eight tabs are wider than a phone; the current tab now scrolls
+  into view, and the edges fade where more tabs are hidden.
+- **Your representatives** has its own page (`/reps/`) and a menu entry; search sends
+  a ZIP code or street address there (`?address=`, looked up on arrival); on the home
+  page the lookup sits right under the latest items (three on phones). A failed lookup
+  says so in words and offers browsing by state.
+- **Votes say what they were on.** Lists showed only the question ("On Passage").
+  Each vote now carries the bill's number and short title, or the subject of its
+  official title (a nominee), from `voteSubject` (lib/votes.ts). Member pages read it
+  live from `member_votes.bill_title` (migration 052). `/votes/` is one searchable,
+  filterable list (chamber, outcome, close votes) from `votes/votes.json`, replacing
+  two 40-item columns 14,000 px tall on a phone.
+- **Long summaries** (H.R. 1's runs to tens of thousands of words) show their first
+  paragraphs, about 1,200 characters, and "Read the full summary"; the page went from
+  120,000 px to under 5,000 on a phone.
+- **Bill pages** read the bill's current status once for both live sections, and
+  re-read its actions only when there is a newer action than the build had.
+- **Asking for a discussion** is a full-size button below an item's facts, not a
+  small link above its title, and makes one request (`discussion_request_state`,
+  migration 053) instead of three.
+- **Search** also finds governors and statewide officials, governors' orders, state
+  court decisions (in the instant index) and state legislators (live, by name; there
+  are about 7,500). Entries are unique by page.
+- **Supreme Court duplicates.** CourtListener sometimes holds one decision as two or
+  three clusters; builds keep one per docket and date (`dedupeScotus`).
+- **Lists lead with what matters.** "Moving in Congress" shows bills past committee
+  (simple resolutions, mostly commemorative, only to fill); a state's latest bills
+  leave out communications and reports and bills with no action yet. Titles published
+  in capitals (Delaware) show in title case (`tidyTitle`).
+- **Smaller fixes.** Party names on a vote's "By party" bars are plain text, so red
+  means nay there, not Republican; filters on phones wrap two to a row instead of
+  scrolling sideways; signed-out Feed and Following pages explain following and
+  suggest where to start; footer and agenda links are tap-sized; the states page
+  lists every city in the registry; the 404 page offers search; explorers say "The
+  latest N" until their script runs instead of "Loading…"; "consent agenda" is
+  explained where it is hidden; a state's Legislature tab loads its legislators from
+  one file (`legislators.json`) instead of embedding them twice (New Hampshire's page
+  went from 420 KB to 41 KB).

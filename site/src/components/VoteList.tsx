@@ -16,6 +16,9 @@ export interface VoteListItemData {
   not_voting_total?: number;
   /** A member's position, when listing one member's votes. */
   position?: 'yea' | 'nay' | 'present' | 'not_voting';
+  /** What the vote was on (lib/votes.ts); left out where it is obvious (a bill's own page). */
+  bill?: string | null;
+  subject?: string | null;
 }
 
 const POSITION: Record<string, string> = { yea: 'Yea', nay: 'Nay', present: 'Present', not_voting: 'Did not vote' };
@@ -39,6 +42,13 @@ export default function VoteList({ votes }: { votes: VoteListItemData[] }) {
               ({v.result ?? '—'}, {v.yea_total}–{v.nay_total})
             </span>
           </p>
+          {(v.bill || v.subject) && (
+            <p class="vote-about">
+              {v.bill && <strong>{v.bill}</strong>}
+              {v.bill && v.subject && ' · '}
+              {v.subject}
+            </p>
+          )}
           <StackedBar size="sm" segments={voteSegments(v)} label={`${v.yea_total} yea, ${v.nay_total} nay`} />
         </li>
       ))}

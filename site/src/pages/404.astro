@@ -6,9 +6,18 @@ import { href } from '../lib/paths';
 <Base title="Not found" noindex>
   <h1 id="nf-title">Page not found</h1>
   <p id="nf-body">
-    That page doesn’t exist. Try <a href={href('bills/')}>searching bills</a> or browsing
-    <a href={href('members/')}>members</a>.
+    That page doesn’t exist, or has moved. Try{' '}
+    <button type="button" class="link-button" data-open-search>
+      searching
+    </button>
+    , or go to <a href={href('bills/')}>bills</a>, <a href={href('members/')}>members of Congress</a>,
+    <a href={href('states/')}>states and cities</a> or <a href={href('reps/')}>your representatives</a>.
   </p>
+  <script>
+    document
+      .querySelector('[data-open-search]')
+      ?.addEventListener('click', () => document.dispatchEvent(new CustomEvent('open-search', { detail: {} })));
+  </script>
   <script is:inline define:vars={{ base: import.meta.env.BASE_URL }}>
     // Bills, members, council matters, state bills and discussions newer than the last build (or from older Congresses) have no
     // prerendered page; send canonical URLs to the client-rendered fallbacks.

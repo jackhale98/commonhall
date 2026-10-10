@@ -1,6 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import type { StateBill } from '../lib/types';
-import { formatDate, stateName } from '../lib/format';
+import { formatDate, stateName, tidyTitle } from '../lib/format';
 import { maLegislatureUrl, stateHref, stateLegislatorHref } from '../lib/paths';
 import FollowButton from './FollowButton';
 
@@ -16,7 +16,7 @@ export default function StateBillView({ bill, children }: { bill: StateBill; chi
         {bill.identifier} · {stateName(bill.state)}{' '}
         {bill.chamber ? (CHAMBER[bill.chamber] ?? bill.chamber) : 'Legislature'} · {bill.session} session
       </p>
-      <h1 class="matter-title">{bill.title}</h1>
+      <h1 class="matter-title">{tidyTitle(bill.title)}</h1>
       {bill.primary_sponsor_name && (
         <p class="meta">
           Sponsor:{' '}

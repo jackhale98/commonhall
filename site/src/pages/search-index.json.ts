@@ -10,7 +10,11 @@ import {
   loadMembers,
   loadPrerenderBills,
   loadPrerenderStateBills,
+  loadStateCourtCases,
+  loadStateExecutives,
+  loadStateOrders,
 } from '../lib/build-data';
+import { STATE_COURT_NAMES } from '../lib/state-tabs';
 import { CITIES, CITY_LIST, cityOf, matterLabel } from '../lib/cities';
 import { cityTabs as tabsOf } from '../lib/city-pages';
 import {
@@ -21,6 +25,7 @@ import {
   memberRole,
   STATE_CODES,
   stateName,
+  tidyTitle,
 } from '../lib/format';
 import { NOMINATION_STATUS, nominationUrl, splitNomination } from '../lib/executive';
 import {
@@ -34,7 +39,9 @@ import {
   memberHref,
   scotusCaseHref,
   stateBillHref,
+  stateCourtCaseHref,
   stateHref,
+  stateOrderHref,
 } from '../lib/paths';
 
 /** One entry in the search palette's index. Short keys keep the file small. */
@@ -53,7 +60,8 @@ export interface SearchEntry {
     | 'case'
     | 'hearing'
     | 'nomination'
-    | 'matter';
+    | 'matter'
+    | 'official';
   /** title */
   t: string;
   /** subtitle */
@@ -80,6 +88,9 @@ export async function GET() {
     matters,
     officials,
     cityTabs,
+    executives,
+    stateOrders,
+    stateCases,
   ] = await Promise.all([
     loadMembers(),
     loadDiscussions(),
@@ -93,6 +104,9 @@ export async function GET() {
     loadPrerenderLocalMatters(),
     Promise.all(CITY_LIST.map((c) => loadCityOfficials(c.key))).then((l) => l.flat()),
     Promise.all(CITY_LIST.map(async (c) => ({ city: c, tabs: await tabsOf(c) }))),
+    loadStateExecutives(),
+    loadStateOrders(),
+    loadStateCourtCases(),
   ]);
   const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
   const chamberName = (code: string) => (code.startsWith('h') ? 'House' : code.startsWith('s') ? 'Senate' : 'Joint');
@@ -173,7 +187,7 @@ export async function GET() {
     })),
     ...stateBills.slice(0, 500).map((b) => ({
       k: 'state-bill' as const,
-      t: clip(b.title),
+      t: clip(tidyTitle(b.title)),
       s: `${b.state} ${b.identifier}`,
       h: stateBillHref(b.state, b.session, b.identifier),
     })),
@@ -211,6 +225,25 @@ export async function GET() {
           h: nominationUrl(n),
         };
       }),
+    // Governors and other statewide officials (state legislators are searched live: there are ~7,500).
+    ...[...executives.values()].flat().map((e) => ({
+      k: 'official' as const,
+      t: e.name,
+      s: `${e.role} of ${stateName(e.state)}`,
+      h: stateHref(e.state),
+    })),
+    ...[...stateOrders.values()].flat().map((o) => ({
+      k: 'order' as const,
+      t: clip(o.title),
+      s: `${stateName(o.state)} governor · No. ${o.number}${o.signed_date ? ` · ${formatDate(o.signed_date)}` : ''}`,
+      h: stateOrderHref(`${o.state.toLowerCase()}-${o.number}`),
+    })),
+    ...[...stateCases.values()].flat().map((c) => ({
+      k: 'case' as const,
+      t: clip(c.case_name),
+      s: `${STATE_COURT_NAMES[c.court_id] ?? stateName(c.state)} · ${formatDate(c.date_filed)}`,
+      h: stateCourtCaseHref(`${c.state.toLowerCase()}-${c.cluster_id}`),
+    })),
     ...matters.slice(0, 1000).map(({ matter: m }) => ({
       k: 'matter' as const,
       t: clip(m.title),
@@ -218,5 +251,7 @@ export async function GET() {
       h: localMatterHref(m.id),
     })),
   ];
-  return new Response(JSON.stringify(entries), { headers: { 'content-type': 'application/json' } });
+  // One entry per page (a case can come from two sources).
+  const unique = [...new Map(entries.map((e) => [e.h, e])).values()];
+  return new Response(JSON.stringify(unique), { headers: { 'content-type': 'application/json' } });
 }

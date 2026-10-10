@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import { parse } from 'yaml';
-import { writeStatePeople, type PeopleCommittee, type PeoplePerson, type Sql } from '@civic/sync';
+import { lightenPhotos, writeStatePeople, type PeopleCommittee, type PeoplePerson, type Sql } from '@civic/sync';
 import { recordRun } from './lib/record-run.ts';
 
 const ARCHIVE = 'https://codeload.github.com/openstates/people/tar.gz/refs/heads/main';
@@ -56,7 +56,7 @@ async function main() {
   const tmp = values.dir ? null : mkdtempSync(join(tmpdir(), 'people-'));
   const sql = postgres(dbUrl, { max: 1, prepare: false, onnotice: () => undefined });
   try {
-    await recordRun(sql, 'load-state-people', 30, async () => {
+    await recordRun(sql, 'load-state-people', 45, async () => {
       const data = values.dir
         ? existsSync(join(values.dir, 'data'))
           ? join(values.dir, 'data')
@@ -87,7 +87,9 @@ async function main() {
       console.log(
         `Loaded ${totals.states} states: ${totals.updated + totals.added} legislators (${totals.added} new, ${totals.retired} left office), ${totals.committees} committees with ${totals.members} seats.`,
       );
-      return totals.updated + totals.added + totals.retired;
+      // Smaller copies of heavy photos (or initials), checked once per photo.
+      const photos = await lightenPhotos(sql as unknown as Sql, { log: console.log });
+      return totals.updated + totals.added + totals.retired + photos.replaced + photos.removed;
     });
   } finally {
     await sql.end();

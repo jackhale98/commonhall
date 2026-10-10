@@ -22,9 +22,25 @@ interface Props extends Live {
   part: 'summary' | 'timeline';
 }
 
+type Current = Omit<Live, 'actions'>;
+
+/** One read of the bill's current status per page, shared by both islands (same module). */
+const current = new Map<string, Promise<Current | null>>();
+const currentBill = (id: string) => {
+  if (!current.has(id))
+    current.set(
+      id,
+      select<Current>('bills', { id: `eq.${id}`, select: 'status,latest_action_date,latest_action_text' }).then(
+        (rows) => rows[0] ?? null,
+      ),
+    );
+  return current.get(id)!;
+};
+
 /**
  * The live parts of a prerendered bill page. Renders the build-time values (so
- * the page works without JavaScript), then fetches the current ones.
+ * the page works without JavaScript), then fetches the current status once; the
+ * timeline re-reads the actions only when there is a newer one than the build had.
  */
 export default function BillLive(props: Props) {
   const [live, setLive] = useState<Live>(props);
@@ -34,21 +50,19 @@ export default function BillLive(props: Props) {
     let cancelled = false;
     (async () => {
       try {
-        const [rows, actions] = await Promise.all([
-          select<Omit<Live, 'actions'>>('bills', {
-            id: `eq.${props.billId}`,
-            select: 'status,latest_action_date,latest_action_text',
-          }),
-          props.part === 'timeline'
-            ? select<Action>('bill_actions', {
+        const row = await currentBill(props.billId);
+        if (cancelled || !row) return;
+        const newer = (row.latest_action_date ?? '') > (props.latest_action_date ?? '');
+        const actions =
+          props.part === 'timeline' && (newer || props.actions.length === 0)
+            ? await select<Action>('bill_actions', {
                 bill_id: `eq.${props.billId}`,
                 select: 'seq,action_date,text,chamber,source_system',
                 order: 'seq.asc',
               })
-            : Promise.resolve(null),
-        ]);
-        if (cancelled || !rows[0]) return;
-        setLive((prev) => ({ ...prev, ...rows[0]!, actions: actions ?? prev.actions }));
+            : null;
+        if (cancelled) return;
+        setLive((prev) => ({ ...prev, ...row, actions: actions ?? prev.actions }));
         setChecked('fresh');
       } catch {
         if (!cancelled) setChecked('error');

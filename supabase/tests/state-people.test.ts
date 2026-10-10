@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { writeStatePeople, type PeopleCommittee, type PeoplePerson, type Sql } from '@civic/sync';
+import { lightenPhotos, writeStatePeople, type PeopleCommittee, type PeoplePerson, type Sql } from '@civic/sync';
 import { asAnon } from './auth.ts';
 import { connect } from './db.ts';
 
@@ -66,5 +66,33 @@ describe('openstates/people load', () => {
     // After the term ends she is no longer listed.
     await writeStatePeople(sql, 'MA', [liz], [], [governor], '2031-01-10');
     expect((await sql`select count(*)::int as n from public.state_executives`)[0]!.n).toBe(0);
+  });
+});
+
+describe('lighter photos', () => {
+  it('maps a heavy photo to a smaller copy on every write', async () => {
+    const heavy = 'https://x.gov/wp-content/a/Heavy.png';
+    await sql`delete from private.photo_variants`;
+    await sql`delete from public.state_legislators where id = 'ocd-person/photo-test'`;
+    await sql`
+      insert into public.state_legislators (id, name, state, chamber, photo_url, current)
+      values ('ocd-person/photo-test', 'Pat Photo', 'DE', 'upper', ${heavy}, true)`;
+    const fetch = async (url: string) =>
+      new Response(null, {
+        headers: { 'content-type': 'image/png', 'content-length': url.endsWith('-150x150.png') ? '9000' : '700000' },
+      });
+    const r = await lightenPhotos(sql, { fetch, concurrency: 1 });
+    expect(r.replaced).toBeGreaterThanOrEqual(1);
+    const read = async () =>
+      (
+        await sql<
+          { photo_url: string }[]
+        >`select photo_url from public.state_legislators where id = 'ocd-person/photo-test'`
+      )[0]!.photo_url;
+    expect(await read()).toBe('https://x.gov/wp-content/a/Heavy-150x150.png');
+    // A sync writing the original URL again gets the smaller copy.
+    await sql`update public.state_legislators set photo_url = ${heavy} where id = 'ocd-person/photo-test'`;
+    expect(await read()).toBe('https://x.gov/wp-content/a/Heavy-150x150.png');
+    await sql`delete from public.state_legislators where id = 'ocd-person/photo-test'`;
   });
 });

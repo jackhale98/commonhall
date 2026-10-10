@@ -26,10 +26,13 @@ const partyShort = (p: string | null) => (!p ? 'No party listed' : p === 'Democr
 export default function StateLegislators({
   legislators,
   chambers,
+  loading = false,
 }: {
   legislators: LegislatorRow[];
   /** Chamber keys and labels present in this state, e.g. upper → Senate. */
   chambers: { key: string; label: string; count: number }[];
+  /** Only the first rows are here yet; the rest are loading. */
+  loading?: boolean;
 }) {
   const [q, setQ] = useState('');
   const [chamber, setChamber] = useState('');
@@ -100,7 +103,9 @@ export default function StateLegislators({
         )}
       </form>
       <p class="small muted" aria-live="polite">
-        {hits.length.toLocaleString()} {hits.length === 1 ? 'legislator' : 'legislators'}
+        {loading
+          ? `${chambers.reduce((n, c) => n + c.count, 0).toLocaleString()} legislators`
+          : `${hits.length.toLocaleString()} ${hits.length === 1 ? 'legislator' : 'legislators'}`}
       </p>
       {hits.length > 0 && (
         <div class="panel">

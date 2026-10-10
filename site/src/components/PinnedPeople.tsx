@@ -63,7 +63,7 @@ export default function PinnedPeople({ targetType, people, scope, mineTitle, fol
         <div class="pinned-group">
           <div class="section-head">
             <h2 class="h-small">{mineTitle}</h2>
-            <a class="see-all" href={href('#reps-h')}>
+            <a class="see-all" href={href('reps/')}>
               Your address
             </a>
           </div>

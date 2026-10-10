@@ -45,7 +45,6 @@ const description = `${city.council} ${label}: ${matter.title}`.slice(0, 300);
   <nav aria-label="Breadcrumb" class="small muted">
     <a href={cityHref(city, 'council/')}>{city.council}</a> › {label}
   </nav>
-  <DiscussionLink discussion={discussion} targetType="local_matter" targetId={matter.id} />
   <LocalMatterView
     client:load
     matter={matter}
@@ -54,4 +53,5 @@ const description = `${city.council} ${label}: ${matter.title}`.slice(0, 300);
     officialIds={officialIds}
     live={!DEMO}
   />
+  <DiscussionLink discussion={discussion} targetType="local_matter" targetId={matter.id} />
 </Base>

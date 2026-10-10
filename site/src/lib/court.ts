@@ -228,3 +228,17 @@ export function outcomeSummary(caseName: string, o: ScotusOutcome): string | nul
   const v = voteSplit(o);
   return v ? `${who}, ${v}${o.min_votes === 0 ? ' (unanimous)' : ''}` : who;
 }
+
+/** One cluster per decision: the lowest id among those with the same docket (or name) and date. Order is kept. */
+export function dedupeScotus<
+  T extends { cluster_id: number; docket_number: string | null; case_name: string; date_filed: string },
+>(rows: T[]): T[] {
+  const key = (r: T) => `${r.docket_number ?? r.case_name.toLowerCase()}|${r.date_filed}`;
+  const keep = new Map<string, number>();
+  for (const r of rows) {
+    const k = key(r);
+    const seen = keep.get(k);
+    if (seen === undefined || r.cluster_id < seen) keep.set(k, r.cluster_id);
+  }
+  return rows.filter((r) => keep.get(key(r)) === r.cluster_id);
+}

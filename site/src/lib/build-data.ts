@@ -21,6 +21,7 @@ import {
   SCOTUS_COLUMNS,
   SCOTUS_OUTCOME_COLUMNS,
   caseTopic,
+  dedupeScotus,
   matchOutcomes,
   type CaseAbout,
   type ScotusCase,
@@ -61,6 +62,7 @@ import {
   type OperatingLine,
   type OperatingSummary,
 } from './city';
+import { voteAbout } from './votes';
 import { committeeSlug } from '@civic/congress-client/boston-committees';
 import {
   RestError,
@@ -322,6 +324,8 @@ export interface VoteSummary {
   question: string | null;
   result: string | null;
   bill_id: string | null;
+  /** The official title ("On Passage: H.R. 1, One Big Beautiful Bill Act"); what the vote was on. */
+  title?: string | null;
   yea_total: number;
   nay_total: number;
   present_total: number;
@@ -331,11 +335,19 @@ export interface VoteSummary {
 /** Every roll call this Congress, newest first. */
 export const loadVotes = memo(async () =>
   selectAll<VoteSummary>('votes', {
-    select: 'id,chamber,roll_number,date,question,result,bill_id,yea_total,nay_total,present_total,not_voting_total',
+    select:
+      'id,chamber,roll_number,date,question,title,result,bill_id,yea_total,nay_total,present_total,not_voting_total',
     congress: `eq.${CURRENT_CONGRESS}`,
     order: 'date.desc.nullslast,id.desc',
   }),
 );
+
+/** Each vote with what it was on (the bill's number and short title, or a nominee). */
+export const loadVotesAbout = memo(async () => {
+  const [votes, bills] = await Promise.all([loadVotes(), loadBills()]);
+  const titles = new Map(bills.map((b) => [b.id, b.short_title ?? b.title]));
+  return votes.map((v) => ({ ...v, ...voteAbout(v, v.bill_id ? titles.get(v.bill_id) : null) }));
+});
 
 export const loadVotesByBill = memo(async () => {
   const votes = await loadVotes();
@@ -489,20 +501,32 @@ export const loadStateCommitteeChairs = memo(async () => {
   return groupBy(rows, (r) => r.committee_id);
 });
 
-/** The 10 most recently active bills for a state, and how many it has (one request per state page). */
+/**
+ * Communications, reports and petitions filed like bills ("Communication from the
+ * Treasurer…", "Monthly report of…"); left out of "latest bills" lists, still searchable.
+ */
+export const STATE_BILL_FILLER =
+  /^(communication|message|letter|petition of|report)\b|\b(monthly|quarterly|annual) report/i;
+
+/**
+ * The 10 most recently active bills for a state (leaving out filler and bills with no
+ * recorded action yet), and how many bills it has (one request per state page).
+ */
 export async function loadRecentStateBills(state: string): Promise<{ bills: StateBill[]; total: number }> {
   const params = {
     select: STATE_BILL_COLUMNS,
     state: `eq.${state}`,
     order: 'latest_action_date.desc.nullslast,id.asc',
-    limit: 10,
+    limit: 40,
   };
+  const latest = (rows: StateBill[]) =>
+    rows.filter((b) => b.latest_action_text && !STATE_BILL_FILLER.test(b.title)).slice(0, 10);
   if (DEMO) {
     const bills = await select<StateBill>('state_bills', params);
-    return { bills, total: bills.length };
+    return { bills: latest(bills), total: bills.length };
   }
   const { rows, count } = await selectWithCount<StateBill>('state_bills', params);
-  return { bills: rows, total: count };
+  return { bills: latest(rows), total: count };
 }
 
 export interface VotePositionWithMember {
@@ -615,13 +639,18 @@ export const loadCommitteeMeetings = memo(async () =>
 
 // ---- Supreme Court ----------------------------------------------------------
 
-/** Supreme Court decisions (the last five terms), newest first. */
-export const loadScotusCases = memo(async () =>
-  selectAllOptional<ScotusCase>('scotus_cases', {
+/**
+ * Supreme Court decisions (the last five terms), newest first. CourtListener sometimes
+ * holds one decision as two or three clusters (same docket, same day); keep the first
+ * (lowest id), so lists and per-term counts show each decision once.
+ */
+export const loadScotusCases = memo(async () => {
+  const rows = await selectAllOptional<ScotusCase>('scotus_cases', {
     select: SCOTUS_COLUMNS,
     order: 'date_filed.desc,cluster_id.desc',
-  }),
-);
+  });
+  return dedupeScotus(rows);
+});
 
 /** Supreme Court Database outcomes (who won, vote split), from 2009. */
 export const loadScotusOutcomes = memo(async () =>

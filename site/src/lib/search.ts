@@ -21,6 +21,7 @@ const KIND_WEIGHT: Record<string, number> = {
   state: 5,
   member: 4,
   councilor: 4,
+  official: 4,
   committee: 3,
   discussion: 3,
   bill: 2,
