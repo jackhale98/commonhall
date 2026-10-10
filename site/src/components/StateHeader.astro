@@ -1,9 +1,16 @@
 ---
 /**
  * The header shared by a state's pages: its name and the tab row (Overview,
- * Legislature, Bills, Committees, Congress, Local). Each tab is its own page.
+ * Legislature, Bills, Committees, Governor & courts, Congress, Local). Each tab
+ * is its own page.
  */
-import { loadMembers, loadStateCommittees, loadStateLegislators } from '../lib/build-data';
+import {
+  loadMembers,
+  loadStateCommittees,
+  loadStateCourtCases,
+  loadStateLegislators,
+  loadStateOrders,
+} from '../lib/build-data';
 import { LEGISLATURE_STATES, stateName } from '../lib/format';
 import { stateTabs, type StateTab } from '../lib/state-tabs';
 import PageTabs from './PageTabs.astro';
@@ -16,16 +23,19 @@ interface Props {
 const { code, current } = Astro.props;
 const name = stateName(code);
 const legislature = LEGISLATURE_STATES.includes(code);
-const [members, legislators, committees] = await Promise.all([
+const [members, legislators, committees, cases, orders] = await Promise.all([
   loadMembers(),
   loadStateLegislators(),
   loadStateCommittees(),
+  loadStateCourtCases(),
+  loadStateOrders(),
 ]);
 const tabs = stateTabs(code, current, {
   legislature,
   legislators: legislature ? (legislators.get(code)?.length ?? 0) : 0,
   committees: (committees.get(code) ?? []).filter((c) => c.classification !== 'subcommittee').length,
   congress: [...members.values()].filter((m) => m.current && m.state === code).length,
+  executive: (cases.get(code)?.length ?? 0) + (orders.get(code)?.length ?? 0),
 });
 ---
 

@@ -491,6 +491,11 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/deno.json"
 
+[functions.sync-state-courts]
+enabled = true
+verify_jwt = false
+import_map = "./functions/deno.json"
+
 [functions.sync-committees]
 enabled = true
 verify_jwt = false

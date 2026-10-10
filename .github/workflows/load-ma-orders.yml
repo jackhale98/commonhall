@@ -1,0 +1,31 @@
+name: Load governor orders
+
+# Massachusetts governors' executive orders from the Trial Court Law Libraries' list
+# on mass.gov. mass.gov turns away plain requests, so the pages are read in a
+# headless browser. A weekly run picks up new orders; orders already loaded are
+# not opened again.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 10 * * 1' # 10:23 UTC on Mondays
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Load the orders
+        run: npx tsx scripts/load-ma-orders.ts
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

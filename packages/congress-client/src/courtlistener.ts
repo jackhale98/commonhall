@@ -71,12 +71,17 @@ export class CourtListenerClient {
     return this.http.budget;
   }
 
-  supremeCourtUrl(since: string, until?: string): string {
+  /** Opinion clusters from one court (CourtListener court id: scotus, mass, …) filed in a date range. */
+  courtUrl(courtId: string, since: string, until?: string): string {
     const url = new URL(`${this.baseUrl}/search/`);
     url.searchParams.set('type', 'o');
-    url.searchParams.set('q', `court_id:scotus AND dateFiled:[${since} TO ${until ?? '*'}]`);
+    url.searchParams.set('q', `court_id:${courtId} AND dateFiled:[${since} TO ${until ?? '*'}]`);
     url.searchParams.set('order_by', 'dateFiled desc');
     return url.toString();
+  }
+
+  supremeCourtUrl(since: string, until?: string): string {
+    return this.courtUrl('scotus', since, until);
   }
 
   /** One opinion's text: plain text when CourtListener has it, else its HTML. */
@@ -85,8 +90,13 @@ export class CourtListenerClient {
   }
 
   /** Supreme Court opinion clusters filed from `since` to `until` (YYYY-MM-DD, inclusive), newest first. */
-  async *supremeCourtOpinions(since: string, until?: string): AsyncGenerator<ClCluster> {
-    let next: string | null = this.supremeCourtUrl(since, until);
+  supremeCourtOpinions(since: string, until?: string): AsyncGenerator<ClCluster> {
+    return this.courtOpinions('scotus', since, until);
+  }
+
+  /** One court's opinion clusters filed from `since` to `until` (YYYY-MM-DD, inclusive), newest first. */
+  async *courtOpinions(courtId: string, since: string, until?: string): AsyncGenerator<ClCluster> {
+    let next: string | null = this.courtUrl(courtId, since, until);
     while (next) {
       const page: ClPage = await this.http.getJson<ClPage>(next);
       for (const c of page.results ?? []) yield c;

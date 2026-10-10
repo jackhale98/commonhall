@@ -67,6 +67,8 @@ about, and take part in moderated public discussions.
 - State legislators, searchable by name or district, with a party chart of each chamber.
 - State bills, with their own pages for bills that are advancing, and links to the
   full text on malegislature.gov.
+- The governor's executive orders and Supreme Judicial Court decisions (a
+  "Governor & courts" tab).
 
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,
@@ -128,6 +130,8 @@ automatically.
 | Executive orders | [Federal Register API](https://www.federalregister.gov/developers/documentation/api/v1) | hourly |
 | Nominations | Congress.gov | hourly |
 | Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
+| Massachusetts Supreme Judicial Court decisions | [CourtListener](https://www.courtlistener.com/) | every 3 hours |
+| Massachusetts governor's executive orders | [mass.gov](https://www.mass.gov/massachusetts-executive-orders) (Trial Court Law Libraries' list) | weekly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
 | Member photos | Congress.gov, then [unitedstates/images](https://github.com/unitedstates/images) (public domain), loaded by your browser | — |
 | State bills | [Open States](https://openstates.org/) (CC0) | hourly within a daily request budget, Massachusetts first |
@@ -185,6 +189,8 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
+| `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
+| Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |

@@ -1,0 +1,76 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { CourtListenerClient, type FetchLike } from '@civic/congress-client';
+import { STATE_COURTS_JOB, runJob, syncStateCourts, type Sql, type StateCourtsCursor } from '@civic/sync';
+import { asAnon } from './auth.ts';
+import { connect } from './db.ts';
+
+const sql = connect() as unknown as Sql;
+afterAll(() => sql.end());
+
+const sample = readFileSync(
+  fileURLToPath(
+    new URL('../../packages/congress-client/test/fixtures/courtlistener/mass-sample.json', import.meta.url),
+  ),
+  'utf8',
+);
+
+function fake() {
+  const calls: URL[] = [];
+  const fetch: FetchLike = async (input) => {
+    const url = new URL(input);
+    calls.push(url);
+    return new Response(sample, { headers: { 'content-type': 'application/json' } });
+  };
+  return { calls, fetch };
+}
+
+const run = (fetch: FetchLike) =>
+  runJob<StateCourtsCursor>({
+    sql,
+    job: STATE_COURTS_JOB,
+    timeLimitMs: 60_000,
+    log: () => undefined,
+    run: (ctx) =>
+      syncStateCourts(ctx, {
+        client: new CourtListenerClient({ token: 't', fetch }),
+        now: () => new Date('2024-08-15T12:00:00Z'),
+        courts: [{ court: 'mass', state: 'MA', since: '2024-06-01' }],
+      }),
+  });
+
+beforeEach(async () => {
+  await sql`delete from public.state_court_cases`;
+  await sql`delete from public.sync_state where job = ${STATE_COURTS_JOB}`;
+  await sql`delete from public.sync_lock`;
+});
+
+describe('sync-state-courts', () => {
+  it('loads a court a month at a time, then re-reads only the last month', async () => {
+    const api = fake();
+    const first = await run(api.fetch);
+    expect(first.status).toBe('ok');
+    expect(first.rowsWritten).toBe(2);
+    expect(api.calls).toHaveLength(3);
+    expect(api.calls[0]!.searchParams.get('q')).toBe('court_id:mass AND dateFiled:[2024-06-01 TO 2024-06-30]');
+
+    api.calls.length = 0;
+    const second = await run(api.fetch);
+    expect(second.rowsWritten).toBe(0);
+    expect(api.calls).toHaveLength(1);
+    expect(api.calls[0]!.searchParams.get('q')).toContain('[2024-07-03 TO *]');
+  });
+
+  it('is public to read', async () => {
+    await run(fake().fetch);
+    const rows = await asAnon(
+      sql,
+      (tx) => tx`select case_name, state, docket_number from public.state_court_cases order by date_filed`,
+    );
+    expect(rows).toEqual([
+      { case_name: 'Commonwealth v. Example', state: 'MA', docket_number: 'SJC-13512' },
+      { case_name: 'Doe v. Board of Registration', state: 'MA', docket_number: 'SJC-13600' },
+    ]);
+  });
+});

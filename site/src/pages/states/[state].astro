@@ -5,14 +5,16 @@ import StateHeader from '../../components/StateHeader.astro';
 import Base from '../../layouts/Base.astro';
 import {
   loadRecentStateBills,
+  loadStateCourtCases,
   loadStateExecutives,
   loadStateLegislators,
+  loadStateOrders,
   loadStateSessions,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, formatDate, stateName } from '../../lib/format';
 import { cityHref, href, stateBillHref } from '../../lib/paths';
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
-import { legislatureChambers, partyGroups } from '../../lib/state-tabs';
+import { STATE_COURT_NAMES, legislatureChambers, partyGroups } from '../../lib/state-tabs';
 import { citiesIn } from '../../lib/cities';
 
 export function getStaticPaths() {
@@ -37,6 +39,10 @@ const executives = ((await loadStateExecutives()).get(code) ?? []).sort(
 );
 const session = sessionStatus((await loadStateSessions()).get(code) ?? [], new Date().toISOString().slice(0, 10));
 const cities = citiesIn(code);
+// The governor's latest order and the high court's latest decision, when we have them.
+const [stateOrders, stateCases] = await Promise.all([loadStateOrders(), loadStateCourtCases()]);
+const latestOrder = stateOrders.get(code)?.[0];
+const latestCase = stateCases.get(code)?.[0];
 ---
 
 <Base
@@ -116,6 +122,46 @@ const cities = citiesIn(code);
             </p>
           </li>
         ))}
+      </ul>
+    </section>
+  )}
+
+  {(latestOrder || latestCase) && (
+    <section aria-labelledby="exec-h">
+      <div class="section-head">
+        <h2 id="exec-h" class="h-small">
+          Governor and courts
+        </h2>
+        <a class="see-all" href={href(`${base}executive/`)}>
+          All orders and decisions
+        </a>
+      </div>
+      <ul class="plain-rows latest-bills">
+        {latestOrder && (
+          <li>
+            <p class="meta">
+              Executive order No. {latestOrder.number}
+              {latestOrder.signed_date && ` · ${formatDate(latestOrder.signed_date)}`}
+            </p>
+            <p class="bill-title-sm">
+              <a href={latestOrder.url} rel="noopener">
+                {latestOrder.title}
+              </a>
+            </p>
+          </li>
+        )}
+        {latestCase && (
+          <li>
+            <p class="meta">
+              {STATE_COURT_NAMES[latestCase.court_id] ?? 'Supreme Court'} · {formatDate(latestCase.date_filed)}
+            </p>
+            <p class="bill-title-sm">
+              <a href={latestCase.url} rel="noopener">
+                {latestCase.case_name}
+              </a>
+            </p>
+          </li>
+        )}
       </ul>
     </section>
   )}

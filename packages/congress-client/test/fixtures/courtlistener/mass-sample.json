@@ -1,0 +1,157 @@
+{
+  "_note": "Shaped by the CourtListener v4 search API docs (help/api/rest/v4/search) and its index source (opinion type slugs from cl/search/constants.py). Case names, dates, docket numbers and citations are real; ids are illustrative. Not a recorded response.",
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "absolute_url": "/opinion/10000001/trump-v-united-states/",
+      "attorney": "",
+      "caseName": "Commonwealth v. Example",
+      "caseNameFull": "Commonwealth vs. Example",
+      "citation": [
+        "496 Mass. 101"
+      ],
+      "citeCount": 0,
+      "cluster_id": 10000001,
+      "court": "Supreme Court of the United States",
+      "court_citation_string": "SCOTUS",
+      "court_id": "mass",
+      "dateArgued": "2024-04-25",
+      "dateFiled": "2024-07-18",
+      "dateReargued": null,
+      "dateReargumentDenied": null,
+      "docketNumber": "SJC-13512",
+      "docket_id": 20000001,
+      "judge": "Roberts",
+      "lexisCite": "",
+      "meta": {
+        "timestamp": "2024-07-02T10:00:00Z",
+        "date_created": "2024-07-01T16:00:00Z",
+        "score": {
+          "bm25": 1
+        }
+      },
+      "neutralCite": "",
+      "non_participating_judge_ids": [],
+      "opinions": [
+        {
+          "author_id": 1,
+          "cites": [],
+          "download_url": null,
+          "id": 30000001,
+          "joined_by_ids": [],
+          "local_path": null,
+          "per_curiam": false,
+          "sha1": "",
+          "snippet": "",
+          "type": "lead-opinion"
+        },
+        {
+          "author_id": 2,
+          "cites": [],
+          "download_url": null,
+          "id": 30000002,
+          "joined_by_ids": [],
+          "local_path": null,
+          "per_curiam": false,
+          "sha1": "",
+          "snippet": "",
+          "type": "concurrence-opinion"
+        },
+        {
+          "author_id": 3,
+          "cites": [],
+          "download_url": null,
+          "id": 30000003,
+          "joined_by_ids": [],
+          "local_path": null,
+          "per_curiam": false,
+          "sha1": "",
+          "snippet": "",
+          "type": "dissent"
+        },
+        {
+          "author_id": 4,
+          "cites": [],
+          "download_url": null,
+          "id": 30000004,
+          "joined_by_ids": [],
+          "local_path": null,
+          "per_curiam": false,
+          "sha1": "",
+          "snippet": "",
+          "type": "dissent"
+        }
+      ],
+      "panel_ids": [],
+      "panel_names": [],
+      "posture": "",
+      "procedural_history": "",
+      "sibling_ids": [
+        30000001,
+        30000002,
+        30000003,
+        30000004
+      ],
+      "source": "C",
+      "status": "Published",
+      "suitNature": "",
+      "syllabus": ""
+    },
+    {
+      "absolute_url": "/opinion/10000002/loper-bright-enterprises-v-raimondo/",
+      "attorney": "",
+      "caseName": "Doe v. Board of Registration",
+      "caseNameFull": null,
+      "citation": [],
+      "citeCount": 0,
+      "cluster_id": 10000002,
+      "court": "Supreme Court of the United States",
+      "court_citation_string": "SCOTUS",
+      "court_id": "mass",
+      "dateArgued": "2024-01-17",
+      "dateFiled": "2024-08-02",
+      "dateReargued": null,
+      "dateReargumentDenied": null,
+      "docketNumber": "SJC-13600",
+      "docket_id": 20000002,
+      "judge": "",
+      "lexisCite": "",
+      "meta": {
+        "timestamp": "2024-06-29T10:00:00Z",
+        "date_created": "2024-06-28T16:00:00Z",
+        "score": {
+          "bm25": 1
+        }
+      },
+      "neutralCite": "",
+      "non_participating_judge_ids": [],
+      "opinions": [
+        {
+          "author_id": null,
+          "cites": [],
+          "download_url": null,
+          "id": 30000005,
+          "joined_by_ids": [],
+          "local_path": null,
+          "per_curiam": false,
+          "sha1": "",
+          "snippet": "",
+          "type": "combined-opinion"
+        }
+      ],
+      "panel_ids": [],
+      "panel_names": [],
+      "posture": "",
+      "procedural_history": "",
+      "sibling_ids": [
+        30000005
+      ],
+      "source": "C",
+      "status": "Published",
+      "suitNature": "",
+      "syllabus": ""
+    }
+  ]
+}

@@ -7,13 +7,18 @@
 import { citiesIn } from './cities';
 import { href, stateHref } from './paths';
 
-export type StateTab = 'overview' | 'legislature' | 'bills' | 'committees' | 'congress' | 'local';
+export type StateTab = 'overview' | 'legislature' | 'bills' | 'committees' | 'executive' | 'congress' | 'local';
+
+/** A state's high court, by CourtListener court id. */
+export const STATE_COURT_NAMES: Record<string, string> = { mass: 'Supreme Judicial Court' };
 
 export interface StateTabCounts {
   legislature: boolean;
   legislators: number;
   committees: number;
   congress: number;
+  /** Governor's orders and high court decisions on file. */
+  executive: number;
 }
 
 export function stateTabs(code: string, current: StateTab, counts: StateTabCounts) {
@@ -34,6 +39,12 @@ export function stateTabs(code: string, current: StateTab, counts: StateTabCount
       href: href(`${base}committees/`),
       count: counts.committees,
       show: counts.legislature && counts.committees > 0,
+    },
+    {
+      key: 'executive',
+      label: 'Governor & courts',
+      href: href(`${base}executive/`),
+      show: counts.executive > 0,
     },
     { key: 'congress', label: 'Congress', href: href(`${base}congress/`), count: counts.congress, show: true },
     { key: 'local', label: 'Local', href: href(`${base}local/`), show: citiesIn(code).length > 0 },

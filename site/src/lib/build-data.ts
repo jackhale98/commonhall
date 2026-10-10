@@ -385,6 +385,50 @@ export const loadStateExecutives = memo(async () => {
   return groupBy(rows, (r) => r.state);
 });
 
+export interface StateCourtCase {
+  cluster_id: number;
+  court_id: string;
+  state: string;
+  case_name: string;
+  docket_number: string | null;
+  date_filed: string;
+  citations: string[];
+  url: string;
+  judges: string | null;
+  dissents: number;
+  concurrences: number;
+  per_curiam: boolean;
+}
+
+export interface StateExecutiveOrder {
+  state: string;
+  number: number;
+  title: string;
+  signed_date: string | null;
+  governor: string | null;
+  revokes: string | null;
+  url: string;
+}
+
+/** State high court decisions (CourtListener), newest first, by state. */
+export const loadStateCourtCases = memo(async () => {
+  const rows = await selectAllOptional<StateCourtCase>('state_court_cases', {
+    select:
+      'cluster_id,court_id,state,case_name,docket_number,date_filed,citations,url,judges,dissents,concurrences,per_curiam',
+    order: 'state.asc,date_filed.desc,cluster_id.desc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
+/** Governors' executive orders, newest first, by state. */
+export const loadStateOrders = memo(async () => {
+  const rows = await selectAllOptional<StateExecutiveOrder>('state_executive_orders', {
+    select: 'state,number,title,signed_date,governor,revokes,url',
+    order: 'state.asc,number.desc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
 /** Every state's legislative sessions with their dates, by state. */
 export const loadStateSessions = memo(async () => {
   const rows = await selectAllOptional<StateSession>('state_sessions', {

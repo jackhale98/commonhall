@@ -1196,3 +1196,22 @@ passed the anon statement timeout and failed a deploy. They are now materialized
 views with unique keys, refreshed concurrently by pg_cron every 30 minutes
 (`private.refresh_member_stats()`). Member pages can lag new roll calls by up to
 half an hour, which the nightly rebuild absorbs anyway.
+
+## 86. Governor's orders and the state high court (Massachusetts first)
+
+- **Supreme Judicial Court:** from CourtListener (already a source for the U.S.
+  Supreme Court), court id `mass`, decisions since January 2024 into
+  `state_court_cases`. Titles, dates, citations, dissent counts and a link to the
+  opinions; no opinion text. The free tier (50 requests an hour, 125 a day) is
+  shared with `sync-scotus`, so `sync-state-courts` runs every three hours with at
+  most four requests: the first load is a month per request, then one request a run.
+  More states are a line in `STATE_COURTS` and `STATE_COURT_NAMES`.
+- **Governor's executive orders:** from the Trial Court Law Libraries' list on
+  mass.gov (approved by the owner as a new source). mass.gov answers plain requests
+  with "Not allowed", so a weekly GitHub Action reads the pages in headless Chromium:
+  the two newest index pages (orders 500 and up), and each new order's page for its
+  date, governor and what it revokes. It refuses a read of fewer than 20 orders
+  rather than load nothing. About 150 rows; a handful a year after that.
+- Both show on a state's "Governor & courts" tab, which appears only when there is
+  something on file, and the latest of each on the state Overview.
+

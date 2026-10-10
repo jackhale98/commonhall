@@ -16,3 +16,4 @@ export * from './analyze-boston.ts';
 export * from './boston-committees.ts';
 export * from './primegov.ts';
 export * from './worcester.ts';
+export * from './mass-orders.ts';
