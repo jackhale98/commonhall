@@ -6,7 +6,12 @@
  * decisions (citations and opinions are filled in after release), so a quiet
  * hour costs one request.
  */
-import { BudgetExhaustedError, type ClCluster, type CourtListenerClient } from '@civic/congress-client';
+import {
+  BudgetExhaustedError,
+  RateLimitedError,
+  type ClCluster,
+  type CourtListenerClient,
+} from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
 import { syllabusBackground } from './syllabus.ts';
 import type { JobRun } from '../job.ts';
@@ -22,7 +27,14 @@ export interface ScotusCursor {
   newest?: string;
   /** Last day of the newest month the first load has finished (YYYY-MM-DD). */
   filledThrough?: string;
+  /** CourtListener rate-limited us and asked us to wait until then (ISO time); no requests before. */
+  pausedUntil?: string;
+  /** What CourtListener said when it rate-limited us. */
+  rateLimit?: { at: string; retryAfterSeconds: number | null; url: string };
 }
+
+/** With no Retry-After, wait this long after a 429 before asking again. */
+const RATE_LIMIT_PAUSE_MS = 60 * 60 * 1000;
 
 /** The first and last day of each calendar month from `since`'s month to `today`'s. */
 export function monthWindows(since: string, today: string): [string, string][] {
@@ -177,8 +189,15 @@ export async function syncSupremeCourt(
   run: JobRun<ScotusCursor>,
   options: { client: CourtListenerClient; now?: () => Date },
 ): Promise<ScotusCursor> {
-  const today = (options.now?.() ?? new Date()).toISOString().slice(0, 10);
+  const now = options.now?.() ?? new Date();
+  const today = now.toISOString().slice(0, 10);
   const cursor = { ...run.cursor };
+  // Asking again while rate-limited can extend the block, so wait out what CourtListener asked for.
+  if (cursor.pausedUntil && Date.parse(cursor.pausedUntil) > now.getTime()) {
+    run.log('scotus: paused by CourtListener rate limit', { until: cursor.pausedUntil });
+    return cursor;
+  }
+  delete cursor.pausedUntil;
   const read = async (since: string, until?: string) => {
     let seen = 0;
     for await (const cluster of options.client.supremeCourtOpinions(since, until)) {
@@ -223,6 +242,17 @@ export async function syncSupremeCourt(
     return cursor;
   } catch (error) {
     if (!(error instanceof BudgetExhaustedError)) throw error;
+    if (error instanceof RateLimitedError) {
+      const waitMs = Math.max(error.retryAfterMs ?? RATE_LIMIT_PAUSE_MS, RATE_LIMIT_PAUSE_MS);
+      cursor.pausedUntil = new Date(now.getTime() + waitMs).toISOString();
+      cursor.rateLimit = {
+        at: now.toISOString(),
+        retryAfterSeconds: error.retryAfterMs === null ? null : Math.round(error.retryAfterMs / 1000),
+        url: error.url,
+      };
+      run.log('scotus: rate-limited by CourtListener', { ...cursor.rateLimit, pausedUntil: cursor.pausedUntil });
+      return cursor;
+    }
     run.log('scotus: budget exhausted', {});
     // Finished months stay recorded; the current one is read again next run.
     return cursor;

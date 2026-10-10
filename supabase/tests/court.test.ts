@@ -153,4 +153,24 @@ describe('sync-scotus', () => {
     await run(api.fetch);
     expect(api.opinionCalls).toHaveLength(0);
   });
+
+  it('waits out a CourtListener rate limit instead of asking again every hour', async () => {
+    let calls = 0;
+    const limited: FetchLike = async () => {
+      calls++;
+      return new Response('{"detail":"Request was throttled."}', { status: 429, headers: { 'retry-after': '7200' } });
+    };
+    const first = await run(limited);
+    expect(first.status).toBe('ok');
+    expect(calls).toBe(1);
+    const [state] = await sql<
+      { cursor: ScotusCursor }[]
+    >`select cursor from public.sync_state where job = ${SCOTUS_JOB}`;
+    expect(state!.cursor.pausedUntil).toBe('2024-08-15T14:00:00.000Z');
+    expect(state!.cursor.rateLimit?.retryAfterSeconds).toBe(7200);
+    // Still inside the wait: no request at all.
+    calls = 0;
+    await run(limited);
+    expect(calls).toBe(0);
+  });
 });
