@@ -17,18 +17,22 @@ const reported = coverage.reduce((n, c) => n + c.reported_total, 0);
 const loaded = coverage.reduce((n, c) => n + Math.min(c.loaded, c.reported_total), 0);
 const pct = (part: number, whole: number) => (whole ? Math.floor((part / whole) * 100) : 0);
 const territories = STATE_CODES.filter((c) => !LEGISLATURE_STATES.includes(c));
-const tiles = LEGISLATURE_STATES.map((code) => ({
-  code,
-  name: stateName(code),
-  href: stateHref(code),
-  note:
-    code === 'DC'
-      ? 'delegate'
-      : seats.get(code)
-        ? `${seats.get(code)} ${seats.get(code) === 1 ? 'rep' : 'reps'}`
-        : undefined,
-  featured: code === 'MA',
-}));
+// Each tile shows its House seats as a bare number (the legend says so); the full wording is in its label.
+const tiles = LEGISLATURE_STATES.map((code) => {
+  const n = seats.get(code);
+  return {
+    code,
+    name:
+      code === 'DC'
+        ? `${stateName(code)}, a non-voting delegate`
+        : n
+          ? `${stateName(code)}, ${n} House ${n === 1 ? 'seat' : 'seats'}`
+          : stateName(code),
+    href: stateHref(code),
+    note: code === 'DC' ? 'del.' : n ? String(n) : undefined,
+    featured: code === 'MA',
+  };
+});
 ---
 
 <Base
@@ -77,7 +81,7 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
         </select>
       </form>
     </div>
-    <div class="panel">
+    <div class="panel tiles-panel">
       <StateTiles tiles={tiles} label="States, arranged roughly by location" />
       <p class="small muted legend-note">
         <span class="swatch fill-present"></span> Most detailed coverage (Massachusetts). Numbers are House seats.
@@ -182,6 +186,12 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
   }
   .feature strong {
     font-size: var(--step-1);
+  }
+  /* Phones: the map takes the panel's full width, so each tile is as large as it can be. */
+  @media (max-width: 40rem) {
+    .tiles-panel {
+      padding: var(--space-3) var(--space-2);
+    }
   }
   .legend-note {
     margin: var(--space-3) 0 0;

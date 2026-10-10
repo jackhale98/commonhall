@@ -1141,9 +1141,9 @@ button.danger {
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(11, minmax(0, 1fr));
   gap: 4px;
-  max-width: 46rem;
+  max-width: 44rem;
 }
 .state-tiles .tile {
   aspect-ratio: 1;
@@ -1155,7 +1155,13 @@ button.danger {
   color: var(--brand-strong);
   text-decoration: none;
   line-height: 1.05;
+  overflow: hidden;
   transition: transform 0.12s ease;
+}
+@media (max-width: 40rem) {
+  .state-tiles {
+    gap: 3px;
+  }
 }
 .state-tiles .tile:hover,
 .state-tiles .tile:focus-visible {
@@ -1169,10 +1175,11 @@ button.danger {
 }
 .tile-code {
   font-weight: 800;
-  font-size: clamp(0.6rem, 1.6vw, 0.95rem);
+  font-size: clamp(0.66rem, 2.6vw, 0.95rem);
 }
 .tile-note {
-  font-size: clamp(0.5rem, 1.1vw, 0.68rem);
+  font-size: clamp(0.58rem, 2.1vw, 0.72rem);
+  font-variant-numeric: tabular-nums;
   opacity: 0.8;
 }
 
