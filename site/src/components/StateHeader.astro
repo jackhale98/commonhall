@@ -1,7 +1,7 @@
 ---
 /**
  * The header shared by a state's pages: its name and the tab row (Overview,
- * Legislature, Bills, Committees, Governor & courts, Congress, Local). Each tab
+ * Legislature, Bills, Committees, Governor, Courts, Congress, Local). Each tab
  * is its own page.
  */
 import {
@@ -35,7 +35,8 @@ const tabs = stateTabs(code, current, {
   legislators: legislature ? (legislators.get(code)?.length ?? 0) : 0,
   committees: (committees.get(code) ?? []).filter((c) => c.classification !== 'subcommittee').length,
   congress: [...members.values()].filter((m) => m.current && m.state === code).length,
-  executive: (cases.get(code)?.length ?? 0) + (orders.get(code)?.length ?? 0),
+  orders: orders.get(code)?.length ?? 0,
+  cases: cases.get(code)?.length ?? 0,
 });
 ---
 

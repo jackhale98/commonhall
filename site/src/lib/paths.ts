@@ -97,6 +97,18 @@ export function stateBillFallbackHref(id: string): string {
   return href(`state-bill/?id=${encodeURIComponent(id)}`);
 }
 
+/** A governor's executive order, by its discussion id ("ma-635"). */
+export function stateOrderHref(id: string): string {
+  const [state, number] = id.split('-');
+  return href(`states/${state}/governor/${number}/`);
+}
+
+/** A state high court decision, by its discussion id ("ma-10123456", the CourtListener cluster). */
+export function stateCourtCaseHref(id: string): string {
+  const [state, cluster] = id.split('-');
+  return href(`states/${state}/courts/${cluster}/`);
+}
+
 /** State legislators and committees are client-rendered pages keyed by Open States id. */
 export function stateLegislatorHref(id: string): string {
   return href(`state-legislator/?id=${encodeURIComponent(id)}`);

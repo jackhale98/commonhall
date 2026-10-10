@@ -1,0 +1,130 @@
+---
+import StateHeader from '../../../../components/StateHeader.astro';
+import Base from '../../../../layouts/Base.astro';
+import { loadDiscussionsByTarget, loadStateOrders } from '../../../../lib/build-data';
+import { formatDate, stateName } from '../../../../lib/format';
+import { stateOrderHref } from '../../../../lib/paths';
+
+/** Only states with a governor's order on file. */
+export async function getStaticPaths() {
+  return [...(await loadStateOrders()).keys()].map((code) => ({
+    params: { state: code.toLowerCase() },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const [all, discussions] = await Promise.all([loadStateOrders(), loadDiscussionsByTarget()]);
+const orders = all.get(code) ?? [];
+const id = (n: number) => `${code.toLowerCase()}-${n}`;
+const FIRST = 15;
+const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
+const thisYear = orders.filter((o) => o.signed_date && o.signed_date >= yearAgo).length;
+const byGovernor = [...Map.groupBy(orders, (o) => o.governor ?? 'Unknown')].map(([g, list]) => ({ g, n: list.length }));
+const discussed = (n: number) => discussions.get(`state_order:${id(n)}`);
+---
+
+<Base
+  title={`${name} governor's executive orders`}
+  description={`${name}: the governor's executive orders, newest first, with a page for each to discuss.`}
+  section="states"
+>
+  <StateHeader code={code} current="governor" />
+
+  <dl class="stat-grid glance-stats">
+    <div class="stat">
+      <dt>Orders, last 12 months</dt>
+      <dd>{thisYear}</dd>
+    </div>
+    {byGovernor.slice(0, 2).map(({ g, n }) => (
+      <div class="stat">
+        <dt>By Governor {g}</dt>
+        <dd>{n}</dd>
+        <p class="small muted stat-note">on file</p>
+      </div>
+    ))}
+  </dl>
+
+  <h2 class="h-small">Executive orders</h2>
+  <p class="small muted section-note">
+    Orders the governor issues to run the executive branch: creating councils and task forces, directing agencies, and
+    revoking earlier orders. Open one to read it or ask for a public discussion on it.
+  </p>
+  <ol class="plain-rows exec-list">
+    {orders.slice(0, FIRST).map((o) => (
+      <li>
+        <span class="small muted">
+          No. {o.number}
+          {o.signed_date && ` · ${formatDate(o.signed_date)}`}
+          {o.governor && ` · ${o.governor}`}
+          {discussed(o.number) && ' · Discussion open'}
+        </span>
+        <a href={stateOrderHref(id(o.number))}>{o.title}</a>
+      </li>
+    ))}
+  </ol>
+  {orders.length > FIRST && (
+    <details class="more-rows">
+      <summary>{orders.length - FIRST} earlier orders</summary>
+      <ol class="plain-rows exec-list">
+        {orders.slice(FIRST).map((o) => (
+          <li>
+            <span class="small muted">
+              No. {o.number}
+              {o.signed_date && ` · ${formatDate(o.signed_date)}`}
+              {o.governor && ` · ${o.governor}`}
+            </span>
+            <a href={stateOrderHref(id(o.number))}>{o.title}</a>
+          </li>
+        ))}
+      </ol>
+    </details>
+  )}
+  <p class="small muted tab-note">
+    From the Trial Court Law Libraries’ list on{' '}
+    <a href="https://www.mass.gov/massachusetts-executive-orders" rel="noopener">
+      mass.gov
+    </a>
+    , checked weekly.
+  </p>
+</Base>
+
+<style>
+  .glance-stats {
+    margin-bottom: var(--space-5);
+  }
+  .section-note {
+    margin-top: 0;
+    max-width: 65ch;
+  }
+  .exec-list {
+    list-style: none;
+    padding: 0;
+  }
+  .exec-list li {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .exec-list a {
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .exec-list a:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .more-rows summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
+</style>

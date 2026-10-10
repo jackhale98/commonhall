@@ -130,7 +130,14 @@ export const LOCAL_MATTER_COLUMNS =
 export const LOCAL_OFFICIAL_COLUMNS = 'id,city,person_id,name,seat,district,title,email,photo_url,current';
 
 export type DiscussionTargetType =
-  'bill' | 'state_bill' | 'local_matter' | 'executive_order' | 'scotus_case' | 'capital_project';
+  | 'bill'
+  | 'state_bill'
+  | 'local_matter'
+  | 'executive_order'
+  | 'scotus_case'
+  | 'capital_project'
+  | 'state_order'
+  | 'state_court_case';
 
 export interface Discussion {
   id: string;

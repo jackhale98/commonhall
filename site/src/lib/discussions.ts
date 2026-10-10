@@ -5,11 +5,13 @@ import { congressLabel, stateName } from './format';
 import {
   billFallbackHref,
   billHref,
+  capitalProjectHref,
   executiveOrderHref,
   localMatterHref,
-  capitalProjectHref,
   scotusCaseHref,
   stateBillFallbackHref,
+  stateCourtCaseHref,
+  stateOrderHref,
 } from './paths';
 import type { Discussion } from './types';
 
@@ -58,6 +60,8 @@ export function targetHref(type: Discussion['target_type'], id: string | null): 
   if (type === 'executive_order') return executiveOrderHref(id);
   if (type === 'scotus_case') return scotusCaseHref(id);
   if (type === 'capital_project') return capitalProjectHref(id);
+  if (type === 'state_order') return stateOrderHref(id);
+  if (type === 'state_court_case') return stateCourtCaseHref(id);
   return localMatterHref(id);
 }
 
@@ -71,5 +75,7 @@ export function targetLabel(type: Discussion['target_type'], id: string | null):
   if (type === 'executive_order') return 'the executive order';
   if (type === 'scotus_case') return 'the Supreme Court decision';
   if (type === 'capital_project') return `the ${cityOf(id)?.name ?? 'city'} capital project`;
+  if (type === 'state_order') return `the governor's executive order No. ${id.split('-')[1]}`;
+  if (type === 'state_court_case') return 'the state high court decision';
   return `${cityOf(id)?.name ?? 'City'} council matter ${idWithinCity(id)}`;
 }

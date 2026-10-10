@@ -1212,8 +1212,12 @@ half an hour, which the nightly rebuild absorbs anyway.
   the two newest index pages (orders 500 and up), and each new order's page for its
   date, governor and what it revokes. It refuses a read of fewer than 20 orders
   rather than load nothing. About 150 rows; a handful a year after that.
-- Both show on a state's "Governor & courts" tab, which appears only when there is
-  something on file, and the latest of each on the state Overview.
+- Each has its own state tab, Governor and Courts, shown only when there is something
+  on file, with the latest of each on the state Overview. Every order and decision
+  has its own page (`states/ma/governor/635/`, `states/ma/courts/{cluster}/`) where
+  people can ask for a discussion: target types `state_order` (`ma-635`) and
+  `state_court_case` (`ma-{cluster id}`), migration 045. The first version's single
+  `executive/` tab redirects to Governor.
 
 ## 87. Worcester's agenda items as council matters
 

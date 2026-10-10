@@ -1,0 +1,65 @@
+---
+import DiscussionLink from '../../../../components/DiscussionLink.astro';
+import Base from '../../../../layouts/Base.astro';
+import { loadDiscussionsByTarget, loadStateCourtCases, type StateCourtCase } from '../../../../lib/build-data';
+import { formatDate, stateName } from '../../../../lib/format';
+import { href } from '../../../../lib/paths';
+import { STATE_COURT_NAMES } from '../../../../lib/state-tabs';
+
+export async function getStaticPaths() {
+  return [...(await loadStateCourtCases()).values()].flat().map((c) => ({
+    params: { state: c.state.toLowerCase(), cluster: String(c.cluster_id) },
+    props: { c },
+  }));
+}
+
+interface Props {
+  c: StateCourtCase;
+}
+
+const { c } = Astro.props;
+const name = stateName(c.state);
+const court = STATE_COURT_NAMES[c.court_id] ?? 'Supreme Court';
+const id = `${c.state.toLowerCase()}-${c.cluster_id}`;
+const discussion = (await loadDiscussionsByTarget()).get(`state_court_case:${id}`);
+const opinions = [
+  c.per_curiam && 'An unsigned (per curiam) opinion.',
+  c.dissents > 0 && `${c.dissents} ${c.dissents === 1 ? 'dissent' : 'dissents'}.`,
+  c.concurrences > 0 && `${c.concurrences} ${c.concurrences === 1 ? 'concurrence' : 'concurrences'}.`,
+].filter(Boolean);
+---
+
+<Base
+  title={`${c.case_name} (${name} ${court})`}
+  description={`${c.case_name}: decided by the ${name} ${court} on ${formatDate(c.date_filed)}.`}
+  section="states"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={href(`states/${c.state.toLowerCase()}/courts/`)}>
+      {name} {court}
+    </a>
+  </nav>
+  <header class="page-head">
+    <p class="kicker">
+      {court} · {formatDate(c.date_filed)}
+      {c.docket_number && ` · ${c.docket_number}`}
+    </p>
+    <h1>{c.case_name}</h1>
+    {c.citations.length > 0 && <p class="muted">{c.citations.join(' · ')}</p>}
+    {opinions.length > 0 && <p class="muted">{opinions.join(' ')}</p>}
+    {c.judges && <p class="small muted">Justices: {c.judges}</p>}
+  </header>
+
+  <DiscussionLink discussion={discussion} targetType="state_court_case" targetId={id} />
+
+  <p class="cluster" style="margin-block: var(--space-4)">
+    <a class="button" href={c.url} rel="noopener">
+      Read the opinions on CourtListener
+    </a>
+  </p>
+
+  <p class="small muted">
+    From CourtListener (Free Law Project), which collects the court’s published opinions. Dissents and concurrences are
+    counted when CourtListener lists them separately.
+  </p>
+</Base>

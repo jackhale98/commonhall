@@ -33,6 +33,12 @@ import { href } from '../lib/paths';
         location.replace(root + 'states/' + matter[1] + '/matter/?id=' + matter[2]);
         return;
       }
+      // A state's Governor & courts tab became two tabs.
+      const exec = /^\/states\/([a-z]{2})\/executive\/?$/.exec(path);
+      if (exec) {
+        location.replace(root + 'states/' + exec[1] + '/governor/');
+        return;
+      }
       // Cities moved under their state (/boston/ → /states/ma/boston/); Boston councilor ids gained a "p".
       const oldCity = /^\/(boston|worcester)(\/.*)?$/.exec(path);
       if (oldCity) {

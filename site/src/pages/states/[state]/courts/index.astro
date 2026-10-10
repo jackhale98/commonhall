@@ -1,0 +1,137 @@
+---
+import StateHeader from '../../../../components/StateHeader.astro';
+import Base from '../../../../layouts/Base.astro';
+import { loadDiscussionsByTarget, loadStateCourtCases } from '../../../../lib/build-data';
+import { formatDate, stateName } from '../../../../lib/format';
+import { stateCourtCaseHref } from '../../../../lib/paths';
+import { STATE_COURT_NAMES } from '../../../../lib/state-tabs';
+
+/** Only states with a high court decision on file. */
+export async function getStaticPaths() {
+  return [...(await loadStateCourtCases()).keys()].map((code) => ({
+    params: { state: code.toLowerCase() },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const [all, discussions] = await Promise.all([loadStateCourtCases(), loadDiscussionsByTarget()]);
+const cases = all.get(code) ?? [];
+const court = STATE_COURT_NAMES[cases[0]?.court_id ?? ''] ?? 'Supreme Court';
+const id = (cluster: number) => `${code.toLowerCase()}-${cluster}`;
+const FIRST = 15;
+const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
+const thisYear = cases.filter((c) => c.date_filed >= yearAgo);
+const divided = thisYear.filter((c) => c.dissents > 0).length;
+const split = (c: (typeof cases)[number]) =>
+  [
+    c.per_curiam && 'Per curiam',
+    c.dissents > 0 && `${c.dissents} ${c.dissents === 1 ? 'dissent' : 'dissents'}`,
+    c.concurrences > 0 && `${c.concurrences} ${c.concurrences === 1 ? 'concurrence' : 'concurrences'}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+---
+
+<Base
+  title={`${name} ${court}`}
+  description={`Decisions of the ${name} ${court}, newest first, with a page for each to discuss.`}
+  section="states"
+>
+  <StateHeader code={code} current="courts" />
+
+  <dl class="stat-grid glance-stats">
+    <div class="stat">
+      <dt>Decisions, last 12 months</dt>
+      <dd>{thisYear.length}</dd>
+    </div>
+    <div class="stat">
+      <dt>With a dissent</dt>
+      <dd>{divided}</dd>
+      <p class="small muted stat-note">in the last 12 months</p>
+    </div>
+  </dl>
+
+  <h2 class="h-small">{court} decisions</h2>
+  <p class="small muted section-note">
+    The state’s highest court: its decisions settle what state law and the state constitution mean. Open one to read it
+    or ask for a public discussion on it.
+  </p>
+  <ol class="plain-rows exec-list">
+    {cases.slice(0, FIRST).map((c) => (
+      <li>
+        <span class="small muted">
+          {formatDate(c.date_filed)}
+          {c.docket_number && ` · ${c.docket_number}`}
+          {c.citations[0] && ` · ${c.citations[0]}`}
+          {discussions.get(`state_court_case:${id(c.cluster_id)}`) && ' · Discussion open'}
+        </span>
+        <a href={stateCourtCaseHref(id(c.cluster_id))}>{c.case_name}</a>
+        {split(c) && <span class="small muted">{split(c)}</span>}
+      </li>
+    ))}
+  </ol>
+  {cases.length > FIRST && (
+    <details class="more-rows">
+      <summary>{cases.length - FIRST} earlier decisions</summary>
+      <ol class="plain-rows exec-list">
+        {cases.slice(FIRST).map((c) => (
+          <li>
+            <span class="small muted">
+              {formatDate(c.date_filed)}
+              {c.docket_number && ` · ${c.docket_number}`}
+            </span>
+            <a href={stateCourtCaseHref(id(c.cluster_id))}>{c.case_name}</a>
+          </li>
+        ))}
+      </ol>
+    </details>
+  )}
+  <p class="small muted tab-note">
+    From{' '}
+    <a href="https://www.courtlistener.com/" rel="noopener">
+      CourtListener
+    </a>{' '}
+    (Free Law Project), checked every three hours.
+  </p>
+</Base>
+
+<style>
+  .glance-stats {
+    margin-bottom: var(--space-5);
+  }
+  .section-note {
+    margin-top: 0;
+    max-width: 65ch;
+  }
+  .exec-list {
+    list-style: none;
+    padding: 0;
+  }
+  .exec-list li {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .exec-list a {
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .exec-list a:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .more-rows summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
+</style>

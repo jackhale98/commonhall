@@ -67,8 +67,8 @@ about, and take part in moderated public discussions.
 - State legislators, searchable by name or district, with a party chart of each chamber.
 - State bills, with their own pages for bills that are advancing, and links to the
   full text on malegislature.gov.
-- The governor's executive orders and Supreme Judicial Court decisions (a
-  "Governor & courts" tab).
+- The governor's executive orders and Supreme Judicial Court decisions (Governor
+  and Courts tabs), each with a page where people can ask for a discussion.
 
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,

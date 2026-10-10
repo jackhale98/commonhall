@@ -12,7 +12,7 @@ import {
   loadStateSessions,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, formatDate, stateName } from '../../lib/format';
-import { cityHref, href, stateBillHref } from '../../lib/paths';
+import { cityHref, href, stateBillHref, stateCourtCaseHref, stateOrderHref } from '../../lib/paths';
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
 import { STATE_COURT_NAMES, legislatureChambers, partyGroups } from '../../lib/state-tabs';
 import { citiesIn } from '../../lib/cities';
@@ -132,9 +132,10 @@ const latestCase = stateCases.get(code)?.[0];
         <h2 id="exec-h" class="h-small">
           Governor and courts
         </h2>
-        <a class="see-all" href={href(`${base}executive/`)}>
-          All orders and decisions
-        </a>
+        <span class="cluster small">
+          {latestOrder && <a href={href(`${base}governor/`)}>All orders</a>}
+          {latestCase && <a href={href(`${base}courts/`)}>All decisions</a>}
+        </span>
       </div>
       <ul class="plain-rows latest-bills">
         {latestOrder && (
@@ -144,9 +145,7 @@ const latestCase = stateCases.get(code)?.[0];
               {latestOrder.signed_date && ` · ${formatDate(latestOrder.signed_date)}`}
             </p>
             <p class="bill-title-sm">
-              <a href={latestOrder.url} rel="noopener">
-                {latestOrder.title}
-              </a>
+              <a href={stateOrderHref(`${code.toLowerCase()}-${latestOrder.number}`)}>{latestOrder.title}</a>
             </p>
           </li>
         )}
@@ -156,9 +155,7 @@ const latestCase = stateCases.get(code)?.[0];
               {STATE_COURT_NAMES[latestCase.court_id] ?? 'Supreme Court'} · {formatDate(latestCase.date_filed)}
             </p>
             <p class="bill-title-sm">
-              <a href={latestCase.url} rel="noopener">
-                {latestCase.case_name}
-              </a>
+              <a href={stateCourtCaseHref(`${code.toLowerCase()}-${latestCase.cluster_id}`)}>{latestCase.case_name}</a>
             </p>
           </li>
         )}

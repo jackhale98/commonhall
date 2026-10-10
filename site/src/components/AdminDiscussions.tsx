@@ -23,6 +23,8 @@ const TYPE_LABEL: Record<DiscussionTargetType, string> = {
   executive_order: 'Executive order',
   scotus_case: 'Supreme Court decision',
   capital_project: 'Capital project',
+  state_order: 'Governor’s order',
+  state_court_case: 'State court decision',
 };
 
 /** Discussions grouped by status; closed ones are folded away. */
@@ -109,9 +111,11 @@ export default function AdminDiscussions() {
       jurisdiction:
         r.target_type === 'state_bill'
           ? 'ma'
-          : r.target_type === 'local_matter' || r.target_type === 'capital_project'
-            ? (cityOf(r.target_id)?.key ?? 'federal')
-            : 'federal',
+          : r.target_type === 'state_order' || r.target_type === 'state_court_case'
+            ? r.target_id.split('-')[0]!
+            : r.target_type === 'local_matter' || r.target_type === 'capital_project'
+              ? (cityOf(r.target_id)?.key ?? 'federal')
+              : 'federal',
     });
     window.scrollTo({ top: 0 });
   };
@@ -261,6 +265,8 @@ export default function AdminDiscussions() {
                 <option value="executive_order">Executive order</option>
                 <option value="scotus_case">Supreme Court decision</option>
                 <option value="capital_project">Capital project (Boston id, or worcester-…)</option>
+                <option value="state_order">Governor’s executive order (ma-635)</option>
+                <option value="state_court_case">State high court decision (ma- and its CourtListener id)</option>
               </select>
             </div>
             {draft.target_type && (
