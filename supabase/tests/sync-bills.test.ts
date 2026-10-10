@@ -29,6 +29,28 @@ beforeEach(resetFederal);
 const quiet = () => undefined;
 
 describe('syncBill', () => {
+  it('saves a bill without its summary when Congress.gov keeps failing on it, and asks again next time', async () => {
+    const api = new FakeCongress();
+    api.addBill(recordedHr1());
+    const healthy = api.fetch;
+    api.fetch = async (input) =>
+      new URL(input).pathname.endsWith('/summaries')
+        ? new Response('Service Unavailable', { status: 503 })
+        : healthy(input);
+
+    const change = await syncBill(sql, api.client(), 119, 'HR', 1);
+    expect(change.skipped).toEqual(['summaries']);
+    const [bill] = await sql`select status, summary_text, summaries_count from public.bills where id = '119-hr-1'`;
+    expect(bill).toMatchObject({ status: 'law', summary_text: null, summaries_count: 0 });
+
+    api.fetch = healthy;
+    const again = await syncBill(sql, api.client(), 119, 'HR', 1);
+    expect(again.skipped).toEqual([]);
+    const [fixed] = await sql`select summary_text, summaries_count from public.bills where id = '119-hr-1'`;
+    expect(fixed!.summary_text).toMatch(/^One Big Beautiful Bill Act/);
+    expect(fixed!.summaries_count).toBeGreaterThan(0);
+  });
+
   it('loads a new bill with every sub-endpoint and derives its status', async () => {
     const api = new FakeCongress();
     api.addBill(recordedHr1());

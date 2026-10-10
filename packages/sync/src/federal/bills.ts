@@ -12,6 +12,7 @@ import {
   billId,
   congressGovBillUrl,
   deriveStatus,
+  HttpError,
   type BillAction,
   type BillDetail,
   type BillTitle,
@@ -73,6 +74,8 @@ export interface BillChange {
   statusAfter: string | null;
   rowsWritten: number;
   requests: number;
+  /** Optional parts Congress.gov kept failing on (e.g. 'summaries'); tried again on the next sync. */
+  skipped: string[];
 }
 
 export function detailCounts(detail: BillDetail) {
@@ -218,12 +221,33 @@ export async function syncBill(
   const fetchText = changed('text_versions_count') && counts.text_versions_count > 0;
   const fetchTitles = changed('titles_count') && counts.titles_count > 0;
 
+  // Summaries, text, titles and subjects are extras: if Congress.gov keeps failing on one
+  // (a 5xx after retries), save the bill without it rather than stop the whole sync. Its
+  // stored count stays as it was, so the next sync of this bill asks again.
+  const skipped: string[] = [];
+  const optional = async <T>(part: keyof typeof counts, load: () => Promise<T>): Promise<T | undefined> => {
+    try {
+      return await load();
+    } catch (error) {
+      if (!(error instanceof HttpError && error.status >= 500)) throw error;
+      skipped.push(part.replace(/_count$/, ''));
+      return undefined;
+    }
+  };
   const actions = fetchActions ? await client.getBillActions(congress, t, number) : undefined;
   const cosponsors = fetchCosponsors ? await client.getBillCosponsors(congress, t, number) : undefined;
-  const subjects = fetchSubjects ? await client.getBillSubjects(congress, t, number) : undefined;
-  const summaries = fetchSummaries ? await client.getBillSummaries(congress, t, number) : undefined;
-  const textVersions = fetchText ? await client.getBillText(congress, t, number) : undefined;
-  const titles = fetchTitles ? await client.getBillTitles(congress, t, number) : undefined;
+  const subjects = fetchSubjects
+    ? await optional('subjects_count', () => client.getBillSubjects(congress, t, number))
+    : undefined;
+  const summaries = fetchSummaries
+    ? await optional('summaries_count', () => client.getBillSummaries(congress, t, number))
+    : undefined;
+  const textVersions = fetchText
+    ? await optional('text_versions_count', () => client.getBillText(congress, t, number))
+    : undefined;
+  const titles = fetchTitles
+    ? await optional('titles_count', () => client.getBillTitles(congress, t, number))
+    : undefined;
 
   const row: Record<string, unknown> = {
     id,
@@ -243,6 +267,10 @@ export async function syncBill(
     update_date_including_text: toTimestamp(detail.updateDateIncludingText),
     ...counts,
   };
+  for (const part of skipped) {
+    const key = `${part}_count` as keyof StoredCounts;
+    row[key] = stored ? stored[key] : 0;
+  }
 
   let actionList: ActionRow[] | undefined;
   if (actions) {
@@ -254,7 +282,7 @@ export async function syncBill(
       `${b.actionDate ?? ''}${b.updateDate ?? ''}`.localeCompare(`${a.actionDate ?? ''}${a.updateDate ?? ''}`),
     )[0];
     row.summary_text = htmlToText(latest?.text);
-  } else if (counts.summaries_count === 0) {
+  } else if (counts.summaries_count === 0 && !skipped.includes('summaries')) {
     row.summary_text = null;
   }
   if (textVersions) row.text_url = pickTextUrl(textVersions);
@@ -281,6 +309,7 @@ export async function syncBill(
     statusAfter: (row.status as string | undefined) ?? stored?.status ?? 'introduced',
     rowsWritten: 0,
     requests: 0,
+    skipped,
   };
 
   await sql.begin(async (tx) => {

@@ -98,6 +98,7 @@ export async function runBackfill(run: JobRun<BackfillCursor>, options: Backfill
         try {
           const change = await syncBill(run.sql, client, congress, type, n);
           run.rowsWritten += change.rowsWritten;
+          if (change.skipped.length) run.log('bill parts skipped', { id: change.id, skipped: change.skipped });
           options.onBill?.(change);
         } catch (error) {
           if (!(error instanceof HttpError && error.status === 404)) throw error;
