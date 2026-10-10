@@ -9,7 +9,7 @@ import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
 import AdminLink from '../components/AdminLink';
 import NavStatus from '../components/NavStatus';
 import { LoaderMark } from '../components/Loader';
-import { activeNav, NAV, orderedItems, PHONE_NAV } from '../lib/nav';
+import { activeNav, localTrail, NAV, orderedItems, PHONE_NAV } from '../lib/nav';
 import { href } from '../lib/paths';
 
 interface Props {
@@ -48,10 +48,11 @@ const sources = [
 ];
 const nav = NAV.filter((g) => !DEMO || !g.personal);
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-const here = activeNav(
-  Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname,
-);
+const pagePath = Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname;
+const here = activeNav(pagePath);
 const subnav = here.group?.items ? here.group : undefined;
+// Congress shows its sections as tabs; States & local shows a trail to where you are.
+const subnavItems = subnav ? (subnav.trail ? localTrail(pagePath) : orderedItems(subnav)) : [];
 const currentKey = here.item?.key ?? here.group?.key;
 const phoneNav = PHONE_NAV.map((section) => ({
   ...section,
@@ -276,12 +277,19 @@ const phoneNav = PHONE_NAV.map((section) => ({
         </div>
       </div>
     )}
-    {subnav && (
+    {subnav && subnavItems.length > 0 && (
       <nav class:list={['subnav', { 'is-trail': subnav.trail }]} aria-label={subnav.label}>
         <ul class="container">
-          {orderedItems(subnav).map((item) => (
+          {subnavItems.map((item) => (
             <li>
-              <a href={href(item.path)} aria-current={here.item?.key === item.key ? 'page' : undefined}>
+              <a
+                href={href(item.path)}
+                aria-current={
+                  item.key.startsWith('state-') || (item.key !== 'states' && here.item?.key === item.key)
+                    ? 'page'
+                    : undefined
+                }
+              >
                 {item.label}
               </a>
             </li>
@@ -289,7 +297,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
         </ul>
       </nav>
     )}
-    <main id="main" class:list={['container', { 'has-subnav': subnav }]}>
+    <main id="main" class:list={['container', { 'has-subnav': subnavItems.length > 0 }]}>
       <slot />
     </main>
     <footer class="site-footer">

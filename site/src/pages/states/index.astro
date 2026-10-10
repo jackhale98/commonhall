@@ -37,9 +37,9 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
 
   <div class="featured-row">
     <a class="card feature" href={stateHref('MA')}>
-      <span class="kicker">Featured state</span>
+      <span class="kicker">Most detailed coverage</span>
       <strong>Massachusetts</strong>
-      <span class="small muted">Advancing state bills get their own pages, and its bills sync first.</span>
+      <span class="small muted">Bills with their full history, roll-call votes and co-sponsors.</span>
     </a>
     <a class="card feature" href={href('boston/')}>
       <span class="kicker">Local government</span>
@@ -73,7 +73,8 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
     <div class="panel">
       <StateTiles tiles={tiles} label="States, arranged roughly by location" />
       <p class="small muted legend-note">
-        <span class="swatch fill-present"></span> Featured state. Numbers are House seats. Territories:{' '}
+        <span class="swatch fill-present"></span> Most detailed coverage (Massachusetts). Numbers are House seats.
+        Territories:{' '}
         {territories.map((t, i) => (
           <>
             {i > 0 && ', '}

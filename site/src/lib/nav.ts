@@ -4,6 +4,7 @@
  * tabs on its pages; the rest are single links. Which group and item a page
  * belongs to comes from its path, so pages don't have to declare it.
  */
+import { stateName } from './format';
 
 export interface NavItem {
   key: string;
@@ -60,6 +61,27 @@ export const NAV: NavGroup[] = [
   { key: 'feed', label: 'Feed', path: 'feed/', match: ['feed/', 'following/'], personal: true },
   { key: 'account', label: 'Account', path: 'account/', match: ['account/'], personal: true },
 ];
+
+/**
+ * The States & local trail under the header, which follows where you are:
+ * "All states › Delaware" on a state's pages, "All states › Massachusetts › Boston"
+ * on Massachusetts and Boston pages (Boston is the one city we cover, so it sits
+ * under its state). Empty on the all-states page itself and on pages that only
+ * learn their state in the browser; those carry their own breadcrumb.
+ */
+export function localTrail(path: string): NavItem[] {
+  const p = path.replace(/^\/+/, '');
+  const local = NAV.find((g) => g.key === 'local')!;
+  const { item } = activeNav(p);
+  if (item?.key === 'ma' || item?.key === 'boston') return orderedItems(local);
+  const state = /^states\/([a-z]{2})(\/|$)/.exec(p)?.[1];
+  if (!state) return [];
+  const all = local.items!.find((i) => i.key === 'states')!;
+  return [
+    all,
+    { key: `state-${state}`, label: stateName(state), path: `states/${state}/`, match: [`states/${state}/`] },
+  ];
+}
 
 /** Items in reading order (the trail runs All states › Massachusetts › Boston). */
 export function orderedItems(group: NavGroup): NavItem[] {

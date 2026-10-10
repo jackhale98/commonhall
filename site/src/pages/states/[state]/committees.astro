@@ -45,11 +45,6 @@ const tabs = [
   description={`Every ${name} legislative committee, its chairs and members.`}
   section="states"
 >
-  {code !== 'MA' && (
-    <nav aria-label="Breadcrumb" class="small muted">
-      <a href={href('states/')}>States</a> › <a href={stateHref(code)}>{name}</a> › Committees
-    </nav>
-  )}
   <h1>{name}</h1>
   <PageTabs label={name} tabs={tabs} />
 

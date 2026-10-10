@@ -1,10 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { activeNav, NAV, orderedItems, PHONE_NAV } from './nav';
+import { activeNav, localTrail, NAV, orderedItems, PHONE_NAV } from './nav';
 
 const at = (path: string) => {
   const { group, item } = activeNav(path);
   return [group?.key, item?.key];
 };
+
+describe('localTrail', () => {
+  const labels = (path: string) => localTrail(path).map((i) => i.label);
+
+  it('names the state you are in, not Massachusetts', () => {
+    expect(labels('states/de/')).toEqual(['All states', 'Delaware']);
+    expect(labels('states/de/committees/')).toEqual(['All states', 'Delaware']);
+    expect(localTrail('states/de/')[1]?.path).toBe('states/de/');
+  });
+
+  it('runs through Massachusetts to Boston on their pages', () => {
+    expect(labels('states/ma/')).toEqual(['All states', 'Massachusetts', 'Boston']);
+    expect(labels('boston/council/')).toEqual(['All states', 'Massachusetts', 'Boston']);
+  });
+
+  it('is empty where there is no state to show', () => {
+    expect(labels('states/')).toEqual([]);
+    expect(labels('state-legislator/')).toEqual([]);
+    expect(labels('bills/')).toEqual([]);
+  });
+});
 
 describe('activeNav', () => {
   it('puts Congress pages under Congress', () => {
