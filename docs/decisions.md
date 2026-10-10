@@ -1409,3 +1409,19 @@ From the October 2026 audit (phones at 390 px, desktops at 1366 px):
   explained where it is hidden; a state's Legislature tab loads its legislators from
   one file (`legislators.json`) instead of embedding them twice (New Hampshire's page
   went from 420 KB to 41 KB).
+
+## 94. Keeping the history of bills that moved
+
+`trim_past_congresses` (§57 and migration 036) dropped every past bill's actions and
+cosponsors, and every past roll call's member positions, once a new Congress began.
+In January 2027 that would have emptied the timelines of 2025's laws. Migration 054
+keeps actions and cosponsors for any past bill that left committee (passed a chamber,
+was agreed to, vetoed or became law) and drops them only for bills introduced and
+referred and never acted on, most bills, whose status and latest action stay. Members'
+roll-call positions are kept for the Congress just ended and trimmed after that.
+
+Also in 054: feed events older than 180 days are deleted daily (the feed shows recent
+activity, and the table gains about 300 rows a day); two indexes nothing used are
+dropped; and the member statistics (a full read of every vote position and
+cosponsorship) are rebuilt only when the votes or bills sync wrote something since
+the last rebuild (`sync_state.last_progress_at`), not every 30 minutes regardless.
