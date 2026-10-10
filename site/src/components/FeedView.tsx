@@ -17,9 +17,15 @@ import {
   stateLegislatorHref,
   voteHref,
 } from '../lib/paths';
-import type { Member } from '../lib/types';
 import { LEVELS, legislatorFilter, type Level } from '../lib/feed-filters';
 import Loader from './Loader';
+import MemberPhoto from './MemberPhoto';
+
+interface Person {
+  name: string;
+  photo_url: string | null;
+  bioguideId?: string;
+}
 
 export interface FeedItem {
   id: number;
@@ -56,6 +62,30 @@ const KIND_LABELS: Record<FeedItem['kind'], string> = {
 
 const PAGE = 30;
 
+/** What the entry is about, for the card's kicker. */
+const TARGET_LABELS: Partial<Record<FeedItem['target_type'], string>> = {
+  bill: 'Bill',
+  state_bill: 'State bill',
+  local_matter: 'Council item',
+  executive_order: 'Executive order',
+  scotus_case: 'Supreme Court',
+  capital_project: 'Capital project',
+  discussion: 'Discussion',
+};
+
+const POSITION: Record<string, string> = {
+  yea: 'Voted yes',
+  nay: 'Voted no',
+  present: 'Voted present',
+  not_voting: 'Did not vote',
+};
+
+/** A vote's question without the "Name voted no:" lead the summary carries. */
+const question = (item: FeedItem) =>
+  typeof item.payload.question === 'string' && item.payload.question
+    ? item.payload.question
+    : item.summary.replace(/^.*? voted [a-z ]+?: /, '');
+
 export function targetLink(item: Pick<FeedItem, 'target_type' | 'target_id' | 'payload'>): string | null {
   if (typeof item.payload.discussion_id === 'string') return discussionHref(item.payload.discussion_id);
   // A vote opens the roll call, not the legislator or bill it came through.
@@ -84,7 +114,8 @@ interface Props {
 export default function FeedView({ compact = false }: Props) {
   const [state, setState] = useState<'loading' | 'signed-out' | 'ready' | 'error'>('loading');
   const [items, setItems] = useState<FeedItem[]>([]);
-  const [members, setMembers] = useState<Map<string, Pick<Member, 'bioguide_id' | 'name'>>>(new Map());
+  // People named in the feed (members of Congress, state legislators, councilors), keyed by their id.
+  const [people, setPeople] = useState<Map<string, Person>>(new Map());
   const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state' | 'local'>('');
   // Within Legislators: members of Congress, state legislators or city councilors.
   const [level, setLevel] = useState<Level>('');
@@ -106,20 +137,35 @@ export default function FeedView({ compact = false }: Props) {
     const { data, error } = await query;
     if (error) throw error;
     const rows = (data ?? []) as FeedItem[];
-    const ids = [
+    // Names and photos for the people the entries mention: one small query per kind.
+    const want = (type: string) => [
       ...new Set(
         rows
-          .flatMap((r) => [
-            r.member_type === 'member' ? r.member_id : null,
-            r.target_type === 'member' ? r.target_id : null,
-          ])
-          .filter(Boolean),
+          .flatMap((r) => [r.member_type === type ? r.member_id : null, r.target_type === type ? r.target_id : null])
+          .filter((id): id is string => !!id && !people.has(id)),
       ),
-    ] as string[];
-    if (ids.length > 0) {
-      const { data: people } = await client.from('members').select('bioguide_id,name').in('bioguide_id', ids);
-      setMembers((prev) => new Map([...prev, ...(people ?? []).map((p) => [p.bioguide_id, p] as const)]));
+    ];
+    const found: [string, Person][] = [];
+    const congress = want('member');
+    if (congress.length) {
+      const { data: rowsM } = await client
+        .from('members')
+        .select('bioguide_id,name,photo_url')
+        .in('bioguide_id', congress);
+      for (const p of rowsM ?? [])
+        found.push([p.bioguide_id, { name: p.name, photo_url: p.photo_url, bioguideId: p.bioguide_id }]);
     }
+    const legislators = want('state_legislator');
+    if (legislators.length) {
+      const { data: rowsL } = await client.from('state_legislators').select('id,name,photo_url').in('id', legislators);
+      for (const p of rowsL ?? []) found.push([p.id, { name: p.name, photo_url: p.photo_url }]);
+    }
+    const officials = want('local_official');
+    if (officials.length) {
+      const { data: rowsO } = await client.from('local_officials').select('id,name,photo_url').in('id', officials);
+      for (const p of rowsO ?? []) found.push([p.id, { name: p.name, photo_url: p.photo_url }]);
+    }
+    if (found.length) setPeople((prev) => new Map([...prev, ...found]));
     return rows;
   }
 
@@ -224,10 +270,18 @@ export default function FeedView({ compact = false }: Props) {
           )}
         </p>
       ) : (
-        <ol class="list feed-list">
+        <ol class="feed-cards">
           {items.map((item) => {
             const link = targetLink(item);
-            const who = item.member_id ? members.get(item.member_id)?.name : undefined;
+            const personId =
+              item.member_id ??
+              (['member', 'state_legislator', 'local_official'].includes(item.target_type) ? item.target_id : null);
+            const person = personId ? people.get(personId) : undefined;
+            const position = typeof item.payload.position === 'string' ? item.payload.position : null;
+            const isVote = item.kind === 'vote' && position !== null;
+            const chamber =
+              item.payload.chamber === 'house' ? 'House' : item.payload.chamber === 'senate' ? 'Senate' : null;
+            const result = typeof item.payload.result === 'string' ? item.payload.result : null;
             const voteBill =
               typeof item.payload.vote_id === 'string' &&
               typeof item.payload.bill_id === 'string' &&
@@ -235,21 +289,67 @@ export default function FeedView({ compact = false }: Props) {
                 ? parseBillId(item.payload.bill_id)
                 : null;
             return (
-              <li class={item.unread ? 'unread' : undefined}>
-                <p class="meta">
-                  {item.unread && <span class="badge">New</span>} {KIND_LABELS[item.kind]} ·{' '}
-                  <time datetime={item.occurred_at}>{formatDate(item.occurred_at)}</time>
-                  {item.reason === 'legislator' && who && <> · via {who}</>}
-                </p>
-                <p class="feed-summary">
-                  {link ? <a href={link}>{item.summary}</a> : item.summary}
-                  {item.kind === 'cosponsor' && who && <> ({who})</>}
-                </p>
-                {voteBill && (
-                  <p class="small">
-                    <a href={billHref(voteBill.congress, voteBill.type, voteBill.number)}>See the bill</a>
+              <li class={`feed-card${item.unread ? ' unread' : ''}`}>
+                <div class="feed-avatar">
+                  {person ? (
+                    <MemberPhoto name={person.name} url={person.photo_url} bioguideId={person.bioguideId} size={44} />
+                  ) : (
+                    <span class={`feed-kind-badge kind-${item.kind}`} aria-hidden="true">
+                      {KIND_LABELS[item.kind].charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <div class="feed-body">
+                  <p class="feed-kicker">
+                    <span class={`feed-kind kind-${item.kind}`}>{KIND_LABELS[item.kind]}</span>
+                    {!isVote && item.kind !== 'discussion_opened' && TARGET_LABELS[item.target_type] && (
+                      <span>{TARGET_LABELS[item.target_type]}</span>
+                    )}
+                    {chamber && <span>{chamber}</span>}
+                    <time datetime={item.occurred_at}>{formatDate(item.occurred_at)}</time>
+                    {item.unread && <span class="badge">New</span>}
                   </p>
-                )}
+                  {isVote ? (
+                    <>
+                      <p class="feed-who">
+                        <strong>{person?.name ?? item.summary.split(' voted ')[0]}</strong>
+                        <span class={`feed-position position-chip-${position}`}>{POSITION[position!] ?? position}</span>
+                      </p>
+                      <p class="feed-title">
+                        {link ? (
+                          <a class="stretched" href={link}>
+                            {question(item)}
+                          </a>
+                        ) : (
+                          question(item)
+                        )}
+                      </p>
+                      {result && <p class="feed-meta">{result}</p>}
+                    </>
+                  ) : (
+                    <>
+                      <p class="feed-title">
+                        {link ? (
+                          <a class="stretched" href={link}>
+                            {item.summary}
+                          </a>
+                        ) : (
+                          item.summary
+                        )}
+                      </p>
+                      {(item.reason === 'legislator' || item.kind === 'cosponsor') && person && (
+                        <p class="feed-meta">
+                          {item.kind === 'cosponsor' ? `Cosponsor: ${person.name}` : `Via ${person.name}`}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {voteBill && (
+                    <p class="feed-sub">
+                      <a href={billHref(voteBill.congress, voteBill.type, voteBill.number)}>See the bill →</a>
+                    </p>
+                  )}
+                </div>
               </li>
             );
           })}

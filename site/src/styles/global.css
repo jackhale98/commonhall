@@ -3394,3 +3394,152 @@ button .ch-loader,
   color: var(--link);
   text-decoration: underline;
 }
+
+/* Feed entries as cards: who (photo) or what (a badge), the kind and date, the headline. */
+.feed-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.feed-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-4);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+.feed-card:has(a.stretched):hover {
+  box-shadow: var(--shadow-hover);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+.feed-card.unread {
+  border-left: 4px solid var(--unread);
+}
+.feed-card p {
+  margin: 0;
+}
+.feed-body {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.feed-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+.feed-kicker > :not(:first-child)::before {
+  content: '·';
+  margin-right: 0.5rem;
+}
+.feed-kicker > .badge {
+  margin-left: auto;
+}
+.feed-kicker > .badge::before {
+  content: none;
+}
+.feed-kind {
+  font-weight: 700;
+  color: var(--brand-strong);
+}
+.feed-kind.kind-action {
+  color: var(--sky);
+}
+.feed-kind.kind-cosponsor,
+.feed-kind.kind-new_bill,
+.feed-kind.kind-new_item {
+  color: var(--ok);
+}
+.feed-kind-badge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--brand-strong);
+  background: var(--brand-soft);
+}
+.feed-kind-badge.kind-action {
+  color: var(--sky);
+  background: var(--sky-soft);
+}
+.feed-kind-badge.kind-cosponsor,
+.feed-kind-badge.kind-new_bill,
+.feed-kind-badge.kind-new_item {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+}
+.feed-who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+}
+.feed-who strong {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+}
+.feed-position {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+}
+.feed-position.position-chip-yea {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+}
+.feed-position.position-chip-nay {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 13%, transparent);
+}
+.feed-title {
+  font-weight: 600;
+  line-height: 1.35;
+}
+.feed-title a {
+  color: var(--text);
+  text-decoration: none;
+}
+.feed-title a.stretched::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.feed-card:hover .feed-title a,
+.feed-title a:focus-visible {
+  color: var(--link);
+}
+.feed-meta {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+.feed-sub {
+  position: relative;
+  z-index: 1;
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+.feed-avatar .photo {
+  border-radius: 12px;
+}
