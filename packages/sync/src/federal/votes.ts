@@ -307,6 +307,9 @@ export async function lisMap(sql: Sql) {
 export function senateVoteRow(v: SenateVote): VoteRow {
   const type = senateDocTypeToBillType(v.document?.type ?? null);
   const congress = v.document?.congress ?? v.congress;
+  // Amendment votes name the amendment as their document; link the bill it amends.
+  const target = type ? null : v.amendmentTo;
+  const targetType = senateDocTypeToBillType(target?.type ?? null);
   return {
     id: voteId('senate', v.congress, v.session, v.rollNumber),
     chamber: 'senate',
@@ -319,7 +322,12 @@ export function senateVoteRow(v: SenateVote): VoteRow {
     vote_type: null,
     majority_requirement: v.majorityRequirement,
     result: v.result,
-    bill_id: type && v.document?.number ? billId(congress, type, v.document.number) : null,
+    bill_id:
+      type && v.document?.number
+        ? billId(congress, type, v.document.number)
+        : targetType && target?.number
+          ? billId(target.congress ?? v.congress, targetType, target.number)
+          : null,
     amendment: v.amendmentNumber,
     // Official totals: the file's own count block.
     yea_total: v.stated.yea,

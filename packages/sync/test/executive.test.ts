@@ -76,6 +76,16 @@ describe('nominations', () => {
       'utf8',
     );
     expect(senateVoteRow(parseSenateVote(xml))).toMatchObject({ nomination_id: '119-pn615-2', bill_id: null });
+    // Recorded roll call 242 (2026): an amendment vote names the amendment, not the bill, as its document.
+    const amendment = readFileSync(
+      new URL('../../congress-client/test/fixtures/senate/vote_119_2_00242.xml', import.meta.url),
+      'utf8',
+    );
+    expect(senateVoteRow(parseSenateVote(amendment))).toMatchObject({
+      bill_id: '119-s-4668',
+      amendment: 'S.Amdt. 6776',
+      nomination_id: null,
+    });
   });
 
   it('reads the status from the latest action', () => {

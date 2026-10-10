@@ -1046,3 +1046,17 @@ state's co-sponsors were kept. So:
   without it the federal tables (about 75 MB) would double every two years.
 
 Expected size once everything has loaded: about 290–325 MB.
+
+## 78. Senate amendment votes link the bill they amend
+
+senate.gov's roll-call file names the amendment as the document for amendment
+votes (and for cloture, tabling and budget-waiver motions on amendments), so those
+votes were stored with no bill: the vote page showed no bill link and the bill page
+left them out. The sync now falls back to the file's `amendment_to_document_number`
+("S. 4668"), which names the underlying bill even for second-degree amendments.
+
+Migration 037 repairs what was stored. Where the question names the bill ("… to
+S. 4668 (…)") it sets the link directly. Budget-waiver motions ("… Re: Schiff Amdt.
+No. 5740") don't, and stored roll calls are never re-read, so the current session's
+unlinked amendment votes are deleted and the next federal sync (every 10 minutes)
+fetches them again with the link. All 29 such votes were in the current session.

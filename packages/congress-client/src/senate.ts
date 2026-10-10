@@ -65,6 +65,8 @@ export interface SenateVote {
   majorityRequirement: string | null;
   document: SenateDocumentRef | null;
   amendmentNumber: string | null;
+  /** The bill an amendment amends ("S. 4668"); amendment votes leave `document` empty. */
+  amendmentTo: SenateDocumentRef | null;
   /** Tallied from the member list. */
   totals: { yea: number; nay: number; present: number; notVoting: number };
   /** As stated in the file's <count> block (the official tally). */
@@ -253,11 +255,23 @@ export function parseSenateVote(xml: string): SenateVote {
     majorityRequirement: text(root.majority_requirement),
     document,
     amendmentNumber: text(amendment.amendment_number),
+    amendmentTo: amendmentTarget(
+      text(amendment.amendment_to_document_number),
+      int(doc.document_congress),
+      text(amendment.amendment_to_document_short_title),
+    ),
     totals,
     stated,
     members,
     totalsMatchCount,
   };
+}
+
+/** "S. 4668" / "H.R. 1" / "S.J.Res. 12" → a document reference; null if it isn't one. */
+function amendmentTarget(name: string | null, congress: number | null, title: string | null): SenateDocumentRef | null {
+  const m = name ? /^(.*?)\s*(\d+)$/.exec(name) : null;
+  if (!m) return null;
+  return { congress, type: (m[1] ?? '').trim(), number: m[2] ?? null, name, title };
 }
 
 /**
