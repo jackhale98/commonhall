@@ -128,7 +128,12 @@ export class OpenStatesClient {
 
   constructor(options: OpenStatesClientOptions) {
     if (!options.apiKey) throw new Error('OpenStatesClient requires an apiKey');
-    this.http = new HttpClient({ ...options, headers: { ...options.headers, 'x-api-key': options.apiKey } });
+    // This client spaces its own requests (from the end of the previous one), so the shared one is off.
+    this.http = new HttpClient({
+      ...options,
+      minIntervalMs: 0,
+      headers: { ...options.headers, 'x-api-key': options.apiKey },
+    });
     this.baseUrl = (options.baseUrl ?? OPENSTATES_BASE).replace(/\/$/, '');
     this.minIntervalMs = options.minIntervalMs ?? 1100;
     this.sleep = options.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));

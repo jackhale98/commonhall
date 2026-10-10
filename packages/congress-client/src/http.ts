@@ -94,6 +94,8 @@ export interface HttpOptions {
    * (Retry-After). Otherwise RateLimitedError is thrown at once. Default 30000.
    */
   maxRetryAfterMs?: number;
+  /** Least time between the starts of two requests, for APIs with per-minute limits. Default 0. */
+  minIntervalMs?: number;
   sleep?: (ms: number) => Promise<void>;
   headers?: Record<string, string>;
   userAgent?: string;
@@ -126,6 +128,8 @@ export class HttpClient {
   private readonly baseDelayMs: number;
   private readonly maxDelayMs: number;
   private readonly maxRetryAfterMs: number;
+  private readonly minIntervalMs: number;
+  private lastRequestAt = 0;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly headers: Record<string, string>;
 
@@ -136,6 +140,7 @@ export class HttpClient {
     this.baseDelayMs = options.baseDelayMs ?? 1000;
     this.maxDelayMs = options.maxDelayMs ?? 60_000;
     this.maxRetryAfterMs = options.maxRetryAfterMs ?? 30_000;
+    this.minIntervalMs = options.minIntervalMs ?? 0;
     this.sleep = options.sleep ?? defaultSleep;
     this.headers = {
       'user-agent': options.userAgent ?? 'commonhall (+https://github.com/jackhale98/commonhall)',
@@ -149,6 +154,11 @@ export class HttpClient {
     for (;;) {
       attempt += 1;
       this.budget.take();
+      if (this.minIntervalMs > 0) {
+        const wait = this.lastRequestAt + this.minIntervalMs - Date.now();
+        if (wait > 0) await this.sleep(wait);
+        this.lastRequestAt = Date.now();
+      }
       let response: Response | undefined;
       let networkError: unknown;
       try {

@@ -568,8 +568,8 @@ The first load asked CourtListener for every decision since October 2020 in one
 paged query, and production stopped at 100 (June 2025 onward). The load now asks
 for one calendar month per request, oldest first, recording each finished month
 in the cursor (`filledThrough`), so it resumes where it stopped and no query
-comes near a paging limit. About 73 requests, well inside the 5,000 an hour a
-token allows. Existing installs have no `filledThrough` yet, so their next run
+comes near a paging limit. About 73 requests (CourtListener's limits have since
+tightened; see §74). Existing installs have no `filledThrough` yet, so their next run
 fills the missing years. After the load, each run re-reads the last 30 days as
 before.
 
@@ -940,3 +940,25 @@ were only reachable through States & local. The top bar is now grouped:
 - There's no Congress landing page; the home page already does that job.
 - `lib/nav.ts` holds the structure. A page's group and tab come from its path, so pages
   don't declare them.
+
+## 74. CourtListener's limits: 5 a minute, 50 an hour, 125 a day
+
+The sync assumed CourtListener's old 5,000 requests an hour. A standard account now
+gets 5 a minute, 50 an hour and 125 a day, over rolling windows. On 9 October the
+re-read of five terms used the day's allowance in one afternoon. After that, every
+hourly run's first request got a 429 asking for about a minute's wait, and the client,
+which gives up on any wait over 30 seconds, ended each run without loading anything.
+
+The Supreme Court sync now:
+
+- spaces its requests at least 13 seconds apart, and waits out a Retry-After of up
+  to 65 seconds rather than giving up;
+- takes at most 10 requests a run, 45 in a clock hour and 110 in any 24 hours,
+  counted in `api_usage` (`DAILY_LIMITS` in `job.ts`);
+- when a longer wait is asked for, records it in the cursor and sends nothing until
+  the wait has passed.
+
+At about 110 requests a day, the remaining month re-reads take about a day and the
+syllabi (one request per case) about five more. New decisions afterwards need only a
+few requests a day. A Free Law Project membership raises the limits; we haven't
+taken one.

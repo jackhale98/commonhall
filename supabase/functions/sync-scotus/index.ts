@@ -4,7 +4,7 @@ import { COURTLISTENER_API, SCOTUS_JOB, hourlyBudget, runJob, syncSupremeCourt, 
 import { env, serveJob, timeLimitMs } from '../_shared/runtime.ts';
 
 serveJob('sync-scotus', async ({ sql, log }) => {
-  const budget = await hourlyBudget(sql, COURTLISTENER_API, 200);
+  const budget = await hourlyBudget(sql, COURTLISTENER_API, 10);
   return runJob<ScotusCursor>({
     sql,
     job: SCOTUS_JOB,
@@ -12,6 +12,14 @@ serveJob('sync-scotus', async ({ sql, log }) => {
     budgets: { [COURTLISTENER_API]: budget },
     log,
     run: (ctx) =>
-      syncSupremeCourt(ctx, { client: new CourtListenerClient({ token: env('COURTLISTENER_TOKEN'), budget }) }),
+      syncSupremeCourt(ctx, {
+        // CourtListener allows 5 requests a minute: space them out, and wait out a short Retry-After.
+        client: new CourtListenerClient({
+          token: env('COURTLISTENER_TOKEN'),
+          budget,
+          minIntervalMs: 13_000,
+          maxRetryAfterMs: 65_000,
+        }),
+      }),
   });
 });

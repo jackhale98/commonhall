@@ -38,8 +38,13 @@ export const HOURLY_LIMITS: Record<string, number> = {
   congress: 4800,
   // api.data.gov personal keys allow 1,000 an hour on OpenFEC.
   fec: 900,
-  // CourtListener allows 5,000 an hour with a token.
-  courtlistener: 4500,
+  // CourtListener's default for a token: 5 a minute, 50 an hour, 125 a day (rolling windows).
+  courtlistener: 45,
+};
+
+/** Ceilings over the last 24 hours, for APIs with a daily limit. */
+export const DAILY_LIMITS: Record<string, number> = {
+  courtlistener: 110,
 };
 
 /**
@@ -50,7 +55,15 @@ export async function hourlyBudget(sql: Sql, api: string, cap: number): Promise<
   const limit = HOURLY_LIMITS[api];
   if (limit === undefined) return new RequestBudget(cap, api);
   const [row] = await sql<{ used: number }[]>`select public.api_usage_this_hour(${api}) as used`;
-  return new RequestBudget(Math.max(0, Math.min(cap, limit - (row?.used ?? 0))), api);
+  let allowed = Math.min(cap, limit - (row?.used ?? 0));
+  const daily = DAILY_LIMITS[api];
+  if (daily !== undefined) {
+    const [day] = await sql<{ used: number }[]>`
+      select coalesce(sum(requests), 0)::int as used from public.api_usage
+       where api = ${api} and hour > now() - interval '24 hours'`;
+    allowed = Math.min(allowed, daily - (day?.used ?? 0));
+  }
+  return new RequestBudget(Math.max(0, allowed), api);
 }
 
 export interface RunJobOptions<C extends Cursor> {

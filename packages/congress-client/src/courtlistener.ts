@@ -1,8 +1,8 @@
 /**
  * CourtListener (Free Law Project) search API v4, used for Supreme Court
  * opinions: https://www.courtlistener.com/help/api/rest/v4/search/
- * Needs a free API token (sent as `Authorization: Token …`); 5,000 requests an
- * hour with one, 125 a day without. Field names follow the published v4 docs
+ * Needs a free API token (sent as `Authorization: Token …`). A standard account
+ * may make 5 requests a minute, 50 an hour and 125 a day (rolling windows). Field names follow the published v4 docs
  * and CourtListener's search index source (cl/search/documents.py, constants.py).
  */
 import { HttpClient, type HttpOptions } from './http.ts';

@@ -67,6 +67,18 @@ describe('HttpClient', () => {
     expect(delays).toEqual([7000]);
   });
 
+  it('spaces requests for APIs with a per-minute limit', async () => {
+    const delays: number[] = [];
+    const { fetch } = sequence(() => json({}));
+    const client = new HttpClient({ fetch, minIntervalMs: 13_000, sleep: async (ms) => void delays.push(ms) });
+    await client.getJson('https://example.test/a');
+    await client.getJson('https://example.test/b');
+    // The first goes at once; the second waits out the rest of the interval.
+    expect(delays).toHaveLength(1);
+    expect(delays[0]).toBeGreaterThan(12_000);
+    expect(delays[0]).toBeLessThanOrEqual(13_000);
+  });
+
   it('does not retry other 4xx', async () => {
     const { fetch, calls } = sequence(() => new Response('missing', { status: 404 }));
     const client = new HttpClient({ fetch, sleep: noSleep });
