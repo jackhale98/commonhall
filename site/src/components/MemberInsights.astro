@@ -17,14 +17,6 @@ const withFinance = [...finance.values()].filter((f) => members.get(f.member_id)
 const pacs = pacBoard(withFinance, members, 10);
 const employers = employerBoard(withFinance, members, 10);
 const pct = (share: number) => `${(share * 100).toFixed(1)}%`;
-const house = chambers.find((c) => c.chamber === 'house')!;
-const unityTeaser =
-  house.D.median !== null && house.R.median !== null
-    ? `In the House the typical Democrat votes with their party ${pct(house.D.median)} of the time, the typical Republican ${pct(house.R.median)}. See who breaks ranks most.`
-    : 'Who votes with their party most and least often.';
-const moneyTeaser = pacs[0]
-  ? `The PACs and employers whose money reaches the most members, and how it splits between the parties.`
-  : 'Where members’ campaign money comes from.';
 const seat = (e: UnityEntry) =>
   e.state ? `${e.state}${e.district !== null && e.district > 0 ? `-${e.district}` : ''}` : '';
 const split = (d: DonorEntry) => {
@@ -43,10 +35,9 @@ const splitText = (d: DonorEntry) =>
 
 <details class="panel insight-fold" id="party-unity">
   <summary>
-    <span class="insight-title" id="unity-h">
+    <span class="h-small" id="unity-h">
       Party unity: who votes with their party
     </span>
-    <span class="small muted insight-teaser">{unityTeaser}</span>
   </summary>
   <div class="insight-body">
     <p class="small muted section-note">
@@ -100,10 +91,9 @@ const splitText = (d: DonorEntry) =>
 </details>
 <details class="panel insight-fold" id="campaign-money">
   <summary>
-    <span class="insight-title" id="money-h">
+    <span class="h-small" id="money-h">
       Campaign money: top PACs and donors’ employers
     </span>
-    <span class="small muted insight-teaser">{moneyTeaser}</span>
   </summary>
   <div class="insight-body">
     <p class="small muted section-note">
@@ -165,21 +155,12 @@ const splitText = (d: DonorEntry) =>
   .insight-fold {
     margin-bottom: var(--space-4);
   }
+  /* Same as the Supreme Court page's folded panel. */
   .insight-fold > summary {
     cursor: pointer;
-    display: grid;
-    gap: var(--space-1);
-  }
-  .insight-title {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 1.1rem;
   }
   /* On phones the inner panels drop their boxes, to keep the width for names. */
   @media (max-width: 40rem) {
-    .insight-fold {
-      padding: var(--space-3);
-    }
     .insight-body .panel {
       background: none;
       border: 0;
