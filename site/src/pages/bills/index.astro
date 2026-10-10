@@ -59,100 +59,88 @@ const initial: Bill[] = bills
       on, follow anything, and see where it stands.
     </p>
   </header>
-  <div class="with-sidebar">
-    <div class="main-col">
-      <noscript>
-        <p class="notice">Search and filters need JavaScript. The most recently active bills are listed below.</p>
-      </noscript>
-      {DEMO ? (
-        <BillExplorer
-          client:load
-          local
-          congress={CURRENT_CONGRESS}
-          discussed={discussed}
-          policyAreas={policyAreas}
-          initial={bills.map((b, i) => ({
-            ...initial[i]!,
-            ...(i >= initial.length
-              ? {
-                  id: b.id,
-                  congress: b.congress,
-                  bill_type: b.bill_type,
-                  number: b.number,
-                  title: b.title,
-                  short_title: b.short_title,
-                  introduced_date: b.introduced_date,
-                  latest_action_date: b.latest_action_date,
-                  latest_action_text: b.latest_action_text,
-                  status: b.status,
-                  sponsor_id: b.sponsor_id,
-                  policy_area: b.policy_area,
-                }
-              : {}),
-            sponsor_party: b.sponsor_id ? (members.get(b.sponsor_id)?.party ?? null) : null,
-            summary_text: b.summary_text,
-          }))}
-        />
-      ) : (
-        <BillExplorer
-          client:load
-          congress={CURRENT_CONGRESS}
-          initial={initial}
-          policyAreas={policyAreas}
-          discussed={discussed}
-        />
-      )}
+  {bills.length > 0 && (
+    <div class="glance" aria-label="At a glance">
+      <section class="panel" aria-labelledby="stage-h">
+        <h2 id="stage-h" class="h-small">
+          Where bills stand
+        </h2>
+        <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
+      </section>
+      <section class="panel" aria-labelledby="topics-h">
+        <h2 id="topics-h" class="h-small">
+          Most active topics
+        </h2>
+        <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
+      </section>
     </div>
-    {bills.length > 0 && (
-      <aside class="sidebar" aria-label="At a glance">
-        <section class="panel" aria-labelledby="stage-h">
-          <h2 id="stage-h" class="h-small">
-            Where bills stand
-          </h2>
-          <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
-        </section>
-        <section class="panel" aria-labelledby="topics-h">
-          <h2 id="topics-h" class="h-small">
-            Most active topics
-          </h2>
-          <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
-        </section>
-      </aside>
-    )}
-  </div>
+  )}
+  <noscript>
+    <p class="notice">Search and filters need JavaScript. The most recently active bills are listed below.</p>
+  </noscript>
+  {DEMO ? (
+    <BillExplorer
+      client:load
+      local
+      congress={CURRENT_CONGRESS}
+      discussed={discussed}
+      policyAreas={policyAreas}
+      initial={bills.map((b, i) => ({
+        ...initial[i]!,
+        ...(i >= initial.length
+          ? {
+              id: b.id,
+              congress: b.congress,
+              bill_type: b.bill_type,
+              number: b.number,
+              title: b.title,
+              short_title: b.short_title,
+              introduced_date: b.introduced_date,
+              latest_action_date: b.latest_action_date,
+              latest_action_text: b.latest_action_text,
+              status: b.status,
+              sponsor_id: b.sponsor_id,
+              policy_area: b.policy_area,
+            }
+          : {}),
+        sponsor_party: b.sponsor_id ? (members.get(b.sponsor_id)?.party ?? null) : null,
+        summary_text: b.summary_text,
+      }))}
+    />
+  ) : (
+    <BillExplorer
+      client:load
+      congress={CURRENT_CONGRESS}
+      initial={initial}
+      policyAreas={policyAreas}
+      discussed={discussed}
+    />
+  )}
 </Base>
 
 <style>
-  .with-sidebar {
-    display: grid;
-    gap: var(--space-6);
-  }
-  @media (min-width: 64rem) {
-    .with-sidebar {
-      grid-template-columns: minmax(0, 1fr) 21rem;
-      align-items: start;
-    }
-    .sidebar {
-      position: sticky;
-      top: 5.5rem;
-    }
-  }
-  .sidebar {
-    display: grid;
-    gap: var(--space-4);
-  }
-  .sidebar :global(.barlist li),
-  .sidebar :global(.pipeline-row) {
-    grid-template-columns: minmax(6rem, 9rem) 1fr auto;
-  }
   .glance {
     display: grid;
     gap: var(--space-4);
-    margin: var(--space-4) 0 var(--space-5);
+    margin: 0 0 var(--space-5);
+  }
+  .glance .h-small {
+    margin-top: 0;
+  }
+  /* Label, bar and count on one line, even on phones. */
+  .glance :global(.barlist li),
+  .glance :global(.pipeline-row) {
+    grid-template-columns: minmax(6rem, 9rem) 1fr auto;
+  }
+  .glance :global(.barlist-track),
+  .glance :global(.pipeline-track) {
+    grid-column: auto;
+    grid-row: auto;
   }
   @media (min-width: 60rem) {
     .glance {
       grid-template-columns: 1fr 1fr;
+      align-items: start;
     }
   }
 </style>
