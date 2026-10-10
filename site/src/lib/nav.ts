@@ -66,8 +66,8 @@ export const NAV: NavGroup[] = [
 /**
  * The States & local trail under the header, which follows where you are:
  * "All states › Delaware" on a state's pages, "All states › Massachusetts › Boston"
- * on Boston's (likewise Worcester's), and both cities after Massachusetts on its
- * own pages, since the cities we cover sit under their state. Empty on the all-states page itself and on pages that only
+ * on Boston's (likewise Worcester's). It only leads back up: Massachusetts' own
+ * pages end at Massachusetts, and its cities are on its Local tab. Empty on the all-states page itself and on pages that only
  * learn their state in the browser; those carry their own breadcrumb.
  */
 export function localTrail(path: string): NavItem[] {
@@ -77,7 +77,7 @@ export function localTrail(path: string): NavItem[] {
   // A city's pages: All states › Massachusetts › the city. Massachusetts' own pages list both cities.
   const by = new Map((local.items ?? []).map((i) => [i.key, i]));
   if (item?.key === 'boston' || item?.key === 'worcester') return ['states', 'ma', item.key].map((k) => by.get(k)!);
-  if (item?.key === 'ma') return orderedItems(local);
+  if (item?.key === 'ma') return ['states', 'ma'].map((k) => by.get(k)!);
   const state = /^states\/([a-z]{2})(\/|$)/.exec(p)?.[1];
   if (!state) return [];
   const all = local.items!.find((i) => i.key === 'states')!;

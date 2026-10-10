@@ -56,10 +56,6 @@ const subnav = here.group?.items ? here.group : undefined;
 // Congress shows its sections as tabs; States & local shows a trail to where you are.
 const subnavItems = subnav ? (subnav.trail ? localTrail(pagePath) : orderedItems(subnav)) : [];
 const currentKey = here.item?.key ?? here.group?.key;
-// The trail's current place; on phones, places after it (Massachusetts' cities) are left out.
-const currentTrail = subnavItems.findIndex(
-  (item) => item.key.startsWith('state-') || (item.key !== 'states' && here.item?.key === item.key),
-);
 const phoneNav = PHONE_NAV.map((section) => ({
   ...section,
   items: section.items.filter((i) => !DEMO || !['feed', 'account'].includes(i.key)),
@@ -286,8 +282,8 @@ const phoneNav = PHONE_NAV.map((section) => ({
     {subnav && subnavItems.length > 0 && (
       <nav class:list={['subnav', { 'is-trail': subnav.trail }]} aria-label={subnav.label}>
         <ul class="container">
-          {subnavItems.map((item, i) => (
-            <li class:list={{ 'trail-after': subnav.trail && i > currentTrail && currentTrail >= 0 }}>
+          {subnavItems.map((item) => (
+            <li>
               <a
                 href={href(item.path)}
                 aria-current={
@@ -750,11 +746,6 @@ const phoneNav = PHONE_NAV.map((section) => ({
     flex: none;
     display: flex;
     align-items: center;
-  }
-  @media (max-width: 40rem) {
-    .subnav .trail-after {
-      display: none;
-    }
   }
   .subnav.is-trail li + li::before {
     content: '›';

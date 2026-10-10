@@ -15,8 +15,8 @@ describe('localTrail', () => {
     expect(localTrail('states/de/')[1]?.path).toBe('states/de/');
   });
 
-  it('runs through Massachusetts to Boston on their pages', () => {
-    expect(labels('states/ma/')).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+  it('leads back up through Massachusetts, never down to its cities', () => {
+    expect(labels('states/ma/')).toEqual(['All states', 'Massachusetts']);
     expect(labels('boston/council/')).toEqual(['All states', 'Massachusetts', 'Boston']);
     expect(labels('worcester/budget/')).toEqual(['All states', 'Massachusetts', 'Worcester']);
   });
