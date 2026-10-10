@@ -7,9 +7,9 @@
  * Open States' free-tier limits are low (about 500 requests a day), so the job:
  *  - spends at most a daily request budget (shared `api_usage`, per UTC day);
  *  - spaces requests out (the client's minIntervalMs);
- *  - reads bills in rounds that alternate first-class states (Massachusetts)
- *    with each other state in turn, so first-class states get about half the
- *    requests and every state moves forward every night.
+ *  - reads bills in rounds that alternate first-class states (Massachusetts,
+ *    Connecticut) with each other state in turn, so first-class states together
+ *    get about half the requests and every state moves forward every night.
  *
  * A state's first load reads newest-updated bills first (page by page), so its
  * recent bills appear after one request; it remembers the newest timestamp seen at
@@ -112,6 +112,8 @@ export interface StateBillsCursor {
   stopAt?: string;
   /** When Open States' count of the session's bills was last recorded (state_bill_counts). */
   totalAt?: string;
+  /** First-class states: the stored bills carry their detail (histories, roll calls). */
+  detail?: boolean;
 }
 
 /** Open States' count of a session's bills is recorded about weekly per state (one request). */
@@ -207,13 +209,24 @@ export function stateBillActionRows(bill: OSBill): Record<string, unknown>[] {
     });
 }
 
-/** A first-class bill's roll calls, each with how every legislator voted. */
+/**
+ * Floor votes only: a vote taken by a chamber (or a one-house legislature). Committee
+ * votes (organization classification "committee") are left out: they are a large share
+ * of Connecticut's roll calls and the site shows chamber votes. A vote with no
+ * organization is kept.
+ */
+export function isFloorVote(v: { organization?: { classification?: string } }): boolean {
+  const c = v.organization?.classification;
+  return !c || c === 'upper' || c === 'lower' || c === 'legislature';
+}
+
+/** A first-class bill's floor roll calls, each with how every legislator voted. */
 export function stateVoteRows(
   bill: OSBill,
   state: string,
 ): { vote: Record<string, unknown>; positions: Record<string, unknown>[] }[] {
   return (bill.votes ?? [])
-    .filter((v) => v.id?.startsWith('ocd-vote/'))
+    .filter((v) => v.id?.startsWith('ocd-vote/') && isFloorVote(v))
     .map((v) => {
       const count = (option: string) => v.counts?.find((c) => c.option === option)?.value ?? 0;
       const total = (v.counts ?? []).reduce((n, c) => n + c.value, 0);
@@ -385,8 +398,11 @@ async function writeStateBills(sql: Sql, bills: OSBill[], filled: boolean): Prom
   return written;
 }
 
-/** First-class states: synced first every night and given prerendered bill pages (see docs/decisions.md). */
-export const FIRST_CLASS_STATES = ['MA'];
+/**
+ * First-class states: synced first every run, with full histories, floor roll calls and
+ * summaries, and prerendered pages for bills that moved (see docs/decisions.md).
+ */
+export const FIRST_CLASS_STATES = ['MA', 'CT'];
 /** What first-class states' bill requests also return: full history, roll calls and summary. */
 const FIRST_CLASS_DETAIL = ['actions', 'votes', 'abstracts'];
 
@@ -414,6 +430,18 @@ async function stateOrder(sql: Sql, cursor: StateCursor, only?: string[]): Promi
     if (lastA !== lastB) return lastA.localeCompare(lastB);
     return unfilledA - unfilledB;
   });
+}
+
+/**
+ * One round of bill pages: first-class states take turns in the odd slots and the
+ * other states in the even ones, so first-class states together get about half the
+ * requests however many there are, and each state gets at least one turn.
+ */
+export function billRound(first: string[], others: string[]): string[] {
+  if (first.length === 0) return others;
+  if (others.length === 0) return first;
+  const n = Math.max(first.length, others.length);
+  return Array.from({ length: n }, (_, i) => [first[i % first.length]!, others[i % others.length]!]).flat();
 }
 
 async function refreshSessions(sql: Sql, client: OpenStatesClient, cursor: StateCursor, now: Date): Promise<number> {
@@ -452,6 +480,17 @@ async function refreshSessions(sql: Sql, client: OpenStatesClient, cursor: State
   return written;
 }
 
+/** Whether any of a state's bills in a session has its history stored. */
+async function hasActions(sql: JobRun<StateCursor>['sql'], state: string, session: string): Promise<boolean> {
+  const [row] = await sql<{ any: boolean }[]>`
+    select exists (
+      select 1 from public.state_bills b
+       where b.state = ${state} and b.session = ${session}
+         and exists (select 1 from public.state_bill_actions a where a.bill_id = b.id)
+    ) as any`;
+  return Boolean(row?.any);
+}
+
 /**
  * One page of a state's bills: newest first during its first load, then the nightly
  * catch-up (oldest update first since the last one seen). Returns true when the state
@@ -466,6 +505,17 @@ async function billPage(
 ): Promise<boolean> {
   const session = cursor.sessions![state]!;
   const bc: StateBillsCursor = { ...(cursor.bills?.[state] ?? { session }) };
+  if (FIRST_CLASS_STATES.includes(state) && !bc.detail) {
+    // A state made first-class after its bills were loaded without their detail: read
+    // the session once more, newest first, with histories and roll calls. (Checked once:
+    // Massachusetts already has its histories.)
+    if (bc.filled && !(await hasActions(run.sql, state, session))) {
+      run.log('sync-state: reading the session again with its detail', { state });
+      bc.filled = false;
+      for (const key of ['since', 'page', 'backPage', 'stopAt', 'newest'] as const) delete bc[key];
+    }
+    bc.detail = true;
+  }
   let done: boolean;
   if (!bc.filled) {
     // First load, newest first. A state part-loaded by the older oldest-first load keeps
@@ -559,7 +609,8 @@ export async function syncStates(run: JobRun<StateCursor>, options: SyncStateOpt
     }
     const order = (await stateOrder(run.sql, cursor, options.states)).filter((state) => cursor.sessions?.[state]);
 
-    // Bills in rounds: first-class states alternate with each other state in turn.
+    // Bills in rounds: a first-class state (taking turns among them) alternates with
+    // each other state in turn, so first-class states share about half the requests.
     const pages = new Map<string, number>();
     // Loaded states catch up once a day (first-class states every run), so the checks
     // don't use up the budget that first loads need.
@@ -579,7 +630,7 @@ export async function syncStates(run: JobRun<StateCursor>, options: SyncStateOpt
       const first = order.filter((st) => FIRST_CLASS_STATES.includes(st) && busy(st));
       const others = order.filter((st) => !FIRST_CLASS_STATES.includes(st) && busy(st));
       if (first.length === 0 && others.length === 0) break;
-      const round = others.length ? others.flatMap((st) => [...first, st]) : first;
+      const round = billRound(first, others);
       for (const state of round) {
         if (!busy(state)) continue;
         if (run.outOfTime() || client.budget.exhausted) return cursor;

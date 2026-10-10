@@ -509,6 +509,120 @@ describe('sync-state', () => {
     expect(pagesFor('ca')).toBe(4);
   });
 
+  it('gives Massachusetts and Connecticut half the requests between them', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ma: '194', ct: '2026', tx: '89', ca: '20252026' };
+    api.bills = { ma: [], ct: [], tx: [], ca: [] };
+    api.addBills('ma', 400);
+    api.addBills('ct', 400);
+    api.addBills('tx', 200);
+    api.addBills('ca', 200);
+    // Sessions (1) + 16 pages of bills.
+    await runState(api, 17, ['MA', 'CT', 'TX', 'CA']);
+    const pagesFor = (st: string) =>
+      api.requests.filter((u) => u.pathname === '/bills' && u.search.includes(`state%3A${st}`)).length;
+    expect([pagesFor('ma'), pagesFor('ct'), pagesFor('tx'), pagesFor('ca')]).toEqual([4, 4, 4, 4]);
+    // Both first-class states ask for the detail in the same requests.
+    const ct = api.requests.find((u) => u.pathname === '/bills' && u.search.includes('state%3Act'))!;
+    expect(ct.searchParams.getAll('include')).toEqual(['sponsorships', 'actions', 'votes', 'abstracts']);
+  });
+
+  it('keeps Connecticut’s history and floor roll calls, not its committee votes', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ct: '2026', tx: '89' };
+    api.bills = { ct: [], tx: [] };
+    api.addBills('ct', 1);
+    api.addBills('tx', 1);
+    const bill = api.bills.ct![0]!;
+    bill.cosponsors = ['Matt Blumenthal'];
+    const roll = (id: string, classification: string, n: number) => ({
+      id,
+      motion_text: classification === 'committee' ? 'Joint Favorable' : 'Passage',
+      start_date: '2026-04-01',
+      result: 'pass',
+      organization: { classification },
+      counts: [{ option: 'yes', value: n }],
+      votes: Array.from({ length: n }, (_, i) => ({
+        option: 'yes',
+        voter_name: `M${i}`,
+        voter: { id: `ocd-person/ct-${i}`, name: `M${i}` },
+      })),
+    });
+    bill.votes = [roll('ocd-vote/ct-cmte', 'committee', 30), roll('ocd-vote/ct-house', 'lower', 140)];
+    await runState(api, 1000, ['CT', 'TX']);
+
+    const votes = await sql`select id, chamber, yes from public.state_votes order by id`;
+    expect(votes).toEqual([{ id: 'ocd-vote/ct-house', chamber: 'lower', yes: 140 }]);
+    const positions = await sql`select count(*)::int as n from public.state_vote_positions`;
+    expect(positions[0]!.n).toBe(140);
+    const actions = await sql`select count(*)::int as n from public.state_bill_actions where bill_id = ${bill.id}`;
+    expect(actions[0]!.n).toBe(2);
+    const sponsors = await sql`select name from public.state_bill_sponsors where bill_id = ${bill.id} order by seq`;
+    expect(sponsors.map((r) => r.name)).toEqual(['Gina Hinojosa', 'Matt Blumenthal']);
+    // Other states still keep one row per bill.
+    const tx = await sql`select count(*)::int as n from public.state_bill_actions where bill_id like 'ocd-bill/tx-%'`;
+    expect(tx[0]!.n).toBe(0);
+  });
+
+  it('reads a state made first-class once more, for the detail its stored bills lack', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ct: '2026', tx: '89' };
+    api.bills = { ct: [], tx: [] };
+    api.addBills('ct', 30);
+    api.addBills('tx', 1);
+    // Connecticut was loaded slim (as every state was), and its session has ended.
+    await sql`insert into public.state_bills ${sql(
+      api.bills.ct!.map((b) => ({
+        id: b.id,
+        state: 'CT',
+        session: '2026',
+        identifier: b.identifier,
+        title: b.title,
+        updated_at: b.updated_at,
+        latest_action_date: b.latest_action_date,
+        latest_action_text: b.latest_action_description,
+      })),
+    )}`;
+    const newest = [...api.bills.ct!].sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0]!.updated_at;
+    await sql`insert into public.sync_state (job, cursor) values (${STATE_JOB}, ${sql.json({
+      sessions: { CT: '2026', TX: '89' },
+      sessionsCheckedAt: '2026-10-08T00:00:00Z',
+      bills: { CT: { session: '2026', filled: true, since: newest, page: 1, totalAt: '2026-10-08T00:00:00Z' } },
+    })})`;
+    await runState(api, 1000, ['CT', 'TX']);
+    const ct = api.requests.filter((u) => u.pathname === '/bills' && u.search.includes('state%3Act'));
+    // Two pages newest first with the detail, then the usual catch-up.
+    expect(ct.slice(0, 2).map((u) => [u.searchParams.get('sort'), u.searchParams.get('page')])).toEqual([
+      ['updated_desc', '1'],
+      ['updated_desc', '2'],
+    ]);
+    const withHistory = await sql`
+      select count(distinct bill_id)::int as n from public.state_bill_actions where bill_id like 'ocd-bill/ct-%'`;
+    expect(withHistory[0]!.n).toBe(30);
+    // No feed events for bills already on file.
+    expect(await sql`select 1 from public.feed_events`).toHaveLength(0);
+
+    // Once is enough.
+    api.requests.length = 0;
+    await runState(api, 1000, ['CT', 'TX'], '2026-10-09T07:00:00Z');
+    const again = api.requests.filter((u) => u.pathname === '/bills' && u.search.includes('state%3Act'));
+    expect(again.map((u) => u.searchParams.get('sort'))).toEqual(['updated_asc']);
+  });
+
+  it('prerenders Connecticut bills that passed, not those still in committee', async () => {
+    const api = new FakeOpenStates();
+    api.sessions = { ct: '2026', tx: '89' };
+    api.bills = { ct: [], tx: [] };
+    api.addBills('ct', 3);
+    api.addBills('tx', 1);
+    api.bills.ct![0]!.latest_action_description = 'Signed by the Governor';
+    api.bills.ct![1]!.latest_action_description = 'Joint Favorable';
+    api.bills.tx![0]!.latest_action_description = 'Signed by the Governor';
+    await runState(api, 1000, ['CT', 'TX']);
+    const rows = await sql`select id from public.state_bills_prerender order by id`;
+    expect(rows.map((r) => r.id)).toEqual(['ocd-bill/ct-1']);
+  });
+
   it('finishes a part-loaded state newest-first, stopping at the bills it already has', async () => {
     const api = new FakeOpenStates();
     api.addBills('tx', 100);

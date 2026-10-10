@@ -44,15 +44,21 @@ States). For more:
 1. An entry in `site/src/lib/states.ts` (`STATE_FEATURES`): a featured card and menu
    entry, whether its bills can have discussions, and a link builder for bills on the
    legislature's own site.
-2. More bill detail (actions, votes, abstracts): add the state to
-   `FIRST_CLASS_STATES` in `packages/sync/src/state/sync-state.ts`. It uses more of
-   the daily Open States budget.
+2. More bill detail (actions, floor votes, abstracts): add the state to
+   `FIRST_CLASS_STATES` in `packages/sync/src/state/sync-state.ts`. The detail comes
+   in the same requests; the cost is one catch-up request per state every hourly run
+   (about 24 a day), and first-class states share half of each round with the rest.
+   Committee votes are not stored. Add the state to `state_bills_prerender` (with what
+   its passed bills' latest actions say) so its bills that moved get their own pages.
 3. Courts: add the court to `STATE_COURTS` in `packages/sync/src/state/courts.ts`
    and its name to `STATE_COURT_NAMES` in `site/src/lib/state-tabs.ts`.
    CourtListener's free tier is shared (`DAILY_SHARES` in `packages/sync/src/job.ts`).
-4. Governor's orders: a loader like `scripts/load-ma-orders.ts` writing
-   `state_executive_orders` with the state's code; the Governor tab appears when
-   there are orders.
+4. Governor's orders: a loader like `scripts/load-ma-orders.ts` (a browser) or
+   `scripts/load-ct-orders.ts` (plain requests and PDFs) writing
+   `state_executive_orders` with the state's code, a `label` (what the state calls the
+   order: "635", "26-3"; lower-cased in its page address) and a sortable integer
+   `number`, plus an `orders` entry in `STATE_FEATURES` naming the source. The Governor
+   tab appears when there are orders.
 
 ## Any new job or loader
 

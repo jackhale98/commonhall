@@ -42,6 +42,7 @@ describe('activeNav', () => {
     expect(at('states/')).toEqual(['local', 'states']);
     expect(at('states/tx/')).toEqual(['local', 'states']);
     expect(at('states/ma/')).toEqual(['local', 'ma']);
+    expect(at('states/ct/governor/26-3/')).toEqual(['local', 'ct']);
     expect(at('states/ma/bills/2025/h-1/')).toEqual(['local', 'ma']);
     expect(at('states/ma/boston/budget/')).toEqual(['local', 'ma-boston']);
     expect(at('states/ma/worcester/')).toEqual(['local', 'ma-worcester']);
@@ -65,9 +66,9 @@ describe('activeNav', () => {
 describe('orderedItems', () => {
   it('reads the local trail from all states down to the cities', () => {
     const local = NAV.find((g) => g.key === 'local')!;
-    // Then every other city, in registry order.
+    // Featured states, then every city, in registry order.
     const labels = orderedItems(local).map((i) => i.label);
-    expect(labels.slice(0, 4)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    expect(labels.slice(0, 5)).toEqual(['All states', 'Massachusetts', 'Connecticut', 'Boston', 'Worcester']);
     expect(labels).toContain('Somerville');
   });
 });

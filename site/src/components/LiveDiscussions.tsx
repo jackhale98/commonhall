@@ -3,6 +3,8 @@ import { DISCUSSION_COLUMNS } from '../lib/discussions';
 import { hasSupabase } from '../lib/config';
 import { select } from '../lib/rest';
 import { CITY_LIST } from '../lib/cities';
+import { stateName } from '../lib/format';
+import { DISCUSSION_STATES } from '../lib/states';
 import type { Discussion } from '../lib/types';
 import DiscussionCardView from './DiscussionCardView';
 
@@ -21,7 +23,7 @@ interface Props {
 /** Cities first, then states, then national. */
 const LEVELS: { key: Jurisdiction; title: string }[] = [
   ...CITY_LIST.map((c) => ({ key: c.key, title: c.name })),
-  { key: 'ma', title: 'Massachusetts' },
+  ...DISCUSSION_STATES.map((code) => ({ key: code.toLowerCase(), title: stateName(code) })),
   { key: 'federal', title: 'National' },
 ];
 

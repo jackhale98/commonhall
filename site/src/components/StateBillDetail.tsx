@@ -31,8 +31,8 @@ interface Position {
 const FIRST_ACTIONS = 6;
 
 /**
- * A state bill's summary, topics, history and roll calls, read live (Massachusetts keeps
- * these; other states show only what they have, which is usually nothing here).
+ * A state bill’s summary, topics, history and roll calls, read live (first-class states,
+ * Massachusetts and Connecticut, keep these; other states show only their topics).
  */
 export default function StateBillDetail({ billId, state }: { billId: string; state: string }) {
   const [about, setAbout] = useState<{ abstract: string | null; subjects: string[] } | null>(null);

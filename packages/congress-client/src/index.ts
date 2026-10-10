@@ -21,3 +21,4 @@ export * from './mass-orders.ts';
 export * from './shape.ts';
 export * from './report-311.ts';
 export * from './socrata.ts';
+export * from './ct-orders.ts';
