@@ -918,3 +918,22 @@ delegation or a search can be linked. Every member is still in the HTML, so sear
 engines and readers without JavaScript see the full list; with JavaScript, only
 results show. The chamber charts appear on wider screens; phones get one line of seat
 counts. The page is about 2,500px tall on a phone before a search.
+
+## 73. Navigation by level of government
+
+The header had seven flat links, Committees didn't fit, and Massachusetts and Boston
+were only reachable through States & local. The top bar is now grouped:
+**Congress** (Bills, Members, Votes, Committees), **Executive**, **Court**,
+**States & local** (All states › Massachusetts › Boston), and **Discuss**.
+
+- Congress and States & local open a small menu on click, not on hover. Hover menus
+  are unreliable on touch screens and for keyboard and screen-reader users. Without
+  JavaScript the menus open on focus, and the footer still lists every page.
+- Pages in a group show its items as a row of tabs under the header, so sibling pages
+  stay one tap apart and the active one is marked. For States & local the row reads
+  as a trail, which replaces the Massachusetts and Boston breadcrumbs.
+- In the phone menu each group is a heading over all of its links, with nothing to
+  open, so any page is one tap from the menu.
+- There's no Congress landing page; the home page already does that job.
+- `lib/nav.ts` holds the structure. A page's group and tab come from its path, so pages
+  don't declare them.

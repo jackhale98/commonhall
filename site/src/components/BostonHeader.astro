@@ -16,9 +16,6 @@ const { current, lede } = Astro.props;
 ---
 
 <header class="boston-head">
-  <nav aria-label="Breadcrumb" class="small muted">
-    <a href={href('states/')}>States</a> › <a href={href('states/ma/')}>Massachusetts</a> › Boston
-  </nav>
   <h1>Boston</h1>
   {lede && <p class="lede">{lede}</p>}
   <nav class="local-tabs" aria-label="Boston">

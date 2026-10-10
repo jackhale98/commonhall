@@ -8,12 +8,13 @@ import SearchPalette from '../components/SearchPalette';
 import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
 import AdminLink from '../components/AdminLink';
 import NavStatus from '../components/NavStatus';
+import { activeNav, NAV, orderedItems } from '../lib/nav';
 import { href } from '../lib/paths';
 
 interface Props {
   title?: string;
   description?: string;
-  /** Path of the current section, used to mark the active nav item. */
+  /** The page's section. The header works out the active section from the path (lib/nav.ts). */
   section?:
     | 'home'
     | 'bills'
@@ -29,12 +30,7 @@ interface Props {
   noindex?: boolean;
 }
 
-const {
-  title,
-  description = 'Follow federal and state bills, legislators and votes.',
-  section,
-  noindex = false,
-} = Astro.props;
+const { title, description = 'Follow federal and state bills, legislators and votes.', noindex = false } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const sources = [
@@ -61,17 +57,12 @@ const explore = [
   { label: 'Boston', path: 'boston/' },
   { label: 'Discussions', path: 'discussions/' },
 ];
-const nav = [
-  { key: 'bills', label: 'Bills', path: 'bills/' },
-  { key: 'members', label: 'Members', path: 'members/' },
-  { key: 'votes', label: 'Votes', path: 'votes/' },
-  { key: 'executive', label: 'Executive', path: 'executive/' },
-  { key: 'court', label: 'Court', path: 'court/' },
-  { key: 'states', label: 'States & local', path: 'states/' },
-  { key: 'discussions', label: 'Discuss', path: 'discussions/' },
-  { key: 'feed', label: 'Feed', path: 'feed/' },
-  { key: 'account', label: 'Account', path: 'account/' },
-].filter((item) => !DEMO || !['feed', 'account'].includes(item.key));
+const nav = NAV.filter((g) => !DEMO || !g.personal);
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const here = activeNav(
+  Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname,
+);
+const subnav = here.group?.items ? here.group : undefined;
 ---
 
 <!doctype html>
@@ -154,13 +145,41 @@ const nav = [
         <div class="site-menu" id="site-menu">
           <nav aria-label="Main">
             <ul class="nav-list">
-              {nav.map((item) => (
-                <li class={['feed', 'account'].includes(item.key) ? 'nav-personal' : undefined}>
-                  <a href={href(item.path)} aria-current={section === item.key ? 'page' : undefined}>
-                    {item.label}
-                  </a>
-                </li>
-              ))}
+              {nav.map((group) =>
+                group.items ? (
+                  <li class="nav-group">
+                    <span class="nav-group-label" aria-hidden="true">
+                      {group.label}
+                    </span>
+                    <button
+                      type="button"
+                      class:list={['nav-group-button', { 'is-current': here.group?.key === group.key }]}
+                      aria-expanded="false"
+                      aria-controls={`nav-${group.key}`}
+                    >
+                      {group.label}
+                      <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+                        <path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" />
+                      </svg>
+                    </button>
+                    <ul class="nav-pop" id={`nav-${group.key}`} aria-label={group.label}>
+                      {orderedItems(group).map((item) => (
+                        <li>
+                          <a href={href(item.path)} aria-current={here.item?.key === item.key ? 'page' : undefined}>
+                            {item.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ) : (
+                  <li class={group.personal ? 'nav-personal' : undefined}>
+                    <a href={href(group.path!)} aria-current={here.group?.key === group.key ? 'page' : undefined}>
+                      {group.label}
+                    </a>
+                  </li>
+                ),
+              )}
             </ul>
           </nav>
         </div>
@@ -173,7 +192,7 @@ const nav = [
                 href={href('feed/')}
                 aria-label="Your feed"
                 title="Your feed"
-                aria-current={section === 'feed' ? 'page' : undefined}
+                aria-current={here.group?.key === 'feed' ? 'page' : undefined}
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                   <path
@@ -192,7 +211,7 @@ const nav = [
                 href={href('account/')}
                 aria-label="Account"
                 title="Account"
-                aria-current={section === 'account' ? 'page' : undefined}
+                aria-current={here.group?.key === 'account' ? 'page' : undefined}
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                   <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2" />
@@ -247,7 +266,20 @@ const nav = [
         </div>
       </div>
     )}
-    <main id="main" class="container">
+    {subnav && (
+      <nav class:list={['subnav', { 'is-trail': subnav.trail }]} aria-label={subnav.label}>
+        <ul class="container">
+          {orderedItems(subnav).map((item) => (
+            <li>
+              <a href={href(item.path)} aria-current={here.item?.key === item.key ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+    <main id="main" class:list={['container', { 'has-subnav': subnav }]}>
       <slot />
     </main>
     <footer class="site-footer">
@@ -361,7 +393,32 @@ const nav = [
         menu.addEventListener('click', (e) => {
           if (e.target instanceof Element && e.target.closest('a')) set(false);
         });
-        window.matchMedia('(min-width: 60rem)').addEventListener('change', (e) => e.matches && set(false));
+        window.matchMedia('(min-width: 64rem)').addEventListener('change', (e) => e.matches && set(false));
+
+        // Wide screens: Congress and States & local open a small menu on click (not hover).
+        const groups = [...menu.querySelectorAll('.nav-group-button')];
+        const close = (except) => groups.forEach((g) => g !== except && g.setAttribute('aria-expanded', 'false'));
+        groups.forEach((g) =>
+          g.addEventListener('click', () => {
+            const open = g.getAttribute('aria-expanded') !== 'true';
+            close(g);
+            g.setAttribute('aria-expanded', String(open));
+          }),
+        );
+        document.addEventListener('click', (e) => {
+          if (!(e.target instanceof Element) || !e.target.closest('.nav-group')) close();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          const open = groups.find((g) => g.getAttribute('aria-expanded') === 'true');
+          if (open) {
+            close();
+            open.focus();
+          }
+        });
+        menu.addEventListener('focusout', (e) => {
+          if (!(e.relatedTarget instanceof Element) || !e.relatedTarget.closest('.nav-group')) close();
+        });
       })();
     </script>
   </body>
@@ -435,9 +492,65 @@ const nav = [
     color: var(--text);
     background: var(--bg-subtle);
   }
-  .nav-list a[aria-current='page'] {
+  .nav-list a[aria-current='page'],
+  .nav-group-button.is-current {
     color: var(--brand-strong);
     background: var(--brand-soft);
+  }
+  .nav-group {
+    position: relative;
+  }
+  .nav-group-label {
+    display: none;
+  }
+  .nav-group-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 40px;
+    padding: 0 0.75rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--text-muted);
+    font: inherit;
+    font-weight: 560;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .nav-group-button:hover {
+    color: var(--text);
+    background: var(--bg-subtle);
+  }
+  .nav-group-button svg {
+    transition: transform 0.15s ease;
+  }
+  .nav-group-button[aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+  .nav-pop {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 30;
+    min-width: 12rem;
+    list-style: none;
+    margin: 0;
+    padding: var(--space-2);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 30px rgb(18 19 31 / 14%);
+  }
+  .nav-pop a {
+    display: flex;
+    width: 100%;
+    border-radius: 10px;
+  }
+  /* Without scripts the menus open on keyboard focus; with them, on click. */
+  :global(html:not(.js)) .nav-group:not(:focus-within) .nav-pop,
+  :global(html.js) .nav-group-button[aria-expanded='false'] + .nav-pop {
+    display: none;
   }
   .header-actions {
     display: flex;
@@ -550,9 +663,86 @@ const nav = [
       font-size: var(--step-1);
       border-radius: 12px;
     }
+    /* In the phone menu each group is a heading over all of its links, with nothing to open. */
+    .nav-group-button {
+      display: none;
+    }
+    .nav-group-label {
+      display: block;
+      margin: var(--space-2) 0 0 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .nav-group .nav-pop,
+    :global(html:not(.js)) .nav-group:not(:focus-within) .nav-pop,
+    :global(html.js) .nav-group-button[aria-expanded='false'] + .nav-pop {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 var(--space-2);
+      position: static;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+    .nav-group .nav-pop a {
+      min-height: 44px;
+      font-size: var(--step-0);
+    }
   }
   main {
     padding-block: var(--space-6) var(--space-7);
+  }
+  main.has-subnav {
+    padding-top: var(--space-4);
+  }
+  /* A section's pages as a row of tabs under the header (Congress; States & local as a trail). */
+  .subnav {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-raised);
+  }
+  .subnav ul {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    margin: 0 auto;
+    padding-block: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .subnav li {
+    flex: none;
+    display: flex;
+    align-items: center;
+  }
+  .subnav.is-trail li + li::before {
+    content: '›';
+    margin-right: var(--space-1);
+    color: var(--text-muted);
+  }
+  .subnav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: var(--step--1);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .subnav a:hover {
+    color: var(--text);
+    background: var(--bg-subtle);
+  }
+  .subnav a[aria-current='page'] {
+    color: var(--brand-strong);
+    background: var(--brand-soft);
   }
   .demo-banner {
     border-bottom: 1px solid var(--border);

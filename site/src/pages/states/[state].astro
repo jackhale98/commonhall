@@ -77,9 +77,14 @@ const legislatorRows = chambers.flatMap((c) =>
 ---
 
 <Base title={name} description={`${name}’s members of Congress, state legislators and state bills.`} section="states">
-  <nav aria-label="Breadcrumb" class="small muted">
-    <a href={href('states/')}>States</a> › {name}
-  </nav>
+  {
+    // Massachusetts has its own place in the States & local row under the header.
+    code !== 'MA' && (
+      <nav aria-label="Breadcrumb" class="small muted">
+        <a href={href('states/')}>States</a> › {name}
+      </nav>
+    )
+  }
   <h1>{name}</h1>
 
   {chambers.length > 0 && (
