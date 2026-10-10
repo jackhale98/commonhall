@@ -42,6 +42,7 @@ import {
   stateCourtCaseHref,
   stateHref,
   stateOrderHref,
+  stateOrderId,
 } from '../lib/paths';
 
 /** One entry in the search palette's index. Short keys keep the file small. */
@@ -235,8 +236,8 @@ export async function GET() {
     ...[...stateOrders.values()].flat().map((o) => ({
       k: 'order' as const,
       t: clip(o.title),
-      s: `${stateName(o.state)} governor · No. ${o.number}${o.signed_date ? ` · ${formatDate(o.signed_date)}` : ''}`,
-      h: stateOrderHref(`${o.state.toLowerCase()}-${o.number}`),
+      s: `${stateName(o.state)} governor · No. ${o.label}${o.signed_date ? ` · ${formatDate(o.signed_date)}` : ''}`,
+      h: stateOrderHref(stateOrderId(o.state, o.label)),
     })),
     ...[...stateCases.values()].flat().map((c) => ({
       k: 'case' as const,

@@ -4,7 +4,7 @@ import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateCourtCases, type StateCourtCase } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
 import { href } from '../../../../lib/paths';
-import { STATE_COURT_NAMES } from '../../../../lib/state-tabs';
+import { STATE_COURT_NAMES, stateCourtTitle } from '../../../../lib/state-tabs';
 
 export async function getStaticPaths() {
   return [...(await loadStateCourtCases()).values()].flat().map((c) => ({
@@ -20,6 +20,7 @@ interface Props {
 const { c } = Astro.props;
 const name = stateName(c.state);
 const court = STATE_COURT_NAMES[c.court_id] ?? 'Supreme Court';
+const fullCourt = stateCourtTitle(name, court);
 const id = `${c.state.toLowerCase()}-${c.cluster_id}`;
 const discussion = (await loadDiscussionsByTarget()).get(`state_court_case:${id}`);
 const opinions = [
@@ -30,14 +31,12 @@ const opinions = [
 ---
 
 <Base
-  title={`${c.case_name} (${name} ${court})`}
-  description={`${c.case_name}: decided by the ${name} ${court} on ${formatDate(c.date_filed)}.`}
+  title={`${c.case_name} (${fullCourt})`}
+  description={`${c.case_name}: decided by the ${fullCourt} on ${formatDate(c.date_filed)}.`}
   section="states"
 >
   <nav aria-label="Breadcrumb" class="small muted">
-    <a href={href(`states/${c.state.toLowerCase()}/courts/`)}>
-      {name} {court}
-    </a>
+    <a href={href(`states/${c.state.toLowerCase()}/courts/`)}>{fullCourt}</a>
   </nav>
   <header class="page-head">
     <p class="kicker">

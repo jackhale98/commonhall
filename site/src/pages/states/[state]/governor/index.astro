@@ -4,7 +4,8 @@ import RecordExplorer from '../../../../components/RecordExplorer';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateOrders } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
-import { stateOrderHref } from '../../../../lib/paths';
+import { stateOrderHref, stateOrderId } from '../../../../lib/paths';
+import { stateFeatures } from '../../../../lib/states';
 
 /** Only states with a governor's order on file. */
 export async function getStaticPaths() {
@@ -22,16 +23,17 @@ const { code } = Astro.props;
 const name = stateName(code);
 const [all, discussions] = await Promise.all([loadStateOrders(), loadDiscussionsByTarget()]);
 const orders = all.get(code) ?? [];
-const id = (n: number) => `${code.toLowerCase()}-${n}`;
+const id = (label: string) => stateOrderId(code, label);
+const source = stateFeatures(code)?.orders;
 const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
 const thisYear = orders.filter((o) => o.signed_date && o.signed_date >= yearAgo).length;
 const byGovernor = [...Map.groupBy(orders, (o) => o.governor ?? 'Unknown')].map(([g, list]) => ({ g, n: list.length }));
-const discussed = (n: number) => discussions.get(`state_order:${id(n)}`);
+const discussed = (label: string) => discussions.get(`state_order:${id(label)}`);
 const rows = orders.map((o) => ({
-  id: id(o.number),
-  meta: [`No. ${o.number}`, o.signed_date && formatDate(o.signed_date), o.governor].filter(Boolean).join(' · '),
+  id: id(o.label),
+  meta: [`No. ${o.label}`, o.signed_date && formatDate(o.signed_date), o.governor].filter(Boolean).join(' · '),
   title: o.title,
-  href: stateOrderHref(id(o.number)),
+  href: stateOrderHref(id(o.label)),
   note:
     [
       o.summary && (o.summary.length > 150 ? `${o.summary.slice(0, 149)}…` : o.summary),
@@ -39,7 +41,7 @@ const rows = orders.map((o) => ({
     ]
       .filter(Boolean)
       .join(' · ') || undefined,
-  tags: discussed(o.number) ? ['Discussion open'] : undefined,
+  tags: discussed(o.label) ? ['Discussion open'] : undefined,
   group: o.signed_date?.slice(0, 4) ?? '',
 }));
 ---
@@ -78,13 +80,15 @@ const rows = orders.map((o) => ({
     groupLabel="Any year"
     noun={['order', 'orders']}
   />
-  <p class="small muted tab-note">
-    From the Trial Court Law Libraries’ list on{' '}
-    <a href="https://www.mass.gov/massachusetts-executive-orders" rel="noopener">
-      mass.gov
-    </a>
-    , checked weekly.
-  </p>
+  {source && (
+    <p class="small muted tab-note">
+      From {source.list} on{' '}
+      <a href={source.url} rel="noopener">
+        {source.site}
+      </a>
+      , checked weekly.
+    </p>
+  )}
 </Base>
 
 <style>

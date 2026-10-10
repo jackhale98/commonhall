@@ -11,7 +11,15 @@ export type StateTab =
   'overview' | 'legislature' | 'bills' | 'committees' | 'governor' | 'courts' | 'congress' | 'local';
 
 /** A state's high court, by CourtListener court id. */
-export const STATE_COURT_NAMES: Record<string, string> = { mass: 'Supreme Judicial Court' };
+export const STATE_COURT_NAMES: Record<string, string> = {
+  mass: 'Supreme Judicial Court',
+  conn: 'Connecticut Supreme Court',
+};
+
+/** The court with its state, once: "Massachusetts Supreme Judicial Court", "Connecticut Supreme Court". */
+export function stateCourtTitle(stateName: string, court: string): string {
+  return court.startsWith(stateName) ? court : `${stateName} ${court}`;
+}
 
 export interface StateTabCounts {
   legislature: boolean;

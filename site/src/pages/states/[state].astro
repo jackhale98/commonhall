@@ -12,7 +12,7 @@ import {
   loadStateSessions,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, formatDate, stateName } from '../../lib/format';
-import { cityHref, href, stateBillHref, stateCourtCaseHref, stateOrderHref } from '../../lib/paths';
+import { cityHref, href, stateBillHref, stateCourtCaseHref, stateOrderHref, stateOrderId } from '../../lib/paths';
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
 import { STATE_COURT_NAMES, legislatureChambers, partyGroups } from '../../lib/state-tabs';
 import { citiesIn } from '../../lib/cities';
@@ -141,11 +141,11 @@ const latestCase = stateCases.get(code)?.[0];
         {latestOrder && (
           <li>
             <p class="meta">
-              Executive order No. {latestOrder.number}
+              Executive order No. {latestOrder.label}
               {latestOrder.signed_date && ` · ${formatDate(latestOrder.signed_date)}`}
             </p>
             <p class="bill-title-sm">
-              <a href={stateOrderHref(`${code.toLowerCase()}-${latestOrder.number}`)}>{latestOrder.title}</a>
+              <a href={stateOrderHref(stateOrderId(code, latestOrder.label))}>{latestOrder.title}</a>
             </p>
           </li>
         )}

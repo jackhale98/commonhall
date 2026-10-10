@@ -5,7 +5,7 @@ import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateCourtCases } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
 import { stateCourtCaseHref } from '../../../../lib/paths';
-import { STATE_COURT_NAMES } from '../../../../lib/state-tabs';
+import { STATE_COURT_NAMES, stateCourtTitle } from '../../../../lib/state-tabs';
 
 /** Only states with a high court decision on file. */
 export async function getStaticPaths() {
@@ -24,6 +24,7 @@ const name = stateName(code);
 const [all, discussions] = await Promise.all([loadStateCourtCases(), loadDiscussionsByTarget()]);
 const cases = all.get(code) ?? [];
 const court = STATE_COURT_NAMES[cases[0]?.court_id ?? ''] ?? 'Supreme Court';
+const fullCourt = stateCourtTitle(name, court);
 const id = (cluster: number) => `${code.toLowerCase()}-${cluster}`;
 const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
 const thisYear = cases.filter((c) => c.date_filed >= yearAgo);
@@ -62,8 +63,8 @@ const rows = cases.map((c) => ({
 ---
 
 <Base
-  title={`${name} ${court}`}
-  description={`Decisions of the ${name} ${court}, newest first, with a page for each to discuss.`}
+  title={fullCourt}
+  description={`Decisions of the ${fullCourt}, newest first, with a page for each to discuss.`}
   section="states"
 >
   <StateHeader code={code} current="courts" />

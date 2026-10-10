@@ -97,10 +97,15 @@ export function stateBillFallbackHref(id: string): string {
   return href(`state-bill/?id=${encodeURIComponent(id)}`);
 }
 
-/** A governor's executive order, by its discussion id ("ma-635"). */
+/** A governor's executive order's id: the state and its label, lower-cased ("ma-635", "ct-26-3"). */
+export function stateOrderId(state: string, label: string): string {
+  return `${state.toLowerCase()}-${label.toLowerCase()}`;
+}
+
+/** A governor's executive order, by its discussion id ("ma-635", "ct-26-3"). */
 export function stateOrderHref(id: string): string {
-  const [state, number] = id.split('-');
-  return href(`states/${state}/governor/${number}/`);
+  const cut = id.indexOf('-');
+  return href(`states/${id.slice(0, cut)}/governor/${id.slice(cut + 1)}/`);
 }
 
 /** A state high court decision, by its discussion id ("ma-10123456", the CourtListener cluster). */
@@ -120,6 +125,18 @@ export function stateCommitteeHref(id: string): string {
 
 export function discussionHref(id: string): string {
   return href(`discussions/${id}/`);
+}
+
+/**
+ * Official page for a Connecticut bill, e.g. HB 5001 of 2026:
+ * https://www.cga.ct.gov/asp/cgabillstatus/cgabillstatus.asp?selBillType=Bill&which_year=2026&bill_num=5001
+ * The bill number alone picks the bill (House bills are numbered from 5001, Senate bills
+ * from 1). Regular sessions only ("2026"), and bills only, not resolutions.
+ */
+export function ctLegislatureUrl(session: string, identifier: string): string | null {
+  const bill = /^[HS]B\s*(\d+)$/i.exec(identifier.trim())?.[1];
+  if (!/^\d{4}$/.test(session) || !bill) return null;
+  return `https://www.cga.ct.gov/asp/cgabillstatus/cgabillstatus.asp?selBillType=Bill&which_year=${session}&bill_num=${Number(bill)}`;
 }
 
 /** Official page for a Massachusetts bill, e.g. https://malegislature.gov/Bills/194/H1234. */

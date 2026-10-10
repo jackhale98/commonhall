@@ -3,8 +3,9 @@ import { accountUrl, getClient, getSession, isAdmin } from '../lib/auth';
 import { CITIES, CITY_LIST, cityOf } from '../lib/cities';
 import { hasSupabase } from '../lib/config';
 import { DISCUSSION_COLUMNS, targetHref } from '../lib/discussions';
-import { formatDate } from '../lib/format';
+import { formatDate, stateName } from '../lib/format';
 import { discussionHref } from '../lib/paths';
+import { DISCUSSION_STATES } from '../lib/states';
 import type { Discussion, DiscussionTargetType } from '../lib/types';
 
 interface RequestRow {
@@ -18,7 +19,7 @@ type Draft = Omit<Discussion, 'created_at'>;
 
 const TYPE_LABEL: Record<DiscussionTargetType, string> = {
   bill: 'Bill',
-  state_bill: 'MA bill',
+  state_bill: 'State bill',
   local_matter: 'Boston matter',
   executive_order: 'Executive order',
   scotus_case: 'Supreme Court decision',
@@ -118,6 +119,16 @@ export default function AdminDiscussions() {
               : 'federal',
     });
     window.scrollTo({ top: 0 });
+    // A state bill's id doesn't name its state: look it up (Massachusetts until then).
+    if (r.target_type === 'state_bill') {
+      void getClient()
+        .then((client) => client.from('state_bills').select('state').eq('id', r.target_id).maybeSingle())
+        .then(({ data }) => {
+          const state = (data as { state?: string } | null)?.state?.toLowerCase();
+          if (state) setDraft((d) => (d.target_id === r.target_id ? { ...d, jurisdiction: state } : d));
+        })
+        .catch(() => undefined);
+    }
   };
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
@@ -218,7 +229,9 @@ export default function AdminDiscussions() {
                 onChange={(e) => set('jurisdiction', e.currentTarget.value as Draft['jurisdiction'])}
               >
                 <option value="federal">United States</option>
-                <option value="ma">Massachusetts</option>
+                {DISCUSSION_STATES.map((code) => (
+                  <option value={code.toLowerCase()}>{stateName(code)}</option>
+                ))}
                 {CITY_LIST.map((c) => (
                   <option value={c.key}>{c.name}</option>
                 ))}
@@ -265,7 +278,7 @@ export default function AdminDiscussions() {
                 <option value="executive_order">Executive order</option>
                 <option value="scotus_case">Supreme Court decision</option>
                 <option value="capital_project">Capital project (Boston id, or worcester-…)</option>
-                <option value="state_order">Governor’s executive order (ma-635)</option>
+                <option value="state_order">Governor’s executive order (ma-635, ct-26-3)</option>
                 <option value="state_court_case">State high court decision (ma- and its CourtListener id)</option>
               </select>
             </div>

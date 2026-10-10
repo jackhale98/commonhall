@@ -3,11 +3,13 @@ import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateOrders, type StateExecutiveOrder } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
-import { href } from '../../../../lib/paths';
+import { href, stateOrderId } from '../../../../lib/paths';
+import { stateFeatures } from '../../../../lib/states';
 
+/** One page per order, at its label: states/ma/governor/635/, states/ct/governor/26-3/. */
 export async function getStaticPaths() {
   return [...(await loadStateOrders()).values()].flat().map((order) => ({
-    params: { state: order.state.toLowerCase(), number: String(order.number) },
+    params: { state: order.state.toLowerCase(), order: order.label.toLowerCase() },
     props: { order },
   }));
 }
@@ -18,13 +20,15 @@ interface Props {
 
 const { order: o } = Astro.props;
 const name = stateName(o.state);
-const id = `${o.state.toLowerCase()}-${o.number}`;
+const id = stateOrderId(o.state, o.label);
+const source = stateFeatures(o.state)?.orders;
+const site = source?.site ?? new URL(o.url).hostname.replace(/^www\./, '');
 const discussion = (await loadDiscussionsByTarget()).get(`state_order:${id}`);
 ---
 
 <Base
-  title={`Executive Order No. ${o.number}: ${o.title.slice(0, 80)}`}
-  description={`${name} Governor${o.governor ? ` ${o.governor}` : ''}'s Executive Order No. ${o.number}: ${o.title}`.slice(
+  title={`Executive Order No. ${o.label}: ${o.title.slice(0, 80)}`}
+  description={`${name} Governor${o.governor ? ` ${o.governor}` : ''}'s Executive Order No. ${o.label}: ${o.title}`.slice(
     0,
     300,
   )}
@@ -35,14 +39,14 @@ const discussion = (await loadDiscussionsByTarget()).get(`state_order:${id}`);
   </nav>
   <header class="page-head">
     <p class="kicker">
-      Executive Order No. {o.number}
+      Executive Order No. {o.label}
       {o.signed_date && ` · ${formatDate(o.signed_date)}`}
     </p>
     <h1>{o.title}</h1>
     <p class="muted">
       {o.governor ? `Issued by Governor ${o.governor}.` : 'Issued by the governor.'}
       {o.revokes && ` Revokes ${o.revokes}.`}
-      {o.register && ` Massachusetts Register ${o.register}.`}
+      {o.register && ` ${name} Register ${o.register}.`}
     </p>
   </header>
 
@@ -63,19 +67,19 @@ const discussion = (await loadDiscussionsByTarget()).get(`state_order:${id}`);
           <strong>Why:</strong> {o.reason}
         </p>
       )}
-      <p class="small muted">In the order’s own words, shortened. The full text is on mass.gov.</p>
+      <p class="small muted">In the order’s own words, shortened. The full text is on {site}.</p>
     </section>
   )}
 
   <p class="cluster" style="margin-block: var(--space-4)">
     <a class="button" href={o.url} rel="noopener">
-      Read the order on mass.gov
+      Read the order on {site}
     </a>
   </p>
 
   <p class="small muted">
-    From the Trial Court Law Libraries’ list of governors’ executive orders on mass.gov, as published there. Any order
-    that later changes this one is listed there too.
+    From {source?.list ?? 'the state’s list of governors’ executive orders'} on {site}, as published there.
+    {source?.titleNote && ` ${source.titleNote}`} Any order that later changes this one is listed there too.
   </p>
 </Base>
 

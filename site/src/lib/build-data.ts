@@ -431,7 +431,10 @@ export interface StateCourtCase {
 
 export interface StateExecutiveOrder {
   state: string;
+  /** Sortable within a state: the order number in Massachusetts, 202603 for Connecticut's 26-3. */
   number: number;
+  /** What the state calls it: "635", "26-3", "7OOO". Its page and discussion id use it lower-cased. */
+  label: string;
   title: string;
   signed_date: string | null;
   governor: string | null;
@@ -458,8 +461,8 @@ export const loadStateCourtCases = memo(async () => {
 /** Governors' executive orders, newest first, by state. */
 export const loadStateOrders = memo(async () => {
   const rows = await selectAllOptional<StateExecutiveOrder>('state_executive_orders', {
-    select: 'state,number,title,signed_date,governor,revokes,url,register,summary,reason',
-    order: 'state.asc,number.desc',
+    select: 'state,number,label,title,signed_date,governor,revokes,url,register,summary,reason',
+    order: 'state.asc,signed_date.desc.nullslast,number.desc',
   });
   return groupBy(rows, (r) => r.state);
 });

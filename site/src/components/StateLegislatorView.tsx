@@ -89,7 +89,7 @@ export default function StateLegislatorView() {
           select: BILL_COLUMNS,
           limit: 500,
         }),
-        // Roll calls are kept for first-class states (Massachusetts).
+        // Roll calls are kept for first-class states (Massachusetts, Connecticut).
         select<CastVote>('state_vote_positions', {
           person_id: `eq.${id}`,
           select: 'option,vote:state_votes(id,vote_date,motion,result,bill:state_bills(id,identifier,title))',
