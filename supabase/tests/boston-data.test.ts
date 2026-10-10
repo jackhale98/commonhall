@@ -100,7 +100,7 @@ beforeEach(async () => {
   await sql`delete from public.capital_projects`;
   await sql`delete from public.zba_appeals`;
   await sql`delete from public.zba_decision_counts`;
-  await sql`delete from public.boston_311_daily`;
+  await sql`delete from public.city_311_reports`;
   await sql`delete from public.city_budget_lines`;
   await sql`delete from public.sync_state where job in (${CAPITAL_PLAN_JOB}, ${ZBA_JOB}, ${BOSTON_311_JOB}, ${CITY_BUDGET_JOB})`;
   await sql`delete from public.sync_lock`;
@@ -240,36 +240,28 @@ const run311 = (api: Fake311, timeLimitMs = 60_000) =>
   });
 
 describe('sync-boston-311', () => {
-  it('stores counts from both systems, saves its place in the backfill and rewrites nothing unchanged', async () => {
+  it('stores only the report, from both systems, and rewrites it only when it changes', async () => {
     const api = new Fake311();
-    // Out of time straight after the recent fortnight: the backfill waits for the next run.
-    const first = await run311(api, 1);
+    const first = await run311(api);
     expect(first.status).toBe('ok');
-    expect(first.cursor).toMatchObject({ backfilledFrom: '2026-09-25', loadedTo: '2026-10-08' });
-    expect(await sql`select 1 from public.boston_311_daily where day = '2026-08-01'`).toHaveLength(0);
-
-    const second = await run311(api);
-    expect(second.cursor).toMatchObject({ backfilledFrom: '2026-07-11' });
+    expect(first.rowsWritten).toBe(1);
     expect(new Set(api.tables)).toEqual(new Set(['new-system', 'legacy-2026']));
-    const rows = await asAnon(
-      sql,
-      (tx) => tx`select day::text, district, request_type, source, opened from public.boston_311_daily order by 1, 4`,
-    );
-    expect(rows).toEqual([
-      { day: '2026-08-01', district: 0, request_type: 'Litter', source: 'legacy', opened: 1 },
-      { day: '2026-08-01', district: 0, request_type: 'Litter', source: 'new', opened: 1 },
-      { day: '2026-10-08', district: 7, request_type: 'Rodent Activity', source: 'legacy', opened: 3 },
-      { day: '2026-10-08', district: 7, request_type: 'Rodent Activity', source: 'new', opened: 3 },
-    ]);
+    const [row] = await asAnon(sql, (tx) => tx`select city, report from public.city_311_reports`);
+    expect(row!.city).toBe('ma-boston');
+    // The window ends on the last day both systems have; 1 August is before the 30 days before it.
+    expect(row!.report).toMatchObject({
+      from: '2026-09-09',
+      to: '2026-10-08',
+      city: { opened: 6, openedBefore: 0, closed: 4, top: [{ type: 'Rodent Activity', n: 6 }] },
+      districts: { 7: { opened: 6 } },
+    });
     expect((await run311(api)).rowsWritten).toBe(0);
 
-    // A late closure updates the day; a type that disappears from a re-read day is removed.
+    // A late closure changes the report.
     api.records = [{ ...api.records[0]!, closed: 3 }];
-    expect((await run311(api)).rowsWritten).toBe(2);
-    expect(await sql`select closed from public.boston_311_daily where day = '2026-10-08'`).toEqual([
-      { closed: 3 },
-      { closed: 3 },
-    ]);
+    expect((await run311(api)).rowsWritten).toBe(1);
+    const [after] = await sql`select report from public.city_311_reports`;
+    expect(after!.report.city.closed).toBe(6);
   });
 });
 

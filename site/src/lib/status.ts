@@ -19,6 +19,7 @@ export interface StatusRow {
 export function statusLabel(row: Pick<StatusRow, 'name' | 'label'>): string {
   const [prefix, key] = row.name.split(':');
   if (!key) return row.label;
+  if (prefix === '311') return `${CITIES[key]?.name ?? key}: 311 requests`;
   if (prefix === 'matters' || prefix === 'meetings') {
     const city = CITIES[key]?.name ?? key;
     return `${city}: council ${prefix === 'matters' ? 'items' : 'meetings'}`;

@@ -16,6 +16,7 @@ describe('statusLabel', () => {
     expect(statusLabel(row('meetings:ma-worcester', 'x'))).toBe('Worcester: council meetings');
     expect(statusLabel(row('court:mass', 'x'))).toBe('Supreme Judicial Court decisions');
     expect(statusLabel(row('governor:MA', 'x'))).toBe('Massachusetts: governor’s orders');
+    expect(statusLabel(row('311:ma-boston', 'x'))).toBe('Boston: 311 requests');
     expect(statusLabel(row('bills', 'Bills in Congress'))).toBe('Bills in Congress');
   });
 

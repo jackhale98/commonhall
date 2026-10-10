@@ -1473,3 +1473,18 @@ name) and skipped rows for the Capital Plan and zoning appeals. Analyze Boston S
 names its columns, so a rename there already fails. Shapes list only fields we read,
 and were checked against the live keyless sources (Legistar, PrimeGov, Federal
 Register, Analyze Boston) as well as the recorded fixtures.
+
+## 97. 311: store the report, not the counts
+
+We never stored individual 311 requests, but we kept 120 days of counts per day,
+district and request type (about 23,500 rows, ~5 MB, for Boston), and the site only
+ever showed two 30-day windows from them. A city like Somerville would have added
+~60,000 such rows a year. Now the sync reads the 62 days of counts it needs from the
+city each morning (five queries, about two seconds) and stores only the finished
+report (`report311` in congress-client's `report-311.ts`, shared with the site): one
+row per city in `city_311_reports`, about 1.5 KB. Requests that close late are picked
+up because each run starts over; a failed run leaves yesterday's report in place and
+the health check flags it after four days. Migration 055 drops `boston_311_daily`.
+
+Trade-off: there is no 311 history to chart over months. If we want that later, a
+monthly count per district (about 120 rows a year per city) is enough.

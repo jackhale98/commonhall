@@ -34,7 +34,6 @@ import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type
 import { DEMO } from './config';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
-  BOSTON_311_COLUMNS,
   CAPITAL_COLUMNS,
   CITY_BUDGET_COLUMNS,
   budgetSummary,
@@ -42,8 +41,7 @@ import {
   ZBA_COLUMNS,
   hiddenTypesFilter,
   docketTitle,
-  report311,
-  type Boston311Day,
+  type Report311,
   type CapitalProject,
   type CityBudgetLine,
   type ZbaAppeal,
@@ -706,21 +704,13 @@ function memoByCity<T>(fn: (city: string) => Promise<T>): (city: string) => Prom
   };
 }
 
-/** 311 for the last 30 days and the 30 before, citywide and per district (null without 311 data). */
+/** The city's 311 report (the last 30 days and the 30 before), or null without 311 data. */
 export const loadCity311 = memoByCity(async (city) => {
-  const since = new Date(Date.now() - 62 * 86_400_000).toISOString().slice(0, 10);
-  const rows = await selectAllOptional<Boston311Day>('boston_311_daily', {
-    select: BOSTON_311_COLUMNS,
+  const [row] = await selectAllOptional<{ report: Report311 }>('city_311_reports', {
+    select: 'report',
     city: `eq.${city}`,
-    day: `gte.${since}`,
-    order: 'day.asc,district.asc,request_type.asc,source.asc',
   });
-  return report311(
-    rows.map((r) => ({
-      ...r,
-      median_close_hours: r.median_close_hours === null ? null : Number(r.median_close_hours),
-    })),
-  );
+  return row?.report ?? null;
 });
 
 /** Zoning decisions in the last year, counted per neighborhood and outcome. */
