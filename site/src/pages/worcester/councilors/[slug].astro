@@ -1,10 +1,10 @@
 ---
 import FollowButton from '../../../components/FollowButton';
 import MemberPhoto from '../../../components/MemberPhoto';
-import WorcesterHeader from '../../../components/WorcesterHeader.astro';
+import DistrictMap from '../../../components/viz/DistrictMap';
 import Base from '../../../layouts/Base.astro';
-import { loadWorcesterCommittees, loadWorcesterOfficials } from '../../../lib/build-data';
-import { href, worcesterCommitteeHref } from '../../../lib/paths';
+import { loadWorcesterCommittees, loadWorcesterDistricts, loadWorcesterOfficials } from '../../../lib/build-data';
+import { href, localOfficialHref, worcesterCommitteeHref } from '../../../lib/paths';
 import type { LocalOfficial } from '../../../lib/types';
 
 export async function getStaticPaths() {
@@ -18,44 +18,86 @@ interface Props {
   official: LocalOfficial;
 }
 
-const { official: o } = Astro.props;
-const seats = (await loadWorcesterCommittees()).flatMap((c) =>
-  c.members.filter((m) => m.official_id === o.id).map((m) => ({ committee: c, role: m.role })),
+const { official } = Astro.props;
+const [committees, districts, officials] = await Promise.all([
+  loadWorcesterCommittees(),
+  loadWorcesterDistricts(),
+  loadWorcesterOfficials(),
+]);
+const seats = committees.flatMap((c) =>
+  c.members.filter((m) => m.official_id === official.id).map((m) => ({ committee: c, role: m.role })),
 );
-const role = o.title === 'Mayor' ? 'Mayor and Councilor-at-Large' : `Councilor, ${o.seat ?? 'Worcester'}`;
+const chairs = seats.filter((s) => s.role === 'Chair').length;
+const features = districts.map((d) => {
+  const o = officials.find((x) => x.district === d.district);
+  return {
+    district: d.district,
+    geojson: d.geojson,
+    href: o ? localOfficialHref(o.id) : undefined,
+    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+  };
+});
+const seat = official.seat ?? 'Councilor';
+const role = official.title === 'Mayor' ? `Mayor · ${seat}` : official.title ? `${official.title} · ${seat}` : seat;
 ---
 
 <Base
-  title={`${o.name} · Worcester City Council`}
-  description={`${o.name}, ${role}, Worcester City Council.`}
+  title={official.name}
+  description={`${official.name}, Worcester City Council (${seat}): committee seats and contact.`}
   section="states"
 >
-  <WorcesterHeader current="council" />
   <nav aria-label="Breadcrumb" class="small muted">
-    <a href={href('worcester/council/')}>Council</a> › {o.name}
+    <a href={href('states/')}>States</a> › <a href={href('states/ma/')}>Massachusetts</a> ›{' '}
+    <a href={href('worcester/')}>Worcester</a> › {official.name}
   </nav>
-  <header class="person-head">
-    <MemberPhoto name={o.name} url={o.photo_url} size={96} eager />
+  <header class="councilor">
+    <MemberPhoto name={official.name} url={official.photo_url} size={96} />
     <div>
-      <h2 class="person-name">{o.name}</h2>
-      <p class="person-meta">
-        {role}
-        {o.title === 'Vice Chair' && ' · Vice Chair of the Council'}
-      </p>
-      <FollowButton client:idle targetType="local_official" targetId={o.id} label={o.name} />
+      <h1>{official.name}</h1>
+      <p class="muted">Worcester City Council · {role}</p>
+      <div class="cluster">
+        <FollowButton client:load targetType="local_official" targetId={official.id} label={official.name} />
+        {official.email && (
+          <a class="button" href={`mailto:${official.email}`}>
+            Email
+          </a>
+        )}
+      </div>
     </div>
   </header>
 
-  {o.email && (
-    <p>
-      <a href={`mailto:${o.email}`}>{o.email}</a>
-    </p>
-  )}
+  <div class="councilor-glance">
+    <dl class="stat-grid">
+      <div class="stat">
+        <dt>Committee seats</dt>
+        <dd>{seats.length}</dd>
+      </div>
+      <div class="stat">
+        <dt>Chairs</dt>
+        <dd>{chairs}</dd>
+      </div>
+    </dl>
+    {features.length > 0 && (
+      <div class="panel">
+        <DistrictMap
+          features={features}
+          highlight={official.district}
+          width={320}
+          label={
+            official.district
+              ? `Worcester council districts, District ${official.district} outlined`
+              : 'Worcester council districts; at-large councilors represent the whole city'
+          }
+        />
+        <p class="small muted">
+          {official.district ? `Represents District ${official.district}.` : 'Represents the whole city (at-large).'}
+        </p>
+      </div>
+    )}
+  </div>
 
   <section aria-labelledby="committees-h">
-    <h3 id="committees-h" class="h-small">
-      Committees
-    </h3>
+    <h2 id="committees-h">Committees</h2>
     {seats.length === 0 ? (
       <p class="muted">No standing committee seats listed.</p>
     ) : (
@@ -71,19 +113,30 @@ const role = o.title === 'Mayor' ? 'Mayor and Councilor-at-Large' : `Councilor, 
   </section>
 
   <p class="small muted tab-note">
-    <span>
-      From{' '}
-      <a href="https://www.worcesterma.gov/city-council/councilors" rel="noopener">
-        the city’s website
-      </a>
-      , checked weekly.
-    </span>
+    Worcester publishes agendas and minutes rather than individual items and votes, so sponsored items and roll calls
+    are not listed here yet.
   </p>
 </Base>
 
 <style>
-  .person-name {
-    font-size: var(--step-2);
-    margin: 0 0 var(--space-1);
+  .councilor-glance {
+    display: grid;
+    gap: var(--space-4);
+    align-items: start;
+    margin-bottom: var(--space-5);
+  }
+  @media (min-width: 50rem) {
+    .councilor-glance {
+      grid-template-columns: 1fr 22rem;
+    }
+  }
+  .councilor {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    margin-bottom: var(--space-5);
+  }
+  .councilor h1 {
+    margin: 0;
   }
 </style>

@@ -30,7 +30,8 @@ const features = districts.map((d) => {
   };
 });
 const today = new Date().toISOString().slice(0, 10);
-const council = meetings.filter((m) => m.committees.length === 0);
+// Like Boston's Council tab: council meetings and committee meetings together, each labelled.
+const council = meetings;
 const upcoming = council.filter((m) => m.date >= today).reverse();
 const recent = council.filter((m) => m.date < today);
 const FIRST = 5;
@@ -39,7 +40,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
 
 <Base
   title="Worcester City Council"
-  description="Worcester's eleven city councilors, the council district map, and City Council meetings with agendas and minutes."
+  description="Worcester's eleven city councilors, the council district map, and council and committee meetings with agendas and minutes."
   section="states"
 >
   <WorcesterHeader current="council" />
@@ -76,7 +77,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
   </section>
 
   <section aria-labelledby="meetings-h">
-    <h2 id="meetings-h">City Council meetings</h2>
+    <h2 id="meetings-h">Meetings</h2>
     {upcoming.length > 0 && (
       <>
         <h3 class="h-small">Coming up</h3>

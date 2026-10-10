@@ -15,6 +15,10 @@ const named = new Set(committees.map((c) => c.name));
 const others = [...new Set(meetings.flatMap((m) => m.committees).filter((c) => !named.has(c)))].sort();
 const next = (name: string) => meetings.filter((m) => m.committees.includes(name) && m.date >= today).at(-1);
 const last = (name: string) => meetings.find((m) => m.committees.includes(name) && m.date < today);
+const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
+const pastYear = (name: string) =>
+  meetings.filter((m) => m.committees.includes(name) && m.date >= yearAgo && m.date < today && m.status !== 'Cancelled')
+    .length;
 ---
 
 <Base
@@ -59,6 +63,7 @@ const last = (name: string) => meetings.find((m) => m.committees.includes(name) 
                 </>
               )}
               {n ? `Next meeting ${formatDate(n.date)}` : l ? `Last met ${formatDate(l.date)}` : 'No meetings on file'}
+              {pastYear(c.name) > 0 && ` · ${pastYear(c.name)} in the past year`}
             </span>
           </li>
         );

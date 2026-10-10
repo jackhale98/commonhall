@@ -14,12 +14,14 @@ interface Props {
   /** Leave out this committee's name (on its own page). */
   committee?: string;
   upcoming?: boolean;
+  /** Divided rows without the card look, for a list outside a panel. */
+  plain?: boolean;
 }
 
-const { meetings, slugs = new Map(), committee, upcoming = false } = Astro.props;
+const { meetings, slugs = new Map(), committee, upcoming = false, plain = false } = Astro.props;
 ---
 
-<ul class="list city-meetings">
+<ul class:list={[plain ? 'plain-rows' : 'list', 'city-meetings']}>
   {meetings.map((m) => {
     const others = m.committees.filter((c) => c !== committee);
     const name = (c: string) => (slugs.get(c) ? <a href={worcesterCommitteeHref(slugs.get(c)!)}>{c}</a> : c);

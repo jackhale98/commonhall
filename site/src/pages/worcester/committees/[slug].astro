@@ -43,6 +43,10 @@ const photo = (id: string | null) => officials.find((o) => o.id === id)?.photo_u
     <a href={href('worcester/committees/')}>Committees</a> › {c.name}
   </nav>
   <h2 class="committee-title">{c.name}</h2>
+  <p class="small muted">
+    {past.length} {past.length === 1 ? 'meeting' : 'meetings'} on file
+    {upcoming.length > 0 && `, ${upcoming.length} coming up`}.
+  </p>
   {c.description && <p class="committee-about">{c.description}</p>}
 
   <section aria-labelledby="members-h">
@@ -80,15 +84,15 @@ const photo = (id: string | null) => officials.find((o) => o.id === id)?.photo_u
     {past.length === 0 ? (
       <p class="muted">None on file.</p>
     ) : (
-      <div class="panel">
-        <CityMeetingList meetings={past.slice(0, FIRST)} slugs={slugs} committee={c.name} />
+      <>
+        <CityMeetingList meetings={past.slice(0, FIRST)} slugs={slugs} committee={c.name} plain />
         {past.length > FIRST && (
           <details class="more-meetings">
             <summary>{past.length - FIRST} earlier meetings</summary>
-            <CityMeetingList meetings={past.slice(FIRST)} slugs={slugs} committee={c.name} />
+            <CityMeetingList meetings={past.slice(FIRST)} slugs={slugs} committee={c.name} plain />
           </details>
         )}
-      </div>
+      </>
     )}
   </section>
 
