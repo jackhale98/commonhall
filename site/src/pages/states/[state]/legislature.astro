@@ -1,0 +1,59 @@
+---
+import StateHeader from '../../../components/StateHeader.astro';
+import StateLegislators from '../../../components/StateLegislators';
+import Base from '../../../layouts/Base.astro';
+import { loadStateLegislators } from '../../../lib/build-data';
+import { LEGISLATURE_STATES, stateName } from '../../../lib/format';
+import { href } from '../../../lib/paths';
+import { chamberLabel } from '../../../lib/state-people';
+import { legislatureChambers } from '../../../lib/state-tabs';
+
+export function getStaticPaths() {
+  return LEGISLATURE_STATES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const legislators = (await loadStateLegislators()).get(code) ?? [];
+const chambers = legislatureChambers(code, legislators, (c) => chamberLabel(code, c));
+const rows = chambers.flatMap((c) =>
+  c.people.map((l) => ({
+    id: l.id,
+    name: l.name,
+    party: l.party,
+    district: l.district,
+    chamber: c.key,
+    url: l.openstates_url,
+  })),
+);
+---
+
+<Base
+  title={`${name} state legislators`}
+  description={`Every member of the ${name} legislature, by chamber and district.`}
+  section="states"
+>
+  <StateHeader code={code} current="legislature" />
+  <h2 class="h-small">State legislators</h2>
+  {legislators.length === 0 ? (
+    <p class="muted">Not loaded yet.</p>
+  ) : (
+    <StateLegislators
+      client:load
+      legislators={rows}
+      chambers={chambers.map((c) => ({ key: c.key, label: c.label, count: c.people.length }))}
+    />
+  )}
+  <p class="small muted tab-note">
+    Not sure who represents you? <a href={href('#reps-h')}>Find yours by address</a>. Members of Congress are on the{' '}
+    <a href={href(`states/${code.toLowerCase()}/congress/`)}>Congress</a> tab. Legislators from{' '}
+    <a href="https://github.com/openstates/people" rel="noopener">
+      Open States
+    </a>
+    , refreshed weekly.
+  </p>
+</Base>

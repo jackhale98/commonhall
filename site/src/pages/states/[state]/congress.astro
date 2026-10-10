@@ -1,0 +1,75 @@
+---
+import MemberChip from '../../../components/MemberChip';
+import MemberPhoto from '../../../components/MemberPhoto';
+import StateHeader from '../../../components/StateHeader.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadMembers } from '../../../lib/build-data';
+import { STATE_CODES, stateName } from '../../../lib/format';
+import { href } from '../../../lib/paths';
+
+export function getStaticPaths() {
+  return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const members = [...(await loadMembers()).values()].filter((m) => m.current && m.state === code);
+const senators = members.filter((m) => m.chamber === 'senate').sort((a, b) => a.name.localeCompare(b.name));
+const house = members.filter((m) => m.chamber === 'house').sort((a, b) => (a.district ?? 0) - (b.district ?? 0));
+const groups = [
+  { key: 'senate', label: 'U.S. Senate', people: senators },
+  // Territories and DC send one non-voting delegate.
+  {
+    key: 'house',
+    label: house.length === 1 && senators.length === 0 ? 'U.S. House (delegate)' : 'U.S. House',
+    people: house,
+  },
+].filter((g) => g.people.length > 0);
+---
+
+<Base
+  title={`${name} in Congress`}
+  description={`${name}’s U.S. senators and representatives in Congress.`}
+  section="states"
+>
+  <StateHeader code={code} current="congress" />
+  {members.length === 0 && <p class="muted">No members on file.</p>}
+  {groups.map((g) => (
+    <section aria-labelledby={`${g.key}-h`}>
+      <h2 id={`${g.key}-h`} class="h-small">
+        {g.label} <span class="muted">({g.people.length})</span>
+      </h2>
+      <div class="panel">
+        <ul class="plain-members">
+          {g.people.map((m) => (
+            <li>
+              <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={36} />
+              <MemberChip member={m} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  ))}
+  <p class="small muted tab-note">
+    These are {name}’s members of the U.S. Congress in Washington; state lawmakers are on the{' '}
+    <a href={href(`states/${code.toLowerCase()}/legislature/`)}>Legislature</a> tab. See how they vote on{' '}
+    <a href={href(`members/?state=${code}`)}>Members</a>.
+  </p>
+</Base>
+
+<style>
+  section + section {
+    margin-top: var(--space-5);
+  }
+  /* Two compact columns of members on wider phones and up. */
+  @media (min-width: 30rem) {
+    .panel :global(.plain-members) {
+      grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    }
+  }
+</style>

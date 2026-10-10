@@ -1,9 +1,9 @@
 ---
-import PageTabs from '../../../components/PageTabs.astro';
+import StateHeader from '../../../components/StateHeader.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadStateCommitteeChairs, loadStateCommittees } from '../../../lib/build-data';
 import { LEGISLATURE_STATES, stateName } from '../../../lib/format';
-import { href, stateCommitteeHref, stateHref, stateLegislatorHref } from '../../../lib/paths';
+import { stateCommitteeHref, stateLegislatorHref } from '../../../lib/paths';
 import { chamberLabel, type StateCommittee } from '../../../lib/state-people';
 
 /** A page for each state with committees loaded (from the weekly openstates/people load). */
@@ -34,10 +34,6 @@ const groups = (['upper', 'lower', 'legislature'] as const)
     committees: top.filter((c) => c.chamber === key),
   }))
   .filter((g) => g.committees.length > 0);
-const tabs = [
-  { label: 'Overview', href: stateHref(code) },
-  { label: 'Committees', href: href(`states/${code.toLowerCase()}/committees/`), current: true, count: top.length },
-];
 ---
 
 <Base
@@ -45,8 +41,7 @@ const tabs = [
   description={`Every ${name} legislative committee, its chairs and members.`}
   section="states"
 >
-  <h1>{name}</h1>
-  <PageTabs label={name} tabs={tabs} />
+  <StateHeader code={code} current="committees" />
 
   {groups.length > 1 && (
     <p class="cluster small chamber-jump">

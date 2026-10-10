@@ -19,11 +19,13 @@
  */
 import {
   BudgetExhaustedError,
+  committeesFromLocation,
   legistarMatterUrl,
   legistarUtc,
   normalizePosition,
   type LegistarClient,
   type LegistarEvent,
+  type LegistarEventItem,
   type LegistarHistory,
   type LegistarMatter,
   type LegistarOfficeRecord,
@@ -39,6 +41,8 @@ export const CITY = 'boston';
 export const COUNCIL_BODY = 'City Council';
 /** First load of meetings: this many days back, plus everything upcoming. */
 const MEETINGS_FIRST_DAYS = 180;
+/** 2: meetings carry their committees and agenda items. */
+const MEETINGS_VERSION = 2;
 /** Matters per page during the first load. */
 const MATTER_PAGE = 100;
 
@@ -74,6 +78,8 @@ export interface BostonCursor extends Record<string, unknown> {
   fillStartedAt?: string;
   /** First load of meetings done (then meetings follow eventsSince). */
   eventsFilled?: boolean;
+  /** Bumped when meetings gain new fields; a lower value re-reads the first-load window once. */
+  meetingsVersion?: number;
 }
 
 export interface SyncBostonOptions {
@@ -272,6 +278,33 @@ export async function writeMatter(
   return written;
 }
 
+/** The dockets on a meeting's agenda, in order; rewritten only when they change. */
+export function meetingItemRows(meetingId: string, items: LegistarEventItem[]) {
+  return items
+    .filter((i) => i.EventItemMatterId && i.EventItemTitle?.trim())
+    .map((i, n) => ({
+      meeting_id: meetingId,
+      seq: n + 1,
+      matter_id: matterKey(i.EventItemMatterId!),
+      file_number: i.EventItemMatterFile,
+      title: i.EventItemTitle!.trim(),
+    }));
+}
+
+async function writeMeetingItems(sql: Sql, meetingId: string, items: LegistarEventItem[]): Promise<number> {
+  const rows = meetingItemRows(meetingId, items);
+  const before = await sql<{ matter_id: string | null; title: string }[]>`
+    select matter_id, title from public.local_meeting_items where meeting_id = ${meetingId} order by seq`;
+  const same =
+    before.length === rows.length &&
+    rows.every((r, i) => r.matter_id === before[i]!.matter_id && r.title === before[i]!.title);
+  if (same) return 0;
+  return sql.begin(async (tx) => {
+    await tx`delete from public.local_meeting_items where meeting_id = ${meetingId}`;
+    return insertMany(tx, 'public.local_meeting_items', rows);
+  });
+}
+
 async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): Promise<number> {
   const id = `${CITY}-e${e.EventId}`;
   let written = 0;
@@ -290,13 +323,16 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent): 
       legistar_url: e.EventInSiteURL,
       status: e.EventAgendaStatusName,
       last_modified: legistarUtc(e.EventLastModifiedUtc),
+      committees: committeesFromLocation(e.EventLocation),
     })
   ) {
     written += 1;
   }
 
-  // Roll calls: only items Legistar flags as roll calls have per-member votes.
   const items = await client.eventItems(e.EventId);
+  written += await writeMeetingItems(sql, id, items);
+
+  // Roll calls: only items Legistar flags as roll calls have per-member votes.
   for (const item of items.filter((i) => i.EventItemRollCallFlag === 1)) {
     const votes = await client.eventItemVotes(item.EventItemId);
     if (votes.length === 0) continue;
@@ -369,6 +405,12 @@ export async function syncBoston(run: JobRun<BostonCursor>, options: SyncBostonO
 
     // Resume a second early: Legistar's filter is strictly "after", and two items can share a timestamp.
     const rewind = (iso: string) => new Date(new Date(iso).getTime() - 1000).toISOString();
+
+    // Meetings stored before committees and agenda items were kept: read them again once.
+    if ((cursor.meetingsVersion ?? 1) < MEETINGS_VERSION) {
+      cursor.eventsFilled = false;
+      cursor.meetingsVersion = MEETINGS_VERSION;
+    }
 
     // 1. Meetings. Few and cheap, so they never wait behind the much longer matters load.
     if (!cursor.eventsFilled) {

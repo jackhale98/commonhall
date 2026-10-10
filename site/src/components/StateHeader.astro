@@ -1,0 +1,33 @@
+---
+/**
+ * The header shared by a state's pages: its name and the tab row (Overview,
+ * Legislature, Bills, Committees, Congress, Local). Each tab is its own page.
+ */
+import { loadMembers, loadStateCommittees, loadStateLegislators } from '../lib/build-data';
+import { LEGISLATURE_STATES, stateName } from '../lib/format';
+import { stateTabs, type StateTab } from '../lib/state-tabs';
+import PageTabs from './PageTabs.astro';
+
+interface Props {
+  code: string;
+  current: StateTab;
+}
+
+const { code, current } = Astro.props;
+const name = stateName(code);
+const legislature = LEGISLATURE_STATES.includes(code);
+const [members, legislators, committees] = await Promise.all([
+  loadMembers(),
+  loadStateLegislators(),
+  loadStateCommittees(),
+]);
+const tabs = stateTabs(code, current, {
+  legislature,
+  legislators: legislature ? (legislators.get(code)?.length ?? 0) : 0,
+  committees: (committees.get(code) ?? []).filter((c) => c.classification !== 'subcommittee').length,
+  congress: [...members.values()].filter((m) => m.current && m.state === code).length,
+});
+---
+
+<h1>{name}</h1>
+<PageTabs label={name} tabs={tabs} />

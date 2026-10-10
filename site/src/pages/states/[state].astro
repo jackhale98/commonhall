@@ -1,25 +1,18 @@
 ---
-import LiveDiscussions from '../../components/LiveDiscussions';
-import PageTabs from '../../components/PageTabs.astro';
-import MemberChip from '../../components/MemberChip';
-import MemberPhoto from '../../components/MemberPhoto';
-import StateBills from '../../components/StateBills';
-import StateLegislators from '../../components/StateLegislators';
 import Hemicycle from '../../components/viz/Hemicycle';
+import MemberPhoto from '../../components/MemberPhoto';
+import StateHeader from '../../components/StateHeader.astro';
 import Base from '../../layouts/Base.astro';
 import {
-  loadDiscussions,
-  loadLocalOfficials,
-  loadMembers,
   loadRecentStateBills,
-  loadStateCommittees,
   loadStateExecutives,
   loadStateLegislators,
   loadStateSessions,
 } from '../../lib/build-data';
-import { LEGISLATURE_STATES, STATE_CODES, stateName } from '../../lib/format';
-import { href, stateHref } from '../../lib/paths';
+import { LEGISLATURE_STATES, STATE_CODES, formatDate, stateName } from '../../lib/format';
+import { href, stateBillHref } from '../../lib/paths';
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
+import { LOCAL_GOVERNMENTS, legislatureChambers, partyGroups } from '../../lib/state-tabs';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -31,80 +24,39 @@ interface Props {
 
 const { code } = Astro.props;
 const name = stateName(code);
-const members = [...(await loadMembers()).values()].filter((m) => m.current && m.state === code);
-const senators = members.filter((m) => m.chamber === 'senate').sort((a, b) => a.name.localeCompare(b.name));
-const reps = members.filter((m) => m.chamber === 'house').sort((a, b) => (a.district ?? 0) - (b.district ?? 0));
+const base = `states/${code.toLowerCase()}/`;
 const hasLegislature = LEGISLATURE_STATES.includes(code);
 const legislators = hasLegislature ? ((await loadStateLegislators()).get(code) ?? []) : [];
-const { bills: stateBills, total: stateBillTotal } = hasLegislature
-  ? await loadRecentStateBills(code)
-  : { bills: [], total: 0 };
-const districtSort = (a: { district: string | null; name: string }, b: { district: string | null; name: string }) =>
-  (Number(a.district) || 0) - (Number(b.district) || 0) ||
-  (a.district ?? '').localeCompare(b.district ?? '') ||
-  a.name.localeCompare(b.name);
-const chambers = [
-  { key: 'upper', label: code === 'DC' ? 'Council' : chamberLabel(code, 'upper') },
-  { key: 'lower', label: chamberLabel(code, 'lower') },
-  { key: 'legislature', label: code === 'DC' ? 'Council' : 'Legislature' },
-]
-  .map((c) => ({ ...c, people: legislators.filter((l) => l.chamber === c.key).sort(districtSort) }))
-  .filter((c) => c.people.length > 0);
-const partyGroups = (people: { party: string | null }[]) => {
-  const n = { D: 0, I: 0, R: 0 };
-  for (const p of people) {
-    const k = (p.party ?? '').charAt(0);
-    n[k === 'D' || k === 'R' ? k : 'I'] += 1;
-  }
-  return [
-    { label: 'Democrats', seats: n.D, tone: 'fill-party-d' },
-    { label: 'Other', seats: n.I, tone: 'fill-party-i' },
-    { label: 'Republicans', seats: n.R, tone: 'fill-party-r' },
-  ];
-};
-// Massachusetts: the Boston City Council is covered too (on its own pages).
-const officials = code === 'MA' ? await loadLocalOfficials() : [];
-// Massachusetts discussions (Boston's are on the Boston pages).
-const stateDiscussions =
-  code === 'MA' ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === 'ma') : [];
+const chambers = legislatureChambers(code, legislators, (c) => chamberLabel(code, c));
+const { bills } = hasLegislature ? await loadRecentStateBills(code) : { bills: [] };
+const LATEST = 3;
 // Statewide officials, governor first; and where the legislature is in its calendar.
 const executives = ((await loadStateExecutives()).get(code) ?? []).sort(
   (a, b) => executiveRank(a.role) - executiveRank(b.role) || a.name.localeCompare(b.name),
 );
 const session = sessionStatus((await loadStateSessions()).get(code) ?? [], new Date().toISOString().slice(0, 10));
-// The Overview / Committees tabs, once the weekly people load has committees for this state.
-const committeeCount = ((await loadStateCommittees()).get(code) ?? []).filter(
-  (c) => c.classification !== 'subcommittee',
-).length;
-const tabs = [
-  { label: 'Overview', href: stateHref(code), current: true },
-  { label: 'Committees', href: href(`states/${code.toLowerCase()}/committees/`), count: committeeCount },
-];
-// The delegation: senators and the first House members, the rest folded.
-const FIRST_REPS = 6;
-const legislatorRows = chambers.flatMap((c) =>
-  c.people.map((l) => ({
-    id: l.id,
-    name: l.name,
-    party: l.party,
-    district: l.district,
-    chamber: c.key,
-    url: l.openstates_url,
-  })),
-);
+const cities = LOCAL_GOVERNMENTS[code] ?? [];
 ---
 
-<Base title={name} description={`${name}’s members of Congress, state legislators and state bills.`} section="states">
-  <h1>{name}</h1>
-  {committeeCount > 0 && <PageTabs label={name} tabs={tabs} />}
+<Base
+  title={name}
+  description={`${name}’s legislature, statewide officials, state bills and members of Congress.`}
+  section="states"
+>
+  <StateHeader code={code} current="overview" />
 
   {session && <p class="small muted session-line">{session}</p>}
 
   {chambers.length > 0 && (
     <section aria-labelledby="glance-h">
-      <h2 id="glance-h" class="h-small">
-        Legislature at a glance
-      </h2>
+      <div class="section-head">
+        <h2 id="glance-h" class="h-small">
+          State legislature at a glance
+        </h2>
+        <a class="see-all" href={href(`${base}legislature/`)}>
+          Legislators
+        </a>
+      </div>
       <div class={`panel glance glance-${chambers.length}`}>
         {chambers.map((c) => (
           <Hemicycle title={`${c.label} (${c.people.length})`} groups={partyGroups(c.people)} />
@@ -141,127 +93,40 @@ const legislatorRows = chambers.flatMap((c) =>
     </section>
   )}
 
-  {code === 'MA' && (
-    <section aria-labelledby="local-h">
-      <a class="card local-card" href={href('boston/')}>
-        <p class="kicker" id="local-h">
-          Local government
-        </p>
-        <strong>Boston</strong>
-        <span class="small muted">
-          City Council ({officials.length || 13} councilors), zoning hearings and the capital budget →
-        </span>
-      </a>
-    </section>
-  )}
-
-  <section aria-labelledby="fed-h">
-    <h2 id="fed-h">In Congress</h2>
-    {members.length === 0 && <p class="muted">No members on file.</p>}
-    <div class="panel">
-      <ul class="plain-members">
-        {[...senators, ...reps.slice(0, FIRST_REPS)].map((m) => (
+  {bills.length > 0 && (
+    <section aria-labelledby="latest-h">
+      <div class="section-head">
+        <h2 id="latest-h" class="h-small">
+          Latest state bills
+        </h2>
+        <a class="see-all" href={href(`${base}bills/`)}>
+          All bills
+        </a>
+      </div>
+      <ul class="plain-rows latest-bills">
+        {bills.slice(0, LATEST).map((b) => (
           <li>
-            <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={36} />
-            <MemberChip member={m} />
+            <p class="meta">
+              {b.identifier}
+              {b.latest_action_date && ` · ${formatDate(b.latest_action_date)}`}
+            </p>
+            <p class="bill-title-sm">
+              <a href={stateBillHref(b.state, b.session, b.identifier)}>{b.title}</a>
+            </p>
           </li>
         ))}
       </ul>
-      {reps.length > FIRST_REPS && (
-        <details class="more-members">
-          <summary>All {reps.length} House members</summary>
-          <ul class="plain-members">
-            {reps.slice(FIRST_REPS).map((m) => (
-              <li>
-                <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={36} />
-                <MemberChip member={m} />
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
-    </div>
-  </section>
-
-  {hasLegislature && (
-    <>
-      <section aria-labelledby="bills-h">
-        <h2 id="bills-h">Recent state bills</h2>
-        <StateBills client:visible state={code} initial={stateBills} total={stateBillTotal} />
-      </section>
-      {code === 'MA' && (
-        <section aria-labelledby="say-h">
-          <h2 id="say-h">Have your say</h2>
-          <LiveDiscussions
-            client:idle
-            initial={stateDiscussions}
-            jurisdictions={['ma']}
-            empty="No Massachusetts discussion is open right now. Ask for one from any state bill’s page."
-          />
-        </section>
-      )}
-      <section aria-labelledby="leg-h">
-        <h2 id="leg-h">State legislators</h2>
-        {legislators.length === 0 ? (
-          <p class="muted">Not loaded yet.</p>
-        ) : (
-          <StateLegislators
-            client:visible
-            legislators={legislatorRows}
-            chambers={chambers.map((c) => ({ key: c.key, label: c.label, count: c.people.length }))}
-          />
-        )}
-        <p class="small muted">
-          State data from <a href="https://openstates.org/">Open States</a>, refreshed nightly.
-        </p>
-      </section>
-    </>
+    </section>
   )}
-</Base>
 
-<style is:global>
-  .legislator,
-  .state-bill {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: space-between;
-    align-items: center;
-  }
-  .state-bill p {
-    margin: 0;
-  }
-  .legislator-text {
-    display: grid;
-    min-width: 0;
-  }
-  .legislator-text > a {
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .legislator-text > a:hover {
-    text-decoration: underline;
-  }
-  .legislator .follow-button {
-    flex: none;
-    min-height: 36px;
-    padding-inline: 0.9rem;
-    font-size: var(--step--1);
-  }
-  .bill-title-sm {
-    font-weight: 650;
-  }
-  .bill-title-sm a {
-    color: var(--text);
-    text-decoration: none;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .bill-title-sm a:hover {
-    text-decoration: underline;
-  }
-</style>
+  {cities.map((c) => (
+    <a class="card local-card" href={href(c.path)}>
+      <span class="kicker">Local government</span>
+      <strong>{c.name}</strong>
+      <span class="small muted">{c.summary} →</span>
+    </a>
+  ))}
+</Base>
 
 <style>
   .glance {
@@ -274,12 +139,6 @@ const legislatorRows = chambers.flatMap((c) =>
   }
   .glance :global(.legend) {
     font-size: 0.78rem;
-  }
-  /* Two compact columns of members on wider phones and up. */
-  @media (min-width: 30rem) {
-    .panel :global(.plain-members) {
-      grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-    }
   }
   .local-card {
     display: grid;
@@ -294,13 +153,5 @@ const legislatorRows = chambers.flatMap((c) =>
   }
   .local-card strong {
     font-size: var(--step-1);
-  }
-  .more-members summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    color: var(--link);
-    font-weight: 600;
   }
 </style>

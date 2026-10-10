@@ -1,0 +1,1339 @@
+[
+ {
+  "EventId": 14273,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-10-13T00:00:00",
+  "EventTime": "2:30 PM",
+  "EventLocation": "Education Committee Hearing on Docket #0276"
+ },
+ {
+  "EventId": 14270,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-10-08T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1099"
+ },
+ {
+  "EventId": 14271,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-10-08T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways and Means Committee Hearing on Docket #0586"
+ },
+ {
+  "EventId": 14269,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-10-06T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #1829-1838"
+ },
+ {
+  "EventId": 14267,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-10-02T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Census, Redistricting, and Elections Committee Hearing on Dockets #0183 and #1805"
+ },
+ {
+  "EventId": 14256,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-30T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14266,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-29T00:00:00",
+  "EventTime": "10:30 AM",
+  "EventLocation": "Housing & Community Development Committee Hearing on Docket #0695"
+ },
+ {
+  "EventId": 14264,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-28T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #1671-1674"
+ },
+ {
+  "EventId": 14262,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-25T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Civil Rights, Racial Equity, and Immigrant Advancement Committee Hearing on Docket #0299"
+ },
+ {
+  "EventId": 14261,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-24T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #1335"
+ },
+ {
+  "EventId": 14248,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-23T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14259,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-22T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "PILOT Agreements, Institutional and Intergovernmental Relations Committee Hearing on Docket #1338"
+ },
+ {
+  "EventId": 14260,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-22T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Education Committee Hearing on Docket #0406"
+ },
+ {
+  "EventId": 14257,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-21T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services Committee Hearing on Dockets #1085, #1395, and #1397"
+ },
+ {
+  "EventId": 14258,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-21T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1414"
+ },
+ {
+  "EventId": 14255,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-18T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services Committee Hearing on Docket #0773"
+ },
+ {
+  "EventId": 14252,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-17T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1541"
+ },
+ {
+  "EventId": 14253,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-17T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Education Committee Hearing on Docket #0507"
+ },
+ {
+  "EventId": 14238,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-16T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14250,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-15T00:00:00",
+  "EventTime": "10:30 AM",
+  "EventLocation": "Education Committee Hearing on Docket #1334"
+ },
+ {
+  "EventId": 14246,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-10T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Public Safety and Criminal Justice Committee Hearing on Dockets #0185, 0999, 1390, 1419, and 1602"
+ },
+ {
+  "EventId": 14247,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-09-10T00:00:00",
+  "EventTime": "2:45 PM",
+  "EventLocation": "Environmental Justice, Resiliency, & Parks Committee Hearing on Docket #1241"
+ },
+ {
+  "EventId": 14241,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-31T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "City Services Committee Hearing on Docket #0335"
+ },
+ {
+  "EventId": 14240,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-28T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Veterans, Military Families, and Military Affairs Committee Hearing on Dockets #0273 and #0274"
+ },
+ {
+  "EventId": 14226,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-26T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14242,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-25T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Labor and Economic Development Committee Hearing on Docket #1391"
+ },
+ {
+  "EventId": 14237,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-21T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Environmental Justice, Resiliency, and Parks Committee Hearing on Dockets #1403-1409"
+ },
+ {
+  "EventId": 14234,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-14T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services Committee Hearing on Docket #0932"
+ },
+ {
+  "EventId": 14233,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-13T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Rules, Ethics, and Administration Committee Hearing on Docket #0475"
+ },
+ {
+  "EventId": 14232,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-11T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1541"
+ },
+ {
+  "EventId": 14227,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-04T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1223"
+ },
+ {
+  "EventId": 14229,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-08-04T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Planning, Development, & Transportation Committee Hearing on Docket #1316"
+ },
+ {
+  "EventId": 14224,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-30T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services Committee Hearing on Docket #0811"
+ },
+ {
+  "EventId": 14223,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-24T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Civil Rights, Racial Equity, and Immigrant Advancement Committee Hearing on Docket #1339"
+ },
+ {
+  "EventId": 14218,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-22T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14222,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-21T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Civil Rights, Racial Equity, and Immigrant Advancement Committee Hearing on Docket #1237"
+ },
+ {
+  "EventId": 14220,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-15T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #1311-1312"
+ },
+ {
+  "EventId": 14209,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-08T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14217,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-07-02T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0970"
+ },
+ {
+  "EventId": 14213,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-29T00:00:00",
+  "EventTime": "10:30 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0694"
+ },
+ {
+  "EventId": 14211,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-25T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Planning, Development, and Transportation Committee Hearing on Docket #0968"
+ },
+ {
+  "EventId": 14201,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-24T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14204,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-17T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14206,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-15T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #0697"
+ },
+ {
+  "EventId": 14205,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-12T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Housing and Community Development Committee Hearing on Dockets #0792, 0913-0916"
+ },
+ {
+  "EventId": 14197,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-10T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14200,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-05T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Planning, Development, & Transportation Committee Hearing on Dockets #0796-#0800 and #1037-1040"
+ },
+ {
+  "EventId": 14198,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-04T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Planning, Development, & Transportation Committee Hearing on Docket #0809"
+ },
+ {
+  "EventId": 14199,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-04T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Civil Rights, Racial Equity, and Immigrant Advancement Committee Hearing on Docket #0409"
+ },
+ {
+  "EventId": 14184,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-06-03T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14195,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-27T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #1030"
+ },
+ {
+  "EventId": 14196,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-27T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #1031"
+ },
+ {
+  "EventId": 14193,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-26T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Capital  Budget Overview, Assessing, Auditing, Treasury"
+ },
+ {
+  "EventId": 14194,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-26T00:00:00",
+  "EventTime": "6:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Public Testimony"
+ },
+ {
+  "EventId": 14192,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-22T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0638"
+ },
+ {
+  "EventId": 14190,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-21T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: BPHC"
+ },
+ {
+  "EventId": 14191,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-21T00:00:00",
+  "EventTime": "3:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: BPHC"
+ },
+ {
+  "EventId": 14176,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-20T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14187,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-19T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0591 and #0696"
+ },
+ {
+  "EventId": 14188,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-19T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: BPL"
+ },
+ {
+  "EventId": 14185,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-18T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: OPAT"
+ },
+ {
+  "EventId": 14186,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-18T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0747,  FY27 Budget: BCYF, Early Childhood, Revolving Fund"
+ },
+ {
+  "EventId": 14182,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-14T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Age Strong, VETS, Returning Citizens"
+ },
+ {
+  "EventId": 14183,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-14T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Elections"
+ },
+ {
+  "EventId": 14168,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-13T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14181,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-13T00:00:00",
+  "EventTime": "9:30 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0909-0912"
+ },
+ {
+  "EventId": 14179,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-12T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Office of Equity, Black Male Advancement, Fair Housing, Women's Advancement"
+ },
+ {
+  "EventId": 14180,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-12T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: MOIA, LCA, CPwD, LGBTQIA2S+ Advancement"
+ },
+ {
+  "EventId": 14177,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-11T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: BFD"
+ },
+ {
+  "EventId": 14178,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-11T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0756, FY27 Budget: Parks & Recreation, Parkman Fund"
+ },
+ {
+  "EventId": 14175,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-08T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services Committee Hearing on Docket #0515"
+ },
+ {
+  "EventId": 14173,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-07T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0749-0750, FY27 Budget: BPD, Revolving Funds"
+ },
+ {
+  "EventId": 14174,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-07T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: BPD"
+ },
+ {
+  "EventId": 14159,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-06T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14169,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-05T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Planning"
+ },
+ {
+  "EventId": 14170,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-05T00:00:00",
+  "EventTime": "3:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: YEA, YOU, YEO"
+ },
+ {
+  "EventId": 14166,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-04T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0754, FY27 Budget: BTD, PWD, Revolving Fund"
+ },
+ {
+  "EventId": 14167,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-05-04T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: ISD, Property Management, PFD"
+ },
+ {
+  "EventId": 14164,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-30T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Economic Opportunity & Inclusion, Supplier Diversity"
+ },
+ {
+  "EventId": 14165,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-30T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0751-0753, FY27 Budget: Consumer Affairs & Licensing, Tourism, Arts & Culture, Revolving Funds"
+ },
+ {
+  "EventId": 14140,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-29T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14162,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-28T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Neighborhood Services"
+ },
+ {
+  "EventId": 14163,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-28T00:00:00",
+  "EventTime": "6:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Public Testimony"
+ },
+ {
+  "EventId": 14160,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-27T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0757, FY27 Budget: DoIT, PEG Access Fund"
+ },
+ {
+  "EventId": 14161,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-27T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Mayor's Office of Housing"
+ },
+ {
+  "EventId": 14158,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-24T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #0410"
+ },
+ {
+  "EventId": 14155,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-23T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0748, FY27 Budget: Labor Compliance & Worker Protections, Law, Revolving Fund"
+ },
+ {
+  "EventId": 14157,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-23T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Participatory Budgeting"
+ },
+ {
+  "EventId": 14152,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-22T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0744-0746, FY27 Budget: Environment, Food Justice, Revolving Funds"
+ },
+ {
+  "EventId": 14154,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-22T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Planning, Development, & Transportation Committee Hearing on Dockets #0204, #0588 & #0589"
+ },
+ {
+  "EventId": 14149,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-21T00:00:00",
+  "EventTime": "9:30 AM",
+  "EventLocation": "Planning, Development, & Transportation Committee Hearing on Docket #0771"
+ },
+ {
+  "EventId": 14150,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-21T00:00:00",
+  "EventTime": "11:00 AM",
+  "EventLocation": "Environmental Justice, Resiliency, & Parks Committee Hearing on Dockets #0260, #0760, & #0761"
+ },
+ {
+  "EventId": 14151,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-21T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Community Preservation Act Committee Hearing on Dockets #0569 and #0758"
+ },
+ {
+  "EventId": 14148,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-17T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Academics and Outreach"
+ },
+ {
+  "EventId": 14146,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-16T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: BPS Supports"
+ },
+ {
+  "EventId": 14147,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-16T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, 0741-0743, FY27 Budget: BPS Operations, Revolving Funds"
+ },
+ {
+  "EventId": 14132,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-15T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14145,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-15T00:00:00",
+  "EventTime": "9:30 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #0763"
+ },
+ {
+  "EventId": 14143,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-14T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Operating Overview"
+ },
+ {
+  "EventId": 14144,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-14T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0733-0740, FY27 Budget: Capital Overview"
+ },
+ {
+  "EventId": 14141,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-13T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Labor & Economic Development Committee Hearing on Docket #0218"
+ },
+ {
+  "EventId": 14142,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-13T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Dockets #0320, #0476, and #0759"
+ },
+ {
+  "EventId": 14139,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-10T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #0163"
+ },
+ {
+  "EventId": 14137,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-09T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Civil Rights, Racial Equity, & Immigrant Advancement Committee Hearing on Docket #0299"
+ },
+ {
+  "EventId": 14138,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-09T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Labor & Economic Development Committee Hearing on Docket #0168"
+ },
+ {
+  "EventId": 14128,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-08T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14135,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-07T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #0325"
+ },
+ {
+  "EventId": 14136,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-07T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0638"
+ },
+ {
+  "EventId": 14131,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-06T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Planning, Development, & Transportation Committee Hearing on Docket #0178"
+ },
+ {
+  "EventId": 14134,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-06T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0290"
+ },
+ {
+  "EventId": 14119,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-04-01T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14129,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-31T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Education Committee Hearing on Docket #0374"
+ },
+ {
+  "EventId": 14130,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-31T00:00:00",
+  "EventTime": "3:00 PM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0400"
+ },
+ {
+  "EventId": 14126,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-30T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0179"
+ },
+ {
+  "EventId": 14125,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-27T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #0268"
+ },
+ {
+  "EventId": 14123,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-26T00:00:00",
+  "EventTime": "10:30 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0570 & 0571"
+ },
+ {
+  "EventId": 14124,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-26T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0174"
+ },
+ {
+  "EventId": 14114,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-25T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14121,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-24T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Education Committee Hearing on Docket #0166"
+ },
+ {
+  "EventId": 14122,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-24T00:00:00",
+  "EventTime": "6:00 PM",
+  "EventLocation": "Ways & Means Public Testimony on Dockets #0201 & #0202"
+ },
+ {
+  "EventId": 14118,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-23T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #0201"
+ },
+ {
+  "EventId": 14120,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-23T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Education Committee Hearing on Docket #0587"
+ },
+ {
+  "EventId": 14117,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-20T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Arts, Culture, Entertainment, Tourism & Special Events Committee Hearing on Dockets #0186 and #0412"
+ },
+ {
+  "EventId": 14108,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-18T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14113,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-16T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services Committee Hearing on Docket #0281"
+ },
+ {
+  "EventId": 14115,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-16T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Post-Audit and Planning, Development & Transportation Joint Committee Hearing on Dockets #0205 and #0199"
+ },
+ {
+  "EventId": 14112,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-13T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0289"
+ },
+ {
+  "EventId": 14111,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-12T00:00:00",
+  "EventTime": "9:30 AM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0167"
+ },
+ {
+  "EventId": 14101,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-11T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14109,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-10T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Education Committee Hearing on Dockets #0276 and #0277"
+ },
+ {
+  "EventId": 14110,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-10T00:00:00",
+  "EventTime": "6:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0201 & #0202"
+ },
+ {
+  "EventId": 14106,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-09T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0283"
+ },
+ {
+  "EventId": 14107,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-09T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Public Health, Homelessness, & Recovery Committee Hearing on Docket #0175"
+ },
+ {
+  "EventId": 14105,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-06T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Civil Rights, Racial Equity, and Immigrant Advancement Committee Hearing on Docket #0169"
+ },
+ {
+  "EventId": 14104,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-05T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #0201"
+ },
+ {
+  "EventId": 14097,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-04T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14102,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-03T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0285"
+ },
+ {
+  "EventId": 14103,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-03T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "City Services Committee Hearing on Dockets #0270, #0291-0292"
+ },
+ {
+  "EventId": 14100,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-03-02T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Education Committee Hearing on Docket #0200"
+ },
+ {
+  "EventId": 14098,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-26T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0287"
+ },
+ {
+  "EventId": 14099,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-26T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #0201"
+ },
+ {
+  "EventId": 14092,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-25T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14094,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-20T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Human Services Committee Hearing on Docket #0284"
+ },
+ {
+  "EventId": 14093,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-12T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "City Services Committee Hearing on Docket #0112"
+ },
+ {
+  "EventId": 14090,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-11T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14091,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-09T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #0128 and #0129"
+ },
+ {
+  "EventId": 14087,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-04T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14089,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-02-02T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Committee of the Whole Hearing on Dockets #0124, #0125, #0126, and #0127"
+ },
+ {
+  "EventId": 14008,
+  "EventBodyName": "City Council",
+  "EventDate": "2026-01-05T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14004,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-10T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14010,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-09T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Planning, Development, and Transportation Committee Hearing on Docket #0161"
+ },
+ {
+  "EventId": 14007,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-08T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #2045"
+ },
+ {
+  "EventId": 14006,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-04T00:00:00",
+  "EventTime": "11:00 AM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Dockets #0336, #1400, #1409, and #1548-1549"
+ },
+ {
+  "EventId": 13992,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-03T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 14003,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-01T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Strong Women, Families, and Communities Committee Hearing on Docket #1852"
+ },
+ {
+  "EventId": 14005,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-12-01T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "City Services & Innovation Technology Committee Hearing on Docket #1447"
+ },
+ {
+  "EventId": 14002,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-26T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #0138"
+ },
+ {
+  "EventId": 13999,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-24T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #1927"
+ },
+ {
+  "EventId": 14001,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-24T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Dockets #1967-1970"
+ },
+ {
+  "EventId": 13998,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-21T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Veterans, Military Families, & Military Affairs Committee Hearing on Dockets #0722"
+ },
+ {
+  "EventId": 13996,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-20T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services & Innovation Technology Committee Hearing on Docket #1748"
+ },
+ {
+  "EventId": 13997,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-20T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "City Service & Innovation Technology Committee Hearing on Docket #1791"
+ },
+ {
+  "EventId": 13983,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-19T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 13994,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-18T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Planning Development & Transportation Committee Hearing on Dockets #1632 and #1718"
+ },
+ {
+  "EventId": 13995,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-18T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Public Safety & Criminal Justice and Public Health, Homelessness, & Recovery Joint Committee Hearing on Dockets #1346, 1661, & 1662"
+ },
+ {
+  "EventId": 13991,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-17T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #1669"
+ },
+ {
+  "EventId": 13993,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-17T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Post-Audit: Government Accountability, Transparency, & Accessibility Committee Hearing on Docket #1446"
+ },
+ {
+  "EventId": 13990,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-14T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Environmental Justice, Resiliency, & Parks Committee Hearing on Docket #1850"
+ },
+ {
+  "EventId": 13989,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-13T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Small Business & Professional Licensure Committee Hearing on Docket #0263"
+ },
+ {
+  "EventId": 13987,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-12T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Civil Rights, Racial Equity, & Immigrant Advancement Committee Hearing on Docket #1670"
+ },
+ {
+  "EventId": 13985,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-06T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Ways and Means Committee Hearing on Docket #1926"
+ },
+ {
+  "EventId": 13986,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-06T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Public Safety & Criminal Justice Committee Hearing on Docket #0978"
+ },
+ {
+  "EventId": 13979,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-11-05T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 13982,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-30T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Housing & Community Development Committee Hearing on Docket #1634"
+ },
+ {
+  "EventId": 13973,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-29T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 13980,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-28T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Post-Audit: Government Accountability, Transparency, & Accessibility Committee Hearing on Docket #0176"
+ },
+ {
+  "EventId": 13981,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-28T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1432"
+ },
+ {
+  "EventId": 13976,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-27T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Labor, Workforce, & Economic Development Committee Hearing on Dockets #1625, 1658-1660, 1691-1695, 1697, & 1832"
+ },
+ {
+  "EventId": 13978,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-27T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Government Operations Committee Hearing on Docket #1434"
+ },
+ {
+  "EventId": 13975,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-23T00:00:00",
+  "EventTime": "11:30 AM",
+  "EventLocation": "Planning, Development, and Transportation Committee Hearing on Dockets #1353-1354 and #1412"
+ },
+ {
+  "EventId": 13963,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-22T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 13974,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-21T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Labor, Workforce, & Economic Development Committee Hearing on Docket #0473"
+ },
+ {
+  "EventId": 13970,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-17T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Small Business & Professional Licensure Committee Hearing on Docket #1633"
+ },
+ {
+  "EventId": 13968,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-16T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Housing & Community Development Committee Hearing on Dockets #0259 & #0769"
+ },
+ {
+  "EventId": 13967,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-10T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Arts, Culture, Entertainment, Tourism, & Special Events Committee Hearing on Dockets #1443"
+ },
+ {
+  "EventId": 13965,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-09T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "Veterans, Military Families, & Military Affairs Committee Hearing on Docket #1775"
+ },
+ {
+  "EventId": 13966,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-09T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Housing & Community Development Committee Hearing on Docket #1440"
+ },
+ {
+  "EventId": 13957,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-08T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ },
+ {
+  "EventId": 13961,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-02T00:00:00",
+  "EventTime": "10:00 AM",
+  "EventLocation": "City Services and Innovation Technology Committee Hearing on Docket #1448"
+ },
+ {
+  "EventId": 13962,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-02T00:00:00",
+  "EventTime": "2:00 PM",
+  "EventLocation": "Ways & Means Committee Hearing on Docket #1690"
+ },
+ {
+  "EventId": 3990,
+  "EventBodyName": "City Council",
+  "EventDate": "2025-10-01T00:00:00",
+  "EventTime": "12:00 PM",
+  "EventLocation": "Council Chambers"
+ }
+]

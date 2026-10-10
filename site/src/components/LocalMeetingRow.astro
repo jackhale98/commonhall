@@ -1,6 +1,8 @@
 ---
-/** One Boston council meeting as a compact row: date, time, body, and its agenda or minutes. */
+/** One Boston council meeting or committee hearing as a compact row: date, time, what it is, and its agenda or minutes. */
+import { committeeSlug } from '@civic/congress-client/boston-committees';
 import { formatDate } from '../lib/format';
+import { localCommitteeHref } from '../lib/paths';
 
 interface Props {
   meeting: {
@@ -11,18 +13,40 @@ interface Props {
     agenda_url: string | null;
     minutes_url: string | null;
     legistar_url: string | null;
+    /** Committees holding it; empty or missing for a full council meeting. */
+    committees?: string[];
   };
   upcoming?: boolean;
+  /** Leave out the committee name (on that committee's own page). */
+  hideCommittee?: boolean;
 }
 
-const { meeting: m, upcoming = false } = Astro.props;
+const { meeting: m, upcoming = false, hideCommittee = false } = Astro.props;
+const committees = m.committees ?? [];
+// Committee hearings put the hearing's subject in Legistar's location field, so show it only for council meetings.
+const place = committees.length === 0 ? m.location : null;
 ---
 
 <li class="meeting">
   <span>
     <strong>{formatDate(m.date)}</strong>
-    {upcoming && m.time && ` · ${m.time}`} · {m.body ?? 'City Council'}
-    {upcoming && m.location && <span class="small muted"> · {m.location}</span>}
+    {upcoming && m.time && ` · ${m.time}`} ·{' '}
+    {committees.length === 0 ? (
+      'City Council'
+    ) : hideCommittee ? (
+      'Hearing'
+    ) : (
+      <>
+        {committees.map((c, i) => (
+          <>
+            {i > 0 && ' and '}
+            <a href={localCommitteeHref(committeeSlug(c))}>{c}</a>
+          </>
+        ))}{' '}
+        {committees.length > 1 ? 'joint hearing' : 'hearing'}
+      </>
+    )}
+    {upcoming && place && <span class="small muted"> · {place}</span>}
   </span>
   <span class="cluster small">
     {m.agenda_url && (

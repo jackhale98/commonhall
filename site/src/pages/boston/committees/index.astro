@@ -1,0 +1,95 @@
+---
+import { BOSTON_COMMITTEES, committeeSlug } from '@civic/congress-client/boston-committees';
+import BostonHeader from '../../../components/BostonHeader.astro';
+import HearingList from '../../../components/HearingList.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadBostonHearings } from '../../../lib/build-data';
+import { formatDate } from '../../../lib/format';
+import { localCommitteeHref } from '../../../lib/paths';
+
+const hearings = await loadBostonHearings();
+const today = new Date().toISOString().slice(0, 10);
+const upcoming = hearings.filter((h) => h.date >= today).reverse();
+const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString().slice(0, 10);
+// Every standing committee, plus any name only the hearings use.
+const names = [...new Set([...BOSTON_COMMITTEES, ...hearings.flatMap((h) => h.committees)])].sort((a, b) =>
+  a.localeCompare(b),
+);
+const committees = names.map((name) => {
+  const own = hearings.filter((h) => h.committees.includes(name));
+  return {
+    name,
+    next: own.filter((h) => h.date >= today).at(-1)?.date ?? null,
+    last: own.find((h) => h.date < today)?.date ?? null,
+    year: own.filter((h) => h.date >= yearAgo && h.date < today).length,
+  };
+});
+---
+
+<Base
+  title="Boston City Council committees"
+  description="Boston City Council committees: upcoming hearings, the dockets they take up, and past hearings."
+  section="states"
+>
+  <BostonHeader
+    current="committees"
+    lede="Council committees hold public hearings on dockets before the full council votes."
+  />
+
+  <section aria-labelledby="upcoming-h">
+    <h2 id="upcoming-h">Upcoming hearings</h2>
+    {upcoming.length === 0 ? (
+      <p class="muted">No committee hearings scheduled yet.</p>
+    ) : (
+      <div class="panel">
+        <HearingList hearings={upcoming} upcoming />
+      </div>
+    )}
+  </section>
+
+  <section aria-labelledby="committees-h">
+    <h2 id="committees-h">Committees</h2>
+    <ul class="plain-rows boston-committees">
+      {committees.map((c) => (
+        <li>
+          <a class="committee-name" href={localCommitteeHref(committeeSlug(c.name))}>
+            {c.name}
+          </a>
+          <span class="small muted">
+            {c.next
+              ? `Next hearing ${formatDate(c.next)}`
+              : c.last
+                ? `Last hearing ${formatDate(c.last)}`
+                : 'No hearings on file'}
+            {c.year > 0 && ` · ${c.year} in the past year`}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <p class="small muted">
+    Hearings and agendas from{' '}
+    <a href="https://boston.legistar.com/Calendar.aspx" rel="noopener">
+      Boston’s Legistar
+    </a>
+    , checked every 15 minutes. Legistar doesn’t list committee members.
+  </p>
+</Base>
+
+<style>
+  .boston-committees li {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .committee-name {
+    font-size: var(--step-0);
+    font-weight: 650;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .committee-name:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+</style>

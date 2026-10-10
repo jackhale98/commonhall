@@ -1788,7 +1788,7 @@ nav[aria-label='Breadcrumb'] {
 }
 
 /* Section heads */
-.section-head h2 {
+.section-head h2:not(.h-small) {
   font-size: var(--step-2);
 }
 .see-all {
@@ -3026,4 +3026,56 @@ button .ch-loader,
 .official-text > a:hover {
   color: var(--link);
   text-decoration: underline;
+}
+
+/* State bills and legislator rows (state Overview, Legislature and Bills tabs). */
+.legislator,
+.state-bill {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  align-items: center;
+}
+.state-bill p {
+  margin: 0;
+}
+.legislator-text {
+  display: grid;
+  min-width: 0;
+}
+.legislator-text > a {
+  font-weight: 600;
+  text-decoration: none;
+}
+.legislator-text > a:hover {
+  text-decoration: underline;
+}
+.legislator .follow-button {
+  flex: none;
+  min-height: 36px;
+  padding-inline: 0.9rem;
+  font-size: var(--step--1);
+}
+.bill-title-sm {
+  font-weight: 650;
+}
+.bill-title-sm a {
+  color: var(--text);
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bill-title-sm a:hover {
+  text-decoration: underline;
+}
+
+/* A small heading with a "see all" link beside it (state Overview). */
+.section-head:has(h2.h-small) {
+  margin: var(--space-5) 0 var(--space-2);
+}
+/* The source line at the foot of a state tab, apart from the list above it. */
+.tab-note {
+  margin-top: var(--space-5);
 }

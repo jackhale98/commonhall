@@ -35,7 +35,8 @@ export interface JobResult<C extends Cursor = Cursor> {
 
 /** Hourly request ceilings per upstream API (a margin below the published limit). */
 export const HOURLY_LIMITS: Record<string, number> = {
-  congress: 4800,
+  // Congress.gov allows 5,000 an hour; 500 are left for visitors' on-demand lookups (ON_DEMAND_HOURLY_CAP = 300).
+  congress: 4500,
   // api.data.gov personal keys allow 1,000 an hour on OpenFEC.
   fec: 900,
   // CourtListener's default for a token: 5 a minute, 50 an hour, 125 a day (rolling windows).

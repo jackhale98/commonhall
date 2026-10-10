@@ -40,8 +40,10 @@ import {
   HIDDEN_MATTER_TYPES,
   ZBA_COLUMNS,
   hiddenTypesFilter,
+  docketTitle,
   report311,
   type Boston311Day,
+  type BostonHearing,
   type CapitalProject,
   type CityBudgetLine,
   type ZbaAppeal,
@@ -666,14 +668,62 @@ export const loadLocalMatterFacets = memo(async () => {
   return { types: count(rows, 'type'), statuses: count(shown, 'status'), total: shown.length };
 });
 
-export const loadLocalMeetings = memo(async () =>
-  select<LocalMeeting>('local_meetings', {
-    select: 'id,event_id,body,starts_at,date,time,location,agenda_url,minutes_url,legistar_url',
-    city: 'eq.boston',
-    order: 'date.desc',
-    limit: 40,
-  }),
-);
+/**
+ * Every stored Boston committee hearing, newest first, with the dockets on its
+ * agenda (empty before the committees migration and its first sync).
+ */
+export const loadBostonHearings = memo(async (): Promise<BostonHearing[]> => {
+  const meetings = (
+    await selectAllOptional<Omit<BostonHearing, 'items'>>('local_meetings', {
+      select: 'id,date,time,starts_at,location,agenda_url,minutes_url,legistar_url,committees',
+      city: 'eq.boston',
+      committees: 'neq.{}',
+      order: 'date.desc,id.asc',
+    })
+  ).filter((m) => (m.committees ?? []).length > 0);
+  const items = meetings.length
+    ? await selectByIds<BostonHearing['items'][number] & { meeting_id: string }>(
+        'local_meeting_items',
+        'meeting_id',
+        meetings.map((m) => m.id),
+        { select: 'meeting_id,seq,matter_id,file_number,title', order: 'meeting_id.asc,seq.asc' },
+      )
+    : [];
+  // Agenda lines are often procedural ("On the message and order, referred on…"); use the docket's own title.
+  const matterIds = [...new Set(items.map((i) => i.matter_id).filter((id): id is string => Boolean(id)))];
+  const titles = new Map(
+    (matterIds.length
+      ? await selectByIds<{ id: string; title: string }>('local_matters', 'id', matterIds, {
+          select: 'id,title',
+          order: 'id.asc',
+        })
+      : []
+    ).map((m) => [m.id, m.title]),
+  );
+  const byMeeting = groupBy(
+    items.map((i) => {
+      const stored = Boolean(i.matter_id && titles.has(i.matter_id));
+      return { ...i, stored, title: stored ? titles.get(i.matter_id!)! : docketTitle(i.title) };
+    }),
+    (i) => i.meeting_id,
+  );
+  return meetings.map((m) => ({ ...m, items: byMeeting.get(m.id) ?? [] }));
+});
+
+/** Recent council meetings and committee hearings, each with its committees (none for a full council meeting). */
+export const loadLocalMeetings = memo(async (): Promise<(LocalMeeting & { committees: string[] })[]> => {
+  const [meetings, hearings] = await Promise.all([
+    select<LocalMeeting>('local_meetings', {
+      select: 'id,event_id,body,starts_at,date,time,location,agenda_url,minutes_url,legistar_url',
+      city: 'eq.boston',
+      order: 'date.desc',
+      limit: 40,
+    }),
+    loadBostonHearings(),
+  ]);
+  const committees = new Map(hearings.map((h) => [h.id, h.committees]));
+  return meetings.map((m) => ({ ...m, committees: committees.get(m.id) ?? [] }));
+});
 
 export interface LocalSponsorship {
   matter_id: string;

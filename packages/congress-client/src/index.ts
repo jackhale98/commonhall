@@ -13,3 +13,4 @@ export * from './fec.ts';
 export * from './federal-register.ts';
 export * from './courtlistener.ts';
 export * from './analyze-boston.ts';
+export * from './boston-committees.ts';

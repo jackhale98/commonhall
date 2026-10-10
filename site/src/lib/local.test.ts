@@ -5,6 +5,7 @@ import {
   capitalStage,
   change311,
   closeTime,
+  docketTitle,
   fundingSegments,
   report311,
   streetAddress,
@@ -155,5 +156,21 @@ describe('city budget summary', () => {
     expect(budgetChange(99.4, 100)).toBe('−0.6%');
     expect(budgetChange(100, 100)).toBe('no change');
     expect(budgetChange(5, 0)).toBe('new');
+  });
+});
+
+describe('docketTitle', () => {
+  it('drops the procedural lead-in Legistar puts on hearing agendas', () => {
+    expect(
+      docketTitle(
+        'On the message and order, referred on September 30, 2026, Docket #1829, to reduce the FY27 appropriation for the Reserve for Collective Bargaining',
+      ),
+    ).toBe('To reduce the FY27 appropriation for the Reserve for Collective Bargaining');
+    expect(docketTitle('Councilor Weber called Docket #1311, message and order authorizing the City of Boston')).toBe(
+      'Message and order authorizing the City of Boston',
+    );
+    expect(docketTitle('Order for a hearing to review discrepancies')).toBe(
+      'Order for a hearing to review discrepancies',
+    );
   });
 });

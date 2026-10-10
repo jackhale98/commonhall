@@ -122,6 +122,18 @@ describe('sync-boston', () => {
     expect(meetings).toHaveLength(3);
     // 12:00 PM Eastern (daylight time) on 2026-10-07 is 16:00 UTC.
     expect(new Date(meetings[0]!.starts_at).toISOString()).toBe('2026-10-07T16:00:00.000Z');
+    // Committee hearings carry their committee, read from Legistar's location text.
+    const committees = await sql`select event_id, committees from public.local_meetings order by event_id`;
+    expect(committees.map((m) => [m.event_id, m.committees])).toEqual([
+      [14263, []],
+      [14267, ['Census, Redistricting, and Elections']],
+      [14269, ['Ways and Means']],
+    ]);
+    // Agenda items that are council matters, per meeting.
+    const items = await sql`select meeting_id, seq, matter_id from public.local_meeting_items order by meeting_id, seq`;
+    expect(items).toHaveLength(3);
+    expect(items[0]).toMatchObject({ seq: 1 });
+    expect(items.every((i) => i.matter_id?.startsWith('boston-'))).toBe(true);
 
     // First load: no feed events.
     expect(await sql`select * from public.feed_events`).toHaveLength(0);

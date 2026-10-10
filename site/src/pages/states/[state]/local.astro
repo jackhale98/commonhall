@@ -1,0 +1,63 @@
+---
+import StateHeader from '../../../components/StateHeader.astro';
+import Base from '../../../layouts/Base.astro';
+import { loadBostonHearings, loadLocalMeetings, loadLocalOfficials } from '../../../lib/build-data';
+import { formatDate, stateName } from '../../../lib/format';
+import { href } from '../../../lib/paths';
+import { LOCAL_GOVERNMENTS } from '../../../lib/state-tabs';
+
+/** Only states with a city we cover. */
+export function getStaticPaths() {
+  return Object.keys(LOCAL_GOVERNMENTS).map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const cities = LOCAL_GOVERNMENTS[code] ?? [];
+// Boston is the one city so far; its next council meeting and hearing make the card useful at a glance.
+const today = new Date().toISOString().slice(0, 10);
+const [officials, meetings, hearings] = await Promise.all([
+  loadLocalOfficials(),
+  loadLocalMeetings(),
+  loadBostonHearings(),
+]);
+const nextMeeting = meetings.filter((m) => m.date >= today && m.committees.length === 0).at(-1);
+const nextHearing = hearings.filter((h) => h.date >= today).at(-1);
+---
+
+<Base title={`Local government in ${name}`} description={`Cities in ${name} that CommonHall covers.`} section="states">
+  <StateHeader code={code} current="local" />
+  <h2 class="h-small">Cities</h2>
+  {cities.map((c) => (
+    <a class="card local-card" href={href(c.path)}>
+      <strong>{c.name}</strong>
+      <span class="small muted">{c.summary}</span>
+      {c.name === 'Boston' && (
+        <span class="small">
+          {officials.length || 13} councilors
+          {nextMeeting && ` · Next council meeting ${formatDate(nextMeeting.date)}`}
+          {nextHearing && ` · Next committee hearing ${formatDate(nextHearing.date)}`}
+        </span>
+      )}
+    </a>
+  ))}
+  <p class="small muted tab-note">More cities as their records become available in a form we can read.</p>
+</Base>
+
+<style>
+  .local-card {
+    display: grid;
+    gap: var(--space-1);
+    border-left: 5px solid var(--highlight);
+    text-decoration: none;
+    color: var(--text);
+    margin-block: var(--space-3);
+  }
+  .local-card strong {
+    font-size: var(--step-1);
+  }
+</style>

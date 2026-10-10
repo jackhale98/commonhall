@@ -1,0 +1,45 @@
+---
+import LiveDiscussions from '../../../../components/LiveDiscussions';
+import StateBills from '../../../../components/StateBills';
+import StateHeader from '../../../../components/StateHeader.astro';
+import Base from '../../../../layouts/Base.astro';
+import { loadDiscussions, loadRecentStateBills } from '../../../../lib/build-data';
+import { LEGISLATURE_STATES, stateName } from '../../../../lib/format';
+import { href } from '../../../../lib/paths';
+
+export function getStaticPaths() {
+  return LEGISLATURE_STATES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const { bills, total } = await loadRecentStateBills(code);
+// Massachusetts bills can have discussions (Boston's are on the Boston pages).
+const discussions =
+  code === 'MA' ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === 'ma') : [];
+---
+
+<Base title={`${name} state bills`} description={`Recent bills in the ${name} legislature.`} section="states">
+  <StateHeader code={code} current="bills" />
+  <h2 class="h-small">State bills</h2>
+  <StateBills client:load state={code} initial={bills} total={total} />
+  {code === 'MA' && (
+    <section aria-labelledby="say-h">
+      <h2 id="say-h">Have your say</h2>
+      <LiveDiscussions
+        client:idle
+        initial={discussions}
+        jurisdictions={['ma']}
+        empty={`No ${name} discussion is open right now. Ask for one from any state bill’s page.`}
+      />
+    </section>
+  )}
+  <p class="small muted tab-note">
+    Bills from <a href="https://openstates.org/">Open States</a>, refreshed daily. Federal bills are under{' '}
+    <a href={href('bills/')}>Congress</a>.
+  </p>
+</Base>

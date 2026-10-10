@@ -54,6 +54,11 @@ export function localMatterFallbackHref(id: string): string {
   return href(`boston/matter/?id=${encodeURIComponent(id.replace(/^boston-/, ''))}`);
 }
 
+/** A Boston City Council committee's page, by its slug ("ways-and-means"). */
+export function localCommitteeHref(slug: string): string {
+  return href(`boston/committees/${slug}/`);
+}
+
 export function localOfficialHref(id: string): string {
   return href(`boston/councilors/${id.replace(/^boston-p/, '')}/`);
 }

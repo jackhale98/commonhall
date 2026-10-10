@@ -54,7 +54,7 @@ but expects one request per vote.
 The backfill (GitHub Actions) and the hourly sync (Edge Function) use the same
 Congress.gov key, so per-run caps alone could exceed 5,000 requests/hour together.
 **Decision:** every job records its requests in `api_usage` (per API, per clock
-hour) and starts with `min(own cap, 4,800 − used this hour)`.
+hour) and starts with `min(own cap, 4,500 − used this hour)`.
 
 ## 6. Job locks are leases, not advisory locks
 
@@ -1060,3 +1060,51 @@ S. 4668 (…)") it sets the link directly. Budget-waiver motions ("… Re: Schif
 No. 5740") don't, and stored roll calls are never re-read, so the current session's
 unlinked amendment votes are deleted and the next federal sync (every 10 minutes)
 fetches them again with the link. All 29 such votes were in the current session.
+
+## 79. A state's pages as tabs
+
+A state's page had grown into one long scroll: the legislature, statewide officials,
+the delegation in Congress, recent bills, discussions and every legislator. It is now
+a row of tabs, each its own page: **Overview** (where the session stands, the
+legislature at a glance, statewide officials, the latest three bills), **Legislature**
+(state lawmakers, searchable), **Bills**, **Committees**, **Congress** (the state's
+U.S. senators and representatives) and **Local** (cities we cover).
+
+- Tabs with nothing behind them are left out rather than shown empty: territories
+  have no legislature tabs, and Local appears only where we cover a city (Boston,
+  under Massachusetts), so other states never show an empty "cities" tab.
+- State and federal lawmakers are told apart by place, not long labels: the tabs
+  read Legislature and Congress, and headings say "State legislators", "U.S. Senate"
+  and "U.S. House"; each tab's footnote points to the other.
+
+## 80. Boston committee hearings
+
+Boston's Legistar has no committee bodies; the council's committee hearings are
+filed as City Council meetings, with the committee named only in the location text
+("Ways & Means Committee Hearing on Dockets #1829-1838"). The sync now reads the
+committee from that text (`committeesFromLocation`, which settles spellings like
+"&"/"and" and older short names on the 22 standing committees and splits joint
+hearings) into `local_meetings.committees`, and keeps each meeting's agenda items
+that are council matters (`local_meeting_items`). Meetings stored earlier are read
+again once (`meetingsVersion`), which costs one agenda request per meeting.
+
+Boston gets a Committees tab: upcoming hearings, every committee with its next or
+last hearing, and a page per committee listing its hearings and the dockets on each
+agenda. Agenda lines point at Legistar's "matters recently heard" records, whose
+titles lead with procedure ("On the message and order, referred on …, Docket #1829,
+to …"); pages show the docket's own title when we hold it, the cleaned line
+otherwise, and link to Legistar for matters we don't keep. Legistar lists no
+committee members, so the pages don't either.
+
+## 81. On-demand cache lifetimes and the Congress.gov ceiling
+
+Bills fetched on demand (ones we don't store) are cached 30 days when from a past
+Congress and 1 hour when from the current one. Past Congresses' bills no longer
+change, so a long cache serves later visitors at no cost; current bills gain actions
+and cosponsors daily, so a long cache would show stale status. A current bill is
+also only fetched on demand until the regular sync stores it, which soon makes the
+cache moot.
+
+The syncs' Congress.gov ceiling drops from 4,800 to 4,500 requests an hour, so the
+syncs (4,500) and visitors' on-demand lookups (capped at 300) together stay under
+the key's 5,000.
