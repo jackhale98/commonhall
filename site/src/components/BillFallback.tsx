@@ -14,6 +14,7 @@ import FollowButton from './FollowButton';
 import MemberChip from './MemberChip';
 import StatusTracker from './StatusTracker';
 import Loader from './Loader';
+import VoteList, { type VoteListItemData } from './VoteList';
 
 type MemberRef = Pick<Member, 'bioguide_id' | 'name' | 'party' | 'state' | 'district' | 'chamber'>;
 
@@ -24,8 +25,18 @@ interface View {
   cosponsors: { member_id: string; withdrawn_date: string | null; is_original: boolean; member: MemberRef | null }[];
   subjects: string[];
   committees?: BillCommittee[];
+  /** Roll calls on the bill that we hold (any Congress we've synced). */
+  votes?: VoteListItemData[];
   source: 'database' | 'archive';
 }
+
+/** Roll calls on a bill, newest first; votes.bill_id is indexed, and an empty list is fine. */
+const loadVotes = (id: string) =>
+  select<VoteListItemData>('votes', {
+    bill_id: `eq.${id}`,
+    select: 'id,chamber,roll_number,date,question,result,yea_total,nay_total,present_total,not_voting_total',
+    order: 'date.desc.nullslast,id.desc',
+  }).catch(() => [] as VoteListItemData[]);
 
 const MEMBER_REF = 'bioguide_id,name,party,state,district,chamber';
 
@@ -78,9 +89,9 @@ export default function BillFallback() {
       try {
         const clean = billHref(ref.congress, ref.type, ref.number);
         if (await redirectIfPrerendered((i) => (i.bills.includes(id) ? clean : null))) return;
-        const fromDb = await loadFromDatabase(id);
+        const [fromDb, votes] = await Promise.all([loadFromDatabase(id), loadVotes(id)]);
         if (fromDb) {
-          setView(fromDb);
+          setView({ ...fromDb, votes });
           setState('ready');
           return;
         }
@@ -96,7 +107,7 @@ export default function BillFallback() {
           setState(result.status === 404 ? 'missing' : 'error');
           return;
         }
-        setView({ ...result.payload, source: 'archive' });
+        setView({ ...result.payload, votes, source: 'archive' });
         setState('ready');
       } catch {
         setState('error');
@@ -189,6 +200,13 @@ export default function BillFallback() {
         <h2>Actions</h2>
         <ActionTimeline actions={view.actions} />
       </section>
+
+      {(view.votes?.length ?? 0) > 0 && (
+        <section aria-labelledby="votes-h">
+          <h2 id="votes-h">Roll-call votes</h2>
+          <VoteList votes={view.votes!} />
+        </section>
+      )}
 
       {(view.committees?.length ?? 0) > 0 && (
         <section>
