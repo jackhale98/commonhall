@@ -3,7 +3,8 @@
  * from the Trial Court Law Libraries' list on mass.gov. mass.gov turns away plain
  * requests, so the pages are read in a headless browser (Playwright's Chromium).
  * Reads the newest two index pages (orders 500 and up, about fifteen years), and
- * opens an order's own page (its date, governor, register number and text) only
+ * opens an order's own page (its date, governor, register number and a short
+ * summary of what it does and why) only
  * when it is new or that is missing. The "Load
  * governor orders" workflow runs this weekly and on demand.
  *
@@ -15,6 +16,7 @@ import { chromium, type Page } from 'playwright';
 import {
   MA_ORDERS_INDEX,
   maOrderRangePages,
+  maOrderSummary,
   parseMaOrderDetail,
   parseMaOrderLinks,
   type MaOrderLink,
@@ -59,7 +61,7 @@ async function main() {
     const known = new Map(
       (
         await sql<{ number: number; complete: boolean }[]>`
-          select number, (signed_date is not null and body is not null) as complete
+          select number, (signed_date is not null and (summary is not null or reason is not null)) as complete
             from public.state_executive_orders where state = ${STATE}`
       ).map((r) => [r.number, r.complete]),
     );
@@ -76,13 +78,15 @@ async function main() {
         continue;
       }
       await open(order.url);
-      const detail = parseMaOrderDetail(await page.$eval('main', (m) => (m as HTMLElement).innerText));
+      const { body, ...fields } = parseMaOrderDetail(await page.$eval('main', (m) => (m as HTMLElement).innerText));
+      // A short summary, not the full text: that stays on mass.gov.
+      const detail = { ...fields, ...(body ? maOrderSummary(body) : { summary: null, reason: null }) };
       await sql`
         insert into public.state_executive_orders ${sql({ ...row, ...detail })}
         on conflict (state, number) do update set
           title = excluded.title, url = excluded.url, signed_date = excluded.signed_date,
           governor = excluded.governor, revokes = excluded.revokes, register = excluded.register,
-          body = excluded.body`;
+          summary = excluded.summary, reason = excluded.reason`;
       written++;
       console.log(`No. ${order.number}`, detail.signed_date ?? 'no date', detail.governor ?? '');
       await page.waitForTimeout(800);

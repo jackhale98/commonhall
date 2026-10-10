@@ -1,6 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { maOrderParts, maOrderRangePages, parseMaOrderDetail, parseMaOrderLinks } from '../src/mass-orders.ts';
+import {
+  maOrderParts,
+  maOrderRangePages,
+  maOrderSummary,
+  parseMaOrderDetail,
+  parseMaOrderLinks,
+} from '../src/mass-orders.ts';
 
 describe('Massachusetts executive orders', () => {
   it('finds the index page for each hundred, newest first', () => {
@@ -134,6 +140,31 @@ describe("an order's text", () => {
         text: 'Section 2 of Executive Order 631 is hereby amended by striking the words “up to 15 additional members”.',
       },
     ]);
+  });
+
+  it('summarizes an order in a line or two', () => {
+    const read658 = parseMaOrderDetail(read('order-658.txt')).body!;
+    expect(maOrderSummary(read658)).toEqual({
+      summary: 'The Department of Public Utilities shall open a proceeding on data center rates.',
+      reason: 'Demand for data storage, processing capabilities, and computational tasks is increasing.',
+    });
+    const long = maOrderSummary(
+      `WHEREAS, ${'a reason that goes on '.repeat(20)};\n\nNOW, THEREFORE, I do hereby order as follows:\n\nSECTION 1.\n\n${'The agency shall do a thing '.repeat(20)}.`,
+    );
+    expect(long.summary!.length).toBeLessThanOrEqual(281);
+    expect(long.summary).toMatch(/…$/);
+    expect(long.reason!.length).toBeLessThanOrEqual(201);
+    // Definitions say nothing about what an order does.
+    expect(
+      maOrderSummary(
+        'NOW, THEREFORE, I do hereby order as follows:\n\nSECTION 1.\n\nFor purposes of this Executive Order, the following terms shall have the following meanings:\n\nSECTION 2.\n\nThe Executive Office of Public Safety shall protect places of worship.',
+      ).summary,
+    ).toBe('The Executive Office of Public Safety shall protect places of worship.');
+    expect(
+      maOrderSummary(
+        'NOW, THEREFORE, I do hereby order as follows:\n\nSECTION 1.\n\nDefinition of "Total Medical Expenses (TME)." As used in this Executive Order, TME refers to spending.\n\nSECTION 2.\n\nThe Secretary shall set a primary care spending target.',
+      ).summary,
+    ).toBe('The Secretary shall set a primary care spending target.');
   });
 
   it('keeps titled sections ("Section 1. Purpose") as headings', () => {

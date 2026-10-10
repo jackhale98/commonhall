@@ -1306,9 +1306,11 @@ gives null for text that doesn't match (rescripts, damaged text).
 Each order's page on mass.gov carries its Massachusetts Register number and its
 text: the WHEREAS clauses, then what the governor orders, often in numbered
 sections. The Load governor orders workflow already opens each order's page, so it
-now keeps the register number and the text (`register`, `body`; migration 048) and
-re-opens orders stored without them once. The order's page on the site shows "What
-it orders" (the first three sections, the rest folded) and "Why, in the order's
-words" (the first three WHEREAS clauses). Orders that only amend another have no
-WHEREAS; their text is what follows the header fields. About 150 orders of a few KB
-each.
+keeps the register number and a short summary in the order's own words: "What it
+does" (the first paragraph of the first section that orders something, skipping
+definitions and lead-ins to lists, clipped to about 280 characters) and "Why" (the
+first WHEREAS clause, about 200). The full text stays on mass.gov, one link away;
+the site only needs enough to tell people what an order is about. Orders that only
+amend another have no WHEREAS; their summary comes from the text after the header
+fields. Migration 048 added `register` and `body`; migration 049 replaces `body`
+with `summary` and `reason`, and orders stored without either are re-opened once.

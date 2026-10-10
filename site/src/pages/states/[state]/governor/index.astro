@@ -32,7 +32,13 @@ const rows = orders.map((o) => ({
   meta: [`No. ${o.number}`, o.signed_date && formatDate(o.signed_date), o.governor].filter(Boolean).join(' · '),
   title: o.title,
   href: stateOrderHref(id(o.number)),
-  note: o.revokes ? `Revokes ${o.revokes.replace(/^Executive Order /i, 'order ')}` : undefined,
+  note:
+    [
+      o.summary && (o.summary.length > 150 ? `${o.summary.slice(0, 149)}…` : o.summary),
+      o.revokes && `Revokes ${o.revokes.replace(/^Executive Order /i, 'order ')}`,
+    ]
+      .filter(Boolean)
+      .join(' · ') || undefined,
   tags: discussed(o.number) ? ['Discussion open'] : undefined,
   group: o.signed_date?.slice(0, 4) ?? '',
 }));

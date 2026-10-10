@@ -429,8 +429,10 @@ export interface StateExecutiveOrder {
   url: string;
   /** "No. 1583" in the Massachusetts Register. */
   register: string | null;
-  /** The order's text: its WHEREAS clauses and what it orders. */
-  body: string | null;
+  /** What the order does, from the opening of what it orders (about 280 characters). */
+  summary: string | null;
+  /** Why, from its first WHEREAS clause (about 200 characters). */
+  reason: string | null;
 }
 
 /** State high court decisions (CourtListener), newest first, by state. */
@@ -446,7 +448,7 @@ export const loadStateCourtCases = memo(async () => {
 /** Governors' executive orders, newest first, by state. */
 export const loadStateOrders = memo(async () => {
   const rows = await selectAllOptional<StateExecutiveOrder>('state_executive_orders', {
-    select: 'state,number,title,signed_date,governor,revokes,url,register,body',
+    select: 'state,number,title,signed_date,governor,revokes,url,register,summary,reason',
     order: 'state.asc,number.desc',
   });
   return groupBy(rows, (r) => r.state);

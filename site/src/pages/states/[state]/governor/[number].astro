@@ -3,7 +3,6 @@ import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateOrders, type StateExecutiveOrder } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
-import { maOrderParts } from '@civic/congress-client/mass-orders';
 import { href } from '../../../../lib/paths';
 
 export async function getStaticPaths() {
@@ -21,9 +20,6 @@ const { order: o } = Astro.props;
 const name = stateName(o.state);
 const id = `${o.state.toLowerCase()}-${o.number}`;
 const discussion = (await loadDiscussionsByTarget()).get(`state_order:${id}`);
-const parts = o.body ? maOrderParts(o.body) : null;
-const WHY_FIRST = 3;
-const SECTIONS_FIRST = 3;
 ---
 
 <Base
@@ -52,59 +48,22 @@ const SECTIONS_FIRST = 3;
 
   <DiscussionLink discussion={discussion} targetType="state_order" targetId={id} />
 
-  {parts && parts.sections.length > 0 && (
-    <section class="order-part" aria-labelledby="orders-h">
-      <h2 id="orders-h" class="h-small">
-        What it orders
+  {(o.summary || o.reason) && (
+    <section class="order-part" aria-labelledby="about-h">
+      <h2 id="about-h" class="h-small">
+        In brief
       </h2>
-      <ol class="order-sections">
-        {parts.sections.slice(0, SECTIONS_FIRST).map((sec) => (
-          <li>
-            {sec.heading && <h3 class="order-heading">{sec.heading}</h3>}
-            {sec.text.split('\n\n').map((t) => (
-              <p>{t}</p>
-            ))}
-          </li>
-        ))}
-      </ol>
-      {parts.sections.length > SECTIONS_FIRST && (
-        <details class="more-why">
-          <summary>{parts.sections.length - SECTIONS_FIRST} more sections</summary>
-          <ol class="order-sections">
-            {parts.sections.slice(SECTIONS_FIRST).map((sec) => (
-              <li>
-                {sec.heading && <h3 class="order-heading">{sec.heading}</h3>}
-                {sec.text.split('\n\n').map((t) => (
-                  <p>{t}</p>
-                ))}
-              </li>
-            ))}
-          </ol>
-        </details>
+      {o.summary && (
+        <p>
+          <strong>What it does:</strong> {o.summary}
+        </p>
       )}
-    </section>
-  )}
-
-  {parts && parts.whereas.length > 0 && (
-    <section class="order-part" aria-labelledby="why-h">
-      <h2 id="why-h" class="h-small">
-        Why, in the order’s words
-      </h2>
-      <ul class="order-why">
-        {parts.whereas.slice(0, WHY_FIRST).map((w) => (
-          <li>{w.charAt(0).toUpperCase() + w.slice(1)}</li>
-        ))}
-      </ul>
-      {parts.whereas.length > WHY_FIRST && (
-        <details class="more-why">
-          <summary>{parts.whereas.length - WHY_FIRST} more reasons</summary>
-          <ul class="order-why">
-            {parts.whereas.slice(WHY_FIRST).map((w) => (
-              <li>{w.charAt(0).toUpperCase() + w.slice(1)}</li>
-            ))}
-          </ul>
-        </details>
+      {o.reason && (
+        <p class="muted">
+          <strong>Why:</strong> {o.reason}
+        </p>
       )}
+      <p class="small muted">In the order’s own words, shortened. The full text is on mass.gov.</p>
     </section>
   )}
 
@@ -128,42 +87,8 @@ const SECTIONS_FIRST = 3;
   .order-part .h-small {
     margin-top: 0;
   }
-  .order-sections {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: var(--space-3);
-  }
-  .order-sections li {
-    padding-left: var(--space-3);
-    border-left: 3px solid var(--brand-soft);
-  }
-  .order-heading {
-    font-size: var(--step--1);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
-    margin: 0 0 var(--space-1);
-  }
-  .order-sections p {
-    margin: 0 0 var(--space-2);
+  .order-part p {
     line-height: 1.6;
-  }
-  .order-why {
-    margin: 0;
-    padding-left: 1.2rem;
-    display: grid;
-    gap: var(--space-2);
-    color: var(--text-muted);
-    line-height: 1.55;
-  }
-  .more-why summary {
-    cursor: pointer;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    color: var(--link);
-    font-weight: 600;
+    margin: 0 0 var(--space-2);
   }
 </style>

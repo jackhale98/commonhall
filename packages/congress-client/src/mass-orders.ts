@@ -24,6 +24,45 @@ export interface MaOrderDetail {
   body: string | null;
 }
 
+/** A short summary of an order: what it does and why, in its own words, clipped. */
+export interface MaOrderSummary {
+  summary: string | null;
+  reason: string | null;
+}
+
+/** Cut text at a sentence end near `max` characters, else at a word. */
+function clipText(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const end = cut.lastIndexOf('. ');
+  if (end > max / 2) return cut.slice(0, end + 1);
+  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:]$/, '')}…`;
+}
+
+/**
+ * What an order does (the opening of what it orders, about 280 characters) and why
+ * (its first WHEREAS clause, about 200), from its text.
+ */
+export function maOrderSummary(body: string): MaOrderSummary {
+  const { whereas, sections } = maOrderParts(body);
+  // The first section that says something: not definitions, not a lead-in to a list.
+  const said = (s: { heading: string | null; text: string }, t: string) =>
+    !/^definitions?\b/i.test(s.heading ?? '') &&
+    !/^(definitions?|for (the )?purposes? of|as used in)\b|as used in this|following (terms|words)|shall have the following meanings?/i.test(
+      t,
+    ) &&
+    !/:\s*$/.test(t);
+  const first =
+    sections.map((sec) => [sec, sec.text.split('\n\n')[0]!] as const).find(([sec, t]) => t && said(sec, t))?.[1] ??
+    sections.find((s) => s.text)?.text.split('\n\n')[0] ??
+    null;
+  const why = whereas[0] ?? null;
+  return {
+    summary: first ? clipText(first, 280) : null,
+    reason: why ? clipText(why.charAt(0).toUpperCase() + why.slice(1), 200) : null,
+  };
+}
+
 /** An order's parts: why (its WHEREAS clauses) and what it orders, in sections. */
 export interface MaOrderParts {
   whereas: string[];
