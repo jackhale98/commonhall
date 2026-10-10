@@ -58,6 +58,8 @@ const PAGE = 30;
 
 export function targetLink(item: Pick<FeedItem, 'target_type' | 'target_id' | 'payload'>): string | null {
   if (typeof item.payload.discussion_id === 'string') return discussionHref(item.payload.discussion_id);
+  // A vote opens the roll call, not the legislator or bill it came through.
+  if (typeof item.payload.vote_id === 'string') return voteHref(item.payload.vote_id);
   if (item.target_type === 'bill') {
     const ref = parseBillId(item.target_id);
     return ref ? billHref(ref.congress, ref.type, ref.number) : null;
@@ -83,7 +85,7 @@ export default function FeedView({ compact = false }: Props) {
   const [state, setState] = useState<'loading' | 'signed-out' | 'ready' | 'error'>('loading');
   const [items, setItems] = useState<FeedItem[]>([]);
   const [members, setMembers] = useState<Map<string, Pick<Member, 'bioguide_id' | 'name'>>>(new Map());
-  const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state' | 'boston'>('');
+  const [filter, setFilter] = useState<'' | 'bill' | 'member' | 'state' | 'local'>('');
   // Within Legislators: members of Congress, state legislators or Boston councilors.
   const [level, setLevel] = useState<Level>('');
   const [more, setMore] = useState(false);
@@ -100,7 +102,7 @@ export default function FeedView({ compact = false }: Props) {
     if (filter === 'member') query = query.or(legislatorFilter(level));
     // Legislators at each level are under Legislators; these are the bills and matters.
     if (filter === 'state') query = query.eq('target_type', 'state_bill');
-    if (filter === 'boston') query = query.eq('target_type', 'local_matter');
+    if (filter === 'local') query = query.eq('target_type', 'local_matter');
     const { data, error } = await query;
     if (error) throw error;
     const rows = (data ?? []) as FeedItem[];
@@ -183,7 +185,7 @@ export default function FeedView({ compact = false }: Props) {
               ['member', 'Legislators'],
               ['bill', 'Bills'],
               ['state', 'State bills'],
-              ['boston', 'Boston matters'],
+              ['local', 'Local matters'],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -226,7 +228,12 @@ export default function FeedView({ compact = false }: Props) {
           {items.map((item) => {
             const link = targetLink(item);
             const who = item.member_id ? members.get(item.member_id)?.name : undefined;
-            const voteId = item.kind === 'vote' ? (item.payload.vote_id as string | undefined) : undefined;
+            const voteBill =
+              typeof item.payload.vote_id === 'string' &&
+              typeof item.payload.bill_id === 'string' &&
+              item.target_type !== 'bill'
+                ? parseBillId(item.payload.bill_id)
+                : null;
             return (
               <li class={item.unread ? 'unread' : undefined}>
                 <p class="meta">
@@ -238,9 +245,9 @@ export default function FeedView({ compact = false }: Props) {
                   {link ? <a href={link}>{item.summary}</a> : item.summary}
                   {item.kind === 'cosponsor' && who && <> ({who})</>}
                 </p>
-                {voteId && (
+                {voteBill && (
                   <p class="small">
-                    <a href={voteHref(voteId)}>See the vote</a>
+                    <a href={billHref(voteBill.congress, voteBill.type, voteBill.number)}>See the bill</a>
                   </p>
                 )}
               </li>
