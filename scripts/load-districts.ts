@@ -29,9 +29,20 @@ export interface DistrictSource {
   expect: number;
 }
 
+/** A city's boundary from TIGERweb's current Incorporated Places layer, as GeoJSON in WGS 84. */
+export function tigerPlace(geoid: string): string {
+  return (
+    'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer/4/query' +
+    `?where=GEOID%3D%27${geoid}%27&outFields=GEOID,NAME&outSR=4326&f=geojson`
+  );
+}
+
 /** Where each city's map comes from. */
 export const DISTRICT_SOURCES: Record<string, DistrictSource> = {
   'ma-boston': { url: DEFAULT_URL, districtProp: 'DISTRICT', nameProp: 'LONGNAME', expect: 9 },
+  // Whole-city boundaries (district 0) from the Census Bureau's TIGERweb (Incorporated Places, by GEOID).
+  'ct-bristol': { url: tigerPlace('0908420'), nameProp: 'NAME', expect: 1 },
+  'ct-middletown': { url: tigerPlace('0947290'), nameProp: 'NAME', expect: 1 },
 };
 
 export async function loadDistricts(

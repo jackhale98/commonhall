@@ -1,0 +1,313 @@
+{
+ "issues": [
+  {
+   "id": 22987094,
+   "status": "Open",
+   "summary": "Pothole Issues",
+   "created_at": "2026-10-10T08:03:12-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22983762,
+   "status": "Open",
+   "summary": "Sidewalk Issues",
+   "created_at": "2026-10-09T14:56:47-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Sidewalk Issues"
+   }
+  },
+  {
+   "id": 22977654,
+   "status": "Open",
+   "summary": "Sidewalk Issues",
+   "created_at": "2026-10-08T19:36:59-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Sidewalk Issues"
+   }
+  },
+  {
+   "id": 22956913,
+   "status": "Acknowledged",
+   "summary": "Curbing Issues",
+   "created_at": "2026-10-06T15:41:36-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Curbing Issues"
+   }
+  },
+  {
+   "id": 22951542,
+   "status": "Closed",
+   "summary": "Flooding Issues",
+   "created_at": "2026-10-06T08:56:22-04:00",
+   "closed_at": "2026-10-06T10:17:47-04:00",
+   "request_type": {
+    "title": "Flooding Issues"
+   }
+  },
+  {
+   "id": 22934576,
+   "status": "Closed",
+   "summary": "Street Lamp",
+   "created_at": "2026-10-03T16:59:28-04:00",
+   "closed_at": "2026-10-05T11:04:56-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22931964,
+   "status": "Closed",
+   "summary": "Pothole Issues",
+   "created_at": "2026-10-03T06:47:03-04:00",
+   "closed_at": "2026-10-05T11:07:27-04:00",
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22922262,
+   "status": "Closed",
+   "summary": "Sidewalk Issues",
+   "created_at": "2026-10-01T20:40:39-04:00",
+   "closed_at": "2026-10-07T13:51:04-04:00",
+   "request_type": {
+    "title": "Sidewalk Issues"
+   }
+  },
+  {
+   "id": 22913488,
+   "status": "Acknowledged",
+   "summary": "Sidewalk Issues",
+   "created_at": "2026-09-30T23:35:53-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Sidewalk Issues"
+   }
+  },
+  {
+   "id": 22913463,
+   "status": "Acknowledged",
+   "summary": "Sidewalk Issues",
+   "created_at": "2026-09-30T23:24:50-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Sidewalk Issues"
+   }
+  },
+  {
+   "id": 22912347,
+   "status": "Archived",
+   "summary": "Street Lamp",
+   "created_at": "2026-09-30T19:21:56-04:00",
+   "closed_at": "2026-10-02T09:19:02-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22908725,
+   "status": "Archived",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-30T13:45:45-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22908671,
+   "status": "Archived",
+   "summary": "Curbing Issues",
+   "created_at": "2026-09-30T13:42:14-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Curbing Issues"
+   }
+  },
+  {
+   "id": 22904757,
+   "status": "Closed",
+   "summary": "Street Signs",
+   "created_at": "2026-09-30T08:38:49-04:00",
+   "closed_at": "2026-10-05T11:12:01-04:00",
+   "request_type": {
+    "title": "Street Signs"
+   }
+  },
+  {
+   "id": 22867720,
+   "status": "Acknowledged",
+   "summary": "Street Signs",
+   "created_at": "2026-09-25T11:04:28-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Street Signs"
+   }
+  },
+  {
+   "id": 22861916,
+   "status": "Archived",
+   "summary": "Street Lamp",
+   "created_at": "2026-09-24T15:17:18-04:00",
+   "closed_at": "2026-09-25T10:26:15-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22856960,
+   "status": "Archived",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-24T08:38:59-04:00",
+   "closed_at": "2026-10-02T08:23:34-04:00",
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22856952,
+   "status": "Archived",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-24T08:36:43-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22856915,
+   "status": "Archived",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-24T08:31:22-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22856890,
+   "status": "Archived",
+   "summary": "Curbing Issues",
+   "created_at": "2026-09-24T08:29:09-04:00",
+   "closed_at": "2026-09-29T11:24:57-04:00",
+   "request_type": {
+    "title": "Curbing Issues"
+   }
+  },
+  {
+   "id": 22845822,
+   "status": "Archived",
+   "summary": "Street Lamp",
+   "created_at": "2026-09-22T21:18:15-04:00",
+   "closed_at": "2026-09-28T09:14:33-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22841251,
+   "status": "Archived",
+   "summary": "Street Lamp",
+   "created_at": "2026-09-22T13:42:25-04:00",
+   "closed_at": "2026-09-28T16:10:21-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22832504,
+   "status": "Archived",
+   "summary": "Street Lamp",
+   "created_at": "2026-09-21T15:33:18-04:00",
+   "closed_at": "2026-09-22T09:14:41-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22832056,
+   "status": "Archived",
+   "summary": "Street Lamp",
+   "created_at": "2026-09-21T15:00:36-04:00",
+   "closed_at": "2026-09-22T09:35:21-04:00",
+   "request_type": {
+    "title": "Street Lamp"
+   }
+  },
+  {
+   "id": 22830319,
+   "status": "Open",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-21T13:05:35-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22826646,
+   "status": "Acknowledged",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-21T09:19:14-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22822602,
+   "status": "Acknowledged",
+   "summary": "Curbing Issues",
+   "created_at": "2026-09-20T13:09:23-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Curbing Issues"
+   }
+  },
+  {
+   "id": 22820190,
+   "status": "Acknowledged",
+   "summary": "Pothole Issues",
+   "created_at": "2026-09-19T19:18:45-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Pothole Issues"
+   }
+  },
+  {
+   "id": 22819264,
+   "status": "Open",
+   "summary": "Street Signs",
+   "created_at": "2026-09-19T15:35:40-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Street Signs"
+   }
+  },
+  {
+   "id": 22799572,
+   "status": "Open",
+   "summary": "Sidewalk Issues",
+   "created_at": "2026-09-17T09:36:02-04:00",
+   "closed_at": null,
+   "request_type": {
+    "title": "Sidewalk Issues"
+   }
+  }
+ ],
+ "metadata": {
+  "pagination": {
+   "entries": 30,
+   "page": 1,
+   "per_page": 100,
+   "pages": 1,
+   "next_page": null
+  }
+ }
+}

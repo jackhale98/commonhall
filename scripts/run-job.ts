@@ -6,16 +6,19 @@
  *   SUPABASE_DB_URL=… OPENSTATES_API_KEY=… npx tsx scripts/run-job.ts state [--minutes 60]
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts capital-plan | boston-zba | boston-311 | city-budget
  *   SUPABASE_DB_URL=… COURTLISTENER_TOKEN=… npx tsx scripts/run-job.ts state-courts
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts bristol | middletown-311
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import {
   AnalyzeBostonClient,
+  CivicClerkClient,
   CourtListenerClient,
   LegistarClient,
   OpenStatesClient,
   PrimeGovClient,
+  SeeClickFixClient,
 } from '@civic/congress-client';
 import {
   BOSTON_311_JOB,
@@ -44,6 +47,12 @@ import {
   type StateCourtsCursor,
   type StateCursor,
   type WorcesterCursor,
+  BRISTOL_JOB,
+  MIDDLETOWN_311_JOB,
+  bristolPageFetcher,
+  syncBristol,
+  syncMiddletown311,
+  type BristolCursor,
 } from '@civic/sync';
 
 async function main() {
@@ -149,9 +158,29 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'bristol') {
+      const result = await runJob<BristolCursor>({
+        sql,
+        job: BRISTOL_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) => syncBristol(ctx, { civicclerk: new CivicClerkClient(), fetchPage: bristolPageFetcher() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten, reason: result.reason }));
+      if (result.status === 'error') process.exit(1);
+    } else if (job === 'middletown-311') {
+      const result = await runJob({
+        sql,
+        job: MIDDLETOWN_311_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ?? ''),
+        run: (ctx) => syncMiddletown311(ctx, { client: new SeeClickFixClient() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten, reason: result.reason }));
+      if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget|bristol|middletown-311> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

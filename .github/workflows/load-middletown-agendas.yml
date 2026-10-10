@@ -1,0 +1,37 @@
+name: Load Middletown agendas
+
+# Middletown, Connecticut's Common Council from the city's website: its members, and
+# its meetings and agenda items (resolutions, ordinances, appropriations) from the
+# Agenda Center's PDFs. Daily; postings already loaded are read again only for two
+# weeks (agendas get amended), so a quiet day reads a few agendas.
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Read every posting again
+        type: boolean
+        default: false
+  schedule:
+    - cron: '37 11 * * *' # 11:37 UTC daily (early morning in Connecticut)
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      # pdftotext; refresh the package list first (the runner image's can be out of date).
+      - name: Install pdftotext
+        run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends poppler-utils)
+      - run: npm ci
+      - name: Load the agendas
+        run: npx tsx scripts/load-middletown-agendas.ts ${{ inputs.force && '--force' || '' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

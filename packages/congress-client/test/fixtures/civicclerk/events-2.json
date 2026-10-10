@@ -1,0 +1,109 @@
+{
+ "@odata.count": 15,
+ "value": [
+  {
+   "id": 4766,
+   "eventName": "City Council Meeting",
+   "startDateTime": "2026-10-13T19:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 2969,
+   "eventLocation": {
+    "address1": "Council Chambers",
+    "address2": "111 N Main Street"
+   },
+   "publishedFiles": [
+    {
+     "fileId": 13662,
+     "type": "Agenda",
+     "name": "City Council Oct. 13, 2026",
+     "url": "stream/BRISTOLCT/2832f3e8-4521-4fe2-a4e2-1269d32869d8.pdf"
+    },
+    {
+     "fileId": 13663,
+     "type": "Agenda Packet",
+     "name": "City Council Oct. 13, 2026",
+     "url": "stream/BRISTOLCT/a3f92b2c-a44e-4ad6-9fc3-0a34a7eeab16.pdf"
+    }
+   ]
+  },
+  {
+   "id": 4951,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2026-11-03T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 0,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": []
+  },
+  {
+   "id": 4767,
+   "eventName": "City Council Meeting",
+   "startDateTime": "2026-11-10T19:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 0,
+   "eventLocation": {
+    "address1": "Council Chambers",
+    "address2": "111 N Main Street"
+   },
+   "publishedFiles": []
+  },
+  {
+   "id": 4952,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2026-12-01T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 0,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": []
+  },
+  {
+   "id": 4768,
+   "eventName": "City Council Meeting",
+   "startDateTime": "2026-12-08T19:00:00Z",
+   "categoryId": 26,
+   "categoryName": "City Council",
+   "agendaId": 0,
+   "eventLocation": {
+    "address1": "Council Chambers",
+    "address2": "111 N Main Street"
+   },
+   "publishedFiles": []
+  },
+  {
+   "id": 4953,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2027-01-05T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 0,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": []
+  },
+  {
+   "id": 4954,
+   "eventName": "Ordinance Committee",
+   "startDateTime": "2027-02-02T17:00:00Z",
+   "categoryId": 53,
+   "categoryName": "Ordinance Committee",
+   "agendaId": 0,
+   "eventLocation": {
+    "address1": "City Hall Meeting Room 1-1",
+    "address2": "111 North Main Street"
+   },
+   "publishedFiles": []
+  }
+ ]
+}

@@ -1,0 +1,374 @@
+{
+ "id": 2916,
+ "items": [
+  {
+   "id": 31363,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "1.",
+   "agendaObjectItemName": "Call to Order",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31376,
+     "agendaObjectItemNumber": "2026-2402",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "Proclamation presentation to the Bristol CERT team.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31370,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "2.",
+   "agendaObjectItemName": "Approval of Minutes",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31377,
+     "agendaObjectItemNumber": "2026-2403",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "Approval of minutes of the regular City Council meeting held on August 12, 2026.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31364,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "3.",
+   "agendaObjectItemName": "Public Participation",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": []
+  },
+  {
+   "id": 31371,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "4.",
+   "agendaObjectItemName": "Announcements",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": []
+  },
+  {
+   "id": 31365,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "5.",
+   "agendaObjectItemName": "Consent Agenda",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31378,
+     "agendaObjectItemNumber": "2026-2404",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "To place on file the New Hire Report for August, 2026.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31379,
+     "agendaObjectItemNumber": "2026-2405",
+     "agendaObjectItemOutlineNumber": "b.",
+     "agendaObjectItemName": "To approve Tax Refunds dated September 1, 2026.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31415,
+     "agendaObjectItemNumber": "2026-2428",
+     "agendaObjectItemOutlineNumber": "c.",
+     "agendaObjectItemName": "To place on file a motion from the Bristol Zoning Commission \"to send Application AZR 26-03, an application for amendments to the Zoning Regulations to create a moratoria/moratorium process for Smoke and Vape Shops, to a Public Hearing at the September 21, 2026 Zoning Commission meeting.\"",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31417,
+     "agendaObjectItemNumber": "2026-2429",
+     "agendaObjectItemOutlineNumber": "d.",
+     "agendaObjectItemName": "To place on file notification from the Bristol Zoning Commission that the discussion on Data Centers was tabled to the October Zoning Commission meeting in order to allow more time to study the issue.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31615,
+     "agendaObjectItemNumber": "2026-2507",
+     "agendaObjectItemOutlineNumber": "e.",
+     "agendaObjectItemName": "To place on file a positive referral for a C.G.S. Section 8-24 review for the sale of the property located at Union Street, Map 31, Lot 4.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31616,
+     "agendaObjectItemNumber": "2026-2508",
+     "agendaObjectItemOutlineNumber": "f.",
+     "agendaObjectItemName": "To place on file a positive referral for a C.G.S. Section 8-24 review for the sale of the property located at 164 Union Street, Map 31, Lot 6.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31628,
+     "agendaObjectItemNumber": "2026-2510",
+     "agendaObjectItemOutlineNumber": "g.",
+     "agendaObjectItemName": "To award Contract 2P26-078, Inspection Services for Traffic Signal Upgrades to KS Engineers, PC and to authorize the Mayor or Acting Mayor to execute any and all documents necessary to effectuate said contract.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31655,
+     "agendaObjectItemNumber": "2026-2520",
+     "agendaObjectItemOutlineNumber": "h.",
+     "agendaObjectItemName": "To refer the potential sale of Centre Square Parcel 30-3 to the Planning Commission for completion of a C.G.S. Sec. 8-24 Report, and to the City Council Real Estate Committee for completion of C.G.S. Sec. 7-163e Public Hearing for the sale of municipally owned property.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31657,
+     "agendaObjectItemNumber": "2026-2521",
+     "agendaObjectItemOutlineNumber": "i.",
+     "agendaObjectItemName": "To refer the potential sale of Centre Square Parcel 30-1 to Carrier Construction, Inc. to the Planning Commission for completion of a C.G.S. Sec. 8-24 Report, and to the City Council Real Estate Committee for completion of C.G.S. Sec. 7-163e Public Hearing for the sale of municipally owned property.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31374,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "6.",
+   "agendaObjectItemName": "Reports and Committee Reports",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31629,
+     "agendaObjectItemNumber": "2026-2511",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "<strong data-pasted=\"true\">Ordinance Committee - </strong><span style=\"margin-left:0in;\">To adopt amendments to Appendix D Flood Damage Prevention, of the Bristol Code of Ordinances; that the City Clerk publish said amendments and additions to the Code of Ordinances, and that they become effective upon the expiration of 14 days from the date of their publication in a newspaper of general circulation in the City of Bristol; and to waive the reading of said ordinance.</span>",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31687,
+     "agendaObjectItemNumber": "2026-2532",
+     "agendaObjectItemOutlineNumber": "b.",
+     "agendaObjectItemName": "<strong data-pasted=\"true\">Ordinance Committee - </strong>To introduce the following amendments to Chapter 14, Motor Vehicles and Traffic, Article IV Moving Vehicle Violations, Division 1, Sections 14-76 through 14-88 of the Bristol Code of Ordinances; to set Tuesday, October 6, 2026 at 4:50 p.m., in Meeting Room 1-1, City Hall, First Floor, 111 North Main Street, Bristol, Connecticut for the holding of a Public Hearing by the Ordinance Committee; that the City Clerk publish notice of said Public Hearing and the proposed amendments to the Code of Ordinances as required by City Charter; and to waive the reading of the proposed amendments to the Code of Ordinances to be introduced this date.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31367,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "7.",
+   "agendaObjectItemName": "Old Business",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": []
+  },
+  {
+   "id": 31366,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "8.",
+   "agendaObjectItemName": "New Business",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31660,
+     "agendaObjectItemNumber": "2026-2524",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "Discussion of utilizing the Homestead Act to decrease post-Revaluation tax increases for homeowners and to take any action as necessary.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31372,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "9.",
+   "agendaObjectItemName": "Resignations",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": []
+  },
+  {
+   "id": 31373,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "10.",
+   "agendaObjectItemName": "Appointments",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31380,
+     "agendaObjectItemNumber": "2026-2406",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "Board and Commission Appointments",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31631,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "11.",
+   "agendaObjectItemName": "Contracts",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31633,
+     "agendaObjectItemNumber": "2026-2513",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "To award Contract Reappraisal and Revaluation for the October 2027 Grand List to Municipal Valuation Services, LLC for $240,000 and to authorize the Mayor or Acting Mayor to execute any and all document necessary to effectuate said contract.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31634,
+     "agendaObjectItemNumber": "2026-2514",
+     "agendaObjectItemOutlineNumber": "b.",
+     "agendaObjectItemName": "To authorize the Mayor or Acting Mayor to execute a contract amendment to Contract 2C25-068 Brace Avenue and O'Sullivan Drive Storm Drainage, in the amount of $44,676.75 with Martin Laviero Contractors, Inc., increasing the total contract amount from $1,983,842.25 to $2,028,519.00.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31653,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "12.",
+   "agendaObjectItemName": "Referrals to Planning Commission",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31659,
+     "agendaObjectItemNumber": "2026-2523",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "To refer 30 Cross Street, Assessor's Map 4, Lot 13-1, to the Real Estate Committee for potential use as a joint regional training facility for the Fire and Police Departments.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31686,
+     "agendaObjectItemNumber": "2026-2531",
+     "agendaObjectItemOutlineNumber": "b.",
+     "agendaObjectItemName": "To refer to the Planning Commission for a Connecticut General Statute Section 8-24 report the property known as Parcel 19-10, Perkins Street. This property consists of 7.5 acres of open space. This property is currently owned by the Clinton Roberts Foundation. The purpose of the referral is to ascertain if the City of Bristol should accept ownership. ",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31632,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "13.",
+   "agendaObjectItemName": "Executive Session",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": [
+    {
+     "id": 31635,
+     "agendaObjectItemNumber": "2026-2515",
+     "agendaObjectItemOutlineNumber": "a.",
+     "agendaObjectItemName": "To discuss and take any action as necessary on litigation matter <u>780 JPC Holdings LLC v. City of Bristol,</u> Superior Court docket number HHB-CV-26-6105983-S.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    },
+    {
+     "id": 31658,
+     "agendaObjectItemNumber": "2026-2522",
+     "agendaObjectItemOutlineNumber": "b.",
+     "agendaObjectItemName": "Discussion of potential acquisition of 116 Marsh Road, Bristol, CT, Assessor's Map 64, Lot 1-1; Marsh Road, Bristol, CT, Assessor's Map 64, Lot 1; Marsh Road, Bristol, CT, Assessor's Map 61, Lot 16-1, and to take any action as necessary.",
+     "isSection": 0,
+     "passFail": 0,
+     "hasVote": false,
+     "childItems": []
+    }
+   ]
+  },
+  {
+   "id": 31368,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "14.",
+   "agendaObjectItemName": "Any other matter to come before said meeting",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": []
+  },
+  {
+   "id": 31369,
+   "agendaObjectItemNumber": "",
+   "agendaObjectItemOutlineNumber": "15.",
+   "agendaObjectItemName": "Adjournment",
+   "isSection": 1,
+   "passFail": 0,
+   "hasVote": false,
+   "childItems": []
+  }
+ ]
+}
