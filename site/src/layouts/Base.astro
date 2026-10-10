@@ -8,6 +8,7 @@ import SearchPalette from '../components/SearchPalette';
 import { DEMO, POLIS_SITE_ID, SITE_NAME } from '../lib/config';
 import AdminLink from '../components/AdminLink';
 import NavStatus from '../components/NavStatus';
+import { LoaderMark } from '../components/Loader';
 import { activeNav, NAV, orderedItems, PHONE_NAV } from '../lib/nav';
 import { href } from '../lib/paths';
 
@@ -294,21 +295,11 @@ const phoneNav = PHONE_NAV.map((section) => ({
     <footer class="site-footer">
       <div class="container footer-grid">
         <div class="footer-brand">
-          <a class="brand" href={href()}>
-            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-              <g class="brand-seats">
-                <circle cx="25.08" cy="6.94" r="2.7" />
-                <circle cx="17.06" cy="4.54" r="2.7" />
-                <circle cx="9.54" cy="8.21" r="2.7" />
-                <circle cx="6.5" cy="16" r="2.7" />
-                <circle cx="9.54" cy="23.79" r="2.7" />
-                <circle cx="17.06" cy="27.46" r="2.7" />
-                <circle cx="25.08" cy="25.06" r="2.7" />
-              </g>
-              <circle class="brand-you" cx="18" cy="16" r="3.4" />
-            </svg>
+          {/* A small surprise: the mark plays the roll call (the loading animation) once. */}
+          <button type="button" class="brand brand-egg" id="brand-egg" title="Call the roll">
+            <LoaderMark class="brand-mark" />
             <span>{SITE_NAME}</span>
-          </a>
+          </button>
           <p>
             Free, nonpartisan and open source. No ads, no tracking. Built so anyone can follow their government and have
             a say.
@@ -349,6 +340,24 @@ const phoneNav = PHONE_NAV.map((section) => ({
         </div>
       </div>
     </footer>
+    <script>
+      const egg = document.getElementById('brand-egg');
+      egg?.addEventListener('click', () => {
+        if (egg.classList.contains('is-playing')) return;
+        egg.classList.add('is-playing');
+        // Back to the still logo once the session adjourns (or after 4 s if no animation ran).
+        const done = () => egg.classList.remove('is-playing');
+        const timer = window.setTimeout(done, 4000);
+        egg.querySelector('.ch-seat:last-of-type circle')?.addEventListener(
+          'animationend',
+          () => {
+            window.clearTimeout(timer);
+            done();
+          },
+          { once: true },
+        );
+      });
+    </script>
     <script>
       const button = document.getElementById('theme-toggle');
       const root = document.documentElement;
@@ -833,6 +842,40 @@ const phoneNav = PHONE_NAV.map((section) => ({
       grid-template-columns: 1fr 1fr;
       column-gap: var(--space-5);
     }
+  }
+  .brand-egg {
+    padding: 0;
+    border: 0;
+    background: none;
+    min-height: 0;
+    cursor: pointer;
+    font: inherit;
+    font-family: var(--font-heading);
+    font-weight: 750;
+    font-size: 1.15rem;
+  }
+  .brand-egg:hover {
+    background: none;
+    color: var(--text);
+  }
+  .brand-egg :global(.ch-loader) {
+    /* Buttons colour loader marks like their text; this one stays the logo's colours. */
+    --ch-seat: var(--brand);
+    width: 2rem;
+    height: 2rem;
+  }
+  /* Still until clicked; then the roll call plays once. */
+  .brand-egg:not(.is-playing) :global(.ch-seat),
+  .brand-egg:not(.is-playing) :global(.ch-seat circle),
+  .brand-egg:not(.is-playing) :global(.ch-you),
+  .brand-egg:not(.is-playing) :global(.ch-ring) {
+    animation: none !important;
+  }
+  .brand-egg.is-playing :global(.ch-seat),
+  .brand-egg.is-playing :global(.ch-seat circle),
+  .brand-egg.is-playing :global(.ch-you),
+  .brand-egg.is-playing :global(.ch-ring) {
+    animation-iteration-count: 1 !important;
   }
   .footer-brand p {
     color: var(--text-muted);
