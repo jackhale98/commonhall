@@ -35,6 +35,7 @@ export interface ScotusCursor {
 
 /** With no Retry-After, wait this long after a 429 before asking again. */
 const RATE_LIMIT_PAUSE_MS = 60 * 60 * 1000;
+const PAUSE_GRACE_MS = 5 * 60 * 1000;
 
 /** The first and last day of each calendar month from `since`'s month to `today`'s. */
 export function monthWindows(since: string, today: string): [string, string][] {
@@ -193,7 +194,8 @@ export async function syncSupremeCourt(
   const today = now.toISOString().slice(0, 10);
   const cursor = { ...run.cursor };
   // Asking again while rate-limited can extend the block, so wait out what CourtListener asked for.
-  if (cursor.pausedUntil && Date.parse(cursor.pausedUntil) > now.getTime()) {
+  // A few minutes' grace, so an hourly run that starts just before the pause ends isn't skipped.
+  if (cursor.pausedUntil && Date.parse(cursor.pausedUntil) - PAUSE_GRACE_MS > now.getTime()) {
     run.log('scotus: paused by CourtListener rate limit', { until: cursor.pausedUntil });
     return cursor;
   }
