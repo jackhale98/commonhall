@@ -2954,6 +2954,31 @@ button .ch-loader,
   color: var(--link);
   text-decoration: underline;
 }
+/* Feed filters: one row of chips (scrolls sideways on a phone), levels under Legislators. */
+.feed-filters,
 .feed-levels {
-  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  margin: 0 0 var(--space-3);
+}
+.feed-levels {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--brand-soft);
+}
+@media (max-width: 40rem) {
+  .feed-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+  }
+  .feed-filters .chip-button {
+    flex: none;
+  }
+}
+.feed-list > li {
+  display: grid;
+  gap: var(--space-1);
+}
+.feed-list > li > p {
+  margin: 0;
 }

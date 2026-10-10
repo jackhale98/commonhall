@@ -98,8 +98,9 @@ export default function FeedView({ compact = false }: Props) {
       .range(offset, offset + (compact ? 5 : PAGE) - 1);
     if (filter === 'bill') query = query.eq('target_type', 'bill');
     if (filter === 'member') query = query.or(legislatorFilter(level));
-    if (filter === 'state') query = query.in('target_type', ['state_bill', 'state_legislator']);
-    if (filter === 'boston') query = query.in('target_type', ['local_matter', 'local_official']);
+    // Legislators at each level are under Legislators; these are the bills and matters.
+    if (filter === 'state') query = query.eq('target_type', 'state_bill');
+    if (filter === 'boston') query = query.eq('target_type', 'local_matter');
     const { data, error } = await query;
     if (error) throw error;
     const rows = (data ?? []) as FeedItem[];
@@ -175,23 +176,20 @@ export default function FeedView({ compact = false }: Props) {
       {compact ? (
         <h2 id="feed-h">Your feed {unread > 0 && <span class="badge">{unread} new</span>}</h2>
       ) : (
-        <div class="toolbar" role="group" aria-labelledby="feed-filter-label">
-          <span id="feed-filter-label" class="visually-hidden">
-            Show
-          </span>
+        <div class="type-chips feed-filters" role="group" aria-label="Show">
           {(
             [
               ['', 'Everything'],
-              ['bill', 'Bills'],
               ['member', 'Legislators'],
-              ['state', 'State'],
-              ['boston', 'Boston'],
+              ['bill', 'Bills'],
+              ['state', 'State bills'],
+              ['boston', 'Boston matters'],
             ] as const
           ).map(([value, label]) => (
             <button
               type="button"
+              class="chip-button"
               aria-pressed={filter === value}
-              class={filter === value ? 'primary' : ''}
               onClick={() => {
                 setFilter(value);
                 setLevel('');
