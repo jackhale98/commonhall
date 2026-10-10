@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { parseBillId } from '@civic/congress-client/ids';
 import { accountUrl, getClient, hasStoredSession, unfollow } from '../lib/auth';
+import { matterLabel } from '../lib/cities';
 import { billDisplayTitle, billNumberLabel } from '../lib/format';
 import {
   billHref,
@@ -104,7 +105,7 @@ export default function FollowingList() {
             )
           : new Map<string, { id: string; [k: string]: unknown }>();
       const [matters, officials, discussions] = await Promise.all([
-        named('local_matters', 'id,file_number,title', 'local_matter'),
+        named('local_matters', 'id,file_number,matter_id,title', 'local_matter'),
         named('local_officials', 'id,name,seat', 'local_official'),
         named('discussions', 'id,title,status', 'discussion'),
       ]);
@@ -161,7 +162,9 @@ export default function FollowingList() {
             const m = matters.get(f.target_id);
             return {
               ...f,
-              label: m ? `${m.file_number ? `Docket #${m.file_number}: ` : ''}${String(m.title)}` : f.target_id,
+              label: m
+                ? `${m.file_number ? `${matterLabel({ id: f.target_id, file_number: String(m.file_number), matter_id: Number(m.matter_id) })}: ` : ''}${String(m.title)}`
+                : f.target_id,
               link: localMatterHref(f.target_id),
             };
           }

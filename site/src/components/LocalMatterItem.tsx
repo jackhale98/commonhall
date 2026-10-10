@@ -1,3 +1,4 @@
+import { matterLabel } from '../lib/cities';
 import { formatDate } from '../lib/format';
 import { localMatterHref } from '../lib/paths';
 import type { LocalMatter } from '../lib/types';
@@ -7,7 +8,7 @@ export default function LocalMatterItem({ matter, href }: { matter: LocalMatter;
   return (
     <li class="bill-item">
       <p class="meta">
-        {matter.file_number && <strong>Docket #{matter.file_number}</strong>}
+        {matter.file_number && <strong>{matterLabel(matter)}</strong>}
         {matter.type && <> · {matter.type}</>}
         {matter.status && (
           <>

@@ -19,6 +19,7 @@ import {
 import type { City } from '../../../../lib/cities';
 import { cityPaths } from '../../../../lib/city-pages';
 import { DEMO } from '../../../../lib/config';
+import { HIDDEN_MATTER_TYPES } from '../../../../lib/local';
 import { cityHref, localOfficialHref } from '../../../../lib/paths';
 
 export const getStaticPaths = () => cityPaths();
@@ -106,7 +107,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
 
   {facets.total > 0 && (
     <section aria-labelledby="matters-h">
-      <h2 id="matters-h">Ordinances, orders and resolutions</h2>
+      <h2 id="matters-h">{city.legislationTitle ?? 'Ordinances, orders and resolutions'}</h2>
       <div class="panel">
         <LocalMatters
           client:visible
@@ -159,10 +160,14 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
     parts={[
       { what: 'Councilors', source: city.sources.people },
       { what: 'Meetings, agendas and minutes', source: city.sources.meetings },
+      ...(facets.total > 0 ? [{ what: 'Council items', source: city.sources.legislation }] : []),
     ]}
   >
-    {facets.total > 0 &&
+    {facets.types.some((t) => HIDDEN_MATTER_TYPES.includes(t.value)) &&
       ' Consent-agenda resolutions (mostly congratulations and commendations) are hidden unless you include them.'}
+    {facets.total > 0 &&
+      !city.legistar &&
+      ' Each item shows what the council was asked to do with it; outcomes are recorded in the minutes, which we don’t read yet.'}
   </SourceNote>
 </Base>
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { matterLabel } from '../lib/cities';
 import { DEMO } from '../lib/config';
 import { localMatterHref } from '../lib/paths';
 import { redirectIfPrerendered } from '../lib/prerendered';
@@ -21,7 +22,7 @@ export default function LocalMatterFallback({ city, cityName }: { city: string; 
         if (!d) return setState('missing');
         setData(d);
         setState('ready');
-        document.title = `${d.matter.file_number ? `Docket #${d.matter.file_number}` : 'Council matter'} · ${document.title.split(' · ').pop()}`;
+        document.title = `${d.matter.file_number ? matterLabel(d.matter) : 'Council matter'} · ${document.title.split(' · ').pop()}`;
       })
       .catch(() => setState('error'));
   }, [city]);

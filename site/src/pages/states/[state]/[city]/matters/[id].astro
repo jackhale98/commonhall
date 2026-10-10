@@ -8,7 +8,7 @@ import {
   loadPrerenderLocalMatters,
   type LocalSponsorship,
 } from '../../../../../lib/build-data';
-import { cityOf, idWithinCity, type City } from '../../../../../lib/cities';
+import { cityOf, idWithinCity, matterLabel, type City } from '../../../../../lib/cities';
 import { DEMO } from '../../../../../lib/config';
 import { cityHref } from '../../../../../lib/paths';
 import type { LocalMatter, LocalMatterAction } from '../../../../../lib/types';
@@ -37,7 +37,7 @@ interface Props {
 const { city, matter, actions, sponsors } = Astro.props;
 const officialIds = (await loadCityOfficials(city.key)).map((o) => o.id);
 const discussion = (await loadDiscussionsByTarget()).get(`local_matter:${matter.id}`);
-const label = matter.file_number ? `Docket #${matter.file_number}` : `Matter ${matter.matter_id}`;
+const label = matterLabel(matter);
 const description = `${city.council} ${label}: ${matter.title}`.slice(0, 300);
 ---
 

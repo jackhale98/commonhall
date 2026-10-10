@@ -62,7 +62,9 @@ export default function LocalMatters({
   const active = Boolean(
     filters.q || filters.type || filters.status || filters.all || filters.sponsor !== base.sponsor,
   );
-  const hiding = !filters.type && !filters.all;
+  // Only cities with consent-agenda resolutions (Boston) get the toggle.
+  const hasHidden = facets.types.some((t) => HIDDEN_MATTER_TYPES.includes(t.value));
+  const hiding = hasHidden && !filters.type && !filters.all;
 
   useEffect(() => {
     setSize(pageSize());
@@ -236,7 +238,7 @@ export default function LocalMatters({
               </select>
             </>
           )}
-          {!filters.type && (
+          {hasHidden && !filters.type && (
             <button
               type="button"
               class="filter-toggle"

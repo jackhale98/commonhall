@@ -78,9 +78,14 @@ const role = official.title ? `${official.title} · ${seat}` : seat;
 const stats = [
   ...(cityFacets.total > 0
     ? [
-        { label: 'Ordinances, orders and resolutions', value: substantive.length },
-        { label: 'Passed or adopted', value: passed },
-        { label: 'Consent-agenda resolutions', value: consent },
+        { label: city.legislationTitle ?? 'Ordinances, orders and resolutions', value: substantive.length },
+        // Outcomes and consent agendas come only from cities that record them (Legistar).
+        ...(city.legistar
+          ? [
+              { label: 'Passed or adopted', value: passed },
+              { label: 'Consent-agenda resolutions', value: consent },
+            ]
+          : []),
       ]
     : []),
   ...(seats.length > 0

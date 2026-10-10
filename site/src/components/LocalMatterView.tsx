@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { formatDate } from '../lib/format';
-import { cityOf } from '../lib/cities';
+import { cityOf, matterLabel } from '../lib/cities';
 import { localOfficialHref } from '../lib/paths';
 import { select } from '../lib/rest';
 import { LOCAL_MATTER_COLUMNS, type LocalMatter, type LocalMatterAction } from '../lib/types';
@@ -52,7 +52,7 @@ export default function LocalMatterView(props: Props) {
 
   const { matter, actions, sponsors } = data;
   const known = new Set(props.officialIds ?? sponsors.map((s) => s.official_id));
-  const label = matter.file_number ? `Docket #${matter.file_number}` : `Matter ${matter.matter_id}`;
+  const label = matterLabel(matter);
   const city = cityOf(matter.id);
   return (
     <article>
@@ -74,7 +74,7 @@ export default function LocalMatterView(props: Props) {
         <FollowButton targetType="local_matter" targetId={matter.id} label={label} />
         {matter.legistar_url && (
           <a class="button" href={matter.legistar_url} rel="noopener">
-            Full record on Legistar
+            {city?.recordLabel ?? 'Full record'}
           </a>
         )}
       </div>

@@ -73,10 +73,14 @@ const session = city.committeeSession;
                     }
                     rel={i.stored ? undefined : 'noopener'}
                   >
-                    Docket #{i.file_number ?? '?'}
+                    {city.docketPrefix ?? 'Docket #'}
+                    {i.file_number ?? '?'}
                   </a>
                 ) : (
-                  <span>Docket #{i.file_number ?? '?'}</span>
+                  <span>
+                    {city.docketPrefix ?? 'Docket #'}
+                    {i.file_number ?? '?'}
+                  </span>
                 )}
                 : <span class="docket-title">{i.title}</span>
               </li>

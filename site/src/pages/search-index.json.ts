@@ -11,7 +11,7 @@ import {
   loadPrerenderBills,
   loadPrerenderStateBills,
 } from '../lib/build-data';
-import { CITIES, CITY_LIST } from '../lib/cities';
+import { CITIES, CITY_LIST, cityOf, matterLabel } from '../lib/cities';
 import { cityTabs as tabsOf } from '../lib/city-pages';
 import {
   billDisplayTitle,
@@ -214,7 +214,7 @@ export async function GET() {
     ...matters.slice(0, 1000).map(({ matter: m }) => ({
       k: 'matter' as const,
       t: clip(m.title),
-      s: `Boston${m.file_number ? ` · Docket #${m.file_number}` : ''}${m.type ? ` · ${m.type.replace(/^Council /, '')}` : ''}`,
+      s: `${cityOf(m.id)?.name ?? 'City'}${m.file_number ? ` · ${matterLabel(m)}` : ''}${m.type ? ` · ${m.type.replace(/^Council /, '')}` : ''}`,
       h: localMatterHref(m.id),
     })),
   ];

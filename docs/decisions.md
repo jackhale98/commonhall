@@ -1215,3 +1215,31 @@ half an hour, which the nightly rebuild absorbs anyway.
 - Both show on a state's "Governor & courts" tab, which appears only when there is
   something on file, and the latest of each on the state Overview.
 
+## 87. Worcester's agenda items as council matters
+
+- **Source:** PrimeGov, already approved. Agendas up to mid-2026 have an HTML
+  version; later ones are PDF only (the "HTM Agenda" template is a PDF too, and the
+  portal's preview needs a login), so a daily GitHub Action reads the PDF with
+  `pdftotext -layout`, like the budget loader. Edge Functions can't run poppler.
+- **What an item is:** numbered sections ("12. ORDERS") of lettered items ("12a."),
+  with a line before a run of items saying what the council is asked to do ("9a -
+  9k Refer to Traffic and Parking Committee"). Types come from the item's wording
+  ("ORDER of …", "PETITION of …") or its section: orders, resolutions, petitions,
+  hearings, City Manager communications, other communications, committee reports,
+  ordinances ("TO BE ORDAINED"). Procedure (pledge, roll call, minutes, public
+  participation, "Number Not Used") is left out.
+- **Sponsors:** "ORDER of Councilor A and Councilor B - …", "Councilor A on behalf
+  of …" or a closing "(Rivera)". Full names give the official id directly (former
+  councilors too); a surname must match exactly one councilor.
+- **Ids and carried items:** a matter is `ma-worcester-{meeting id × 1000 +
+  position}`, cited as "Item 12a, Oct 6, 2026". Orders, resolutions, ordinances and
+  communications are held and tabled from meeting to meeting with the same wording;
+  a later appearance updates the first matter (one page, one discussion) and adds an
+  action, so its page shows each meeting it was on. Hearings and petitions repeat
+  wording for separate requests, so each stays its own matter.
+- **Not yet:** outcomes (adopted, referred, filed) are in the minutes PDFs. The list
+  shows what the council was asked to do; reading minutes is a later step.
+- A city now says how its matters are cited (`docketPrefix`), what its record link
+  is called and what its Council tab calls them; the consent-agenda toggle shows only
+  where that type exists.
+

@@ -93,6 +93,9 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code.
 
 - All 11 councilors, the district map, standing committees with members.
 - Council and committee meetings with agendas and minutes.
+- Every item on the council's agendas (orders, petitions, resolutions, City
+  Manager communications, committee reports, ordinances), searchable, with
+  sponsors and what the council was asked to do; held items keep one page.
 - The operating budget summary and the capital budget, with a page per project.
 
 **Every state**
@@ -144,6 +147,7 @@ automatically.
 | Boston operating and revenue budgets | [Analyze Boston](https://data.boston.gov/dataset/operating-budget) | weekly |
 | Worcester councilors and standing committees | [worcesterma.gov](https://www.worcesterma.gov/city-council/councilors) | weekly |
 | Worcester council and committee meetings, agendas, minutes | [PrimeGov](https://worcesterma.primegov.com/public/portal) | hourly |
+| Worcester council agenda items | [PrimeGov](https://worcesterma.primegov.com/public/portal) agendas (HTML or PDF) | daily |
 | Worcester council districts | [Worcester open data](https://opendata.worcesterma.gov/) (2020 Census map) | on redistricting |
 | Worcester capital and operating budgets | [Worcester open data](https://opendata.worcesterma.gov/) (annual PDFs) | monthly check |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
@@ -190,6 +194,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
 | `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
+| Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |

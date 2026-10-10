@@ -1,0 +1,37 @@
+name: Load Worcester agendas
+
+# The items on Worcester City Council agendas (orders, resolutions, petitions, City
+# Manager communications, committee reports, ordinances) from PrimeGov, read from
+# the HTML agenda or the agenda PDF. Daily; meetings already loaded are read again
+# only for two weeks (agendas get revised), so a quiet day reads one or two agendas.
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Read every meeting again
+        type: boolean
+        default: false
+  schedule:
+    - cron: '17 11 * * *' # 11:17 UTC daily, after the hourly meeting sync has the week's agendas
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      # pdftotext; refresh the package list first (the runner image's can be out of date).
+      - name: Install pdftotext
+        run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends poppler-utils)
+      - run: npm ci
+      - name: Load the agendas
+        run: npx tsx scripts/load-worcester-agendas.ts ${{ inputs.force && '--force' || '' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
