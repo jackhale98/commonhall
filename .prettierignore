@@ -10,3 +10,4 @@ supabase/config.toml
 *.sql
 *.md
 site/src/data
+.claude/worktrees

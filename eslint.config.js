@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/.astro/**',
       'packages/congress-client/src/generated/**',
       'supabase/.temp/**',
+      '.claude/worktrees/**',
     ],
   },
   js.configs.recommended,

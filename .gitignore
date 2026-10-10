@@ -15,3 +15,6 @@ supabase/.env
 /data/
 .backfill/
 supabase/functions/.env
+
+# Local agent worktrees (temporary copies of the repo)
+.claude/worktrees/
