@@ -12,6 +12,8 @@ export interface GlanceMeeting {
 export interface CityGlance {
   key: string;
   name: string;
+  /** "District" or "Ward". */
+  districtWord?: string;
   council: string;
   session: 'hearing' | 'meeting';
   href: string;

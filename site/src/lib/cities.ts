@@ -23,8 +23,11 @@ export interface City {
   slug: string;
   name: string;
   council: string;
+  /** Council districts (0 when every seat is citywide). */
   districts: number;
   atLarge: number;
+  /** What the city calls a district: "District" (the default) or "Ward". */
+  districtWord?: string;
   /** What the city calls a committee session: "hearing" (Boston) or "meeting". */
   committeeSession: 'hearing' | 'meeting';
   /** One line under the name on the Overview. */
@@ -128,6 +131,10 @@ export const CITY_LIST: City[] = [
     legislationTitle: 'Orders, petitions and communications',
   },
 ];
+
+/** "District 3", "Ward 3". */
+export const districtName = (city: Pick<City, 'districtWord'> | undefined, n: number | string) =>
+  `${city?.districtWord ?? 'District'} ${n}`;
 
 export const CITIES: Record<string, City> = Object.fromEntries(CITY_LIST.map((c) => [c.key, c]));
 

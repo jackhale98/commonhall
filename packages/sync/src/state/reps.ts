@@ -148,12 +148,15 @@ async function stateRepsFromOpenStates(
   }
 }
 
-/** The district councilor, then the at-large councilors. */
+/**
+ * The district councilor, then the at-large councilors. District 0 is a city's whole
+ * boundary, for cities elected at-large or without a district map yet: every councilor.
+ */
 export async function localReps(sql: Sql, city: string, district: number): Promise<LocalRep[]> {
   return sql<LocalRep[]>`
     select id, name, seat, district, email, photo_url from public.local_officials
-     where city = ${city} and current and (district = ${district} or seat = 'At-Large')
-     order by (district is null), name`;
+     where city = ${city} and current and (${district} = 0 or district = ${district} or seat = 'At-Large')
+     order by (district is null), district, name`;
 }
 
 export interface FindRepsDeps {
@@ -190,14 +193,16 @@ export async function findReps(
     if (stateLegislators.length > 0) stateSource = 'database';
   }
 
-  // Cities we cover (Boston, Worcester): point-in-polygon against their council district maps.
+  // Cities we cover: point-in-polygon against their council district maps (a district
+  // before a city's whole boundary, district 0, where a city has both).
   let city: string | null = null;
   let councilDistrict: number | null = null;
   let localOfficials: LocalRep[] = [];
-  if (geo.state === 'MA') {
+  {
     const [row] = await sql<{ city: string; district: number }[]>`
       select d.city, d.district from public.council_districts d
        where extensions.st_contains(d.geometry, extensions.st_setsrid(extensions.st_point(${geo.lng}, ${geo.lat}), 4326))
+       order by (d.district = 0), d.district
        limit 1`;
     if (row) {
       city = row.city;

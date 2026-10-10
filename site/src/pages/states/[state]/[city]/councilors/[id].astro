@@ -14,7 +14,7 @@ import {
   loadLocalMatterFacets,
   loadSponsoredMatters,
 } from '../../../../../lib/build-data';
-import { CITY_LIST, idWithinCity, type City } from '../../../../../lib/cities';
+import { CITY_LIST, districtName, idWithinCity, type City } from '../../../../../lib/cities';
 import { DEMO } from '../../../../../lib/config';
 import { HIDDEN_MATTER_TYPES } from '../../../../../lib/local';
 import { cityHref, localCommitteeHref, localOfficialHref } from '../../../../../lib/paths';
@@ -52,7 +52,7 @@ const features = districts.map((d) => {
     district: d.district,
     geojson: d.geojson,
     href: o ? localOfficialHref(o.id) : undefined,
-    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+    title: `${districtName(city, d.district)}${o ? `: ${o.name}` : ''}`,
   };
 });
 // The default list leaves out consent-agenda resolutions (congratulations and commendations).
@@ -142,12 +142,14 @@ const stats = [
           width={320}
           label={
             official.district
-              ? `${city.name} council districts, District ${official.district} outlined`
+              ? `${city.name} council districts, ${districtName(city, official.district)} outlined`
               : `${city.name} council districts; at-large councilors represent the whole city`
           }
         />
         <p class="small muted">
-          {official.district ? `Represents District ${official.district}.` : 'Represents the whole city (at-large).'}
+          {official.district
+            ? `Represents ${districtName(city, official.district)}.`
+            : 'Represents the whole city (at-large).'}
         </p>
       </div>
     )}
@@ -191,7 +193,9 @@ const stats = [
   {report && (
     <section aria-labelledby="h311">
       <div class="section-head">
-        <h2 id="h311">{official.district ? `311 in District ${official.district}` : `311 across ${city.name}`}</h2>
+        <h2 id="h311">
+          {official.district ? `311 in ${districtName(city, official.district)}` : `311 across ${city.name}`}
+        </h2>
         <a
           class="see-all"
           href={cityHref(city, `neighborhoods/${official.district ? `?district=${official.district}` : ''}`)}
@@ -200,7 +204,13 @@ const stats = [
         </a>
       </div>
       <p class="small muted">Requests to the city in the last 30 days.</p>
-      <District311 report={report} fixed={official.district ?? 0} top={5} cityName={city.name} />
+      <District311
+        report={report}
+        fixed={official.district ?? 0}
+        top={5}
+        cityName={city.name}
+        districtWord={city.districtWord}
+      />
     </section>
   )}
 

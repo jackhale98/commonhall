@@ -1,10 +1,16 @@
 name: Load council districts
 
-# One-time (and after redistricting): downloads the Boston City Council districts
-# from Analyze Boston into the council_districts table, using the session pooler
-# connection string. Safe to re-run: existing districts are replaced.
+# Once per city (and after redistricting): downloads a city's council districts
+# (or its whole boundary, for at-large councils) into council_districts, from the
+# source listed in scripts/load-districts.ts. Safe to re-run: the city's districts
+# are replaced.
 on:
   workflow_dispatch:
+    inputs:
+      city:
+        description: City key (see DISTRICT_SOURCES in scripts/load-districts.ts)
+        type: string
+        default: ma-boston
 
 permissions:
   contents: read
@@ -20,7 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Load Boston council districts
-        run: npm run load-districts
+      - name: Load council districts
+        run: npx tsx scripts/load-districts.ts --city "$CITY"
         env:
+          CITY: ${{ inputs.city }}
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

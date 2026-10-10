@@ -17,7 +17,7 @@ import {
   loadLocalMatterFacets,
   loadRecentLocalMatters,
 } from '../../../../lib/build-data';
-import type { City } from '../../../../lib/cities';
+import { districtName, type City } from '../../../../lib/cities';
 import { cityPaths } from '../../../../lib/city-pages';
 import { DEMO } from '../../../../lib/config';
 import { HIDDEN_MATTER_TYPES } from '../../../../lib/local';
@@ -44,7 +44,7 @@ const features = districts.map((d) => {
     district: d.district,
     geojson: d.geojson,
     href: o ? localOfficialHref(o.id) : undefined,
-    title: `District ${d.district}${o ? `: ${o.name}` : ''}`,
+    title: `${districtName(city, d.district)}${o ? `: ${o.name}` : ''}`,
   };
 });
 const today = new Date().toISOString().slice(0, 10);

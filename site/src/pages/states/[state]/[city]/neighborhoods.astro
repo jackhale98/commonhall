@@ -5,7 +5,7 @@ import ZoningExplorer from '../../../../components/ZoningExplorer';
 import BarList from '../../../../components/viz/BarList';
 import Base from '../../../../layouts/Base.astro';
 import { loadCity311, loadCityOfficials, loadZbaAppeals, loadZbaDecisionCounts } from '../../../../lib/build-data';
-import type { City } from '../../../../lib/cities';
+import { districtName, type City } from '../../../../lib/cities';
 import { cityPaths } from '../../../../lib/city-pages';
 import { zbaRow } from '../../../../lib/local';
 import { cityHref } from '../../../../lib/paths';
@@ -25,7 +25,7 @@ const [appeals, report, officials, decisions] = await Promise.all([
 ]);
 const districtLabels = Array.from({ length: city.districts }, (_, i) => {
   const o = officials.find((x) => x.district === i + 1);
-  return { district: i + 1, label: `District ${i + 1}${o ? ` · ${o.name}` : ''}` };
+  return { district: i + 1, label: `${districtName(city, i + 1)}${o ? ` · ${o.name}` : ''}` };
 });
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 const upcoming = appeals
@@ -74,7 +74,13 @@ const { requests, zoning: zoningSource } = city.sources;
   {report && (
     <section aria-labelledby="h311">
       <h2 id="h311">311 requests, last 30 days</h2>
-      <District311 client:visible report={report} districts={districtLabels} cityName={city.name} />
+      <District311
+        client:visible
+        report={report}
+        districts={districtLabels}
+        cityName={city.name}
+        districtWord={city.districtWord}
+      />
     </section>
   )}
 

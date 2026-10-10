@@ -1,11 +1,13 @@
 /**
- * Load Boston City Council district boundaries into `council_districts`.
- * Run after each redistricting (and once on a new project):
+ * Load a city's council district boundaries into `council_districts`, from the
+ * GeoJSON source listed for it in DISTRICT_SOURCES. Run once per city and after each
+ * redistricting ("Load council districts" workflow, choosing the city):
  *
- *   SUPABASE_DB_URL=… npx tsx scripts/load-districts.ts [--url <GeoJSON URL>]
+ *   SUPABASE_DB_URL=… npx tsx scripts/load-districts.ts [--city ma-boston] [--url <GeoJSON URL>]
  *
- * Default source: Analyze Boston, "City Council Districts - 2023-2032" (GeoJSON,
- * WGS84). Check that the dataset matches the current district map before loading.
+ * District 0 is a city's whole boundary: for cities that elect everyone at-large (or
+ * whose district map isn't published), so an address in the city finds its council.
+ * Check that a source matches the current map before loading.
  */
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
@@ -14,20 +16,39 @@ export const DEFAULT_URL =
   'https://data.boston.gov/dataset/3e632d04-d7fe-4acd-bab7-75be4bdcfa96/resource/2d9092dd-5175-49ab-9b18-0c0efcef4153/download/city_council_districts___2023_2032.geojson';
 
 interface Feature {
-  properties: { DISTRICT?: number | string; LONGNAME?: string; EditDate?: number };
+  properties: Record<string, unknown> & { EditDate?: number };
   geometry: { type: string; coordinates: unknown };
 }
+
+export interface DistrictSource {
+  url: string;
+  /** The feature property holding the district number; omit for a whole-city boundary (district 0). */
+  districtProp?: string;
+  nameProp?: string;
+  /** How many districts the source should have. */
+  expect: number;
+}
+
+/** Where each city's map comes from. */
+export const DISTRICT_SOURCES: Record<string, DistrictSource> = {
+  'ma-boston': { url: DEFAULT_URL, districtProp: 'DISTRICT', nameProp: 'LONGNAME', expect: 9 },
+};
 
 export async function loadDistricts(
   sql: postgres.Sql,
   geojson: { features: Feature[] },
   source: string,
   city = 'ma-boston',
+  props: { districtProp?: string; nameProp?: string } = { districtProp: 'DISTRICT', nameProp: 'LONGNAME' },
 ) {
   const rows = geojson.features
-    .map((f) => ({ district: Number(f.properties.DISTRICT), name: f.properties.LONGNAME ?? null, f }))
-    .filter((r) => Number.isInteger(r.district) && r.district > 0);
-  if (rows.length === 0) throw new Error('No districts with a DISTRICT property in that file');
+    .map((f) => ({
+      district: props.districtProp ? Number(String(f.properties[props.districtProp] ?? '').replace(/\D/g, '')) : 0,
+      name: props.nameProp ? String(f.properties[props.nameProp] ?? '') || null : null,
+      f,
+    }))
+    .filter((r) => Number.isInteger(r.district) && r.district >= (props.districtProp ? 1 : 0));
+  if (rows.length === 0) throw new Error(`No districts with a ${props.districtProp ?? 'boundary'} in that file`);
   await sql.begin(async (tx) => {
     await tx`delete from public.council_districts where city = ${city}`;
     for (const r of rows) {
@@ -43,17 +64,23 @@ export async function loadDistricts(
 }
 
 async function main() {
-  const { values } = parseArgs({ options: { url: { type: 'string', default: DEFAULT_URL } } });
+  const { values } = parseArgs({
+    options: { city: { type: 'string', default: 'ma-boston' }, url: { type: 'string' } },
+  });
   const dbUrl = process.env.SUPABASE_DB_URL;
   if (!dbUrl) throw new Error('Set SUPABASE_DB_URL');
-  const response = await fetch(values.url!);
+  const city = values.city!;
+  const known = DISTRICT_SOURCES[city];
+  if (!known) throw new Error(`No district source for ${city}; add one to DISTRICT_SOURCES`);
+  const url = values.url ?? known.url;
+  const response = await fetch(url);
   if (!response.ok) throw new Error(`Download failed: HTTP ${response.status}`);
   const geojson = (await response.json()) as { features: Feature[] };
   const sql = postgres(dbUrl, { max: 1, prepare: false, onnotice: () => undefined });
   try {
-    const n = await loadDistricts(sql, geojson, values.url!);
-    console.log(`Loaded ${n} Boston council districts.`);
-    if (n !== 9) console.warn(`Expected 9 districts, got ${n}. Check the dataset.`);
+    const n = await loadDistricts(sql, geojson, url, city, known);
+    console.log(`Loaded ${n} ${city} district${n === 1 ? '' : 's'}.`);
+    if (n !== known.expect) throw new Error(`Expected ${known.expect}, got ${n}. Check the source.`);
   } finally {
     await sql.end();
   }

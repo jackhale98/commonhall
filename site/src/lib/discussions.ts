@@ -1,6 +1,6 @@
 import { billLabel, parseBillId } from '@civic/congress-client/ids';
 import type { PolisProfile } from './auth';
-import { CITIES, cityOf, idWithinCity } from './cities';
+import { CITIES, cityOf, districtName, idWithinCity } from './cities';
 import { congressLabel, stateName } from './format';
 import {
   billFallbackHref,
@@ -22,7 +22,7 @@ export function jurisdictionLabel(d: Pick<Discussion, 'jurisdiction' | 'district
   if (d.jurisdiction === 'federal') return 'United States';
   if (/^[a-z]{2}$/.test(d.jurisdiction)) return stateName(d.jurisdiction.toUpperCase());
   const city = CITIES[d.jurisdiction]?.name ?? d.jurisdiction;
-  return d.district ? `${city}, District ${d.district}` : city;
+  return d.district ? `${city}, ${districtName(CITIES[d.jurisdiction], d.district)}` : city;
 }
 
 /** Is the discussion accepting votes and comments right now? */

@@ -36,6 +36,7 @@ export async function GET({ props }: { props: { city: City } }) {
   const glance: CityGlance = {
     key: city.key,
     name: city.name,
+    districtWord: city.districtWord,
     council: city.council,
     session: city.committeeSession,
     href: cityHref(city),

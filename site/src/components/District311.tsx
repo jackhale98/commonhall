@@ -13,6 +13,8 @@ interface Props {
   top?: number;
   /** The city, for "All of Boston". */
   cityName: string;
+  /** "District" or "Ward". */
+  districtWord?: string;
 }
 
 const pct = (part: number, whole: number) => (whole ? `${Math.round((part / whole) * 100)}%` : '—');
@@ -22,7 +24,14 @@ const pct = (part: number, whole: number) => (whole ? `${Math.round((part / whol
  * before), share closed on time, typical time to close, most common requests.
  * Citywide or for one council district, picked from a menu (kept in ?district=).
  */
-export default function District311({ report, districts = [], fixed, top = 8, cityName }: Props) {
+export default function District311({
+  report,
+  districts = [],
+  fixed,
+  top = 8,
+  cityName,
+  districtWord = 'District',
+}: Props) {
   const [district, setDistrict] = useState<number>(fixed ?? 0);
 
   useEffect(() => {
@@ -40,7 +49,7 @@ export default function District311({ report, districts = [], fixed, top = 8, ci
   };
 
   const s: Summary311 = (district && report.districts[district]) || report.city;
-  const where = district ? `District ${district}` : cityName;
+  const where = district ? `${districtWord} ${district}` : cityName;
   const change = change311(s);
 
   return (
