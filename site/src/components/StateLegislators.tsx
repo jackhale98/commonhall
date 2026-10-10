@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import { stateLegislatorHref } from '../lib/paths';
 import FollowButton from './FollowButton';
+import MemberPhoto from './MemberPhoto';
 
 export interface LegislatorRow {
   id: string;
@@ -9,6 +10,8 @@ export interface LegislatorRow {
   district: string | null;
   chamber: string;
   url: string | null;
+  /** Official photo from the legislature or Ballotpedia, loaded by the browser (no API use). */
+  photo_url?: string | null;
 }
 
 const PAGE = 10;
@@ -104,6 +107,7 @@ export default function StateLegislators({
           <ul class="list legislator-list">
             {hits.slice(0, shown).map((l) => (
               <li key={l.id} class="legislator">
+                <MemberPhoto name={l.name} url={l.photo_url ?? null} size={36} />
                 <span class="legislator-text">
                   <a href={stateLegislatorHref(l.id)}>{l.name}</a>
                   <span class="small muted">
