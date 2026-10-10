@@ -65,7 +65,28 @@ describe('activeNav', () => {
 describe('orderedItems', () => {
   it('reads the local trail from all states down to the cities', () => {
     const local = NAV.find((g) => g.key === 'local')!;
-    expect(orderedItems(local).map((i) => i.label)).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    expect(
+      orderedItems(local)
+        .map((i) => i.label)
+        .slice(0, 4),
+    ).toEqual(['All states', 'Massachusetts', 'Boston', 'Worcester']);
+    expect(orderedItems(local).map((i) => i.label)).toContain('Bristol');
+  });
+});
+
+describe('a city outside Massachusetts', () => {
+  it('trails back through its own state', () => {
+    expect(localTrail('states/ct/bristol/council/').map((i) => i.label)).toEqual([
+      'All states',
+      'Connecticut',
+      'Bristol',
+    ]);
+    expect(localTrail('states/ct/middletown/').map((i) => i.path)).toEqual([
+      'states/',
+      'states/ct/',
+      'states/ct/middletown/',
+    ]);
+    expect(at('states/ct/middletown/neighborhoods/')).toEqual(['local', 'ct-middletown']);
   });
 });
 

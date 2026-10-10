@@ -123,7 +123,7 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
       <div class="section-head">
         <h2 id="h311">311 in the last 30 days</h2>
         <a class="see-all" href={cityHref(city, 'neighborhoods/')}>
-          By district
+          {city.districts > 0 ? 'By district' : 'More'}
         </a>
       </div>
       <dl class="stat-grid">
@@ -133,8 +133,14 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
           {change311(report.city) && <p class="small muted stat-note">{change311(report.city)} prior 30 days</p>}
         </div>
         <div class="stat">
-          <dt>Closed on time</dt>
-          <dd>{report.city.closed ? `${Math.round((report.city.closedOnTime / report.city.closed) * 100)}%` : '—'}</dd>
+          <dt>{report.onTime === false ? 'Closed' : 'Closed on time'}</dt>
+          <dd>
+            {report.onTime === false
+              ? report.city.closed.toLocaleString()
+              : report.city.closed
+                ? `${Math.round((report.city.closedOnTime / report.city.closed) * 100)}%`
+                : '—'}
+          </dd>
           {report.city.typicalHours !== null && (
             <p class="small muted stat-note">typically in {closeTime(report.city.typicalHours)}</p>
           )}

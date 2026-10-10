@@ -157,6 +157,7 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | Backfill | manually only | `SUPABASE_DB_URL`, `CONGRESS_API_KEY`, write permission (b) |
 | Load council districts | manually (once, and after redistricting) | `SUPABASE_DB_URL` |
 | Load Supreme Court Database | monthly (3rd, 07:41 UTC) and manually | `SUPABASE_DB_URL` |
+| Load Middletown agendas | 11:37 UTC daily and manually | `SUPABASE_DB_URL` (installs `pdftotext`) |
 | Sync health | 13:13 UTC daily and manually | `SUPABASE_DB_URL` |
 
 **Sync health** is how you hear that something broke. It fails when a job's last run
@@ -332,6 +333,15 @@ Common problems:
    weekly. To load them now, run in the SQL editor:
    `select private.invoke_sync('sync-boston-311'); select private.invoke_sync('sync-boston-zba'); select private.invoke_sync('sync-capital-plan'); select private.invoke_sync('sync-city-budget');`
    (311 loads 90 days at once; each takes seconds.)
+5. **Bristol and Middletown, Connecticut** (no key): run "Load council districts"
+   once with `ct-bristol` and once with `ct-middletown`; each loads the city's whole
+   boundary from the Census Bureau's TIGERweb (neither publishes district shapes we
+   can use), so an address in the city finds its whole council. Bristol's council
+   arrives with `sync-bristol` (hourly; the first run reads last year's and this
+   year's agendas, about a minute). Middletown's comes from the "Load Middletown
+   agendas" workflow (daily; run it once by hand to start, about five minutes for two
+   years of agenda PDFs), and its 311 report with `sync-middletown-311` (daily), or
+   now: `select private.invoke_sync('sync-bristol'); select private.invoke_sync('sync-middletown-311');`
 
 ## 9. Switch the site to live data
 

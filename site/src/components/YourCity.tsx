@@ -65,7 +65,8 @@ export default function YourCity() {
   const atLarge = g.councilors.filter((c) => c.district === null).length;
   const s = g.report311 ? (district && g.report311.districts[district]) || g.report311.city : null;
   const where = district && g.report311?.districts[district] ? `${g.districtWord ?? 'District'} ${district}` : g.name;
-  const onTime = s ? pct(s.closedOnTime, s.closed) : null;
+  // Some cities' systems (SeeClickFix) have no deadlines, so nothing is "on time".
+  const onTime = s && g.report311?.onTime !== false ? pct(s.closedOnTime, s.closed) : null;
   const change = s ? change311(s) : null;
   const maxTop = s ? Math.max(1, ...s.top.map((t) => t.n)) : 1;
   const op = g.operating;

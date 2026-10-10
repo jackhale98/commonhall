@@ -380,8 +380,9 @@ export default function FindMyReps({ saved = false }: Props) {
             <>
               <h3 class="h-small">On the {cityName(result.city).council}</h3>
               <p class="small muted">
-                District {result.councilDistrict} and the {numberWord(cityName(result.city).atLarge)} at-large
-                councilors.
+                {result.councilDistrict
+                  ? `District ${result.councilDistrict} and the ${numberWord(cityName(result.city).atLarge)} at-large councilors.`
+                  : 'The whole council: we match your address to the city, not to a district.'}
               </p>
               <ul class="reps-list">
                 {result.localOfficials.map((o) => (

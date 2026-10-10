@@ -78,11 +78,19 @@ export default function District311({
           <dd>{s.opened.toLocaleString()}</dd>
           {change && <p class="small muted stat-note">{change} prior 30 days</p>}
         </div>
-        <div class="stat">
-          <dt>Closed on time</dt>
-          <dd>{pct(s.closedOnTime, s.closed)}</dd>
-          {s.typicalHours !== null && <p class="small muted stat-note">typically in {closeTime(s.typicalHours)}</p>}
-        </div>
+        {report.onTime === false ? (
+          <div class="stat">
+            <dt>Closed</dt>
+            <dd>{s.closed.toLocaleString()}</dd>
+            {s.typicalHours !== null && <p class="small muted stat-note">typically in {closeTime(s.typicalHours)}</p>}
+          </div>
+        ) : (
+          <div class="stat">
+            <dt>Closed on time</dt>
+            <dd>{pct(s.closedOnTime, s.closed)}</dd>
+            {s.typicalHours !== null && <p class="small muted stat-note">typically in {closeTime(s.typicalHours)}</p>}
+          </div>
+        )}
       </dl>
       {s.top.length > 0 && (
         <div class="panel top-311">

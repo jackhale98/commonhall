@@ -70,7 +70,8 @@ about, and take part in moderated public discussions.
 - The governor's executive orders and Supreme Judicial Court decisions (Governor
   and Courts tabs), each with a page where people can ask for a discussion.
 
-**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
+**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ct/bristol/`,
+`/states/ct/middletown/`): one set of pages for
 every city, filled from whatever the city publishes. Tabs (Overview, Council,
 Committees, Neighborhoods, Budget) appear only when there is data behind them; a
 new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
@@ -98,6 +99,24 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   Manager communications, committee reports, ordinances), searchable, with
   sponsors and what the council was asked to do; held items keep one page.
 - The operating budget summary and the capital budget, with a page per project.
+
+**Bristol, Connecticut** (tabs: Overview, Council, Committees)
+
+- The mayor and six councilors (two per district); an address in Bristol finds the
+  whole council, since the district map is published only as a street index.
+- City Council meetings, its joint meetings with the Board of Finance, and the
+  Ordinance, Real Estate and Salary Committees, with agendas and minutes.
+- Every numbered agenda item (consent agenda, ordinances, contracts, appointments,
+  committee reports), searchable, with each meeting it was on.
+
+**Middletown, Connecticut** (tabs: Overview, Council, Neighborhoods)
+
+- The twelve Common Council members, all elected citywide.
+- Council meetings (regular, special, workshops) with agendas and minutes.
+- Resolutions, ordinances and appropriations from the agendas, cited by number where
+  the agenda gives one; items carried to later meetings keep one page.
+- 311 requests from SeeClickFix (summaries only): how many, typical time to close,
+  the most common requests.
 
 **Every state**
 
@@ -151,6 +170,11 @@ automatically.
 | Worcester council agenda items | [PrimeGov](https://worcesterma.primegov.com/public/portal) agendas (HTML or PDF) | daily |
 | Worcester council districts | [Worcester open data](https://opendata.worcesterma.gov/) (2020 Census map) | on redistricting |
 | Worcester capital and operating budgets | [Worcester open data](https://opendata.worcesterma.gov/) (annual PDFs) | monthly check |
+| Bristol (CT) councilors | [bristolct.gov](https://www.bristolct.gov/1030/City-Council-Members) | weekly |
+| Bristol council and committee meetings and agenda items | [CivicClerk](https://bristolct.portal.civicclerk.com/) | hourly |
+| Middletown (CT) council members, meetings and agenda items | [middletownct.gov](https://www.middletownct.gov/AgendaCenter) (agenda PDFs) | daily |
+| Middletown 311 request summaries | [SeeClickFix](https://seeclickfix.com/middletown) | daily |
+| Bristol and Middletown city boundaries | [Census TIGERweb](https://tigerweb.geo.census.gov/) | once |
 | Address lookups | [U.S. Census Geocoder](https://geocoding.geo.census.gov/) | per lookup |
 | Discussions | [Pol.is](https://pol.is) | live |
 
@@ -161,7 +185,7 @@ Congresses load on demand.
 ## How it works
 
 ```
-Congress.gov · senate.gov · congress-legislators · Open States · Census · Boston Legistar · Analyze Boston · Worcester PrimeGov · Worcester open data
+Congress.gov · senate.gov · congress-legislators · Open States · Census · Boston Legistar · Analyze Boston · Worcester PrimeGov · Worcester open data · Bristol CivicClerk · Middletown Agenda Center · SeeClickFix
                                    │
           Scheduled jobs (Supabase Edge Functions, run by pg_cron)
                                    │  API keys stay here
@@ -194,8 +218,11 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts first |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
+| `sync-bristol` | hourly | Bristol (CT) council and committee meetings and agenda items from CivicClerk; councilors weekly |
+| `sync-middletown-311` | daily | Middletown (CT) 311 report from SeeClickFix (only the report is stored) |
 | `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
+| Load Middletown agendas (GitHub Action) | daily | Middletown (CT) Common Council members, meetings and agenda items (resolutions, ordinances, appropriations) from the city's agenda PDFs |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
