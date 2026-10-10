@@ -345,17 +345,10 @@ const phoneNav = PHONE_NAV.map((section) => ({
       egg?.addEventListener('click', () => {
         if (egg.classList.contains('is-playing')) return;
         egg.classList.add('is-playing');
-        // Back to the still logo once the session adjourns (or after 4 s if no animation ran).
-        const done = () => egg.classList.remove('is-playing');
-        const timer = window.setTimeout(done, 4000);
-        egg.querySelector('.ch-seat:last-of-type circle')?.addEventListener(
-          'animationend',
-          () => {
-            window.clearTimeout(timer);
-            done();
-          },
-          { once: true },
-        );
+        // Stop once the ballot has struck and the room has applauded (82% of the 3 s
+        // roll call), before the seats empty out. The still logo looks the same as
+        // that frame, so the hand-over is seamless.
+        window.setTimeout(() => egg.classList.remove('is-playing'), 2460);
       });
     </script>
     <script>
