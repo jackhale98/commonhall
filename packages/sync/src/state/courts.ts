@@ -13,7 +13,8 @@ import {
   type CourtListenerClient,
 } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
-import { monthWindows } from '../federal/court.ts';
+import { htmlText, monthWindows } from '../federal/court.ts';
+import { opinionSummary } from './opinion-text.ts';
 import type { JobRun } from '../job.ts';
 
 export const STATE_COURTS_JOB = 'state-courts';
@@ -53,7 +54,45 @@ export function stateCourtCaseRow(c: ClCluster, state: string) {
     concurrences: types.filter((t) => t === 'concurrence-opinion' || t === 'in-part-opinion').length,
     per_curiam: c.opinions.some((o) => o.per_curiam),
     summary: c.syllabus?.trim() || null,
+    opinion_ids: c.opinions.map((o) => o.id),
   };
+}
+
+/** How many decisions one run reads the opinion text for (one request each), newest first. */
+const TEXTS_PER_RUN = 6;
+
+/**
+ * Read each decision's opinion text once for what it is about: the reporter's
+ * subject keywords and the opinion's opening paragraph (opinion-text.ts). Newest
+ * decisions first; stops when the request budget runs out.
+ */
+export async function fillCaseText(run: JobRun<StateCourtsCursor>, client: CourtListenerClient): Promise<number> {
+  const due = await run.sql<{ cluster_id: number; opinion_ids: number[] }[]>`
+    select cluster_id, opinion_ids from public.state_court_cases
+     where text_checked_at is null and cardinality(opinion_ids) > 0
+     order by date_filed desc limit ${TEXTS_PER_RUN}`;
+  let found = 0;
+  for (const c of due) {
+    if (run.outOfTime()) break;
+    try {
+      const opinion = await client.opinionText(Number(c.opinion_ids[0]));
+      const text = opinion.plain_text?.trim() || htmlText(opinion.html_with_citations ?? '');
+      const { keywords, opening } = opinionSummary(text);
+      await run.sql`
+        update public.state_court_cases
+           set keywords = ${keywords}, opening = ${opening}, text_checked_at = now()
+         where cluster_id = ${c.cluster_id}`;
+      if (keywords || opening) {
+        found++;
+        run.rowsWritten++;
+      }
+    } catch (error) {
+      if (error instanceof BudgetExhaustedError) throw error;
+      run.log('state-courts: opinion text failed', { cluster: c.cluster_id, error: String(error) });
+    }
+  }
+  if (due.length) run.log('state-courts: opinion texts', { checked: due.length, found });
+  return found;
 }
 
 export async function syncStateCourts(
@@ -105,6 +144,8 @@ export async function syncStateCourts(
       const seen = await read(from);
       run.log('state-courts', { court, since: from, seen });
     }
+    // Whatever budget is left goes to reading what decisions are about.
+    await fillCaseText(run, options.client);
     return cursor;
   } catch (error) {
     if (!(error instanceof BudgetExhaustedError)) throw error;

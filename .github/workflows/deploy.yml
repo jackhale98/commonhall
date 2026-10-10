@@ -5,6 +5,14 @@ name: Deploy site
 on:
   push:
     branches: [main]
+    # Docs, loaders and other workflows don't change the site. (Each build reads about
+    # 60 MB from Supabase, which counts toward its monthly egress.)
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'scripts/**'
+      - '.github/workflows/load-*.yml'
+      - '.github/workflows/backfill.yml'
   workflow_dispatch:
   workflow_call:
   # Rebuild once new migrations are live, so pages pick up new tables and columns.
@@ -22,8 +30,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A push that changes the database or the sync code deploys Supabase first, and the
+  # workflow_run trigger builds once that is live; building on the push as well would
+  # read everything from Supabase twice.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: check
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          build=true
+          if [ "$EVENT" = push ] && git cat-file -e "$BEFORE" 2>/dev/null \
+            && git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qE '^(supabase/|packages/|\.github/workflows/supabase-deploy\.yml)'; then
+            build=false
+            echo "Supabase changes in this push: the site builds after Deploy Supabase." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+
   build:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    needs: plan
+    if: >-
+      needs.plan.outputs.build == 'true' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

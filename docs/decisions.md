@@ -1270,3 +1270,33 @@ half an hour, which the nightly rebuild absorbs anyway.
   `state_bill_coverage` view adds how many we hold. A state's Bills tab shows "X of Y
   bills in the session on file", and the states index the total with a table by
   state. Only the current session is counted: earlier sessions aren't loaded.
+
+## 89. Supabase egress: fewer, smaller builds
+
+The free plan includes 5 GB of egress a month. A production site build downloaded
+about 57 MB of JSON (about a sixth of that on the wire: PostgREST responses are
+gzipped), and a push could build the site twice: once on the push and again after
+Deploy Supabase. Now:
+
+- A push that touches `supabase/`, `packages/` or the Supabase workflow builds only
+  after Deploy Supabase finishes; docs, scripts and loader workflows don't build.
+- The full bill list reads list columns only; summaries, links and the other page
+  fields are read just for bills with their own page (bills 20 → 13 MB).
+- A councilor's page reads light rows for all their matters and full rows only for
+  the ten it shows (council sponsors 4.7 → 1.5 MB).
+
+A build is now about 47 MB uncompressed. The nightly rebuild plus a few deploys a day
+stays well within the allowance; Supabase's usage page splits egress by service if it
+climbs.
+
+## 90. What a court decision is about
+
+CourtListener's search results don't describe a case, but Massachusetts opinions
+open with the reporter's subject keywords ("Homicide. Evidence, Hearsay.") and the
+opinion's first paragraph says what the appeal is about. `sync-state-courts` reads
+each decision's opinion text once (up to six a run, newest first, from whatever is
+left of the shared CourtListener budget) and keeps only those two pieces
+(`keywords`, `opening`); `text_checked_at` marks it read. The Courts list shows the
+subjects under each case name (and searches them); a decision's page shows them as
+chips with the opening paragraph. The parser follows the slip-opinion layout and
+gives null for text that doesn't match (rescripts, damaged text).

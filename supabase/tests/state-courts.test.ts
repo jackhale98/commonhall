@@ -16,14 +16,27 @@ const sample = readFileSync(
   'utf8',
 );
 
+const opinion = readFileSync(
+  fileURLToPath(new URL('../../packages/sync/test/fixtures/opinions/sjc-sample.txt', import.meta.url)),
+  'utf8',
+);
+
+/** CourtListener: search results from the sample; /opinions/{id}/ answers with a slip opinion's text. */
 function fake() {
   const calls: URL[] = [];
+  const opinionCalls: URL[] = [];
   const fetch: FetchLike = async (input) => {
     const url = new URL(input);
+    if (url.pathname.includes('/opinions/')) {
+      opinionCalls.push(url);
+      return new Response(JSON.stringify({ id: 1, plain_text: opinion }), {
+        headers: { 'content-type': 'application/json' },
+      });
+    }
     calls.push(url);
     return new Response(sample, { headers: { 'content-type': 'application/json' } });
   };
-  return { calls, fetch };
+  return { calls, opinionCalls, fetch };
 }
 
 const run = (fetch: FetchLike) =>
@@ -51,7 +64,9 @@ describe('sync-state-courts', () => {
     const api = fake();
     const first = await run(api.fetch);
     expect(first.status).toBe('ok');
-    expect(first.rowsWritten).toBe(2);
+    // Two decisions, and what each is about from its opinion text.
+    expect(first.rowsWritten).toBe(4);
+    expect(api.opinionCalls).toHaveLength(2);
     expect(api.calls).toHaveLength(3);
     // Newest month first.
     expect(api.calls[0]!.searchParams.get('q')).toBe('court_id:mass AND dateFiled:[2024-08-01 TO 2024-08-31]');
@@ -74,6 +89,17 @@ describe('sync-state-courts', () => {
       'court_id:mass AND dateFiled:[2024-08-01 TO 2024-08-31]',
       'court_id:mass AND dateFiled:[2024-07-01 TO 2024-07-31]',
     ]);
+  });
+
+  it('reads what each decision is about once', async () => {
+    const api = fake();
+    await run(api.fetch);
+    const [row] = await sql`select keywords, opening from public.state_court_cases order by date_filed limit 1`;
+    expect(row!.keywords).toMatch(/^Homicide\. Evidence, Prior misconduct, Hearsay\./);
+    expect(row!.opening).toMatch(/^The defendant was convicted of murder in the first degree/);
+    api.opinionCalls.length = 0;
+    await run(api.fetch);
+    expect(api.opinionCalls).toHaveLength(0);
   });
 
   it('is public to read', async () => {

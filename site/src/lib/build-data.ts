@@ -72,6 +72,7 @@ import {
   type Params,
 } from './rest';
 import {
+  BILL_LIST_COLUMNS,
   BILL_PAGE_COLUMNS,
   LOCAL_MATTER_COLUMNS,
   LOCAL_OFFICIAL_COLUMNS,
@@ -198,9 +199,15 @@ export const loadMembers = memo(async () => {
   return new Map(rows.map((m) => [m.bioguide_id, m]));
 });
 
+/**
+ * Every current-Congress bill, list columns only (lists, counts, search). Summaries,
+ * links and the other page fields come only for bills with their own page
+ * (loadPrerenderBills): the full set read for all ~20,000 bills tripled what each
+ * build downloads from Supabase.
+ */
 export const loadBills = memo(async () => {
   const rows = await selectAll<Bill>('bills', {
-    select: BILL_PAGE_COLUMNS,
+    select: DEMO ? BILL_PAGE_COLUMNS : BILL_LIST_COLUMNS,
     congress: `eq.${CURRENT_CONGRESS}`,
     order: 'latest_action_date.desc.nullslast,id.asc',
   });
@@ -222,7 +229,15 @@ export const loadPrerenderedBillIds = memo(async () => {
 
 export const loadPrerenderBills = memo(async () => {
   const ids = await loadPrerenderedBillIds();
-  return (await loadBills()).filter((b) => ids.has(b.id));
+  if (DEMO) return (await loadBills()).filter((b) => ids.has(b.id));
+  // Page columns for just these bills, in the list's order (latest action first).
+  const full = new Map(
+    (await selectByIds<Bill>('bills', 'id', [...ids], { select: BILL_PAGE_COLUMNS, order: 'id.asc' })).map((b) => [
+      b.id,
+      b,
+    ]),
+  );
+  return (await loadBills()).filter((b) => full.has(b.id)).map((b) => full.get(b.id)!);
 });
 
 /** Fetch rows for many ids with `in.(…)` filters, 150 ids per request. */
@@ -398,6 +413,10 @@ export interface StateCourtCase {
   dissents: number;
   concurrences: number;
   per_curiam: boolean;
+  /** The reporter's subject keywords ("Homicide. Evidence, Hearsay."), from the opinion text. */
+  keywords: string | null;
+  /** The opinion's opening paragraph. */
+  opening: string | null;
 }
 
 export interface StateExecutiveOrder {
@@ -414,7 +433,7 @@ export interface StateExecutiveOrder {
 export const loadStateCourtCases = memo(async () => {
   const rows = await selectAllOptional<StateCourtCase>('state_court_cases', {
     select:
-      'cluster_id,court_id,state,case_name,docket_number,date_filed,citations,url,judges,dissents,concurrences,per_curiam',
+      'cluster_id,court_id,state,case_name,docket_number,date_filed,citations,url,judges,dissents,concurrences,per_curiam,keywords,opening',
     order: 'state.asc,date_filed.desc,cluster_id.desc',
   });
   return groupBy(rows, (r) => r.state);
@@ -937,15 +956,29 @@ export async function loadSponsoredMatters(officialId: string): Promise<LocalMat
     );
     return (DEMO_TABLES.local_matters as unknown as LocalMatter[]).filter((m) => ids.has(m.id));
   }
+  // Light rows for every matter (the counts and filters), full rows only for the ten shown first.
   const rows = await selectAllOptional<{ matter: LocalMatter | null }>('local_matter_sponsors', {
-    select: `matter:local_matters(${LOCAL_MATTER_COLUMNS})`,
+    select: 'matter:local_matters(id,matter_id,type,status,passed_date,latest_action_date)',
     official_id: `eq.${officialId}`,
   });
-  return rows
+  const light = rows
     .map((r) => r.matter)
     .filter((m): m is LocalMatter => m !== null)
     .sort((a, b) => (b.latest_action_date ?? '').localeCompare(a.latest_action_date ?? ''));
+  const firstIds = light
+    .filter((m) => !HIDDEN_MATTER_TYPES.includes(m.type ?? ''))
+    .slice(0, SPONSORED_FIRST)
+    .map((m) => m.id);
+  const full = new Map(
+    (
+      await selectByIds<LocalMatter>('local_matters', 'id', firstIds, { select: LOCAL_MATTER_COLUMNS, order: 'id.asc' })
+    ).map((m) => [m.id, m]),
+  );
+  return light.map((m) => full.get(m.id) ?? m);
 }
+
+/** How many of a councilor's matters their page lists before the explorer takes over. */
+export const SPONSORED_FIRST = 10;
 
 export interface DistrictShape {
   district: number;

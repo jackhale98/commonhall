@@ -36,12 +36,25 @@ const split = (c: (typeof cases)[number]) =>
   ]
     .filter(Boolean)
     .join(' · ');
+/** "Homicide. Evidence, Prior misconduct, Hearsay." → "Homicide; Evidence: prior misconduct, hearsay", shortened. */
+const subjects = (k: string) => {
+  const s = k
+    .replace(/\.$/, '')
+    .split(/\.\s+/)
+    .map((h) => {
+      const [head, ...rest] = h.split(/,\s*/);
+      return rest.length ? `${head}: ${rest.map((r) => r.toLowerCase()).join(', ')}` : head;
+    })
+    .join('; ');
+  return s.length > 140 ? `${s.slice(0, 139)}…` : s;
+};
 const rows = cases.map((c) => ({
   id: id(c.cluster_id),
   meta: [formatDate(c.date_filed), c.docket_number, c.citations[0]].filter(Boolean).join(' · '),
   title: c.case_name,
   href: stateCourtCaseHref(id(c.cluster_id)),
-  note: split(c) || undefined,
+  // What it's about (the reporter's subjects), then any dissents.
+  note: [c.keywords && subjects(c.keywords), split(c)].filter(Boolean).join(' · ') || undefined,
   tags: discussions.get(`state_court_case:${id(c.cluster_id)}`) ? ['Discussion open'] : undefined,
   group: c.date_filed.slice(0, 4),
   flag: c.dissents > 0,
