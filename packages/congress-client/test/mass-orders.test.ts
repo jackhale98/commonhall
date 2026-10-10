@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { maOrderRangePages, parseMaOrderDetail, parseMaOrderLinks } from '../src/mass-orders.ts';
+import { maOrderParts, maOrderRangePages, parseMaOrderDetail, parseMaOrderLinks } from '../src/mass-orders.ts';
 
 describe('Massachusetts executive orders', () => {
   it('finds the index page for each hundred, newest first', () => {
@@ -70,11 +71,75 @@ WHEREAS, the provision of comprehensive …`;
       signed_date: '2024-08-15',
       governor: 'Maura Healey',
       revokes: 'Executive Order No. 368',
+      register: 'No. 1529',
+      body: 'WHEREAS, the provision of comprehensive …',
     });
-    expect(parseMaOrderDetail('DATE:\t\n01/05/2023\n\nISSUER:\t\nMaura Healey\n\nWHEREAS …')).toEqual({
+    expect(parseMaOrderDetail('DATE:\t\n01/05/2023\n\nISSUER:\t\nMaura Healey\n\nWHEREAS …')).toMatchObject({
       signed_date: '2023-01-05',
       governor: 'Maura Healey',
       revokes: null,
+      register: null,
     });
+  });
+});
+
+describe("an order's text", () => {
+  const read = (name: string) => readFileSync(new URL(`./fixtures/mass-orders/${name}`, import.meta.url), 'utf8');
+
+  it('keeps the register number, what it rescinds and its text without the page around it', () => {
+    const d = parseMaOrderDetail(read('order-601.txt'));
+    expect(d).toMatchObject({ signed_date: '2022-08-24', governor: 'Charlie Baker', register: 'No. 1478' });
+    expect(d.revokes).toBe('Executive Order No. 600');
+    expect(d.body).toMatch(/^WHEREAS, the Constitution/);
+    expect(d.body).toMatch(/Given at the Executive Chamber in Boston this 24th day of August/);
+    expect(d.body).not.toMatch(/THIS IS PART OF|Help Us Improve/);
+  });
+
+  it('splits the text into why and what it orders', () => {
+    const parts601 = maOrderParts(parseMaOrderDetail(read('order-601.txt')).body!);
+    expect(parts601.whereas).toHaveLength(2);
+    expect(parts601.whereas[1]).toMatch(/^the law enacted by the Legislature .* is unnecessary\.$/);
+    expect(parts601.sections).toEqual([
+      { heading: null, text: 'Executive Order No. 600 is rescinded effective immediately.' },
+    ]);
+
+    const parts658 = maOrderParts(parseMaOrderDetail(read('order-658.txt')).body!);
+    expect(parts658.whereas).toEqual([
+      'demand for data storage, processing capabilities, and computational tasks is increasing.',
+      'data centers are energy- and resource-intensive facilities.',
+    ]);
+    expect(parts658.sections).toEqual([
+      {
+        heading: 'Section 1',
+        text: 'The Department of Public Utilities shall open a proceeding on data center rates.',
+      },
+      {
+        heading: 'Section 2',
+        text: 'Data centers shall report their water use annually.\n\nEach report shall be public.',
+      },
+      { heading: 'Section 15', text: 'This Executive Order shall be effective upon the date signed.' },
+    ]);
+  });
+
+  it("reads an amending order's text, which has no WHEREAS", () => {
+    const d = parseMaOrderDetail(
+      'No. 634: Amendment to Executive Order 631\nDATE:\t\n06/27/2024\n\nISSUER:\t\nMaura Healey\n\nMASS REGISTER:\t\nNo. 1525\n\nAMENDING:\t\nExecutive Order No. 631\n\nSection 2 of Executive Order 631 is hereby amended by striking the words “up to 15 additional members”.\n\nTHIS IS PART OF: Massachusetts Executive Orders 600-699\n',
+    );
+    expect(d.body).toBe(
+      'Section 2 of Executive Order 631 is hereby amended by striking the words “up to 15 additional members”.',
+    );
+    expect(maOrderParts(d.body!).sections).toEqual([
+      {
+        heading: null,
+        text: 'Section 2 of Executive Order 631 is hereby amended by striking the words “up to 15 additional members”.',
+      },
+    ]);
+  });
+
+  it('keeps titled sections ("Section 1. Purpose") as headings', () => {
+    expect(
+      maOrderParts('NOW, THEREFORE, I do hereby order as follows:\n\nSection 1. Purpose\n\nA council is established.')
+        .sections,
+    ).toEqual([{ heading: 'Section 1. Purpose', text: 'A council is established.' }]);
   });
 });

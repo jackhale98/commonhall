@@ -427,6 +427,10 @@ export interface StateExecutiveOrder {
   governor: string | null;
   revokes: string | null;
   url: string;
+  /** "No. 1583" in the Massachusetts Register. */
+  register: string | null;
+  /** The order's text: its WHEREAS clauses and what it orders. */
+  body: string | null;
 }
 
 /** State high court decisions (CourtListener), newest first, by state. */
@@ -442,7 +446,7 @@ export const loadStateCourtCases = memo(async () => {
 /** Governors' executive orders, newest first, by state. */
 export const loadStateOrders = memo(async () => {
   const rows = await selectAllOptional<StateExecutiveOrder>('state_executive_orders', {
-    select: 'state,number,title,signed_date,governor,revokes,url',
+    select: 'state,number,title,signed_date,governor,revokes,url,register,body',
     order: 'state.asc,number.desc',
   });
   return groupBy(rows, (r) => r.state);

@@ -3,7 +3,8 @@
  * from the Trial Court Law Libraries' list on mass.gov. mass.gov turns away plain
  * requests, so the pages are read in a headless browser (Playwright's Chromium).
  * Reads the newest two index pages (orders 500 and up, about fifteen years), and
- * opens an order's own page only when it is new or has no date yet. The "Load
+ * opens an order's own page (its date, governor, register number and text) only
+ * when it is new or that is missing. The "Load
  * governor orders" workflow runs this weekly and on demand.
  *
  *   SUPABASE_DB_URL=… npx tsx scripts/load-ma-orders.ts [--ranges 2] [--executable /path/to/chromium]
@@ -57,9 +58,10 @@ async function main() {
 
     const known = new Map(
       (
-        await sql<{ number: number; signed_date: string | null }[]>`
-          select number, signed_date::text from public.state_executive_orders where state = ${STATE}`
-      ).map((r) => [r.number, r.signed_date]),
+        await sql<{ number: number; complete: boolean }[]>`
+          select number, (signed_date is not null and body is not null) as complete
+            from public.state_executive_orders where state = ${STATE}`
+      ).map((r) => [r.number, r.complete]),
     );
     let written = 0;
     for (const order of orders) {
@@ -79,7 +81,8 @@ async function main() {
         insert into public.state_executive_orders ${sql({ ...row, ...detail })}
         on conflict (state, number) do update set
           title = excluded.title, url = excluded.url, signed_date = excluded.signed_date,
-          governor = excluded.governor, revokes = excluded.revokes`;
+          governor = excluded.governor, revokes = excluded.revokes, register = excluded.register,
+          body = excluded.body`;
       written++;
       console.log(`No. ${order.number}`, detail.signed_date ?? 'no date', detail.governor ?? '');
       await page.waitForTimeout(800);

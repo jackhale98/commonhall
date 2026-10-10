@@ -1300,3 +1300,15 @@ left of the shared CourtListener budget) and keeps only those two pieces
 subjects under each case name (and searches them); a decision's page shows them as
 chips with the opening paragraph. The parser follows the slip-opinion layout and
 gives null for text that doesn't match (rescripts, damaged text).
+
+## 91. What a governor's order says
+
+Each order's page on mass.gov carries its Massachusetts Register number and its
+text: the WHEREAS clauses, then what the governor orders, often in numbered
+sections. The Load governor orders workflow already opens each order's page, so it
+now keeps the register number and the text (`register`, `body`; migration 048) and
+re-opens orders stored without them once. The order's page on the site shows "What
+it orders" (the first three sections, the rest folded) and "Why, in the order's
+words" (the first three WHEREAS clauses). Orders that only amend another have no
+WHEREAS; their text is what follows the header fields. About 150 orders of a few KB
+each.
