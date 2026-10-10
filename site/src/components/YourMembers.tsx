@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'preact/hooks';
-import { getClient, hasStoredSession } from '../lib/auth';
+import { getClient, hasStoredSession, savedDistricts } from '../lib/auth';
 import { memberTag } from '../lib/format';
 import { href, memberHref } from '../lib/paths';
 import type { Member } from '../lib/types';
 import MemberPhoto from './MemberPhoto';
+import { isMine } from '../lib/pinned';
 
 type Row = Pick<Member, 'bioguide_id' | 'name' | 'party' | 'state' | 'district' | 'chamber' | 'photo_url'>;
 
-/** Members of Congress the signed-in visitor follows; renders nothing otherwise. */
+/** Members of Congress the signed-in visitor follows, other than their own (shown above); nothing otherwise. */
 export default function YourMembers() {
   const [rows, setRows] = useState<Row[]>([]);
 
@@ -25,7 +26,14 @@ export default function YourMembers() {
         .select('bioguide_id,name,party,state,district,chamber,photo_url')
         .in('bioguide_id', ids)
         .order('name');
-      setRows((members ?? []) as Row[]);
+      // Your own senators and representative are listed above, under Your representatives.
+      const d = await savedDistricts();
+      setRows(
+        ((members ?? []) as Row[]).filter(
+          (m) =>
+            !d || !isMine({ chamber: m.chamber, district: m.district }, { kind: 'congress', state: m.state ?? '' }, d),
+        ),
+      );
     })().catch(() => undefined);
   }, []);
 

@@ -3353,3 +3353,26 @@ button .ch-loader,
   font-variant-numeric: tabular-nums;
   font-weight: 650;
 }
+.your-followed .pinned-group + .pinned-group {
+  margin-top: var(--space-4);
+}
+.followed-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.followed-items li {
+  display: grid;
+  gap: 0.15rem;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.followed-items a {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.followed-items a:hover {
+  color: var(--link);
+  text-decoration: underline;
+}

@@ -227,7 +227,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await sql`truncate public.state_vote_positions, public.state_votes, public.state_bill_actions, public.state_sessions, public.state_bill_sponsors, public.state_bills, public.state_legislators, public.geo_cache, public.feed_events, public.follows`;
+  await sql`truncate public.state_vote_positions, public.state_votes, public.state_bill_actions, public.state_sessions, public.state_bill_sponsors, public.state_bills, public.state_legislators, public.geo_cache, public.feed_events, public.follows, public.state_bill_counts`;
   await sql`delete from public.sync_state`;
   await sql`delete from public.sync_lock`;
   await sql`delete from public.api_usage`;
@@ -275,6 +275,23 @@ describe('sync-state', () => {
     ]);
     expect(kinds[0]!.summary).toBe('TX HB 5: Passed the House');
     expect(kinds[1]).toMatchObject({ member_type: 'state_legislator', member_id: 'ocd-person/tx-2' });
+  });
+
+  it('records how many bills the session has, about weekly, for the coverage line', async () => {
+    const api = new FakeOpenStates();
+    api.addBills('tx', 45);
+    await runState(api);
+    const coverage = async () =>
+      (await sql`select reported_total, loaded from public.state_bill_coverage where state = 'TX'`)[0];
+    expect(await coverage()).toEqual({ reported_total: 45, loaded: 45 });
+
+    api.addBills('tx', 2, 46, () => '2026-10-08T23:30:00.000000+00:00');
+    // The next night needs no count; a week on, one request recounts the session.
+    api.requests.length = 0;
+    await runState(api, 1000, ['TX', 'CA'], '2026-10-09T07:00:00Z');
+    expect(await coverage()).toEqual({ reported_total: 45, loaded: 47 });
+    await runState(api, 1000, ['TX', 'CA'], '2026-10-16T07:00:00Z');
+    expect(await coverage()).toEqual({ reported_total: 47, loaded: 47 });
   });
 
   it('keeps every sponsor for Massachusetts, primary first, and only the main sponsor elsewhere', async () => {

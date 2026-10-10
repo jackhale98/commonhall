@@ -1,14 +1,21 @@
 ---
 import StateTiles from '../../components/viz/StateTiles';
 import Base from '../../layouts/Base.astro';
-import { loadMembers } from '../../lib/build-data';
+import { loadMembers, loadStateBillCoverage } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, stateName } from '../../lib/format';
-import { href, stateHref } from '../../lib/paths';
+import { cityHref, href, stateHref } from '../../lib/paths';
 
 const members = [...(await loadMembers()).values()].filter((m) => m.current && m.chamber === 'house');
 const seats = new Map<string, number>();
 for (const m of members) if (m.state) seats.set(m.state, (seats.get(m.state) ?? 0) + 1);
 const states = LEGISLATURE_STATES.slice().sort((a, b) => stateName(a).localeCompare(stateName(b)));
+// How many of each state's current-session bills we hold, as Open States counts them.
+const coverage = [...(await loadStateBillCoverage()).values()].sort((a, b) =>
+  stateName(a.state).localeCompare(stateName(b.state)),
+);
+const reported = coverage.reduce((n, c) => n + c.reported_total, 0);
+const loaded = coverage.reduce((n, c) => n + Math.min(c.loaded, c.reported_total), 0);
+const pct = (part: number, whole: number) => (whole ? Math.floor((part / whole) * 100) : 0);
 const territories = STATE_CODES.filter((c) => !LEGISLATURE_STATES.includes(c));
 const tiles = LEGISLATURE_STATES.map((code) => ({
   code,
@@ -41,7 +48,7 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
       <strong>Massachusetts</strong>
       <span class="small muted">Bills with their full history, roll-call votes and co-sponsors.</span>
     </a>
-    <a class="card feature" href={href('boston/')}>
+    <a class="card feature" href={cityHref('ma-boston')}>
       <span class="kicker">Local government</span>
       <strong>Boston City Council</strong>
       <span class="small muted">City Council, zoning hearings and the capital budget.</span>
@@ -85,6 +92,46 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
       </p>
     </div>
   </section>
+
+  {coverage.length > 0 && (
+    <section aria-labelledby="coverage-h">
+      <h2 id="coverage-h" class="h-small">
+        State bill coverage
+      </h2>
+      <p class="small muted">
+        {loaded.toLocaleString()} of {reported.toLocaleString()} bills in the current sessions of {coverage.length}{' '}
+        {coverage.length === 1 ? 'legislature' : 'legislatures'} are on file ({pct(loaded, reported)}%), as Open States
+        counts them. States load newest bills first, a few pages a night within Open States’ free limits.
+      </p>
+      <details class="coverage">
+        <summary>Coverage by state</summary>
+        <table class="coverage-table">
+          <thead>
+            <tr>
+              <th scope="col">State</th>
+              <th scope="col">Session</th>
+              <th scope="col">On file</th>
+              <th scope="col">Bills</th>
+              <th scope="col">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {coverage.map((c) => (
+              <tr>
+                <th scope="row">
+                  <a href={href(`states/${c.state.toLowerCase()}/bills/`)}>{stateName(c.state)}</a>
+                </th>
+                <td>{c.session}</td>
+                <td>{c.loaded.toLocaleString()}</td>
+                <td>{c.reported_total.toLocaleString()}</td>
+                <td>{pct(Math.min(c.loaded, c.reported_total), c.reported_total)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+    </section>
+  )}
 </Base>
 
 <script>
@@ -96,6 +143,32 @@ const tiles = LEGISLATURE_STATES.map((code) => ({
 </script>
 
 <style>
+  .coverage summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--link);
+    font-weight: 600;
+  }
+  .coverage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step--1);
+  }
+  .coverage-table th,
+  .coverage-table td {
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .coverage-table th[scope='row'],
+  .coverage-table thead th:first-child,
+  .coverage-table td:nth-child(2),
+  .coverage-table thead th:nth-child(2) {
+    text-align: left;
+  }
   .featured-row {
     display: grid;
     gap: var(--space-3);

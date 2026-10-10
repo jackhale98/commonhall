@@ -429,6 +429,23 @@ export const loadStateOrders = memo(async () => {
   return groupBy(rows, (r) => r.state);
 });
 
+export interface StateBillCoverage {
+  state: string;
+  session: string;
+  reported_total: number;
+  loaded: number;
+  checked_at: string;
+}
+
+/** Per state: bills Open States lists for the current session, and how many we hold. */
+export const loadStateBillCoverage = memo(async () => {
+  const rows = await selectAllOptional<StateBillCoverage>('state_bill_coverage', {
+    select: 'state,session,reported_total,loaded,checked_at',
+    order: 'state.asc',
+  });
+  return new Map(rows.map((r) => [r.state, r]));
+});
+
 /** Every state's legislative sessions with their dates, by state. */
 export const loadStateSessions = memo(async () => {
   const rows = await selectAllOptional<StateSession>('state_sessions', {

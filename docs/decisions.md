@@ -1243,3 +1243,22 @@ half an hour, which the nightly rebuild absorbs anyway.
   is called and what its Council tab calls them; the consent-agenda toggle shows only
   where that type exists.
 
+
+## 88. Yours first, and how much of each state we hold
+
+- **Your representatives, then what you follow, at the top of each list.** For a
+  signed-in visitor with saved districts (Find my reps), a state's Congress tab, its
+  Legislature tab and a city's Council tab open with their own members, legislators
+  and councilors (district and at-large), then anyone else on the page they follow.
+  The federal bills page, a state's Bills tab and a city's Council tab open with the
+  bills or council items they follow. All of it is read in the browser from the
+  visitor's own profile and follows (RLS), and nothing shows when signed out. The
+  members page already opens with the saved representatives (Find my reps), so its
+  "Members you follow" leaves those out.
+- **Coverage.** Open States' bill listing reports how many bills a session has
+  (`pagination.total_items`). sync-state records it on the first page of a state's
+  first load, then about weekly with one request per state (about seven a day across
+  states, from the same daily budget), in `state_bill_counts`; the
+  `state_bill_coverage` view adds how many we hold. A state's Bills tab shows "X of Y
+  bills in the session on file", and the states index the total with a table by
+  state. Only the current session is counted: earlier sessions aren't loaded.

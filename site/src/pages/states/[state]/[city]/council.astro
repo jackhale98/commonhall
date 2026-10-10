@@ -5,7 +5,8 @@ import FindMyReps from '../../../../components/FindMyReps';
 import LocalMatters from '../../../../components/LocalMatters';
 import CityMeetings from '../../../../components/CityMeetings.astro';
 import SourceNote from '../../../../components/SourceNote.astro';
-import YourFollowed from '../../../../components/YourFollowed';
+import FollowedItems from '../../../../components/FollowedItems';
+import PinnedPeople from '../../../../components/PinnedPeople';
 import DistrictMap from '../../../../components/viz/DistrictMap';
 import Base from '../../../../layouts/Base.astro';
 import {
@@ -61,21 +62,25 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
   section="states"
 >
   <CityHeader city={city} current="council" />
-  <YourFollowed
+  <PinnedPeople
     client:idle
     targetType="local_official"
-    title="Councilors you follow"
+    scope={{ kind: 'council', city: city.key }}
+    mineTitle="Your councilors"
+    followedTitle="Councilors you follow"
     people={officials.map((o) => ({
       id: o.id,
       name: o.name,
       photo_url: o.photo_url,
+      district: o.district,
       detail: [o.title, o.seat].filter(Boolean).join(' · '),
       href: localOfficialHref(o.id),
     }))}
   />
+  <FollowedItems client:idle kind={{ type: 'local_matter', city: city.key }} title="Council items you follow" />
 
   <section aria-labelledby="council-h">
-    <h2 id="council-h">Your councilors</h2>
+    <h2 id="council-h">Councilors</h2>
     {officials.length === 0 && <p class="muted">Not loaded yet.</p>}
     <div class="council-layout">
       <div class="panel">

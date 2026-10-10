@@ -1,11 +1,12 @@
 ---
 import MemberChip from '../../../components/MemberChip';
 import MemberPhoto from '../../../components/MemberPhoto';
+import PinnedPeople from '../../../components/PinnedPeople';
 import StateHeader from '../../../components/StateHeader.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadMembers } from '../../../lib/build-data';
-import { STATE_CODES, stateName } from '../../../lib/format';
-import { href } from '../../../lib/paths';
+import { STATE_CODES, memberTag, stateName } from '../../../lib/format';
+import { href, memberHref } from '../../../lib/paths';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -37,6 +38,23 @@ const groups = [
   section="states"
 >
   <StateHeader code={code} current="congress" />
+  <PinnedPeople
+    client:idle
+    targetType="member"
+    scope={{ kind: 'congress', state: code }}
+    mineTitle="Your members of Congress"
+    followedTitle="Members you follow"
+    people={[...senators, ...house].map((m) => ({
+      id: m.bioguide_id,
+      name: m.name,
+      photo_url: m.photo_url,
+      bioguideId: m.bioguide_id,
+      detail: memberTag(m),
+      href: memberHref(m.bioguide_id),
+      chamber: m.chamber,
+      district: m.district,
+    }))}
+  />
   {members.length === 0 && <p class="muted">No members on file.</p>}
   {groups.map((g) => (
     <section aria-labelledby={`${g.key}-h`}>

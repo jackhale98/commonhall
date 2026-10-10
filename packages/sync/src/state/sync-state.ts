@@ -110,6 +110,21 @@ export interface StateBillsCursor {
   backPage?: number;
   /** First load can stop at bills updated before this: an earlier load stored them. */
   stopAt?: string;
+  /** When Open States' count of the session's bills was last recorded (state_bill_counts). */
+  totalAt?: string;
+}
+
+/** Open States' count of a session's bills is recorded about weekly per state (one request). */
+const TOTAL_EVERY_MS = 7 * 86_400_000;
+
+/** Record how many bills Open States lists for a state's session, for the coverage line. */
+async function recordTotal(sql: JobRun<StateCursor>['sql'], state: string, session: string, total: number | undefined) {
+  if (total === undefined) return;
+  await sql`
+    insert into public.state_bill_counts (state, session, reported_total, checked_at)
+    values (${state}, ${session}, ${total}, now())
+    on conflict (state) do update set session = excluded.session, reported_total = excluded.reported_total,
+      checked_at = excluded.checked_at`;
 }
 
 export interface StateCursor extends Record<string, unknown> {
@@ -468,7 +483,11 @@ async function billPage(
       page,
       include: FIRST_CLASS_STATES.includes(state) ? FIRST_CLASS_DETAIL : undefined,
     });
-    if (page === 1) bc.newest = result.results[0]?.updated_at ?? bc.newest;
+    if (page === 1) {
+      bc.newest = result.results[0]?.updated_at ?? bc.newest;
+      await recordTotal(run.sql, state, session, result.pagination?.total_items);
+      bc.totalAt = now.toISOString();
+    }
     run.rowsWritten += await writeStateBills(run.sql, result.results, false);
     const oldest = result.results.at(-1)?.updated_at;
     done =
@@ -485,6 +504,18 @@ async function billPage(
       delete bc.newest;
     } else bc.backPage = page + 1;
   } else {
+    if (!bc.totalAt || now.getTime() - Date.parse(bc.totalAt) > TOTAL_EVERY_MS) {
+      // The session's newest page: its pagination counts every bill in the session.
+      const newest = await client.bills({
+        jurisdiction: stateJurisdiction(state),
+        session,
+        sort: 'updated_desc',
+        page: 1,
+      });
+      run.rowsWritten += await writeStateBills(run.sql, newest.results, true);
+      await recordTotal(run.sql, state, session, newest.pagination?.total_items);
+      bc.totalAt = now.toISOString();
+    }
     const page = bc.page ?? 1;
     const result = await client.bills({
       jurisdiction: stateJurisdiction(state),

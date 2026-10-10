@@ -1,5 +1,6 @@
 ---
 import BillExplorer from '../../components/BillExplorer';
+import FollowedItems from '../../components/FollowedItems';
 import BarList from '../../components/viz/BarList';
 import Pipeline from '../../components/viz/Pipeline';
 import { pipeline, topPolicyAreas } from '../../lib/charts';
@@ -59,6 +60,7 @@ const initial: Bill[] = bills
       on, follow anything, and see where it stands.
     </p>
   </header>
+  <FollowedItems client:idle kind={{ type: 'bill' }} title="Bills you follow" />
   {bills.length > 0 && (
     <div class="glance" aria-label="At a glance">
       <section class="panel" aria-labelledby="stage-h">

@@ -1,7 +1,7 @@
 ---
 import StateHeader from '../../../components/StateHeader.astro';
 import StateLegislators from '../../../components/StateLegislators';
-import YourFollowed from '../../../components/YourFollowed';
+import PinnedPeople from '../../../components/PinnedPeople';
 import Base from '../../../layouts/Base.astro';
 import { loadStateLegislators } from '../../../lib/build-data';
 import { LEGISLATURE_STATES, stateName } from '../../../lib/format';
@@ -40,15 +40,19 @@ const rows = chambers.flatMap((c) =>
   section="states"
 >
   <StateHeader code={code} current="legislature" />
-  <YourFollowed
+  <PinnedPeople
     client:idle
     targetType="state_legislator"
-    title="Legislators you follow"
+    scope={{ kind: 'legislature', state: code }}
+    mineTitle="Your state legislators"
+    followedTitle="Legislators you follow"
     people={chambers.flatMap((c) =>
       c.people.map((l) => ({
         id: l.id,
         name: l.name,
         photo_url: l.photo_url,
+        chamber: c.key,
+        district: l.district,
         detail: [
           l.party?.charAt(0),
           c.label,

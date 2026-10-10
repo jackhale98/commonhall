@@ -1,10 +1,11 @@
 ---
 import LiveDiscussions from '../../../../components/LiveDiscussions';
+import FollowedItems from '../../../../components/FollowedItems';
 import StateBills from '../../../../components/StateBills';
 import StateHeader from '../../../../components/StateHeader.astro';
 import Base from '../../../../layouts/Base.astro';
-import { loadDiscussions, loadRecentStateBills } from '../../../../lib/build-data';
-import { LEGISLATURE_STATES, stateName } from '../../../../lib/format';
+import { loadDiscussions, loadRecentStateBills, loadStateBillCoverage } from '../../../../lib/build-data';
+import { LEGISLATURE_STATES, formatDate, stateName } from '../../../../lib/format';
 import { href } from '../../../../lib/paths';
 
 export function getStaticPaths() {
@@ -18,6 +19,8 @@ interface Props {
 const { code } = Astro.props;
 const name = stateName(code);
 const { bills, total } = await loadRecentStateBills(code);
+const coverage = (await loadStateBillCoverage()).get(code);
+const shown = coverage ? Math.min(coverage.loaded, coverage.reported_total) : 0;
 // Massachusetts bills can have discussions (Boston's are on the Boston pages).
 const discussions =
   code === 'MA' ? (await loadDiscussions()).filter((d) => d.status === 'open' && d.jurisdiction === 'ma') : [];
@@ -25,7 +28,16 @@ const discussions =
 
 <Base title={`${name} state bills`} description={`Recent bills in the ${name} legislature.`} section="states">
   <StateHeader code={code} current="bills" />
+  <FollowedItems client:idle kind={{ type: 'state_bill', state: code }} title="State bills you follow" />
   <h2 class="h-small">State bills</h2>
+  {coverage && coverage.reported_total > 0 && (
+    <p class="small muted coverage-line">
+      {coverage.loaded.toLocaleString()} of {coverage.reported_total.toLocaleString()} bills in the {coverage.session}{' '}
+      session on file ({Math.floor((shown / coverage.reported_total) * 100)}%), counted{' '}
+      {formatDate(coverage.checked_at.slice(0, 10))}.{' '}
+      {coverage.loaded < coverage.reported_total && 'The rest are still loading; newest bills come first.'}
+    </p>
+  )}
   <StateBills client:load state={code} initial={bills} total={total} />
   {code === 'MA' && (
     <section aria-labelledby="say-h">

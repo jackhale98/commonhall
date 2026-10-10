@@ -136,6 +136,40 @@ function followSet(): Promise<Set<string>> {
   return followCache;
 }
 
+/** The ids the user follows of one kind ("bill", "state_legislator", …). */
+export async function followedIds(targetType: string): Promise<string[]> {
+  const prefix = `${targetType}:`;
+  return [...(await followSet())].filter((k) => k.startsWith(prefix)).map((k) => k.slice(prefix.length));
+}
+
+export interface SavedDistricts {
+  state: string | null;
+  congressional_district: number | null;
+  state_upper_district: string | null;
+  state_lower_district: string | null;
+  city: string | null;
+  council_district: number | null;
+}
+
+let districtsCache: Promise<SavedDistricts | null> | undefined;
+
+/** The signed-in user's saved districts (from Find my reps), loaded once per page; null when signed out. */
+export function savedDistricts(): Promise<SavedDistricts | null> {
+  districtsCache ??= (async () => {
+    if (!hasStoredSession()) return null;
+    const client = await getClient();
+    const { data } = await client.auth.getSession();
+    if (!data.session) return null;
+    const { data: row } = await client
+      .from('profiles')
+      .select('state,congressional_district,state_upper_district,state_lower_district,city,council_district')
+      .eq('user_id', data.session.user.id)
+      .maybeSingle();
+    return (row as SavedDistricts | null) ?? null;
+  })().catch(() => null);
+  return districtsCache;
+}
+
 export async function isFollowing(targetType: string, targetId: string): Promise<boolean> {
   return (await followSet()).has(key(targetType, targetId));
 }
