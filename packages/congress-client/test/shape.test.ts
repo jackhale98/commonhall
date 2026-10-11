@@ -31,6 +31,11 @@ describe('checkShape', () => {
     ]);
   });
 
+  it('treats an empty string as an empty value, not a wrong type', () => {
+    const rows = Array.from({ length: 20 }, (_, i) => ({ id: i, title: 't', date: i % 3 ? '2026-01-01' : '' }));
+    expect(shapeProblems(rows, shape)).toEqual([]);
+  });
+
   it('accepts either of two types', () => {
     expect(shapeProblems([{ n: '12' }, { n: 12 }], { n: 'string|number' })).toEqual([]);
   });

@@ -1459,6 +1459,8 @@ would fail. `shape.ts` (congress-client) adds a light check, no library:
   missing from **every** record in a batch (a rename; an empty value is fine), or when
   more than a tenth of a field's non-null values have the wrong type. Optional fields
   (`?`) are only type-checked, since some APIs leave empty fields out.
+- An empty string counts as empty, like null: Open States sends `""` for a bill
+  with no action yet, which first failed the state sync as a "wrong type".
 - `checkKept(source, read, kept)` throws when a mapper had to skip most of a batch of
   ten or more.
 

@@ -7,7 +7,8 @@
  *
  *   - a required field is missing from every record in the batch (the mark of a
  *     rename; a field that is merely empty is fine), or
- *   - more than a tenth of a field's non-null values have the wrong type.
+ *   - more than a tenth of a field's non-empty values have the wrong type (null and
+ *     "" are empty).
  *
  * Optional fields ("?") are only type-checked: sources leave them out when empty.
  * Types: string, number, boolean, object, array, date (an ISO-like date string);
@@ -51,7 +52,8 @@ export function shapeProblems(rows: readonly unknown[], shape: Shape): string[] 
       problems.push(`no "${field}" in any of ${records.length} records`);
       continue;
     }
-    const values = present.map((r) => r[field]).filter((v) => v !== null);
+    // An empty string is an empty value, like null (Open States sends "" for a bill with no action yet).
+    const values = present.map((r) => r[field]).filter((v) => v !== null && v !== '');
     const wrong = values.filter((v) => !matches(v, type));
     if (wrong.length > 0 && wrong.length > values.length * 0.1)
       problems.push(`"${field}" is ${typeOf(wrong[0])} in ${wrong.length} of ${values.length}, expected ${type}`);
