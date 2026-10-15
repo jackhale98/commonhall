@@ -37,7 +37,11 @@ const LATEST = 3;
 const executives = ((await loadStateExecutives()).get(code) ?? []).sort(
   (a, b) => executiveRank(a.role) - executiveRank(b.role) || a.name.localeCompare(b.name),
 );
-const session = sessionStatus((await loadStateSessions()).get(code) ?? [], new Date().toISOString().slice(0, 10));
+const session = sessionStatus(
+  (await loadStateSessions()).get(code) ?? [],
+  new Date().toISOString().slice(0, 10),
+  bills[0]?.latest_action_date,
+);
 const cities = citiesIn(code);
 // The governor's latest order and the high court's latest decision, when we have them.
 const [stateOrders, stateCases] = await Promise.all([loadStateOrders(), loadStateCourtCases()]);

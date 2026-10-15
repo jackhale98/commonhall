@@ -67,6 +67,16 @@ describe('session status', () => {
     );
   });
 
+  it('describes a session with no bill action in a month by its last action', () => {
+    const sessions = [s('2026', '2026-02-04', null)];
+    expect(sessionStatus(sessions, '2026-10-15', '2026-06-04')).toBe(
+      '2026 Legislature: no bill action since June 4, 2026.',
+    );
+    expect(sessionStatus(sessions, '2026-06-20', '2026-06-04')).toBe(
+      'In session: 2026 Legislature, since February 2026.',
+    );
+  });
+
   it('says when the last session ended and the next begins', () => {
     const line = sessionStatus([s('89', '2025-01-14', '2025-06-02'), s('90', '2027-01-12', null)], '2026-10-10');
     expect(line).toBe('The 89 Legislature ended in June 2025. The 90 Legislature begins in January 2027.');

@@ -1034,8 +1034,11 @@ state's co-sponsors were kept. So:
   (§71), from Massachusetts roll calls. Legislator pages show it after at least five
   party-line votes, with their recent votes.
 - **Session dates** (`state_sessions`, from the Open States jurisdictions request the
-  sync already makes weekly) give each state page a line such as "In session: 194th
-  General Court, January 2025 to December 2026."
+  sync makes daily, one request for every state) give each state page a line such as
+  "In session: 194th General Court, January 2025 to December 2026." Open States often
+  leaves a session's end open, or gives the end of the two-year term, so a session
+  with no bill action in 30 days reads "2026: no bill action since June 4, 2026"
+  instead. Nothing is set by hand.
 - **Statewide officials** (`state_executives`: governor, lieutenant governor, attorney
   general, secretary of state, treasurer, auditor) come from the same weekly
   openstates/people load, `data/{state}/executive`. Under 1 MB.

@@ -170,11 +170,25 @@ export function executiveRank(role: string): number {
 const monthYear = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
+/** Days without a bill action after which a session is described as quiet rather than under way. */
+const QUIET_DAYS = 30;
+
+const longDate = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
 /**
  * One line on where the legislature is: the regular session under way (with its
  * dates), or the last one and when it ended, or the next one if it hasn't begun.
+ * Open States often leaves a session's end open (or gives the end of the two-year
+ * term), so a session with no bill action (`lastAction`) in a month is described by
+ * that instead of as in session.
  */
-export function sessionStatus(sessions: StateSession[], today: string): string | null {
+export function sessionStatus(sessions: StateSession[], today: string, lastAction?: string | null): string | null {
   const regular = sessions.filter((s) => !s.classification || s.classification === 'primary');
   const pool = (regular.length ? regular : sessions).filter((s) => s.start_date);
   if (!pool.length) return null;
@@ -183,6 +197,11 @@ export function sessionStatus(sessions: StateSession[], today: string): string |
     .filter((s) => s.start_date! <= today && (!s.end_date || s.end_date >= today))
     .sort((a, b) => b.start_date!.localeCompare(a.start_date!))[0];
   if (current) {
+    const quietSince = new Date(`${today}T12:00:00Z`);
+    quietSince.setUTCDate(quietSince.getUTCDate() - QUIET_DAYS);
+    if (lastAction && lastAction < quietSince.toISOString().slice(0, 10)) {
+      return `${label(current)}: no bill action since ${longDate(lastAction)}.`;
+    }
     return current.end_date
       ? `In session: ${label(current)}, ${monthYear(current.start_date!)} to ${monthYear(current.end_date)}.`
       : `In session: ${label(current)}, since ${monthYear(current.start_date!)}.`;

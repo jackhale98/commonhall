@@ -94,7 +94,8 @@ export const STATES = [
   'WY',
 ];
 
-const WEEK_MS = 7 * 24 * 3_600_000;
+/** Session dates are read once a day (one request for every state), so a session's start and end show soon after Open States records them. */
+const SESSIONS_EVERY_MS = 24 * 3_600_000;
 /** How often a loaded state (other than a first-class one) is checked for changes. */
 const CATCH_UP_EVERY_MS = 20 * 3_600_000;
 
@@ -603,7 +604,7 @@ export async function syncStates(run: JobRun<StateCursor>, options: SyncStateOpt
 
   try {
     const checked = cursor.sessionsCheckedAt ? new Date(cursor.sessionsCheckedAt).getTime() : 0;
-    if (now().getTime() - checked > WEEK_MS || !cursor.sessions) {
+    if (now().getTime() - checked > SESSIONS_EVERY_MS || !cursor.sessions) {
       run.rowsWritten += await refreshSessions(run.sql, client, cursor, now());
       await run.checkpoint(cursor);
     }
