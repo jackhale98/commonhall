@@ -23,21 +23,29 @@ interface Props {
   dockets?: boolean;
   /** Divided rows without the card look, for a list outside a panel. */
   plain?: boolean;
+  /** With upcoming: the last council meeting, shown (by the script below) once every upcoming one has passed. */
+  fallback?: CityMeeting;
 }
 
-const { city, meetings, slugs, committee, upcoming = false, dockets = false, plain = false } = Astro.props;
+const { city, meetings, slugs, committee, upcoming = false, dockets = false, plain = false, fallback } = Astro.props;
+const rows = fallback ? [...meetings, fallback] : meetings;
 const FIRST_DOCKETS = 4;
 const session = city.committeeSession;
 ---
 
-<ul class:list={[plain ? 'plain-rows' : 'list', 'meeting-list']}>
-  {meetings.map((m) => {
+<ul class:list={[plain ? 'plain-rows' : 'list', 'meeting-list']} data-upcoming={upcoming || undefined}>
+  {rows.map((m) => {
     const others = m.committees.filter((c) => c !== committee);
     const name = (c: string) => (slugs.get(c) ? <a href={localCommitteeHref(city, slugs.get(c)!)}>{c}</a> : c);
     // Boston files a hearing's subject in its location; only a council meeting's location is a place.
     const place = m.committees.length && city.locationIsSubject ? null : m.location;
     return (
-      <li class:list={{ cancelled: m.status === 'Cancelled' }}>
+      <li
+        class:list={{ cancelled: m.status === 'Cancelled' }}
+        data-date={m.date}
+        data-council={m.committees.length === 0 || undefined}
+        hidden={m === fallback || undefined}
+      >
         <p class="meeting-when">
           <strong>{formatDate(m.date)}</strong>
           {(upcoming || committee) && m.time && ` · ${m.time}`} ·{' '}
@@ -112,7 +120,44 @@ const session = city.committeeSession;
   })}
 </ul>
 
+<script>
+  // Pages are built once a day, so an "upcoming" meeting can have passed since. Hide
+  // those in the browser; a list left empty hides its group ([data-upcoming-group]),
+  // shows its [data-upcoming-none] note instead, or, with data-past-heading, keeps its
+  // council meeting under that heading.
+  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, the reader's day
+  for (const list of document.querySelectorAll<HTMLElement>('ul[data-upcoming]')) {
+    const rows = [...list.querySelectorAll<HTMLElement>(':scope > li[data-date]')];
+    const passed = rows.filter((li) => li.dataset.date! < today);
+    if (passed.length === 0) continue;
+    for (const li of passed) li.hidden = true;
+    if (passed.length < rows.length) continue;
+    const group = list.closest<HTMLElement>('[data-upcoming-group]');
+    if (!group) continue;
+    const none = group.querySelector<HTMLElement>('[data-upcoming-none]');
+    if (none) {
+      none.hidden = false;
+      list.closest<HTMLElement>('.panel')?.setAttribute('hidden', '');
+      continue;
+    }
+    const heading = group.querySelector<HTMLElement>('[data-past-heading]');
+    // The latest council meeting that has passed: an upcoming one, or the fallback row.
+    const council = [...list.querySelectorAll<HTMLElement>(':scope > li[data-council]')]
+      .filter((li) => li.dataset.date! < today)
+      .sort((a, b) => b.dataset.date!.localeCompare(a.dataset.date!))[0];
+    if (heading && council) {
+      heading.textContent = heading.dataset.pastHeading!;
+      council.hidden = false;
+    } else {
+      group.hidden = true;
+    }
+  }
+</script>
+
 <style>
+  .meeting-list > li[hidden] {
+    display: none;
+  }
   /* Document links as tap-sized targets. */
   .meeting-links a {
     display: inline-block;

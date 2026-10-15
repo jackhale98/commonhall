@@ -80,7 +80,7 @@ const dockets = new Set(past.flatMap((m) => m.items.map((i) => i.matter_id ?? i.
   )}
 
   {upcoming.length > 0 && (
-    <section aria-labelledby="upcoming-h">
+    <section aria-labelledby="upcoming-h" data-upcoming-group>
       <h3 id="upcoming-h" class="h-small">
         Upcoming {session}s
       </h3>

@@ -55,8 +55,13 @@ const hasMembers = committees.some((c) => c.members.length > 0);
     {upcoming.length === 0 ? (
       <p class="muted">None scheduled yet.</p>
     ) : (
-      <div class="panel">
-        <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming dockets />
+      <div data-upcoming-group>
+        <div class="panel">
+          <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming dockets />
+        </div>
+        <p class="muted" data-upcoming-none hidden>
+          None scheduled yet.
+        </p>
       </div>
     )}
   </section>

@@ -146,12 +146,12 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
       </p>
     )}
     {upcoming.length > 0 && (
-      <>
+      <div data-upcoming-group>
         <h3 class="h-small">Coming up</h3>
         <div class="panel">
           <CityMeetings city={city} meetings={upcoming} slugs={slugs} upcoming />
         </div>
-      </>
+      </div>
     )}
     <h3 class="h-small">Recent</h3>
     {recent.length === 0 && <p class="muted">None loaded yet.</p>}

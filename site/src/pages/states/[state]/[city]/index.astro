@@ -76,9 +76,11 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
     </a>
   </p>
 
-  <section aria-labelledby="meet-h">
+  <section aria-labelledby="meet-h" data-upcoming-group>
     <div class="section-head">
-      <h2 id="meet-h">Coming up</h2>
+      <h2 id="meet-h" data-past-heading="Last council meeting">
+        {comingUp.length > 0 || !lastCouncil ? 'Coming up' : 'Last council meeting'}
+      </h2>
       <a class="see-all" href={cityHref(city, 'council/#meetings-h')}>
         Council meetings
       </a>
@@ -92,6 +94,7 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
           meetings={comingUp.length > 0 ? comingUp : [lastCouncil!]}
           slugs={slugs}
           upcoming={comingUp.length > 0}
+          fallback={comingUp.length > 0 ? lastCouncil : undefined}
         />
         {committees.length > 0 && (
           <p class="small more-link">
