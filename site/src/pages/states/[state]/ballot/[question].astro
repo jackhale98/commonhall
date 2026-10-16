@@ -1,0 +1,269 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import { loadBallotQuestions, type BallotArgument, type BallotQuestion } from '../../../../lib/build-data';
+import { ballotResult, electionLabel } from '../../../../lib/ballot';
+import { stateName } from '../../../../lib/format';
+import { ballotHref } from '../../../../lib/paths';
+import { stateFeatures } from '../../../../lib/states';
+
+/** One page per question, at its year and number: states/ma/ballot/2026-1/. */
+export async function getStaticPaths() {
+  return [...(await loadBallotQuestions()).values()].flat().map((q) => ({
+    params: { state: q.state.toLowerCase(), question: `${q.election_date.slice(0, 4)}-${q.number}` },
+    props: { q },
+  }));
+}
+
+interface Props {
+  q: BallotQuestion;
+}
+
+const { q } = Astro.props;
+const name = stateName(q.state);
+const year = q.election_date.slice(0, 4);
+const source = stateFeatures(q.state)?.ballot;
+const result = ballotResult(q);
+const others = ((await loadBallotQuestions()).get(q.state) ?? []).filter(
+  (o) => o.election_date === q.election_date && o.number !== q.number,
+);
+// "A YES VOTE would …": the state's sentence, with its opening set apart.
+const vote = (text: string | null, word: 'YES' | 'NO') => {
+  const m = text ? new RegExp(`^A ${word} VOTE\\s+`, 'i').exec(text) : null;
+  return text && m ? text.slice(m[0].length) : text;
+};
+const sides: { key: 'for' | 'against'; label: string; arg: BallotArgument | null }[] = [
+  { key: 'for', label: 'In favor', arg: q.argument_for },
+  { key: 'against', label: 'Against', arg: q.argument_against },
+];
+---
+
+<Base
+  title={`${name} Question ${q.number} (${year}): ${q.title}`}
+  description={`${name} ballot Question ${q.number}, ${electionLabel(q.election_date)}: ${q.title}. ${q.yes_vote ?? ''}`.slice(
+    0,
+    300,
+  )}
+  section="states"
+>
+  <nav aria-label="Breadcrumb" class="small muted">
+    <a href={ballotHref(q.state)}>{name} ballot questions</a>
+  </nav>
+  <header class="page-head">
+    <p class="kicker">
+      Question {q.number} · {electionLabel(q.election_date)}
+    </p>
+    <h1>{q.title}</h1>
+    <p class="muted">{q.kind}.</p>
+    {result && <p class="status-chip">{result.label}</p>}
+  </header>
+
+  {q.question && <p class="ballot-ask">{q.question}</p>}
+
+  <section aria-labelledby="vote-h" class="ballot-part">
+    <h2 id="vote-h" class="h-small">
+      What your vote does
+    </h2>
+    <div class="vote-pair">
+      <div class="panel vote-box">
+        <p class="vote-word">A yes vote</p>
+        <p>{vote(q.yes_vote, 'YES')}</p>
+      </div>
+      <div class="panel vote-box">
+        <p class="vote-word">A no vote</p>
+        <p>{vote(q.no_vote, 'NO')}</p>
+      </div>
+    </div>
+    {q.notes.vote && <p class="small muted">{q.notes.vote}</p>}
+  </section>
+
+  {q.summary.length > 0 && (
+    <section aria-labelledby="summary-h" class="ballot-part">
+      <h2 id="summary-h" class="h-small">
+        Summary
+      </h2>
+      {q.notes.summary && <p class="small muted">{q.notes.summary}</p>}
+      {q.summary.map((p) => (
+        <p>{p}</p>
+      ))}
+    </section>
+  )}
+
+  {q.fiscal.length > 0 && (
+    <section aria-labelledby="fiscal-h" class="ballot-part">
+      <h2 id="fiscal-h" class="h-small">
+        Fiscal consequences
+      </h2>
+      {q.notes.fiscal && <p class="small muted">{q.notes.fiscal}</p>}
+      {q.fiscal.map((p) => (
+        <p>{p}</p>
+      ))}
+    </section>
+  )}
+
+  {(q.argument_for || q.argument_against) && (
+    <section aria-labelledby="args-h" class="ballot-part wide">
+      <h2 id="args-h" class="h-small">
+        Arguments
+      </h2>
+      {q.notes.arguments && <p class="small muted">{q.notes.arguments}</p>}
+      <div class="arg-pair">
+        {sides.map(({ key, label, arg }) => (
+          <article class="panel arg" aria-labelledby={`arg-${key}-h`}>
+            <h3 id={`arg-${key}-h`} class="arg-head">
+              {label}
+            </h3>
+            {arg ? (
+              <>
+                {arg.text.map((p) => (
+                  <p class="arg-text">{p}</p>
+                ))}
+                {arg.authors.length > 0 && (
+                  <p class="small muted arg-by">
+                    <span>Written by</span>
+                    {arg.authors.map((a) => (
+                      <span>{a}</span>
+                    ))}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p class="muted">No argument was submitted.</p>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {q.reports.length > 0 && (
+    <section aria-labelledby="reports-h" class="ballot-part">
+      <h2 id="reports-h" class="h-small">
+        Legislative reports
+      </h2>
+      {q.notes.reports && <p class="small muted">{q.notes.reports}</p>}
+      {q.reports.map((r) => (
+        <details class="ballot-fold">
+          <summary>{r.title}</summary>
+          {r.text.map((p) => (
+            <p>{p}</p>
+          ))}
+        </details>
+      ))}
+    </section>
+  )}
+
+  {q.full_text.length > 0 && (
+    <section aria-labelledby="text-h" class="ballot-part">
+      <h2 id="text-h" class="h-small">
+        Full text
+      </h2>
+      <details class="ballot-fold">
+        <summary>Read the full text ({q.full_text.length} paragraphs)</summary>
+        {q.full_text.map((p) => (
+          <p>{p}</p>
+        ))}
+      </details>
+    </section>
+  )}
+
+  <p class="small muted source-line">
+    {source ? (
+      <>
+        From {source.publisher}’s{' '}
+        <a href={q.source_url} rel="noopener">
+          {source.guide} {year}
+        </a>
+        , as published. The guide is also available in{' '}
+        <a href={source.url(Number(year))} rel="noopener">
+          other languages
+        </a>
+        .
+      </>
+    ) : (
+      <>
+        From the{' '}
+        <a href={q.source_url} rel="noopener">
+          state’s official write-up
+        </a>
+        , as published.
+      </>
+    )}
+  </p>
+
+  {others.length > 0 && (
+    <nav aria-labelledby="others-h" class="ballot-part">
+      <h2 id="others-h" class="h-small">
+        Also on this ballot
+      </h2>
+      <ul class="plain-links">
+        {others.map((o) => (
+          <li>
+            <a href={ballotHref(o.state, o.election_date, o.number)}>
+              Question {o.number}: {o.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )}
+</Base>
+
+<style>
+  .ballot-ask {
+    max-width: 70ch;
+    font-style: italic;
+    color: var(--text-muted);
+  }
+  .ballot-part {
+    max-width: 70ch;
+    margin-block: var(--space-5);
+  }
+  .ballot-part.wide {
+    max-width: none;
+  }
+  .ballot-part p {
+    line-height: 1.6;
+    margin: 0 0 var(--space-2);
+  }
+  .ballot-part .h-small {
+    margin-top: 0;
+  }
+  .vote-pair,
+  .arg-pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+  }
+  .vote-word,
+  .arg-head {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 var(--space-1);
+  }
+  .arg-text {
+    white-space: pre-line;
+  }
+  .arg-by {
+    display: grid;
+    margin-top: var(--space-3);
+  }
+  .ballot-fold {
+    margin-block: var(--space-2);
+  }
+  .ballot-fold summary {
+    cursor: pointer;
+    padding-block: 0.35rem;
+  }
+  .ballot-fold p {
+    white-space: pre-line;
+  }
+  .plain-links {
+    padding-left: 1.1rem;
+    display: grid;
+    gap: var(--space-1);
+  }
+  .source-line {
+    max-width: 70ch;
+  }
+</style>

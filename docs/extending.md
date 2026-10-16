@@ -65,6 +65,12 @@ States). For more:
    order: "635", "26-3"; lower-cased in its page address) and a sortable integer
    `number`, plus an `orders` entry in `STATE_FEATURES` naming the source. The Governor
    tab appears when there are orders.
+5. Ballot questions: a loader like `scripts/load-ma-ballot.ts` writing
+   `ballot_questions` with the state's own write-up section by section (summary, yes
+   and no statements, fiscal note, arguments for and against with their authors,
+   reports, full text), plus a `ballot` entry in `STATE_FEATURES` naming the guide.
+   The Ballot questions tab and the Overview and home cards appear when there are
+   questions.
 
 ## Any new job or loader
 

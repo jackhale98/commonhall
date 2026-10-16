@@ -1781,3 +1781,41 @@ check's 300 MB, before any of the new places had data. The check is our own marg
 under GitHub Pages' 1 GB limit, so it is raised to 500 MB. Prerendering stays limited
 to notable items (§41). If the site nears 500 MB, the next saving is bill pages, which
 carry their actions twice (in the HTML and in the timeline island's props).
+
+## 103. Ballot questions
+
+Statewide ballot questions are shown with the state's own write-up, not ours. For
+Massachusetts that is the Secretary of the Commonwealth's "Information for Voters"
+guide (the booklet mailed to every household, approved as a source in October 2026),
+which has one web page per question with fixed sections: the Attorney General's
+summary, what a yes and a no vote do (Attorney General and Secretary), the fiscal
+consequences (Administration and Finance), the 150-word arguments for and against
+(each written by its own side, or by the Secretary when no side files one), the
+Legislature's committee reports and the full text.
+
+- **Stored as published.** `ballot_questions` keeps every section as plain paragraphs,
+  with each section's own line on who wrote it (`notes`), so the site can show the
+  text verbatim and say whose words they are. Under 1 MB a year.
+- **Even-handed layout.** A question's page shows a yes and a no vote side by side,
+  then the summary and fiscal note, then the two arguments side by side in equal
+  boxes with their authors' names and websites (the guide's street addresses and
+  phone numbers are left out), then the reports and full text folded. Results show
+  in a neutral chip once certified counts are on file (`yes_count`, `no_count`).
+- **Reading the guide.** sec.state.ma.us turns away plain requests and headless
+  browsers that say so, and after a few pages it turns away a browser too for a
+  while. The "Load MA ballot questions" workflow reads the pages in Chromium with a
+  desktop browser's user agent, five seconds apart, and retries a blocked page in a
+  fresh session after a pause of one minute or more. A full run took about 25
+  minutes in testing (seven pages turned away once or more); the workflow allows 90. The parser
+  (`congress-client/src/ma-ballot.ts`) takes paragraphs from tags and from blank
+  lines (some of the guide's HTML is bare text), finds an authors block with or
+  without its "Authored by" label, and fails when a page has no question heading or
+  lacks the summary, the yes and no statements or the full text.
+- **When.** Weekly, to pick up corrections; in an odd year, or before the guide is
+  published, a run writes nothing and succeeds.
+- **Connecticut** has no citizen initiatives; voters see only constitutional
+  amendments the legislature refers (none in 2026; the next scheduled question is
+  the 2028 convention question). The Secretary of the State publishes those with
+  explanatory text from the Office of Legislative Research, which fits the same
+  table when one is on the ballot. Local questions (town bond votes and the like) are
+  posted town by town in different forms and are not loaded.

@@ -18,6 +18,7 @@ export * from './primegov.ts';
 export * from './worcester.ts';
 export * from './worcester-agenda.ts';
 export * from './mass-orders.ts';
+export * from './ma-ballot.ts';
 export * from './shape.ts';
 export * from './report-311.ts';
 export * from './socrata.ts';

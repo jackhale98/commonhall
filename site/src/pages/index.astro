@@ -7,6 +7,7 @@ import YourCity from '../components/YourCity';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
+  loadBallotQuestions,
   loadBills,
   loadCommitteeMeetings,
   loadDiscussions,
@@ -20,8 +21,8 @@ import { voteSegments } from '../lib/charts';
 import { outcomeSummary } from '../lib/court';
 import { CITY_LIST } from '../lib/cities';
 import { DEMO } from '../lib/config';
-import { formatDate } from '../lib/format';
-import { billHref, cityHref, executiveOrderHref, href, scotusCaseHref, voteHref } from '../lib/paths';
+import { formatDate, stateName } from '../lib/format';
+import { ballotHref, billHref, cityHref, executiveOrderHref, href, scotusCaseHref, voteHref } from '../lib/paths';
 
 const [bills, votes, discussions, meetings, orders, cases, hearings, outcomes] = await Promise.all([
   loadBills(),
@@ -49,6 +50,16 @@ const nextMeeting = meetings
   .flat()
   .filter((m) => m.date >= today && m.committees.length === 0 && m.status !== 'Cancelled')
   .sort((a, b) => (a.starts_at ?? a.date).localeCompare(b.starts_at ?? b.date))[0];
+
+// States with statewide questions on an upcoming ballot, soonest election first.
+const ballots = [...(await loadBallotQuestions())]
+  .map(([state, list]) => {
+    const upcoming = list.filter((q) => q.election_date >= today);
+    const date = upcoming.map((q) => q.election_date).sort()[0];
+    return { state, date, count: upcoming.filter((q) => q.election_date === date).length };
+  })
+  .filter((b) => b.date)
+  .sort((a, b) => a.date!.localeCompare(b.date!));
 
 // Executive orders in the current presidential term (terms start January 20 after a leap-year election).
 const latestOrder = orders.find((o) => o.signing_date);
@@ -134,6 +145,18 @@ const stats = [
           <StackedBar size="sm" segments={voteSegments(latestVote)} />
         </a>
       )}
+      {ballots.map((b) => (
+        <a class="pulse-card pulse-city" href={ballotHref(b.state)}>
+          <span class="pulse-label">
+            <span class="dot dot-city" aria-hidden="true" />
+            On the ballot · {formatDate(b.date)}
+          </span>
+          <strong>
+            {stateName(b.state)}: {b.count} statewide {b.count === 1 ? 'question' : 'questions'}
+          </strong>
+          <span class="pulse-meta">What a yes and a no vote do, in the state’s own guide →</span>
+        </a>
+      ))}
       {latestLaw && (
         <a class="pulse-card" href={billHref(latestLaw.congress, latestLaw.bill_type, latestLaw.number)}>
           <span class="pulse-label">

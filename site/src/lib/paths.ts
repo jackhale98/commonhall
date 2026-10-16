@@ -146,3 +146,9 @@ export function maLegislatureUrl(session: string, identifier: string): string | 
   if (!court || !/^[HS]D?\d+$/.test(bill)) return null;
   return `https://malegislature.gov/Bills/${court}/${bill}`;
 }
+
+/** A state's ballot questions, or one of them: states/ma/ballot/, states/ma/ballot/2026-1/. */
+export function ballotHref(state: string, election?: string, number?: number): string {
+  const base = `states/${state.toLowerCase()}/ballot/`;
+  return href(election && number ? `${base}${election.slice(0, 4)}-${number}/` : base);
+}

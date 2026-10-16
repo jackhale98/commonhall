@@ -4,6 +4,7 @@ import MemberPhoto from '../../components/MemberPhoto';
 import StateHeader from '../../components/StateHeader.astro';
 import Base from '../../layouts/Base.astro';
 import {
+  loadBallotQuestions,
   loadRecentStateBills,
   loadStateCourtCases,
   loadStateExecutives,
@@ -12,10 +13,19 @@ import {
   loadStateSessions,
 } from '../../lib/build-data';
 import { LEGISLATURE_STATES, STATE_CODES, formatDate, stateName } from '../../lib/format';
-import { cityHref, href, stateBillHref, stateCourtCaseHref, stateOrderHref, stateOrderId } from '../../lib/paths';
+import {
+  ballotHref,
+  cityHref,
+  href,
+  stateBillHref,
+  stateCourtCaseHref,
+  stateOrderHref,
+  stateOrderId,
+} from '../../lib/paths';
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
 import { STATE_COURT_NAMES, legislatureChambers, partyGroups } from '../../lib/state-tabs';
 import { citiesIn } from '../../lib/cities';
+import { electionLabel } from '../../lib/ballot';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -42,6 +52,11 @@ const session = sessionStatus(
   new Date().toISOString().slice(0, 10),
   bills[0]?.latest_action_date,
 );
+// The next election's statewide questions, until Election Day.
+const ballotToday = new Date().toISOString().slice(0, 10);
+const upcomingBallot = ((await loadBallotQuestions()).get(code) ?? []).filter((q) => q.election_date >= ballotToday);
+const ballotDate = upcomingBallot.map((q) => q.election_date).sort()[0];
+const ballot = upcomingBallot.filter((q) => q.election_date === ballotDate);
 const cities = citiesIn(code);
 // The governor's latest order and the high court's latest decision, when we have them.
 const [stateOrders, stateCases] = await Promise.all([loadStateOrders(), loadStateCourtCases()]);
@@ -57,6 +72,31 @@ const latestCase = stateCases.get(code)?.[0];
   <StateHeader code={code} current="overview" />
 
   {session && <p class="small muted session-line">{session}</p>}
+
+  {ballot.length > 0 && (
+    <section aria-labelledby="ballot-h">
+      <div class="section-head">
+        <h2 id="ballot-h" class="h-small">
+          On the ballot: {electionLabel(ballotDate!)}
+        </h2>
+        <a class="see-all" href={ballotHref(code)}>
+          All {ballot.length} questions
+        </a>
+      </div>
+      <div class="panel">
+        <ol class="list ballot-glance">
+          {ballot.map((q) => (
+            <li>
+              <a href={ballotHref(code, q.election_date, q.number)}>
+                <span class="small muted">Question {q.number}</span> {q.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <p class="small muted">What a yes and a no vote do, and the arguments on each side, in the state’s own guide.</p>
+    </section>
+  )}
 
   {chambers.length > 0 && (
     <section aria-labelledby="glance-h">
@@ -177,6 +217,9 @@ const latestCase = stateCases.get(code)?.[0];
 </Base>
 
 <style>
+  .ballot-glance > li {
+    padding-block: var(--space-2);
+  }
   .glance {
     display: grid;
     gap: var(--space-3);

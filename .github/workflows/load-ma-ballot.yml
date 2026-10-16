@@ -1,0 +1,37 @@
+name: Load MA ballot questions
+
+# Massachusetts' statewide ballot questions from the Secretary of the Commonwealth's
+# "Information for Voters" guide (each question's summary, what a yes and a no vote
+# do, fiscal consequences, arguments for and against, committee reports and full
+# text). The site turns away plain requests, so the pages are read in a headless
+# browser. Weekly, to pick up corrections; nothing to load before the guide is out.
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: Election year (defaults to this year)
+        required: false
+  schedule:
+    - cron: '41 11 * * 2' # 11:41 UTC on Tuesdays
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Load the questions
+        run: npx tsx scripts/load-ma-ballot.ts ${YEAR:+--year "$YEAR"}
+        env:
+          YEAR: ${{ inputs.year }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

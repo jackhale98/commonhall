@@ -468,6 +468,43 @@ export const loadStateOrders = memo(async () => {
   return groupBy(rows, (r) => r.state);
 });
 
+export interface BallotArgument {
+  text: string[];
+  authors: string[];
+}
+
+/** A statewide ballot question with the state's own write-up (ballot_questions). */
+export interface BallotQuestion {
+  state: string;
+  election_date: string;
+  number: number;
+  kind: string;
+  title: string;
+  question: string | null;
+  summary: string[];
+  yes_vote: string | null;
+  no_vote: string | null;
+  fiscal: string[];
+  argument_for: BallotArgument | null;
+  argument_against: BallotArgument | null;
+  reports: { title: string; text: string[] }[];
+  full_text: string[];
+  notes: Record<string, string>;
+  source_url: string;
+  yes_count: number | null;
+  no_count: number | null;
+}
+
+/** Ballot questions by state, newest election first, then by number. */
+export const loadBallotQuestions = memo(async () => {
+  const rows = await selectAllOptional<BallotQuestion>('ballot_questions', {
+    select:
+      'state,election_date,number,kind,title,question,summary,yes_vote,no_vote,fiscal,argument_for,argument_against,reports,full_text,notes,source_url,yes_count,no_count',
+    order: 'state.asc,election_date.desc,number.asc',
+  });
+  return groupBy(rows, (r) => r.state);
+});
+
 export interface StateBillCoverage {
   state: string;
   session: string;

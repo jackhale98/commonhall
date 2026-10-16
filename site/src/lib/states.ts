@@ -3,6 +3,7 @@
  * are one shared set; a state listed here gets the extras it has data for. Adding one
  * means a sync for the extra data and an entry here; no page code.
  */
+import { maBallotIndex } from '@civic/congress-client/ma-ballot';
 import { ctLegislatureUrl, maLegislatureUrl } from './paths';
 
 export interface StateFeatures {
@@ -23,6 +24,15 @@ export interface StateFeatures {
     /** What the order's title is ("its title", "the Governor’s office’s description of it"). */
     titleNote?: string;
   };
+  /** Where the statewide ballot questions' write-ups come from, for the Ballot questions tab. */
+  ballot?: {
+    /** Who writes and publishes them: "the Secretary of the Commonwealth". */
+    publisher: string;
+    /** The guide's name: "Information for Voters". */
+    guide: string;
+    /** The guide's page for an election year (it has translations and the printed edition). */
+    url: (year: number) => string;
+  };
 }
 
 export const STATE_FEATURES: Record<string, StateFeatures> = {
@@ -37,6 +47,11 @@ export const STATE_FEATURES: Record<string, StateFeatures> = {
       site: 'mass.gov',
       url: 'https://www.mass.gov/massachusetts-executive-orders',
       list: 'the Trial Court Law Libraries’ list of governors’ executive orders',
+    },
+    ballot: {
+      publisher: 'the Secretary of the Commonwealth',
+      guide: 'Information for Voters',
+      url: maBallotIndex,
     },
   },
   CT: {

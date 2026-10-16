@@ -1,10 +1,11 @@
 ---
 /**
  * The header shared by a state's pages: its name and the tab row (Overview,
- * Legislature, Bills, Committees, Governor, Courts, Congress, Local). Each tab
+ * Legislature, Bills, Committees, Ballot questions, Governor, Courts, Congress, Local). Each tab
  * is its own page.
  */
 import {
+  loadBallotQuestions,
   loadMembers,
   loadStateCommittees,
   loadStateCourtCases,
@@ -23,12 +24,13 @@ interface Props {
 const { code, current } = Astro.props;
 const name = stateName(code);
 const legislature = LEGISLATURE_STATES.includes(code);
-const [members, legislators, committees, cases, orders] = await Promise.all([
+const [members, legislators, committees, cases, orders, ballot] = await Promise.all([
   loadMembers(),
   loadStateLegislators(),
   loadStateCommittees(),
   loadStateCourtCases(),
   loadStateOrders(),
+  loadBallotQuestions(),
 ]);
 const tabs = stateTabs(code, current, {
   legislature,
@@ -37,6 +39,7 @@ const tabs = stateTabs(code, current, {
   congress: [...members.values()].filter((m) => m.current && m.state === code).length,
   orders: orders.get(code)?.length ?? 0,
   cases: cases.get(code)?.length ?? 0,
+  ballot: ballot.get(code)?.length ?? 0,
 });
 ---
 

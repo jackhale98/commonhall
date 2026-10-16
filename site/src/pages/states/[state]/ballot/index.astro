@@ -1,0 +1,104 @@
+---
+import StateHeader from '../../../../components/StateHeader.astro';
+import Base from '../../../../layouts/Base.astro';
+import { loadBallotQuestions } from '../../../../lib/build-data';
+import { ballotResult, electionLabel } from '../../../../lib/ballot';
+import { stateName } from '../../../../lib/format';
+import { ballotHref } from '../../../../lib/paths';
+import { stateFeatures } from '../../../../lib/states';
+
+/** Only states with ballot questions on file. */
+export async function getStaticPaths() {
+  return [...(await loadBallotQuestions()).keys()].map((code) => ({
+    params: { state: code.toLowerCase() },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const questions = (await loadBallotQuestions()).get(code) ?? [];
+const elections = [...Map.groupBy(questions, (q) => q.election_date)];
+const source = stateFeatures(code)?.ballot;
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<Base
+  title={`${name} ballot questions`}
+  description={`${name}’s statewide ballot questions, with the state’s own summary, what a yes and a no vote do, and the arguments for and against.`}
+  section="states"
+>
+  <StateHeader code={code} current="ballot" />
+
+  <p class="small muted section-note">
+    Questions voters decide statewide. Each page has the state’s write-up as published: the summary, what a yes and a no
+    vote do, the fiscal consequences, the arguments for and against (each written by its side) and the full text.
+  </p>
+
+  {elections.map(([date, list]) => (
+    <section aria-labelledby={`e-${date}-h`} class="election">
+      <h2 id={`e-${date}-h`}>
+        {date >= today ? 'On the ballot' : 'Decided'}: {electionLabel(date)}
+      </h2>
+      <ol class="list ballot-list">
+        {list.map((q) => {
+          const result = ballotResult(q);
+          return (
+            <li>
+              <p class="small muted kicker-line">
+                Question {q.number} · {q.kind}
+                {result && <span class="status-chip">{result.label}</span>}
+              </p>
+              <h3 class="ballot-title">
+                <a href={ballotHref(code, q.election_date, q.number)}>{q.title}</a>
+              </h3>
+              {q.yes_vote && <p class="small muted vote-line">{q.yes_vote}</p>}
+            </li>
+          );
+        })}
+      </ol>
+      {source && (
+        <p class="small muted">
+          From {source.publisher}’s{' '}
+          <a href={source.url(Number(date.slice(0, 4)))} rel="noopener">
+            {source.guide} {date.slice(0, 4)}
+          </a>
+          , which also has the guide in other languages.
+        </p>
+      )}
+    </section>
+  ))}
+</Base>
+
+<style>
+  .election {
+    margin-block: var(--space-5);
+  }
+  .ballot-list {
+    padding: 0;
+  }
+  .ballot-list > li {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .ballot-list p {
+    margin: 0;
+  }
+  .kicker-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .ballot-title {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+  .vote-line {
+    max-width: 70ch;
+  }
+</style>
