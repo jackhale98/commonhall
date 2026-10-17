@@ -3,6 +3,7 @@ import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateCourtCases, type StateCourtCase } from '../../../../lib/build-data';
 import { formatDate, stateName } from '../../../../lib/format';
+import { separateOpinionLabel } from '../../../../lib/court';
 import { href } from '../../../../lib/paths';
 import { STATE_COURT_NAMES, stateCourtTitle } from '../../../../lib/state-tabs';
 
@@ -46,6 +47,13 @@ const opinions = [
     <h1>{c.case_name}</h1>
     {c.citations.length > 0 && <p class="muted">{c.citations.join(' · ')}</p>}
     {opinions.length > 0 && <p class="muted">{opinions.join(' ')}</p>}
+    {c.separate_opinions && c.separate_opinions.length > 0 && (
+      <ul class="small muted separate-opinions">
+        {c.separate_opinions.map((o) => (
+          <li>{separateOpinionLabel(o)}</li>
+        ))}
+      </ul>
+    )}
     {c.judges && <p class="small muted">Justices: {c.judges}</p>}
   </header>
 
@@ -79,11 +87,15 @@ const opinions = [
 
   <p class="small muted">
     From CourtListener (Free Law Project), which collects the court’s published opinions. Dissents and concurrences are
-    counted when CourtListener lists them separately.
+    named from each opinion’s heading in the court’s text, or counted when CourtListener lists them separately.
   </p>
 </Base>
 
 <style>
+  .separate-opinions {
+    margin: var(--space-1) 0 0;
+    padding-left: 1.1rem;
+  }
   .case-about {
     margin-block: var(--space-4);
     max-width: 70ch;

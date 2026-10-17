@@ -1841,3 +1841,22 @@ dissents in part counts as a dissent). Each case is read once, newest first, fro
 the scotus job's share of the CourtListener budget, so the 650 cases on file fill
 over two to three weeks, the last full term within a few days.
 
+The state high courts get the same, with fixes to what they showed before:
+
+- **Openings.** Slip opinions are double-spaced (a blank line after every line), so
+  the opening paragraph stopped at its first line: Massachusetts pages showed
+  fragments such as "This appeal involves the intersection of". A paragraph now ends
+  at an indented line, not a blank one; page numbers, footnote markers and line-end
+  hyphens are removed; and it is cut at a sentence end (not after "State v." or
+  "G. L. c."). Text extracted without the layout works too.
+- **Connecticut.** Its author line ("MULLINS, C. J.") is now recognized, and the
+  court's opinion is read rather than whichever opinion CourtListener listed first
+  (Connecticut files concurrences and dissents as their own documents). Its
+  syllabus is copyrighted by the Secretary of the State and is not used.
+- **Who wrote separately.** Massachusetts headings ("KAFKER, J. (concurring, with
+  whom Wendlandt, J., joins).") fill `state_court_cases.separate_opinions`, and its
+  dissent and concurrence counts, which were zero for the combined documents.
+
+Migration 063 marks every state decision to be read again (about 600, newest
+first, six per three-hourly run, so about two weeks).
+

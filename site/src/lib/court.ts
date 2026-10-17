@@ -157,7 +157,9 @@ export function opinionCounts(c: ScotusCase, about?: CaseAbout): { concurrences:
 
 /** "Justice Thomas, dissenting, joined by Justice Gorsuch". */
 export function separateOpinionLabel(o: SeparateOpinion): string {
-  const who = (name: string) => (name === 'The Chief Justice' ? 'the Chief Justice' : `Justice ${name}`);
+  // "The Chief Justice" (Supreme Court) and "Chief Justice Budd" (state courts) carry their title.
+  const who = (name: string) =>
+    name === 'The Chief Justice' ? 'the Chief Justice' : /^Chief Justice /.test(name) ? name : `Justice ${name}`;
   const lead = who(o.author).replace(/^the/, 'The');
   const joined = o.joined.length ? `, joined by ${o.joined.map(who).join(' and ')}` : '';
   return `${lead}, ${o.kind}${joined}`;

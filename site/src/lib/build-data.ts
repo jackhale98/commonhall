@@ -429,6 +429,8 @@ export interface StateCourtCase {
   keywords: string | null;
   /** The opinion's opening paragraph. */
   opening: string | null;
+  /** Concurring and dissenting opinions named in the opinion text, once it has been read. */
+  separate_opinions?: SeparateOpinion[];
 }
 
 export interface StateExecutiveOrder {
@@ -457,6 +459,24 @@ export const loadStateCourtCases = memo(async () => {
       'cluster_id,court_id,state,case_name,docket_number,date_filed,citations,url,judges,dissents,concurrences,per_curiam,keywords,opening',
     order: 'state.asc,date_filed.desc,cluster_id.desc',
   });
+  // Who wrote separately, read apart so a database without the column still builds the pages.
+  const named = new Map(
+    (
+      await selectAllOptional<{ cluster_id: number; separate_opinions: SeparateOpinion[] }>('state_court_cases', {
+        select: 'cluster_id,separate_opinions',
+        separate_opinions: 'not.is.null',
+      })
+    ).map((r) => [r.cluster_id, r.separate_opinions]),
+  );
+  for (const r of rows) {
+    const list = named.get(r.cluster_id);
+    if (!list?.length) continue;
+    r.separate_opinions = list;
+    // Massachusetts decisions come as one combined document, so CourtListener counts no dissents.
+    const dissents = list.filter((o) => o.kind.includes('dissenting')).length;
+    r.dissents = Math.max(r.dissents, dissents);
+    r.concurrences = Math.max(r.concurrences, list.length - dissents);
+  }
   return groupBy(rows, (r) => r.state);
 });
 

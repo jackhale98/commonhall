@@ -14,8 +14,8 @@ import {
   type CourtListenerClient,
 } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
-import { htmlText, monthWindows } from '../federal/court.ts';
-import { opinionSummary } from './opinion-text.ts';
+import { htmlText, monthWindows, syllabusOpinionId } from '../federal/court.ts';
+import { opinionSummary, stateSeparateOpinions } from './opinion-text.ts';
 import type { JobRun } from '../job.ts';
 
 export const STATE_COURTS_JOB = 'state-courts';
@@ -73,22 +73,27 @@ const TEXTS_PER_RUN = 6;
  * decisions first; stops when the request budget runs out.
  */
 export async function fillCaseText(run: JobRun<StateCourtsCursor>, client: CourtListenerClient): Promise<number> {
-  const due = await run.sql<{ cluster_id: number; opinion_ids: number[] }[]>`
-    select cluster_id, opinion_ids from public.state_court_cases
+  const due = await run.sql<{ cluster_id: number; opinion_ids: number[]; opinion_types: string[] }[]>`
+    select cluster_id, opinion_ids, opinion_types from public.state_court_cases
      where text_checked_at is null and cardinality(opinion_ids) > 0
      order by date_filed desc limit ${TEXTS_PER_RUN}`;
   let found = 0;
   for (const c of due) {
     if (run.outOfTime()) break;
     try {
-      const opinion = await client.opinionText(Number(c.opinion_ids[0]));
+      // The court's opinion, not a concurrence or dissent filed as its own document (Connecticut).
+      const id = syllabusOpinionId(c.opinion_ids.map(Number), c.opinion_types);
+      if (id === null) continue;
+      const opinion = await client.opinionText(id);
       const text = opinion.plain_text?.trim() || htmlText(opinion.html_with_citations ?? '');
       const { keywords, opening } = opinionSummary(text);
+      const separate = stateSeparateOpinions(text);
       await run.sql`
         update public.state_court_cases
-           set keywords = ${keywords}, opening = ${opening}, text_checked_at = now()
+           set keywords = ${keywords}, opening = ${opening}, text_checked_at = now(),
+               separate_opinions = ${run.sql.json(separate as never)}
          where cluster_id = ${c.cluster_id}`;
-      if (keywords || opening) {
+      if (keywords || opening || separate.length) {
         found++;
         run.rowsWritten++;
       }
