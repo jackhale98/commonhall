@@ -81,6 +81,7 @@ export function caseRows(
   about: Map<number, CaseAbout> = new Map(),
 ): CaseRow[] {
   return cases.map((c) => {
+    const counts = opinionCounts(c, about.get(c.cluster_id));
     const row: CaseRow = {
       i: c.cluster_id,
       n: c.case_name,
@@ -88,8 +89,8 @@ export function caseRows(
       c: c.citations[0] ?? null,
       d: c.date_filed,
       t: c.term,
-      ds: c.dissents,
-      cc: c.concurrences,
+      ds: counts.dissents,
+      cc: counts.concurrences,
     };
     const author = opinionAuthor(c);
     if (author === 'Per Curiam') row.pc = 1;
@@ -130,6 +131,36 @@ export interface CaseAbout {
   issue?: string;
   /** Background part of the Court's syllabus, word for word. */
   summary?: string;
+  /** Concurring and dissenting opinions named in the opinion text. */
+  opinions?: SeparateOpinion[];
+  /** The syllabus lineup: who delivered the opinion, who joined, who wrote separately. */
+  lineup?: string;
+}
+
+/** A concurrence or dissent (scotus_cases.separate_opinions). */
+export interface SeparateOpinion {
+  author: string;
+  /** "dissenting", "concurring in the judgment and dissenting in part", … */
+  kind: string;
+  joined: string[];
+}
+
+/** Concurrences and dissents: from the opinion text when read, else CourtListener's split. One that dissents in part is a dissent. */
+export function opinionCounts(c: ScotusCase, about?: CaseAbout): { concurrences: number; dissents: number } {
+  if (!about?.opinions?.length) return { concurrences: c.concurrences, dissents: c.dissents };
+  const dissents = about.opinions.filter((o) => o.kind.includes('dissenting')).length;
+  return {
+    dissents: Math.max(dissents, c.dissents),
+    concurrences: Math.max(about.opinions.length - dissents, c.concurrences),
+  };
+}
+
+/** "Justice Thomas, dissenting, joined by Justice Gorsuch". */
+export function separateOpinionLabel(o: SeparateOpinion): string {
+  const who = (name: string) => (name === 'The Chief Justice' ? 'the Chief Justice' : `Justice ${name}`);
+  const lead = who(o.author).replace(/^the/, 'The');
+  const joined = o.joined.length ? `, joined by ${o.joined.map(who).join(' and ')}` : '';
+  return `${lead}, ${o.kind}${joined}`;
 }
 
 /** SCDB topic codes in words (unknown or "miscellaneous" codes give no label). */

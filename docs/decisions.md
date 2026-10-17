@@ -1819,3 +1819,25 @@ Legislature's committee reports and the full text.
   explanatory text from the Office of Legislative Research, which fits the same
   table when one is on the ballot. Local questions (town bond votes and the like) are
   posted town by town in different forms and are not loaded.
+
+## 104. Supreme Court: who wrote what
+
+CourtListener keeps recent Supreme Court decisions as one combined document (the
+slip opinion with every separate opinion in it), so its concurrence and dissent
+counts were zero for every case we hold, and case pages named only the opinion of
+the Court. The opinion text the scotus sync already reads for the syllabus names
+the rest:
+
+- each separate opinion opens with a heading, in slip opinions and orders alike
+  ("JUSTICE THOMAS, with whom JUSTICE GORSUCH joins, dissenting."), giving its author,
+  its kind and who joined (`separate_opinions`);
+- argued cases end the syllabus with the Reporter's lineup ("Roberts, C. J.,
+  delivered the opinion of the Court, in which …"), kept word for word with names
+  in their usual case and report page references dropped (`opinion_lineup`).
+
+Case pages list each concurrence and dissent with who joined, and the lineup; the
+list's dissent and concurrence counts come from the same text (an opinion that
+dissents in part counts as a dissent). Each case is read once, newest first, from
+the scotus job's share of the CourtListener budget, so the 650 cases on file fill
+over two to three weeks, the last full term within a few days.
+

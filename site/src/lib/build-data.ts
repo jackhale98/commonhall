@@ -26,6 +26,7 @@ import {
   type CaseAbout,
   type ScotusCase,
   type ScotusOutcome,
+  type SeparateOpinion,
 } from './court';
 import { EXECUTIVE_ORDER_COLUMNS, NOMINATION_COLUMNS, type ExecutiveOrder, type Nomination } from './executive';
 import { FINANCE_COLUMNS, type MemberFinance } from './finance';
@@ -705,16 +706,20 @@ export const loadScotusOutcomeMap = memo(async () =>
 );
 
 /**
- * What each decision is about: the syllabus background (from CourtListener's opinion
- * text) and SCDB's topic. Read separately from the main columns so a database
+ * What each decision is about: the syllabus background and who wrote what (from
+ * CourtListener's opinion text) and SCDB's topic. Read separately from the main columns so a database
  * without these columns yet still builds the court pages.
  */
 export const loadCaseAbout = memo(async () => {
-  const [summaries, topics, outcomes] = await Promise.all([
+  const [summaries, lineups, topics, outcomes] = await Promise.all([
     selectAllOptional<{ cluster_id: number; syllabus_text: string }>('scotus_cases', {
       select: 'cluster_id,syllabus_text',
       syllabus_text: 'not.is.null',
     }),
+    selectAllOptional<{ cluster_id: number; separate_opinions: SeparateOpinion[]; opinion_lineup: string | null }>(
+      'scotus_cases',
+      { select: 'cluster_id,separate_opinions,opinion_lineup', opinions_checked_at: 'not.is.null' },
+    ),
     selectAllOptional<{ scdb_case_id: string; issue: number | null; issue_area: number | null }>('scotus_outcomes', {
       select: 'scdb_case_id,issue,issue_area',
       issue_area: 'not.is.null',
@@ -728,6 +733,13 @@ export const loadCaseAbout = memo(async () => {
     if (t && (t.area || t.issue)) about.set(clusterId, { ...t });
   }
   for (const s of summaries) about.set(s.cluster_id, { ...about.get(s.cluster_id), summary: s.syllabus_text });
+  for (const l of lineups) {
+    about.set(l.cluster_id, {
+      ...about.get(l.cluster_id),
+      opinions: l.separate_opinions ?? [],
+      ...(l.opinion_lineup ? { lineup: l.opinion_lineup } : {}),
+    });
+  }
   return about;
 });
 

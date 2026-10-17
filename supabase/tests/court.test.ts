@@ -21,6 +21,11 @@ const slipText = readFileSync(
   fileURLToPath(new URL('../../packages/sync/test/fixtures/syllabus/24-621-slip-layout.txt', import.meta.url)),
   'utf8',
 );
+/** The lineup and separate-opinion headings of another slip opinion (Trump v. Barbara), appended to it. */
+const separateText = readFileSync(
+  fileURLToPath(new URL('../../packages/sync/test/fixtures/opinions/scotus-25-365-slip.txt', import.meta.url)),
+  'utf8',
+);
 
 /** CourtListener: search results from the sample; /opinions/{id}/ answers with the slip opinion text. */
 function fake() {
@@ -31,7 +36,7 @@ function fake() {
     if (url.pathname.includes('/opinions/')) {
       opinionCalls.push(url);
       const id = Number(url.pathname.split('/').filter(Boolean).pop());
-      return new Response(JSON.stringify({ id, plain_text: slipText }), {
+      return new Response(JSON.stringify({ id, plain_text: `${slipText}\n\n${separateText}` }), {
         headers: { 'content-type': 'application/json' },
       });
     }
@@ -148,6 +153,12 @@ describe('sync-scotus', () => {
       expect(r.checked).toBe(true);
       expect(r.syllabus_text).toMatch(/^The Federal Election Campaign Act \(FECA\) restricts/);
     }
+    // The same read names the concurrences and dissents, and keeps the syllabus lineup.
+    const [named] = await sql`
+      select separate_opinions, opinion_lineup from public.scotus_cases where opinions_checked_at is not null limit 1`;
+    expect(named!.separate_opinions).toHaveLength(5);
+    expect(named!.separate_opinions[2]).toEqual({ author: 'Thomas', kind: 'dissenting', joined: ['Gorsuch'] });
+    expect(named!.opinion_lineup).toMatch(/^Roberts, C\. J\., delivered the opinion of the Court/);
     // Checked cases (decided more than a month before "now") are not read again.
     api.opinionCalls.length = 0;
     await run(api.fetch);

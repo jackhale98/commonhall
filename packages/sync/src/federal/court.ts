@@ -14,6 +14,7 @@ import {
 } from '@civic/congress-client';
 import { upsertIfChanged } from '../db.ts';
 import { syllabusBackground } from './syllabus.ts';
+import { opinionLineup, separateOpinions, type SeparateOpinion } from './opinions.ts';
 import type { JobRun } from '../job.ts';
 
 export const SCOTUS_JOB = 'scotus';
@@ -127,13 +128,14 @@ export function htmlText(html: string): string {
     .replace(/&#39;|&#x27;/g, "'");
 }
 
-/** How many cases one run reads the syllabus for (one request each). */
+/** How many cases one run reads the opinion text for (one request each). */
 const SYLLABI_PER_RUN = 80;
 
 /**
- * Read the syllabus once for each case that has not been checked: the background
- * of the Court's syllabus from the opinion text (null when there is none, e.g. most
- * per curiam orders, or when the text is damaged). Recent decisions are checked again
+ * Read each case's opinion text once (newest first) for the background of the
+ * Court's syllabus and for who wrote what: the separate opinions and the syllabus
+ * lineup (opinions.ts). The syllabus is null when there is none (most per curiam
+ * orders) or the text is damaged. Recent decisions without a syllabus are read again
  * daily for a month, in case CourtListener adds the text later.
  */
 export async function fillSyllabi(
@@ -144,10 +146,12 @@ export async function fillSyllabi(
 ): Promise<number> {
   const due = await run.sql<{ cluster_id: number; opinion_ids: number[]; opinion_types: string[] }[]>`
     select cluster_id, opinion_ids, opinion_types from public.scotus_cases
-     where syllabus_text is null and not revision and cardinality(opinion_ids) > 0
-       and (syllabus_checked_at is null
-            or (date_filed > current_date - 30 and syllabus_checked_at < now() - interval '1 day'))
-     order by syllabus_checked_at nulls first, date_filed desc
+     where not revision and cardinality(opinion_ids) > 0
+       and (opinions_checked_at is null
+            or (syllabus_text is null
+                and (syllabus_checked_at is null
+                     or (date_filed > current_date - 30 and syllabus_checked_at < now() - interval '1 day'))))
+     order by opinions_checked_at nulls first, date_filed desc
      limit ${SYLLABI_PER_RUN}`;
   let found = 0;
   for (const c of due) {
@@ -155,26 +159,31 @@ export async function fillSyllabi(
     const id = syllabusOpinionId(c.opinion_ids, c.opinion_types);
     if (id === null) continue;
     let syllabus: string | null;
+    let separate: SeparateOpinion[];
     try {
       const opinion = await client.opinionText(id);
       const text = opinion.plain_text?.trim() || htmlText(opinion.html_with_citations ?? '');
       syllabus = syllabusBackground(text);
+      separate = separateOpinions(text);
       await run.sql`
-        update public.scotus_cases set syllabus_text = ${syllabus}, syllabus_checked_at = now()
+        update public.scotus_cases set
+          syllabus_text = coalesce(syllabus_text, ${syllabus}), syllabus_checked_at = now(),
+          separate_opinions = ${run.sql.json(separate as never)},
+          opinion_lineup = ${opinionLineup(text)}, opinions_checked_at = now()
          where cluster_id = ${c.cluster_id}`;
     } catch (error) {
       if (error instanceof BudgetExhaustedError) throw error;
       // One case's failure (an upstream error, text the database refuses) must not
       // stop the rest; it stays unchecked and is tried again next run.
-      run.log('scotus: syllabus failed', { cluster: c.cluster_id, error: String(error) });
+      run.log('scotus: opinion text failed', { cluster: c.cluster_id, error: String(error) });
       continue;
     }
-    if (syllabus) {
+    if (syllabus || separate.length) {
       found++;
       run.rowsWritten++;
     }
   }
-  run.log('scotus: syllabi', { checked: due.length, found });
+  run.log('scotus: opinion texts', { checked: due.length, found });
   return found;
 }
 

@@ -6,7 +6,9 @@ import {
   DISPOSITION,
   docketUrl,
   opinionAuthor,
+  opinionCounts,
   outcomeSummary,
+  separateOpinionLabel,
   splitSummary,
   type ScotusCase,
 } from '../../../lib/court';
@@ -29,14 +31,23 @@ const [aboutStart, aboutRest] = about?.summary ? splitSummary(about.summary) : [
 const summary = outcome && outcomeSummary(c.case_name, outcome);
 const disposition = outcome?.case_disposition ? DISPOSITION[outcome.case_disposition] : undefined;
 const author = opinionAuthor(c);
+const counts = opinionCounts(c, about);
+// Named concurrences and dissents when the opinion text has been read; otherwise counts.
+const separate = about?.opinions ?? [];
 const opinions = [
   author === 'Per Curiam'
     ? 'Decided per curiam (an unsigned opinion of the Court)'
     : author
       ? `Opinion of the Court by ${author}`
       : null,
-  c.concurrences > 0 ? `${c.concurrences} concurring opinion${c.concurrences > 1 ? 's' : ''}` : null,
-  c.dissents > 0 ? `${c.dissents} dissenting opinion${c.dissents > 1 ? 's' : ''}` : null,
+  ...(separate.length
+    ? []
+    : [
+        counts.concurrences > 0
+          ? `${counts.concurrences} concurring opinion${counts.concurrences > 1 ? 's' : ''}`
+          : null,
+        counts.dissents > 0 ? `${counts.dissents} dissenting opinion${counts.dissents > 1 ? 's' : ''}` : null,
+      ]),
 ].filter(Boolean);
 ---
 
@@ -120,10 +131,20 @@ const opinions = [
         <dd>{c.citations.join('; ')}</dd>
       </div>
     )}
-    {opinions.length > 0 && (
+    {(opinions.length > 0 || separate.length > 0) && (
       <div>
         <dt>Opinions</dt>
-        <dd>{opinions.join(' · ')}</dd>
+        <dd>
+          {opinions.join(' · ')}
+          {separate.length > 0 && (
+            <ul class="separate-opinions">
+              {separate.map((o) => (
+                <li>{separateOpinionLabel(o)}</li>
+              ))}
+            </ul>
+          )}
+          {about?.lineup && <p class="small muted lineup">From the syllabus: {about.lineup}</p>}
+        </dd>
       </div>
     )}
   </dl>
@@ -138,11 +159,21 @@ const opinions = [
     <a href="https://www.courtlistener.com/" rel="noopener">
       CourtListener
     </a>{' '}
-    (Free Law Project). Separate concurrences and dissents are listed when CourtListener records them separately.
+    (Free Law Project). Concurrences and dissents are named from each opinion’s heading in the Court’s text.
   </p>
 </Base>
 
 <style>
+  .separate-opinions {
+    margin: var(--space-1) 0 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .lineup {
+    margin: var(--space-2) 0 0;
+    max-width: 70ch;
+  }
   .case-about {
     margin: var(--space-4) 0;
   }
