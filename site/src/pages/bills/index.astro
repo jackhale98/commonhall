@@ -63,6 +63,22 @@ const initial: Bill[] = (DEMO ? bills : moving)
     </p>
   </header>
   <FollowedItems client:idle kind={{ type: 'bill' }} title="Bills you follow" />
+  {bills.length > 0 && (
+    <div class="glance" aria-label="Congress at a glance">
+      <section class="panel" aria-labelledby="stage-h">
+        <h2 id="stage-h" class="h-small">
+          Where bills stand
+        </h2>
+        <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
+      </section>
+      <section class="panel" aria-labelledby="topics-h">
+        <h2 id="topics-h" class="h-small">
+          Most active topics
+        </h2>
+        <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
+      </section>
+    </div>
+  )}
   <noscript>
     <p class="notice">
       Search and filters need JavaScript. The bills that most recently moved past committee are listed below.
@@ -107,29 +123,13 @@ const initial: Bill[] = (DEMO ? bills : moving)
       discussed={discussed}
     />
   )}
-  {bills.length > 0 && (
-    <div class="glance" aria-label="Congress at a glance">
-      <section class="panel" aria-labelledby="stage-h">
-        <h2 id="stage-h" class="h-small">
-          Where bills stand
-        </h2>
-        <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
-      </section>
-      <section class="panel" aria-labelledby="topics-h">
-        <h2 id="topics-h" class="h-small">
-          Most active topics
-        </h2>
-        <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
-      </section>
-    </div>
-  )}
 </Base>
 
 <style>
   .glance {
     display: grid;
     gap: var(--space-4);
-    margin: var(--space-6) 0 var(--space-5);
+    margin: 0 0 var(--space-5);
   }
   .glance .h-small {
     margin-top: 0;
@@ -148,6 +148,17 @@ const initial: Bill[] = (DEMO ? bills : moving)
     .glance {
       grid-template-columns: 1fr 1fr;
       align-items: start;
+    }
+  }
+  /* Phones: labels get most of the row, so stages fit on one line and long topics on two. */
+  @media (max-width: 40rem) {
+    .glance {
+      gap: var(--space-3);
+    }
+    .glance :global(.barlist li),
+    .glance :global(.pipeline-row) {
+      grid-template-columns: minmax(0, 1.8fr) minmax(2.5rem, 1fr) auto;
+      gap: var(--space-2);
     }
   }
 </style>

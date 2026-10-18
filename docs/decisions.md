@@ -2041,7 +2041,8 @@ between a reader and the list:
   each day's activity is new bills referred to committee, which buried the rest. "Show
   all activity" (`?scope=all`) lists everything; any search or filter searches all
   bills, so links like `?sponsor=` and `?policy=` are unchanged. "Where bills stand"
-  and "Most active topics" move below the list. On phones chamber, party, sort and
+  and "Most active topics" stay above the list (the owner wants the overview first),
+  a little tighter on phones. On phones chamber, party, sort and
   "Has a discussion" sit behind "More filters" unless one is set, and long official
   titles end after three lines in lists.
 - **A state's latest bills leave out agency reports** filed like bills ("A
