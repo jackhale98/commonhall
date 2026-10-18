@@ -3,7 +3,7 @@
 **See what your government is doing, from Congress to City Hall.**
 
 CommonHall is a free, nonpartisan, open-source website for following the
-U.S. Congress, state legislatures and the Boston City Council. Look up bills and
+U.S. Congress, state legislatures, state courts and city councils. Look up bills and
 votes in plain language, find out who represents you, follow what you care
 about, and take part in moderated public discussions.
 
@@ -78,11 +78,9 @@ about, and take part in moderated public discussions.
 - The governor's executive orders (from portal.ct.gov) and Connecticut Supreme Court
   decisions, with pages where people can ask for a discussion.
 
-**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`): one set of pages for
-**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ct/bristol/`,
-`/states/ct/middletown/`): one set of pages for
-**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ma/cambridge/`): one set of pages for
-every city, filled from whatever the city publishes. Tabs (Overview, Council,
+**Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ma/somerville/`,
+`/states/ma/cambridge/`, `/states/ct/bristol/`, `/states/ct/middletown/`): one set of
+pages for every city, filled from whatever the city publishes. Tabs (Overview, Council,
 Committees, Neighborhoods, Budget) appear only when there is data behind them; a
 new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
 (see [docs/extending.md](docs/extending.md)).
@@ -120,6 +118,7 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   agendas and the items on them.
 - 311 service requests by ward: how many, the share closed so far, typical time to
   close and the most common requests (summaries only; the city sets no target times).
+
 **Bristol, Connecticut** (tabs: Overview, Council, Committees)
 
 - The mayor and six councilors (two per district); an address in Bristol finds the
@@ -137,6 +136,7 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   the agenda gives one; items carried to later meetings keep one page.
 - 311 requests from SeeClickFix (summaries only): how many, typical time to close,
   the most common requests.
+
 **Cambridge** (tabs: Overview, Council, Committees, Neighborhoods, Budget)
 
 - All nine councillors (elected citywide, so there is no district map).
@@ -255,8 +255,16 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | --- | --- | --- |
 | `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events |
 | `sync-members` | daily | Members of Congress |
+| `sync-committees` | hourly | Congressional committee rosters (daily), hearings and markups, and older bills' committee referrals |
+| `sync-finance` | hourly | Campaign finance summaries from OpenFEC for members whose figures are over a week old |
+| `sync-executive` | hourly | Executive orders from the Federal Register and presidential nominations from Congress.gov |
+| `sync-scotus` | hourly | U.S. Supreme Court decisions, syllabi and separate opinions from CourtListener |
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts and Connecticut first (with histories and floor roll calls) |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
+| `sync-boston-311` | daily | Boston 311 request counts per day, council district and type, from both of the city's 311 systems (Analyze Boston) |
+| `sync-boston-zba` | daily | Boston Zoning Board of Appeal cases: open appeals and those heard in the last year |
+| `sync-capital-plan` | weekly | Boston's five-year Capital Plan, read only when the city has changed it |
+| `sync-city-budget` | weekly | Boston's operating and revenue budgets, read only when the city has changed them |
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
 | `sync-somerville` | every 15 minutes | Somerville council and committee meetings, matters and sponsors; councilors weekly |
 | `sync-somerville-311` | daily | Somerville 311 service requests per day, ward and type, summarised on the city's portal; stores the report |
@@ -265,15 +273,20 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-middletown-311` | daily | Middletown (CT) 311 report from SeeClickFix (only the report is stored) |
 | `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |
 | `sync-cambridge-data` | daily | Cambridge 311 report, operating and revenue budgets and capital plan from data.cambridgema.gov |
-| `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load Middletown agendas (GitHub Action) | daily | Middletown (CT) Common Council members, meetings and agenda items (resolutions, ordinances, appropriations) from the city's agenda PDFs |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
 | Load MA ballot questions (GitHub Action) | weekly | Massachusetts' statewide ballot questions from the Secretary of the Commonwealth's Information for Voters guide, read in a headless browser |
 | Load CT governor orders (GitHub Action) | weekly | Connecticut governors' executive orders from portal.ct.gov; a short summary from each new order's PDF (`pdftotext`) |
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
+| Load Supreme Court Database (GitHub Action) | monthly | Who won each Supreme Court case, the disposition and the vote split, from the Supreme Court Database |
+| Load council districts (GitHub Action) | on demand | A city's council districts (or boundary) for the district maps and address lookups; run once per city and after redistricting |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |
+| `refresh-member-stats` | every 30 minutes | Database job: recomputes members' vote statistics |
+| `trim-past-congresses` | monthly | Database job: deletes past Congresses' action histories, co-sponsors and member-by-member positions (bills and vote totals stay) |
+| `check-database-size` | weekly | Database job: records the database size; the health check flags it above 400 MB |
+| `purge-api-usage`, `purge-archive-cache`, `purge-cron-history`, `purge-discussion-requests-anon`, `purge-feed-events`, `purge-geo-cache`, `purge-rate-limits` | daily | Database jobs: delete old request counts, expired caches, cron history, anonymous discussion requests, feed events and rate-limit rows |
 | Sync health (GitHub Action) | daily | Fails (and GitHub emails the owner) when a job failed or is overdue; a source gone quiet is a warning; pings `HEARTBEAT_URL` if set; the same list is public at `/status/` |
 
 The reasoning behind the main design choices is recorded in
@@ -352,12 +365,12 @@ The full guide is [docs/discussions.md](docs/discussions.md).
 | Area | Status |
 | --- | --- |
 | Website, charts, Congress, states and Boston pages | Live |
-| Database and scheduled syncs | Live: bills and votes every 10 minutes, members daily, states and Boston nightly |
+| Database and scheduled syncs | Live: bills and votes every 10 minutes, state bills hourly, Boston every 15 minutes, members daily (see the jobs table above) |
 | Federal bills and roll-call votes | Loading: the first full load of the current Congress takes about a day; recently active bills and the newest votes arrive first |
 | Boston council districts | Loaded |
 | Campaign finance (FEC) | Ready; fills in over the first week after deploy (about 535 members, refreshed weekly) |
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
-| Massachusetts bills | Arriving with the nightly Open States sync |
+| Massachusetts bills | Live; refreshed with the hourly Open States sync |
 | Connecticut bills, orders and Supreme Court | Bills and decisions arrive with the hourly syncs; orders after the first "Load CT governor orders" run |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
 | Committees, rosters, hearings | Ready; rosters load on the first hourly run, referrals fill in as bills load |

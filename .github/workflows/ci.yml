@@ -24,6 +24,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run check:jobs
       - run: npm run typecheck
       - run: npm test -- --project unit
       # Builds with no Supabase env: proves a fresh fork builds before it is configured.

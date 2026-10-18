@@ -1,5 +1,5 @@
 /**
- * Nightly (pg_cron, a few short runs): Boston City Council matters, actions,
+ * Every 15 minutes (pg_cron): Boston City Council matters, actions,
  * sponsors, meetings and any recorded roll calls from Legistar; councilors weekly.
  */
 import { LegistarClient } from '@civic/congress-client';

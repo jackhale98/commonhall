@@ -1,5 +1,5 @@
 {
-  "name": "civic-tracker",
+  "name": "commonhall",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -29,7 +29,8 @@
     "load-scdb": "tsx scripts/load-scdb.ts",
     "load-state-people": "tsx scripts/load-state-people.ts",
     "job": "tsx scripts/run-job.ts",
-    "check:polis": "tsx scripts/check-polis-privacy.ts"
+    "check:polis": "tsx scripts/check-polis-privacy.ts",
+    "check:jobs": "tsx scripts/check-jobs-table.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

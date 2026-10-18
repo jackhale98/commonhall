@@ -395,13 +395,13 @@ See [domain-and-rename.md](domain-and-rename.md) for the full, ordered checklist
 
 ## Free-tier notes
 
-- The free database allows 500 MB. A weekly job records the size in `sync_state`
-  and fails loudly above 400 MB.
+- The free database allows 500 MB. A weekly job records the size in `sync_state`,
+  and the daily health check flags it above 400 MB.
 - Supabase pauses free projects after about a week without activity. The nightly
   site build and the sync jobs normally keep it active; if it is paused, restore it
   from the dashboard and rerun "Deploy site".
 - Edge Functions on the free plan allow 500,000 invocations a month; the
-  schedules use well under 10,000.
+  schedules use about 17,000.
 
 ## Troubleshooting
 
@@ -427,5 +427,5 @@ SUPABASE_SERVICE_ROLE_KEY=… npm run check:polis   # nothing about the user but
 ```
 
 `sync_state` shows each job's cursor, last success, last error and requests
-used; a weekly job records the database size there and fails loudly above
-400 MB (the free tier allows 500 MB).
+used; a weekly job records the database size there, and the health check flags it
+above 400 MB (the free tier allows 500 MB).
