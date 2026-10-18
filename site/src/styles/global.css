@@ -1528,6 +1528,10 @@ label {
   background: var(--sky-soft);
   color: var(--sky);
 }
+.status-reported {
+  background: var(--sky-soft);
+  color: var(--sky);
+}
 .status-passed_house,
 .status-passed_senate,
 .status-agreed {

@@ -1,0 +1,257 @@
+---
+import Base from '../../layouts/Base.astro';
+import {
+  STAGE_LABELS,
+  fiscalYear,
+  fundingYear,
+  trackedYears,
+  type FundingBill,
+  type FundingStage,
+} from '../../lib/appropriations';
+import { loadFundingBills } from '../../lib/build-data';
+import { billNumberLabel, formatDate } from '../../lib/format';
+import { billHref } from '../../lib/paths';
+
+const today = new Date().toISOString().slice(0, 10);
+const bills = await loadFundingBills();
+const current = fiscalYear(today);
+// Each tracked year, whether it has begun, and the stopgap in force.
+const years = trackedYears(today).map((year) => {
+  const y = fundingYear(bills, year);
+  return { ...y, started: !(year > current), stop: y.activeStopgap };
+});
+const daysUntil = (date: string) =>
+  Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+const fy = (y: number) => `FY${y}`;
+const name = (b: FundingBill) => b.short_title?.trim() || b.title;
+const label = (b: FundingBill) => billNumberLabel(b);
+const chip = (stage: FundingStage) => `status-chip status-${stage}`;
+---
+
+<Base
+  title="Federal budget"
+  description="How Congress funds the government each year: the twelve annual spending bills and any stopgap, and where each stands."
+  section="bills"
+>
+  <header class="page-head wash">
+    <p class="kicker">Congress</p>
+    <h1>Federal budget</h1>
+    <p class="lede">
+      Each year Congress passes twelve spending bills, one for each part of the government, or a stopgap to keep it
+      funded while it finishes them. Here is where each one stands.
+    </p>
+  </header>
+
+  {years.map(({ started, stop, ...y }) => (
+    <section aria-labelledby={`fy-${y.year}`} class="funding-year">
+      <h2 id={`fy-${y.year}`}>Fiscal year {y.year}</h2>
+      <p class="small muted section-note">
+        October 1, {y.year - 1} to September 30, {y.year}
+        {started ? '' : `: the year starts in ${daysUntil(`${y.year - 1}-10-01`)} days`}.
+      </p>
+
+      <div class:list={['funding-banner', { 'is-open': started && y.enacted < 12 && !stop }]} role="status">
+        {y.enacted === 12 ? (
+          <p>
+            <strong>All twelve spending bills have become law</strong> for {fy(y.year)}.
+          </p>
+        ) : stop ? (
+          <p>
+            <strong>
+              Funded by a stopgap{stop.end ? ` through ${formatDate(stop.end)}` : ''}
+              {stop.end && daysUntil(stop.end) >= 0 ? ` (${daysUntil(stop.end)} days from today)` : ''}.
+            </strong>{' '}
+            The <a href={billHref(stop.congress, stop.bill_type, stop.number)}>{name(stop)}</a> ({label(stop)}
+            {stop.law_number ? `, Public Law ${stop.law_number}` : ''}) continues funding at last year’s levels for
+            anything without its own spending law{stop.end ? '; the date is from its official summary' : ''}.
+          </p>
+        ) : started ? (
+          <p>
+            <strong>
+              {y.enacted === 0
+                ? `No ${fy(y.year)} spending bill or stopgap has become law.`
+                : `${y.enacted} of the twelve spending bills have become law; no stopgap covers the rest.`}
+            </strong>{' '}
+            The fiscal year began on October 1, {y.year - 1}.
+          </p>
+        ) : (
+          <p>
+            <strong>{y.enacted} of 12 have become law so far.</strong> Anything not funded by October 1 needs a stopgap.
+          </p>
+        )}
+      </div>
+
+      <dl class="stat-grid funding-stats">
+        <div class="stat">
+          <dt>Became law</dt>
+          <dd>{y.enacted} of 12</dd>
+        </div>
+        <div class="stat">
+          <dt>Passed the House</dt>
+          <dd>{y.passedHouse} of 12</dd>
+        </div>
+        <div class="stat">
+          <dt>Passed the Senate</dt>
+          <dd>{y.passedSenate} of 12</dd>
+        </div>
+      </dl>
+
+      <table class="funding-table">
+        <caption class="visually-hidden">The twelve {fy(y.year)} spending bills by chamber</caption>
+        <thead>
+          <tr>
+            <th scope="col">Spending bill</th>
+            <th scope="col">House</th>
+            <th scope="col">Senate</th>
+            <th scope="col">Law</th>
+          </tr>
+        </thead>
+        <tbody>
+          {y.rows.map((r) => (
+            <tr>
+              <th scope="row">{r.sub.label}</th>
+              {[r.house, r.senate].map((b, i) => (
+                <td data-label={i === 0 ? 'House' : 'Senate'}>
+                  {b ? (
+                    <>
+                      <a href={billHref(b.congress, b.bill_type, b.number)}>{label(b)}</a>{' '}
+                      <span class={chip(b.stage)}>{STAGE_LABELS[b.stage]}</span>
+                    </>
+                  ) : (
+                    <span class="muted">No bill yet</span>
+                  )}
+                </td>
+              ))}
+              <td data-label="Law">
+                {r.law ? (
+                  <span class="status-chip status-law">
+                    {r.law.law_number ? `Public Law ${r.law.law_number}` : 'Became law'}
+                  </span>
+                ) : (
+                  <span class="muted">Not yet</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {y.packages.length > 0 && (
+        <>
+          <h3 class="h-small">Bills that combine several</h3>
+          <ul class="plain-rows">
+            {y.packages.map((p) => (
+              <li>
+                <p class="meta">
+                  {label(p)} · <span class={chip(p.stage)}>{STAGE_LABELS[p.stage]}</span>
+                  {p.latest_action_date && ` · ${formatDate(p.latest_action_date)}`}
+                </p>
+                <p class="bill-title-sm">
+                  <a href={billHref(p.congress, p.bill_type, p.number)}>{name(p)}</a>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {y.stopgaps.length > 0 && (
+        <>
+          <h3 class="h-small">Stopgaps (continuing resolutions)</h3>
+          <ul class="plain-rows">
+            {y.stopgaps.map((s) => (
+              <li>
+                <p class="meta">
+                  {label(s)} · <span class={chip(s.stage)}>{STAGE_LABELS[s.stage]}</span>
+                  {s.latest_action_date && ` · ${formatDate(s.latest_action_date)}`}
+                  {s.end && ` · would fund through ${formatDate(s.end)}`}
+                </p>
+                <p class="bill-title-sm">
+                  <a href={billHref(s.congress, s.bill_type, s.number)}>{name(s)}</a>
+                </p>
+                {s.latest_action_text && <p class="small muted">{s.latest_action_text}</p>}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  ))}
+
+  <p class="small muted source-note">
+    Where each bill stands is Congress.gov’s record, checked every 10 minutes; this page is rebuilt nightly. Bills are
+    matched to the twelve Appropriations subcommittees by their titles, and bills that combine several by the divisions
+    named in their Congressional Research Service summaries. “Reported by committee” means the bill is on the floor
+    calendar.
+  </p>
+</Base>
+
+<style>
+  .section-note {
+    margin-top: 0;
+  }
+  .funding-year + .funding-year {
+    margin-top: var(--space-7);
+  }
+  .funding-banner {
+    margin: var(--space-3) 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-left: 4px solid var(--brand);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background: var(--bg-subtle);
+  }
+  .funding-banner.is-open {
+    border-left-color: var(--highlight);
+  }
+  .funding-banner p {
+    margin: 0;
+  }
+  .funding-stats {
+    margin-bottom: var(--space-4);
+  }
+  .funding-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step--1);
+    margin-bottom: var(--space-5);
+  }
+  .funding-table th,
+  .funding-table td {
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .funding-table thead th {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .funding-table th[scope='row'] {
+    font-weight: 600;
+  }
+  /* Phones: each bill as a block, its chambers and law on labelled lines. */
+  @media (max-width: 40rem) {
+    .funding-table thead {
+      display: none;
+    }
+    .funding-table tr {
+      display: block;
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .funding-table th,
+    .funding-table td {
+      display: block;
+      border: 0;
+      padding: 2px 0;
+    }
+    .funding-table td::before {
+      content: attr(data-label) ': ';
+      color: var(--text-muted);
+    }
+  }
+  .source-note {
+    margin-top: var(--space-6);
+    max-width: 70ch;
+  }
+</style>

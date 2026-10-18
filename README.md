@@ -48,6 +48,9 @@ about, and take part in moderated public discussions.
 - See where each member's campaign money comes from: totals raised and spent,
   small versus large donors, PACs, in-state versus out-of-state money, and the
   employers of their largest donors.
+- Follow the federal budget (`/budget/`): the twelve annual spending bills for the
+  fiscal year, where each stands in the House and Senate, any stopgap and the date it
+  funds the government to, matched from the bills by title (no extra source).
 
 **The executive branch**
 

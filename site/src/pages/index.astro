@@ -6,9 +6,11 @@ import FindMyReps from '../components/FindMyReps';
 import YourArea from '../components/YourArea';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
+import { fiscalYear, fundingYear } from '../lib/appropriations';
 import {
   loadBallotQuestions,
   loadBills,
+  loadFundingBills,
   loadDiscussions,
   loadExecutiveOrders,
   loadCityMeetings,
@@ -58,6 +60,10 @@ const ballots = [...(await loadBallotQuestions())]
   })
   .filter((b) => b.date)
   .sort((a, b) => a.date!.localeCompare(b.date!));
+
+// Federal funding for the year under way, while any of the twelve spending bills is unfinished.
+const funding = fundingYear(await loadFundingBills(), fiscalYear(today));
+const fundingOpen = funding.enacted < 12;
 
 const latestOrder = orders.find((o) => o.signing_date);
 const monthAgo = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
@@ -124,6 +130,24 @@ const recentCaseOutcome = recentCase && outcomes.get(recentCase.cluster_id);
           <span class="pulse-meta">What a yes and a no vote do, in the state’s own guide →</span>
         </a>
       ))}
+      {fundingOpen && (
+        <a class="pulse-card" href={href('budget/')}>
+          <span class="pulse-label">
+            <span class="dot dot-order" aria-hidden="true" />
+            Federal funding · FY{funding.year}
+          </span>
+          <strong>
+            {funding.activeStopgap
+              ? `Funded by a stopgap${funding.activeStopgap.end ? ` through ${formatDate(funding.activeStopgap.end)}` : ''}`
+              : funding.enacted === 0
+                ? 'No spending bill or stopgap has become law'
+                : `${funding.enacted} of 12 spending bills are law`}
+          </strong>
+          <span class="pulse-meta">
+            {funding.passedHouse} of 12 passed the House · {funding.passedSenate} the Senate →
+          </span>
+        </a>
+      )}
       {latestLaw && (
         <a class="pulse-card" href={billHref(latestLaw.congress, latestLaw.bill_type, latestLaw.number)}>
           <span class="pulse-label">

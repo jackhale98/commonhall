@@ -2115,3 +2115,32 @@ Massachusetts comes first, as a Budget tab on the state's pages like Boston's.
 - **Build cost.** The tab reads the totals view (a few hundred rows) and the newest
   year's accounts (about 930 rows), and serves those as `budget.json` for the search;
   only states with a budget get the tab.
+
+## 115. The federal appropriations tracker, from bills we already hold
+
+The second part of the budget work (decision 114): a Budget page under Congress
+(`/budget/`) showing how the year's federal funding stands. It needs no new source.
+
+- **Which bills.** The twelve regular appropriations bills are recognised by title
+  ("Department of Defense Appropriations Act, 2027", or "Making appropriations for …
+  for the fiscal year ending September 30, 2027") and matched to the twelve
+  Appropriations subcommittees by name, the House's "National Security, Department of
+  State" bill counting as State and Foreign Operations. A bill naming several
+  subcommittees, or a "Consolidated Appropriations Act", is a package; the
+  subcommittees it funds come from its title and the divisions named in its CRS
+  summary. Continuing resolutions are titles with "continuing appropriations". Rules
+  for floor consideration (H.Res.), supplementals, advance appropriations and
+  authorization acts are left out. All of it runs at build time over the bill list
+  the Bills page already loads; only packages and stopgaps fetch their summaries.
+- **Where each stands.** Congress.gov's status, with "Reported by committee" for a
+  bill on the House Union Calendar or the Senate Legislative Calendar (Congress.gov
+  still calls it in committee). A subcommittee counts as funded when its own bill or
+  a package covering it became law.
+- **Stopgaps.** The end date of a stopgap comes from its CRS summary ("through the
+  earlier of December 4, 2026, or …") and the page says so. With no law for the year
+  under way, the page says that no spending bill or stopgap has become law, and when
+  the fiscal year began; it doesn't call it a shutdown, which the bill data alone
+  can't establish.
+- **Which years.** The fiscal year under way, and from April to September the next
+  one too, whose bills the committees write over the spring and summer. The home
+  page's "Latest" carries a funding card while any of the year's twelve is unfinished.

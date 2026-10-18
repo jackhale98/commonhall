@@ -58,6 +58,7 @@ export const NAV: NavGroup[] = [
       { key: 'members', label: 'Members', path: 'members/', match: ['members/', 'member/'] },
       { key: 'votes', label: 'Votes', path: 'votes/', match: ['votes/', 'vote/'] },
       { key: 'committees', label: 'Committees', path: 'committees/', match: ['committees/'] },
+      { key: 'budget', label: 'Budget', path: 'budget/', match: ['budget/'] },
     ],
   },
   { key: 'executive', label: 'Executive', path: 'executive/', match: ['executive/'] },
@@ -164,6 +165,7 @@ export const PHONE_NAV: {
       { key: 'members', label: 'Members', path: 'members/' },
       { key: 'votes', label: 'Votes', path: 'votes/' },
       { key: 'committees', label: 'Committees', path: 'committees/' },
+      { key: 'budget', label: 'Federal budget', path: 'budget/' },
     ],
   },
   {

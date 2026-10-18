@@ -35,6 +35,7 @@ import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type
 import { DEMO } from './config';
 import { STATE_BILL_FILLER, STATE_BILL_FILLER_PG } from './state-filler';
 import type { StateBudgetLine, StateBudgetTotal } from './state-budget';
+import { classify, trackedYears, type FundingBill } from './appropriations';
 import { CITIES } from './cities';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
@@ -216,6 +217,44 @@ export const loadBills = memo(async () => {
     order: 'latest_action_date.desc.nullslast,id.asc',
   });
   return MAX_BILL_PAGES ? rows.slice(0, MAX_BILL_PAGES) : rows;
+});
+
+/**
+ * The federal appropriations bills for the fiscal years worth tracking (lib/appropriations.ts),
+ * picked from the bill list by title; packages and stopgaps also get their CRS summary
+ * (their divisions and end date) and every one its public law number.
+ */
+export const loadFundingBills = memo(async (): Promise<FundingBill[]> => {
+  const years = trackedYears(new Date().toISOString().slice(0, 10));
+  const candidates = (await loadBills()).filter((b) => {
+    const c = classify(b);
+    return c !== null && years.includes(c.year);
+  });
+  if (candidates.length === 0) return [];
+  const extra = new Map(
+    (
+      await select<{ id: string; summary_text: string | null; law_number: string | null }>('bills', {
+        select: 'id,law_number',
+        id: `in.(${candidates.map((b) => b.id).join(',')})`,
+      })
+    ).map((r) => [r.id, r]),
+  );
+  const wordy = candidates.filter((b) => classify(b)!.kind !== 'regular').map((b) => b.id);
+  const summaries = wordy.length
+    ? new Map(
+        (
+          await select<{ id: string; summary_text: string | null }>('bills', {
+            select: 'id,summary_text',
+            id: `in.(${wordy.join(',')})`,
+          })
+        ).map((r) => [r.id, r.summary_text]),
+      )
+    : new Map<string, string | null>();
+  return candidates.map((b) => ({
+    ...b,
+    law_number: extra.get(b.id)?.law_number ?? null,
+    summary_text: summaries.get(b.id) ?? null,
+  }));
 });
 
 // ---- Hybrid rendering: only notable items get prerendered pages -----------
