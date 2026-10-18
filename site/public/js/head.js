@@ -6,6 +6,9 @@ document.documentElement.classList.add('js');
 try {
   const saved = localStorage.getItem('theme');
   if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  // Districts remembered on this device (lib/my-area.ts): the home page shows them
+  // instead of the address form.
+  if (localStorage.getItem('commonhall-area')) document.documentElement.dataset.area = '';
 } catch {
   // Storage unavailable; fall back to the system theme.
 }

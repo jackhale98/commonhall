@@ -6,6 +6,7 @@
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from './config';
 import { safeNext as checkNext } from '@civic/congress-client/safe-url';
+import { deviceArea, type MyArea } from './my-area';
 import { href } from './paths';
 
 export const STORAGE_KEY = 'civic-auth';
@@ -152,22 +153,29 @@ export interface SavedDistricts {
   council_district: number | null;
 }
 
-let districtsCache: Promise<SavedDistricts | null> | undefined;
+let districtsCache: Promise<MyArea | null> | undefined;
 
-/** The signed-in user's saved districts (from Find my reps), loaded once per page; null when signed out. */
-export function savedDistricts(): Promise<SavedDistricts | null> {
+/**
+ * The visitor's districts and town, loaded once per page: those saved to their account
+ * (Find my reps), else those remembered on this device (lib/my-area.ts); null when neither.
+ */
+export function savedDistricts(): Promise<MyArea | null> {
   districtsCache ??= (async () => {
-    if (!hasStoredSession()) return null;
+    if (!hasStoredSession()) return deviceArea();
     const client = await getClient();
     const { data } = await client.auth.getSession();
-    if (!data.session) return null;
+    if (!data.session) return deviceArea();
     const { data: row } = await client
       .from('profiles')
-      .select('state,congressional_district,state_upper_district,state_lower_district,city,council_district')
+      .select(
+        'address_label,state,congressional_district,state_upper_district,state_lower_district,city,council_district',
+      )
       .eq('user_id', data.session.user.id)
       .maybeSingle();
-    return (row as SavedDistricts | null) ?? null;
-  })().catch(() => null);
+    if (!row?.state) return deviceArea();
+    const { address_label, ...districts } = row as SavedDistricts & { address_label: string | null };
+    return { ...districts, label: address_label };
+  })().catch(() => deviceArea());
   return districtsCache;
 }
 

@@ -30,10 +30,10 @@ function Rows({ people }: { people: PinnedPerson[] }) {
 }
 
 /**
- * Above a page's full list: the signed-in visitor's own representatives (from the
- * districts Find my reps saved), then anyone else on the page they follow. Reads
- * only the visitor's own profile and follows; renders nothing when signed out or
- * when neither applies.
+ * Above a page's full list: the visitor's own representatives (from the districts Find
+ * my reps saved to their account or remembered on this device), then anyone else on
+ * the page they follow. Reads only the visitor's own profile and follows; renders
+ * nothing when neither applies.
  */
 export type { PinnedPerson };
 
@@ -42,8 +42,8 @@ export default function PinnedPeople({ targetType, people, scope, mineTitle, fol
   const [followed, setFollowed] = useState<PinnedPerson[]>([]);
 
   useEffect(() => {
-    if (!hasStoredSession()) return;
-    Promise.all([savedDistricts(), followedIds(targetType)])
+    // Districts may be remembered on this device without an account; follows need one.
+    Promise.all([savedDistricts(), hasStoredSession() ? followedIds(targetType) : Promise.resolve([])])
       .then(([d, ids]) => {
         const own = d ? people.filter((p) => isMine(p, scope, d)) : [];
         const ownIds = new Set(own.map((p) => p.id));

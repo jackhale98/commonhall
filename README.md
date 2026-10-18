@@ -157,7 +157,11 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
 **For you**
 
 - **Find my reps:** enter an address to get your members of Congress, state
-  legislators and, in Boston, your district and at-large councilors.
+  legislators and, in the cities we cover, your district and at-large councilors.
+  Remember it on your device (no account) or save it to your account, and the home
+  page opens with **Your government**: your representatives, how your members of
+  Congress voted lately, and your city's next meeting, 311 and budget. Only the
+  districts and town are kept, never the street address.
 - **Follow** any bill, council matter, legislator or discussion and see everything
   that changed in one **feed**. Sign-in is by emailed link; there are no passwords.
 - **Discussions:** structured public conversations (powered by

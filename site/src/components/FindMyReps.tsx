@@ -5,162 +5,81 @@ import { CITIES, CITY_LIST, numberWord } from '../lib/cities';
 import { accountUrl, followMany, getClient, getSession, hasStoredSession, savePendingFollows } from '../lib/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from '../lib/config';
 import { memberRole, partyClass, partyLabel, stateName } from '../lib/format';
+import { deviceArea, forgetArea, rememberArea, type MyArea } from '../lib/my-area';
 import { href, localOfficialHref, memberHref, stateLegislatorHref } from '../lib/paths';
-import { select } from '../lib/rest';
+import { repsFromProfile, type Profile, type Result } from '../lib/reps';
 import FollowButton from './FollowButton';
 import MemberPhoto from './MemberPhoto';
 
-interface FederalRep {
-  bioguide_id: string;
-  name: string;
-  party: string | null;
-  state: string | null;
-  district: number | null;
-  chamber: 'house' | 'senate' | null;
-  photo_url: string | null;
-}
-
-interface StateRep {
-  id: string;
-  name: string;
-  party: string | null;
-  state: string;
-  chamber: string | null;
-  district: string | null;
-  photo_url: string | null;
-  openstates_url: string | null;
-}
-
-interface LocalRep {
-  id: string;
-  name: string;
-  seat: string | null;
-  district: number | null;
-  photo_url: string | null;
-}
-
-interface Result {
-  matchedAddress: string;
-  city?: string | null;
-  councilDistrict?: number | null;
-  localOfficials?: LocalRep[];
-  state: string | null;
-  congressionalDistrict: number | null;
-  stateUpper: string | null;
-  stateLower: string | null;
-  federal: FederalRep[];
-  stateLegislators: StateRep[];
-}
-
-interface Profile {
-  address_label: string | null;
-  state: string | null;
-  congressional_district: number | null;
-  state_upper_district: string | null;
-  state_lower_district: string | null;
-  city: string | null;
-  council_district: number | null;
-}
-
 interface Props {
-  /** On the account page: start from the saved districts (no lookup needed). */
+  /** On the account page: start from the districts saved to the account only, not this device's. */
   saved?: boolean;
+  /** A sentence under the heading before any lookup (the home page says what it's for). */
+  intro?: string;
 }
+
+/** Where the representatives on show came from: the account, this device, or a lookup just now. */
+type Origin = 'account' | 'device' | null;
 
 const chamberName = (c: string | null, state: string) =>
   c === 'upper' ? (state === 'NE' ? 'Legislature' : 'State Senate') : c === 'lower' ? 'State House' : 'Legislature';
 
-/** Reps for saved districts, read from our own tables (no geocoding, no upstream calls). */
-async function repsFromProfile(p: Profile): Promise<Result | null> {
-  if (!p.state) return null;
-  const [federal, upper, lower, local] = await Promise.all([
-    select<FederalRep>('members', {
-      select: 'bioguide_id,name,party,state,district,chamber,photo_url',
-      current: 'eq.true',
-      state: `eq.${p.state}`,
-      or:
-        p.congressional_district === null
-          ? '(chamber.eq.senate)'
-          : `(chamber.eq.senate,and(chamber.eq.house,district.eq.${p.congressional_district}))`,
-      order: 'chamber.desc,name.asc',
-    }),
-    p.state_upper_district
-      ? select<StateRep>('state_legislators', {
-          state: `eq.${p.state}`,
-          chamber: 'in.(upper,legislature)',
-          district: `eq.${p.state_upper_district}`,
-          current: 'eq.true',
-        })
-      : Promise.resolve([]),
-    p.state_lower_district
-      ? select<StateRep>('state_legislators', {
-          state: `eq.${p.state}`,
-          chamber: 'eq.lower',
-          district: `eq.${p.state_lower_district}`,
-          current: 'eq.true',
-        })
-      : Promise.resolve([]),
-    p.city && p.council_district !== null
-      ? select<LocalRep>('local_officials', {
-          select: 'id,name,seat,district,photo_url',
-          city: `eq.${p.city}`,
-          current: 'eq.true',
-          or: `(district.eq.${p.council_district},seat.eq.At-Large)`,
-          order: 'district.asc.nullslast,name.asc',
-        })
-      : Promise.resolve([]),
-  ]);
-  return {
-    matchedAddress: p.address_label ?? '',
-    state: p.state,
-    congressionalDistrict: p.congressional_district,
-    stateUpper: p.state_upper_district,
-    stateLower: p.state_lower_district,
-    federal,
-    stateLegislators: [...upper, ...lower],
-    city: p.city,
-    councilDistrict: p.council_district,
-    localOfficials: local,
-  };
-}
-
 /** The city we cover that an address is in (the first in the registry when unknown). */
 const cityName = (city: string | null | undefined) => CITIES[city ?? ''] ?? CITY_LIST[0]!;
 
-export default function FindMyReps({ saved = false }: Props) {
+/** The districts of a lookup, as kept on the device or in the account: never the street. */
+const areaOf = (r: Result): MyArea => ({
+  label: areaLabel(r.matchedAddress),
+  state: r.state,
+  congressional_district: r.congressionalDistrict,
+  state_upper_district: r.stateUpper,
+  state_lower_district: r.stateLower,
+  city: r.city ?? null,
+  council_district: r.councilDistrict ?? null,
+});
+
+export default function FindMyReps({ saved = false, intro }: Props) {
   const [address, setAddress] = useState('');
   const [result, setResult] = useState<Result | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [signedIn, setSignedIn] = useState(false);
-  const [savedLabel, setSavedLabel] = useState<string | null>(null);
+  const [origin, setOrigin] = useState<Origin>(null);
+  const [label, setLabel] = useState<string | null>(null);
   const [status, setStatus] = useState('');
 
-  // Arriving from search with an address (reps/?address=…): fill it in and look it up.
   useEffect(() => {
-    if (saved) return;
-    const given = new URLSearchParams(window.location.search).get('address')?.trim();
-    if (!given) return;
-    setAddress(given);
-    void lookupAddress(given);
-  }, [saved]);
-
-  useEffect(() => {
-    if (!hasStoredSession()) return;
+    // Arriving from search with an address (reps/?address=…): fill it in and look it up.
+    const given = saved ? undefined : new URLSearchParams(window.location.search).get('address')?.trim();
+    if (given) {
+      setAddress(given);
+      void lookupAddress(given);
+    }
     (async () => {
-      const session = await getSession();
+      const session = hasStoredSession() ? await getSession() : null;
       setSignedIn(Boolean(session));
-      if (!session || !saved) return;
-      const client = await getClient();
-      const { data } = await client
-        .from('profiles')
-        .select(
-          'address_label,state,congressional_district,state_upper_district,state_lower_district,city,council_district',
-        )
-        .maybeSingle();
-      if (data) {
-        setSavedLabel(data.address_label ?? (data.state ? stateName(data.state) : null));
-        setResult(await repsFromProfile(data as Profile));
+      if (given) return;
+      // Start from the saved districts: the account's, else (except on the account page) this device's.
+      if (session) {
+        const client = await getClient();
+        const { data } = await client
+          .from('profiles')
+          .select(
+            'address_label,state,congressional_district,state_upper_district,state_lower_district,city,council_district',
+          )
+          .maybeSingle();
+        if (data?.state) {
+          setOrigin('account');
+          setLabel(data.address_label ?? stateName(data.state));
+          setResult(await repsFromProfile(data as Profile));
+          return;
+        }
+      }
+      const device = saved ? null : deviceArea();
+      if (device) {
+        setOrigin('device');
+        setLabel(device.label ?? stateName(device.state));
+        setResult(await repsFromProfile({ ...device, address_label: device.label }));
       }
     })().catch(() => undefined);
   }, [saved]);
@@ -196,6 +115,7 @@ export default function FindMyReps({ saved = false }: Props) {
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? 'We couldn’t look up that address. Check it and try again.');
       setResult(body as Result);
+      setOrigin(null);
       setState('idle');
     } catch (err) {
       // A network failure ("Failed to fetch") says nothing useful to a reader.
@@ -236,65 +156,83 @@ export default function FindMyReps({ saved = false }: Props) {
       const client = await getClient();
       const { data } = await client.auth.getSession();
       if (!data.session) return;
+      const area = areaOf(result);
       const { error } = await client.from('profiles').upsert({
         user_id: data.session.user.id,
         // Only the place (city, state, ZIP) is kept, never the street; the database enforces this too.
-        address_label: areaLabel(result.matchedAddress),
-        state: result.state,
-        congressional_district: result.congressionalDistrict,
-        state_upper_district: result.stateUpper,
-        state_lower_district: result.stateLower,
-        city: result.city ?? null,
-        council_district: result.councilDistrict ?? null,
+        address_label: area.label,
+        state: area.state,
+        congressional_district: area.congressional_district,
+        state_upper_district: area.state_upper_district,
+        state_lower_district: area.state_lower_district,
+        city: area.city,
+        council_district: area.council_district,
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
-      setSavedLabel(areaLabel(result.matchedAddress) ?? stateName(result.state));
+      setOrigin('account');
+      setLabel(area.label ?? stateName(result.state));
       setStatus('Saved to your account: your districts and town, not your street address.');
     } catch {
       setStatus('Could not save; please try again.');
     }
   }
 
-  async function forget() {
-    const client = await getClient();
-    const { data } = await client.auth.getSession();
-    if (!data.session) return;
-    // Clear the address but keep the row: its random Pol.is id keeps discussion votes together.
-    await client
-      .from('profiles')
-      .update({
-        address_label: null,
-        state: null,
-        congressional_district: null,
-        state_upper_district: null,
-        state_lower_district: null,
-        city: null,
-        council_district: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', data.session.user.id);
-    setSavedLabel(null);
-    setResult(null);
-    setStatus('Your saved address was removed.');
+  function remember() {
+    if (!result) return;
+    const area = areaOf(result);
+    rememberArea(area);
+    setOrigin('device');
+    setLabel(area.label ?? stateName(result.state));
+    setStatus('Remembered on this device: your districts and town, not your street address.');
   }
 
+  async function forget() {
+    if (origin === 'device') {
+      forgetArea();
+    } else {
+      const client = await getClient();
+      const { data } = await client.auth.getSession();
+      if (!data.session) return;
+      // Clear the address but keep the row: its random Pol.is id keeps discussion votes together.
+      await client
+        .from('profiles')
+        .update({
+          address_label: null,
+          state: null,
+          congressional_district: null,
+          state_upper_district: null,
+          state_lower_district: null,
+          city: null,
+          council_district: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', data.session.user.id);
+    }
+    setStatus(origin === 'device' ? 'Forgotten on this device.' : 'Your saved address was removed.');
+    setOrigin(null);
+    setLabel(null);
+    setResult(null);
+  }
+
+  const stored = origin !== null && label !== null;
   return (
     <section class="find-reps card" aria-labelledby="reps-h">
       <h2 id="reps-h" class="h-small">
-        {saved && savedLabel ? 'Your representatives' : 'Find your representatives'}
+        {stored ? 'Your representatives' : 'Find your representatives'}
       </h2>
-      {saved && savedLabel && (
+      {intro && !stored && !result && <p class="reps-intro">{intro}</p>}
+      {stored && (
         <p class="small muted">
-          Saved for {savedLabel}.{' '}
+          {origin === 'device' ? 'Remembered on this device' : 'Saved to your account'} for {label}.{' '}
           <button type="button" class="link-button" onClick={forget}>
-            Remove
+            {origin === 'device' ? 'Forget' : 'Remove'}
           </button>
         </p>
       )}
       <form class="reps-form" onSubmit={lookup}>
-        <label for="reps-address" class={saved && savedLabel ? 'small' : 'visually-hidden'}>
-          {saved && savedLabel ? 'Look up a different address' : 'Your street address'}
+        <label for="reps-address" class={stored ? 'small' : 'visually-hidden'}>
+          {stored ? 'Look up a different address' : 'Your street address'}
         </label>
         <div class="reps-row">
           <input
@@ -319,7 +257,7 @@ export default function FindMyReps({ saved = false }: Props) {
             )}
           </button>
         </div>
-        <p class="small muted">Your address is used for this lookup only and isn’t stored unless you save it.</p>
+        {!stored && <p class="small muted">We never store your street address.</p>}
       </form>
       {state === 'error' && (
         <p class="notice error" role="alert">
@@ -329,7 +267,7 @@ export default function FindMyReps({ saved = false }: Props) {
 
       {result && (
         <div aria-live="polite">
-          {!saved && (
+          {origin === null && (
             <p class="small">
               <strong>{result.matchedAddress}</strong>
               {result.congressionalDistrict !== null && result.state && (
@@ -341,11 +279,29 @@ export default function FindMyReps({ saved = false }: Props) {
               )}
             </p>
           )}
+          {origin === null && (
+            <div class="reps-keep">
+              {signedIn ? (
+                <button type="button" class="primary" onClick={save}>
+                  Save to my account
+                </button>
+              ) : (
+                <button type="button" class="primary" onClick={remember}>
+                  Remember on this device
+                </button>
+              )}
+              <p class="small muted">
+                Then the home page shows your representatives and how they voted
+                {result.city ? ', and your city' : ''}.
+                {signedIn ? '' : ' Only your districts and town are kept, in this browser.'}
+              </p>
+            </div>
+          )}
           <h3 class="h-small">In Congress</h3>
           <ul class="reps-list">
             {result.federal.map((m) => (
               <li>
-                <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={48} />
+                <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={44} />
                 <div>
                   <a href={memberHref(m.bioguide_id)}>{m.name}</a>{' '}
                   <span class={`party ${partyClass(m.party)}`}>{partyLabel(m.party)}</span>
@@ -361,7 +317,7 @@ export default function FindMyReps({ saved = false }: Props) {
               <ul class="reps-list">
                 {result.stateLegislators.map((l) => (
                   <li>
-                    <MemberPhoto name={l.name} url={l.photo_url} size={48} />
+                    <MemberPhoto name={l.name} url={l.photo_url} size={44} />
                     <div>
                       <a href={stateLegislatorHref(l.id)}>{l.name}</a>{' '}
                       {l.party && <span class={`party ${partyClass(l.party)}`}>{l.party}</span>}
@@ -387,7 +343,7 @@ export default function FindMyReps({ saved = false }: Props) {
               <ul class="reps-list">
                 {result.localOfficials.map((o) => (
                   <li>
-                    <MemberPhoto name={o.name} url={o.photo_url} size={48} />
+                    <MemberPhoto name={o.name} url={o.photo_url} size={44} />
                     <div>
                       <a href={localOfficialHref(o.id)}>{o.name}</a>
                       <p class="small muted">{o.seat ?? 'Councilor'}</p>
@@ -398,18 +354,20 @@ export default function FindMyReps({ saved = false }: Props) {
               </ul>
             </>
           )}
-          <p class="cluster">
-            <button type="button" class="primary" onClick={followAll}>
-              Follow all {targets.length}
-            </button>
-            {signedIn && !saved && (
-              <button type="button" onClick={save}>
-                Save to my account
+          {hasSupabase && targets.length > 1 && (
+            <p class="cluster">
+              <button type="button" onClick={followAll}>
+                Follow all {targets.length}
               </button>
-            )}
-          </p>
-          {status && <p class="small">{status}</p>}
+              <span class="small muted">to see their votes and bills in your feed.</span>
+            </p>
+          )}
         </div>
+      )}
+      {status && (
+        <p class="small" role="status">
+          {status}
+        </p>
       )}
     </section>
   );

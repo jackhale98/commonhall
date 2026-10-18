@@ -1,6 +1,6 @@
 /**
- * Which people on a page are the signed-in visitor's own representatives, from the
- * districts Find my reps saved (profiles). Used to list them first.
+ * Which people on a page are the visitor's own representatives, from the
+ * districts Find my reps saved (to the account or this device). Used to list them first.
  */
 import type { SavedDistricts } from './auth';
 

@@ -2001,3 +2001,32 @@ empty search result as nothing to load and deletes all of Worcester's operating 
 when it loads one year; the Middletown loader counts each listed meeting as written
 even when unchanged.
 
+
+## 111. Your government on the home page, without an account
+
+A review of the site as a reader trying to keep up found that the most useful thing it
+knows, who represents you, was forgotten after every lookup unless you made an
+account, and the home page was the same for everyone: a reader had to go looking for
+their own representatives each visit. Now:
+
+- **Remember on this device.** After a Find my reps lookup, a signed-out visitor can
+  keep the result in the browser's local storage (`commonhall-area`,
+  `site/src/lib/my-area.ts`): the town, state and ZIP and the districts, the same
+  fields a saved profile holds, never the street address. Nothing new is stored on
+  the server; Forget removes it. Signed-in visitors still save to their account.
+- **The account's districts first, then the device's.** `savedDistricts()` (auth.ts)
+  returns the account's when there are any, else the device's, so the pinned "Your
+  representatives" on the Congress, Legislature and Council tabs (decision 88) now
+  work for signed-out visitors too. This reverses "nothing shows when signed out";
+  follows still need an account.
+- **Your government** (YourArea) replaces the address form on the home page once
+  districts are known: the representatives (members of Congress, state legislators,
+  district councilor), the four latest roll calls the visitor's members of Congress
+  voted in with each one's position (only the newest vote on a bill or nomination),
+  and the city's glance (next meeting, 311, budget). It reads our own tables only:
+  four small selects and one of `member_votes`. head.js marks `html[data-area]` before
+  first paint so a returning visitor doesn't see the address form flash.
+- **The home page's number tiles are gone** (bills this Congress, roll calls, orders
+  this term and so on). They were counts, not news, and took a phone screen; each
+  section page still shows its own. On phones "Latest" shows four items and no longer
+  hides the ballot.

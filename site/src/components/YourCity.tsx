@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
-import { getClient, hasStoredSession } from '../lib/auth';
 import { CITIES } from '../lib/cities';
 import { formatMoney } from '../lib/finance';
 import { formatDate } from '../lib/format';
 import type { CityGlance, GlanceMeeting } from '../lib/glance';
 import { budgetChange, change311, closeTime } from '../lib/local';
 import { cityHref } from '../lib/paths';
-import MemberPhoto from './MemberPhoto';
 
 const pct = (part: number, whole: number) => (whole ? Math.round((part / whole) * 100) : null);
 
@@ -29,40 +27,25 @@ function When({ m }: { m: GlanceMeeting }) {
 }
 
 /**
- * The signed-in visitor's city at a glance on the home page: their district
- * councilor, the next council meeting, 311 in their district and the city budget.
- * Reads the visitor's own saved city and district (profiles, by RLS) and the
- * city's glance.json built with the site; nothing when signed out or the saved
- * address isn't in a city we cover.
+ * The visitor's city at a glance on the home page, inside Your government (YourArea):
+ * the next council meeting, 311 in their district and the city budget, from the
+ * city's glance.json built with the site. Their councilor is listed with their other
+ * representatives above.
  */
-export default function YourCity() {
+export default function YourCity({ city: key, district }: { city: string; district: number | null }) {
   const [glance, setGlance] = useState<CityGlance | null>(null);
-  const [district, setDistrict] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!hasStoredSession()) return;
-    (async () => {
-      const client = await getClient();
-      const { data: session } = await client.auth.getSession();
-      if (!session.session) return;
-      const { data } = await client
-        .from('profiles')
-        .select('city,council_district')
-        .eq('user_id', session.session.user.id)
-        .maybeSingle();
-      const city = data?.city ? CITIES[data.city] : undefined;
-      if (!city) return;
-      const res = await fetch(cityHref(city, 'glance.json'));
-      if (!res.ok) return;
-      setDistrict(data!.council_district ?? null);
-      setGlance((await res.json()) as CityGlance);
-    })().catch(() => undefined);
-  }, []);
+    const city = CITIES[key];
+    if (!city) return;
+    fetch(cityHref(city, 'glance.json'))
+      .then((res) => (res.ok ? (res.json() as Promise<CityGlance>) : null))
+      .then(setGlance)
+      .catch(() => undefined);
+  }, [key]);
 
   if (!glance) return null;
   const g = glance;
-  const councilor = district ? g.councilors.find((c) => c.district === district) : undefined;
-  const atLarge = g.councilors.filter((c) => c.district === null).length;
   const s = g.report311 ? (district && g.report311.districts[district]) || g.report311.city : null;
   const where = district && g.report311?.districts[district] ? `${g.districtWord ?? 'District'} ${district}` : g.name;
   // Cities without target times (Somerville) show the share closed so far instead.
@@ -77,40 +60,20 @@ export default function YourCity() {
   return (
     <section class="your-city" aria-labelledby="your-city-h">
       <div class="section-head">
-        <h2 id="your-city-h">
-          Your city: {g.name}
+        <h3 id="your-city-h" class="h-small">
+          {g.name}
           {district ? (
             <span class="muted">
               {' '}
               · {g.districtWord ?? 'District'} {district}
             </span>
           ) : null}
-        </h2>
+        </h3>
         <a class="see-all" href={g.href}>
-          {g.name}
+          City page
         </a>
       </div>
       <div class="yc-grid">
-        {(councilor || g.councilors.length > 0) && (
-          <a class="yc-card" href={councilor ? councilor.href : `${g.council_href}#council-h`}>
-            <span class="yc-label">
-              <span class="dot dot-city" aria-hidden="true" />
-              {councilor ? 'Your district councilor' : g.council}
-            </span>
-            {councilor ? (
-              <span class="yc-person">
-                <MemberPhoto name={councilor.name} url={councilor.photo_url} size={48} />
-                <strong>{councilor.name}</strong>
-              </span>
-            ) : (
-              <strong>{g.councilors.length} councilors</strong>
-            )}
-            <span class="yc-meta">
-              {councilor ? `Plus ${atLarge} at-large councilors for the whole city` : 'Find yours by address'}
-            </span>
-          </a>
-        )}
-
         {(g.next_council || g.next_committee) && (
           <a class="yc-card" href={g.next_council ? g.council_href + '#meetings-h' : g.committees_href}>
             <span class="yc-label">

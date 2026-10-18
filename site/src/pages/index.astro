@@ -3,13 +3,12 @@ import BillListItem from '../components/BillListItem';
 import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
 import FindMyReps from '../components/FindMyReps';
-import YourCity from '../components/YourCity';
+import YourArea from '../components/YourArea';
 import StackedBar from '../components/viz/StackedBar';
 import Base from '../layouts/Base.astro';
 import {
   loadBallotQuestions,
   loadBills,
-  loadCommitteeMeetings,
   loadDiscussions,
   loadExecutiveOrders,
   loadCityMeetings,
@@ -24,14 +23,13 @@ import { DEMO } from '../lib/config';
 import { formatDate, stateName } from '../lib/format';
 import { ballotHref, billHref, cityHref, executiveOrderHref, href, scotusCaseHref, voteHref } from '../lib/paths';
 
-const [bills, votes, discussions, meetings, orders, cases, hearings, outcomes] = await Promise.all([
+const [bills, votes, discussions, meetings, orders, cases, outcomes] = await Promise.all([
   loadBills(),
   loadVotesAbout(),
   loadDiscussions(),
   Promise.all(CITY_LIST.map(async (city) => (await loadCityMeetings(city.key)).map((m) => ({ ...m, city })))),
   loadExecutiveOrders(),
   loadScotusCases(),
-  loadCommitteeMeetings(),
   loadScotusOutcomeMap(),
 ]);
 // Bills that moved past committee, newest action first; simple resolutions (mostly
@@ -61,43 +59,12 @@ const ballots = [...(await loadBallotQuestions())]
   .filter((b) => b.date)
   .sort((a, b) => a.date!.localeCompare(b.date!));
 
-// Executive orders in the current presidential term (terms start January 20 after a leap-year election).
 const latestOrder = orders.find((o) => o.signing_date);
-const termYear = latestOrder?.signing_date
-  ? (() => {
-      const y = Number(latestOrder.signing_date.slice(0, 4));
-      const start = y - ((y - 1) % 4);
-      return latestOrder.signing_date >= `${start}-01-20` ? start : start - 4;
-    })()
-  : null;
-const termOrders = termYear
-  ? orders.filter((o) => o.president === latestOrder!.president && (o.signing_date ?? '') >= `${termYear}-01-20`)
-  : [];
-// Supreme Court: the most recent term with decisions.
-const courtTerm = cases[0]?.term;
-const termCases = courtTerm === undefined ? [] : cases.filter((c) => c.term === courtTerm);
 const monthAgo = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
 // The newest order and decision join "Latest" only while they are recent.
 const recentOrder = latestOrder?.signing_date && latestOrder.signing_date >= monthAgo ? latestOrder : undefined;
 const recentCase = cases[0] && cases[0].date_filed >= monthAgo ? cases[0] : undefined;
 const recentCaseOutcome = recentCase && outcomes.get(recentCase.cluster_id);
-const recentHearings = hearings.filter((m) => m.date && m.date >= monthAgo && m.date <= today);
-
-const stats = [
-  { value: bills.length, label: 'bills this Congress', href: href('bills/') },
-  { value: laws.length, label: laws.length === 1 ? 'new law' : 'new laws', href: href('bills/?status=law') },
-  { value: votes.length, label: 'roll-call votes', href: href('votes/') },
-  { value: termOrders.length, label: 'executive orders this term', href: href('executive/') },
-  {
-    value: termCases.length,
-    label:
-      courtTerm === undefined
-        ? 'court decisions'
-        : `court decisions, ${courtTerm}–${String(courtTerm + 1).slice(2)} term`,
-    href: href('court/'),
-  },
-  { value: recentHearings.length, label: 'hearings in the last 30 days', href: href('committees/') },
-].filter((s) => s.value > 0);
 ---
 
 <Base section="home">
@@ -210,20 +177,17 @@ const stats = [
     </div>
   </section>
 
-  {!DEMO && <FindMyReps client:visible />}
-
-  <ul class="stat-strip" aria-label="By the numbers">
-    {stats.map((s) => (
-      <li>
-        <a href={s.href}>
-          <span class="stat-value">{s.value.toLocaleString()}</span>
-          <span class="stat-label">{s.label}</span>
-        </a>
-      </li>
-    ))}
-  </ul>
-
-  <YourCity client:idle />
+  {!DEMO && (
+    <>
+      <YourArea client:load />
+      <div class="reps-pitch">
+        <FindMyReps
+          client:visible
+          intro="See who represents you, from Congress to your statehouse and city council, and how they voted lately. Remember your address on this device and they’ll be here each time you visit."
+        />
+      </div>
+    </>
+  )}
   <FeedView client:idle compact />
 
   <section aria-labelledby="recent-h">
@@ -371,11 +335,20 @@ const stats = [
       transform 0.15s ease,
       box-shadow 0.15s ease;
   }
-  /* Phones: the three newest items, so finding your reps isn't far below. */
+  /* Phones: the four newest items, so your representatives aren't far below. */
   @media (max-width: 40rem) {
-    .this-week a.pulse-card:nth-of-type(n + 4) {
+    .this-week a.pulse-card:nth-of-type(n + 5) {
       display: none;
     }
+    /* A returning visitor (districts saved) has read the pitch; get them to their own government sooner. */
+    :global(html[data-area]) .hero .kicker,
+    :global(html[data-area]) .hero .lede {
+      display: none;
+    }
+  }
+  /* Once Your government shows (districts saved), the address form gives way to it. */
+  :global(html[data-area]) .reps-pitch {
+    display: none;
   }
   .pulse-card:hover {
     transform: translateY(-2px);
@@ -470,57 +443,6 @@ const stats = [
   .pulse-discuss .pulse-meta {
     color: rgb(255 255 255 / 85%);
   }
-  .stat-strip {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 var(--space-6);
-    display: grid;
-    gap: var(--space-3);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  @media (min-width: 40rem) {
-    .stat-strip {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-  @media (min-width: 72rem) {
-    .stat-strip {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-  }
-  .stat-strip li {
-    display: grid;
-  }
-  .stat-strip a {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: var(--space-1);
-    height: 100%;
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    color: var(--text);
-    text-decoration: none;
-    transition: border-color 0.15s ease;
-  }
-  .stat-strip a:hover {
-    border-color: var(--brand);
-  }
-  .stat-value {
-    font-family: var(--font-heading);
-    font-size: clamp(1.7rem, 1.3rem + 1.2vw, 2.2rem);
-    font-weight: 750;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-  }
-  .stat-label {
-    color: var(--text-muted);
-    font-size: var(--step--1);
-    line-height: 1.3;
-  }
   /* Phones: fewer bills and discussions, so the page doesn't scroll forever. */
   @media (max-width: 40rem) {
     .moving > :global(li:nth-child(n + 4)) {
@@ -537,14 +459,6 @@ const stats = [
     }
     .steps {
       display: none;
-    }
-    /* An odd number of stat tiles: the last one spans the row. */
-    /* Phones: the council meeting gives way; everything else in "Latest" stays. */
-    .pulse-city {
-      display: none;
-    }
-    .stat-strip li:last-child:nth-child(odd) {
-      grid-column: span 2;
     }
   }
 </style>

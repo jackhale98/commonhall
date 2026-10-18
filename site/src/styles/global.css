@@ -793,6 +793,13 @@ button.danger {
 .find-reps {
   margin-bottom: var(--space-6);
 }
+.reps-intro {
+  margin: 0 0 var(--space-3);
+  color: var(--text-muted);
+}
+.reps-form {
+  margin-bottom: var(--space-4);
+}
 .reps-row {
   display: flex;
   gap: var(--space-2);
@@ -821,14 +828,25 @@ button.danger {
 .reps-list p {
   margin: 0;
 }
-@media (max-width: 30rem) {
-  .reps-list li {
-    grid-template-columns: auto 1fr;
-  }
-  .reps-list li > button {
-    grid-column: 2;
-    justify-self: start;
-  }
+/* The Follow button stays beside each person, small enough to leave the name room on a phone. */
+.reps-list .follow-button {
+  min-height: 36px;
+  padding: 0.3rem 0.85rem;
+  font-size: var(--step--1);
+}
+.reps-keep {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+}
+.reps-keep p {
+  flex: 1 1 16rem;
+  margin: 0;
 }
 
 /* Council matters, state bills and discussions */
@@ -3285,7 +3303,80 @@ button .ch-loader,
   flex: none;
 }
 
-/* The signed-in visitor's city on the home page (YourCity). */
+/* Your government on the home page (YourArea): the visitor's representatives, how
+   they voted lately and their city, once their districts are saved. */
+.your-area {
+  margin-block: var(--space-5) var(--space-6);
+}
+.your-area > h2 {
+  margin-bottom: var(--space-1);
+}
+.ya-where {
+  margin: 0 0 var(--space-3);
+}
+.ya-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 48rem) {
+  .ya-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.ya-card {
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.ya-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-0);
+}
+.ya-people li:last-child,
+.ya-votes li:last-child {
+  border-bottom: 0;
+}
+.ya-foot {
+  margin: var(--space-2) 0 0;
+}
+.ya-votes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ya-votes li {
+  display: grid;
+  gap: 2px;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.ya-votes a {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+.ya-votes a:hover {
+  color: var(--link);
+  text-decoration: underline;
+}
+.ya-positions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.9rem;
+  font-size: var(--step--1);
+}
+.your-area .your-city {
+  margin-block: var(--space-5) 0;
+}
+
+/* The visitor's city inside Your government (YourCity). */
 .your-city {
   margin-block: var(--space-6);
 }
