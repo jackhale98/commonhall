@@ -14,15 +14,34 @@ interface Props {
   categories: string[];
   /** "FY27". */
   yearLabel: string;
+  /** The budgeted amount: "enacted", "budgeted". */
+  amount: string;
+  /** The filters' empty choices: "Any secretariat", "Any service area". */
+  cabinetAny: string;
+  categoryAny: string;
+  /** Lines carry account numbers ("7061-0008"), shown and searchable with or without the dash. */
+  accountNumbers: boolean;
+  searchHint: string;
 }
 
 /**
- * A state budget's line items (appropriation accounts): search by name, number or
- * department, filter by secretariat or category, largest first. Each shows what was
- * enacted and what has been spent so far. Loads every line (budget.json, built with
- * the site) once it comes into view.
+ * A state budget's line items (appropriation accounts or programs): search by name,
+ * number, department or fund, filter by the state's grouping or category, largest
+ * first. Each shows what was enacted (or budgeted) and what has been spent so far.
+ * Loads every line (budget.json, built with the site) once it comes into view.
  */
-export default function StateBudgetExplorer({ initial, jsonUrl, cabinets, categories, yearLabel }: Props) {
+export default function StateBudgetExplorer({
+  initial,
+  jsonUrl,
+  cabinets,
+  categories,
+  yearLabel,
+  amount,
+  cabinetAny,
+  categoryAny,
+  accountNumbers,
+  searchHint,
+}: Props) {
   const [rows, setRows] = useState<BudgetLineRow[] | null>(null);
   const [q, setQ] = useState('');
   const [cabinet, setCabinet] = useState('');
@@ -46,10 +65,11 @@ export default function StateBudgetExplorer({ initial, jsonUrl, cabinets, catego
       if (cabinet && l.c !== cabinet) return false;
       if (category && l.k !== category) return false;
       // "7061-0008" and "70610008" both find the account.
-      const text = `${l.n} ${l.d} ${l.a} ${l.a.slice(0, 4)}-${l.a.slice(4)}`.toLowerCase();
+      const number = accountNumbers ? `${l.a} ${l.a.slice(0, 4)}-${l.a.slice(4)}` : '';
+      const text = `${l.n} ${l.d} ${l.f ?? ''} ${number}`.toLowerCase();
       return words.every((w) => text.includes(w));
     });
-  }, [all, q, cabinet, category]);
+  }, [all, q, cabinet, category, accountNumbers]);
   const enacted = hits.reduce((n, l) => n + l.e, 0);
   const spent = hits.reduce((n, l) => n + l.x, 0);
   const set =
@@ -94,13 +114,13 @@ export default function StateBudgetExplorer({ initial, jsonUrl, cabinets, catego
             id="budget-q"
             type="search"
             value={q}
-            placeholder="Program, agency or account number"
+            placeholder={searchHint}
             onInput={(e) => set(setQ)(e.currentTarget.value)}
           />
         </div>
         <div class="explorer-filters matter-filters" role="group" aria-label="Filters">
-          {select('budget-cabinet', 'Any secretariat', cabinet, cabinets, set(setCabinet))}
-          {select('budget-category', 'Any category', category, categories, set(setCategory))}
+          {select('budget-cabinet', cabinetAny, cabinet, cabinets, set(setCabinet))}
+          {select('budget-category', categoryAny, category, categories, set(setCategory))}
           {active && (
             <button type="button" class="link-button clear-filters" onClick={reset}>
               Clear
@@ -110,7 +130,7 @@ export default function StateBudgetExplorer({ initial, jsonUrl, cabinets, catego
       </form>
       <p class="small muted" aria-live="polite">
         {hits.length.toLocaleString()} {hits.length === 1 ? 'line item' : 'line items'} · {formatMoney(enacted)}{' '}
-        enacted, {formatMoney(spent)} spent so far
+        {amount}, {formatMoney(spent)} spent so far
       </p>
       {hits.length > 0 && (
         <div class="panel">
@@ -120,7 +140,9 @@ export default function StateBudgetExplorer({ initial, jsonUrl, cabinets, catego
               return (
                 <li key={l.a}>
                   <p class="meta">
-                    {l.a.slice(0, 4)}-{l.a.slice(4)} · {l.d}
+                    {accountNumbers
+                      ? `${l.a.slice(0, 4)}-${l.a.slice(4)} · ${l.d}`
+                      : [l.d, l.f].filter(Boolean).join(' · ')}
                   </p>
                   <p class="capital-name">
                     <strong>{l.n}</strong>
@@ -130,7 +152,7 @@ export default function StateBudgetExplorer({ initial, jsonUrl, cabinets, catego
                     <span class="fund-rest" style={{ flex: `${Math.max(0, 1 - l.x / scale)} 1 0` }} />
                   </div>
                   <p class="small muted">
-                    <strong>{formatMoney(l.x)}</strong> spent of {formatMoney(l.e)} enacted for {yearLabel}
+                    <strong>{formatMoney(l.x)}</strong> spent of {formatMoney(l.e)} {amount} for {yearLabel}
                     {l.s > 0 && <> (with {formatMoney(l.s)} in supplemental budgets)</>}
                     {Math.abs(l.v - l.e) >= 1 && <> · {formatMoney(l.v)} available</>}
                   </p>

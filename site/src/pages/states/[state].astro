@@ -32,6 +32,7 @@ import { citiesIn } from '../../lib/cities';
 import { formatMoney } from '../../lib/finance';
 import { budgetYear } from '../../lib/state-budget';
 import { electionLabel } from '../../lib/ballot';
+import { stateFeatures } from '../../lib/states';
 
 export function getStaticPaths() {
   return STATE_CODES.map((code) => ({ params: { state: code.toLowerCase() }, props: { code } }));
@@ -197,7 +198,8 @@ const latestCase = stateCases.get(code)?.[0];
         </a>
       </div>
       <p>
-        <strong>{formatMoney(budget.total_enacted)}</strong> enacted for FY{String(budgetInfo.newest_year).slice(2)} ·{' '}
+        <strong>{formatMoney(budget.total_enacted)}</strong>{' '}
+        {`${stateFeatures(code)?.budget?.amount ?? 'enacted'} for FY${String(budgetInfo.newest_year).slice(2)}`} ·{' '}
         <strong>{formatMoney(budget.spent)}</strong> spent so far ({spentPct})
         {budgetInfo.source_updated_at && `, through ${formatDate(budgetInfo.source_updated_at.slice(0, 10))}`}.
       </p>

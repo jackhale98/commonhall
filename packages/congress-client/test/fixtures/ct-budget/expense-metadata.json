@@ -1,0 +1,722 @@
+{
+  "id" : "43fc-9893",
+  "name" : "State of CT Expense Data 2012 – Present",
+  "assetType" : "dataset",
+  "attribution" : "Office of the State Comptroller",
+  "averageRating" : 0,
+  "category" : "Government",
+  "createdAt" : 1431546514,
+  "description" : "Expense data from 2012 through the present. Data used in the <a href=\"https://osc.ct.gov/openCT/index.html\">Open Connecticut application</a>.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 9595,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "indexUpdatedAt" : 1540276790,
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 11376351,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1432254906,
+  "publicationGroup" : 2827164,
+  "publicationStage" : "published",
+  "rowsUpdatedAt" : 1790063990,
+  "rowsUpdatedBy" : "dx23-uz2k",
+  "tableId" : 2916062,
+  "totalTimesRated" : 0,
+  "viewCount" : 2958,
+  "viewLastModified" : 1713454907,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1433340211,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 818595,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1433340211,
+    "targetAudience" : "public",
+    "workflowId" : 2184,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "failureCount" : 0,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "dx23-uz2k",
+      "displayName" : "PSAdmin"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 204962352,
+    "name" : "LEDGER_TYPE",
+    "dataTypeName" : "text",
+    "description" : "Expense",
+    "fieldName" : "ledger_type",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 28293418,
+    "width" : 232,
+    "cachedContents" : {
+      "largest" : "Expense",
+      "non_null" : "77322",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Expense",
+        "count" : "77322"
+      } ],
+      "smallest" : "Expense",
+      "not_null" : "41757",
+      "count" : "77322",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962353,
+    "name" : "FISCAL_YEAR",
+    "dataTypeName" : "number",
+    "description" : "Fiscal Year",
+    "fieldName" : "fiscal_year",
+    "position" : 2,
+    "renderTypeName" : "number",
+    "tableColumnId" : 28293419,
+    "width" : 232,
+    "cachedContents" : {
+      "largest" : "2027",
+      "non_null" : "77322",
+      "average" : "2015.409210033695",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2025",
+        "count" : "5424"
+      }, {
+        "item" : "2026",
+        "count" : "5342"
+      }, {
+        "item" : "2024",
+        "count" : "5198"
+      }, {
+        "item" : "2027",
+        "count" : "5156"
+      }, {
+        "item" : "2023",
+        "count" : "5066"
+      }, {
+        "item" : "2014",
+        "count" : "5025"
+      }, {
+        "item" : "2015",
+        "count" : "4875"
+      }, {
+        "item" : "2016",
+        "count" : "4848"
+      }, {
+        "item" : "2013",
+        "count" : "4775"
+      }, {
+        "item" : "2012",
+        "count" : "4701"
+      }, {
+        "item" : "2022",
+        "count" : "4672"
+      }, {
+        "item" : "2017",
+        "count" : "4572"
+      }, {
+        "item" : "2021",
+        "count" : "4462"
+      }, {
+        "item" : "2018",
+        "count" : "4405"
+      }, {
+        "item" : "2019",
+        "count" : "4402"
+      }, {
+        "item" : "2020",
+        "count" : "4399"
+      } ],
+      "smallest" : "2012",
+      "not_null" : "41757",
+      "count" : "77322",
+      "sum" : "75364212",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962364,
+    "name" : "FUND_TYPE",
+    "dataTypeName" : "text",
+    "description" : "Fund Type",
+    "fieldName" : "fund_type",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 28293430,
+    "width" : 208,
+    "cachedContents" : {
+      "largest" : "Transportation",
+      "non_null" : "77322",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Special Revenue",
+        "count" : "40454"
+      }, {
+        "item" : "Capital Projects",
+        "count" : "25302"
+      }, {
+        "item" : "General",
+        "count" : "8425"
+      }, {
+        "item" : "Other Budgeted",
+        "count" : "1495"
+      }, {
+        "item" : "Transportation",
+        "count" : "551"
+      }, {
+        "item" : "Enterprise",
+        "count" : "515"
+      }, {
+        "item" : "Pension (& Other) Trust",
+        "count" : "193"
+      }, {
+        "item" : "Other Trust Funds",
+        "count" : "145"
+      }, {
+        "item" : "Fiduciary",
+        "count" : "113"
+      }, {
+        "item" : "Internal Service",
+        "count" : "83"
+      }, {
+        "item" : "Agency",
+        "count" : "37"
+      }, {
+        "item" : "Debt Service",
+        "count" : "9"
+      } ],
+      "smallest" : "Agency",
+      "not_null" : "41757",
+      "count" : "77322",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962363,
+    "name" : "FUND",
+    "dataTypeName" : "text",
+    "description" : "Fund Name",
+    "fieldName" : "fund",
+    "position" : 4,
+    "renderTypeName" : "text",
+    "tableColumnId" : 28293429,
+    "width" : 184,
+    "cachedContents" : {
+      "largest" : "Workers Compensation",
+      "non_null" : "77322",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Federal & Other Restricted Act",
+        "count" : "30456"
+      }, {
+        "item" : "Capital Improvements & Other",
+        "count" : "19812"
+      }, {
+        "item" : "General Fund",
+        "count" : "8425"
+      }, {
+        "item" : "STEAP-Grants to Local Govt",
+        "count" : "6479"
+      }, {
+        "item" : "Infrastructure Improvement",
+        "count" : "1349"
+      }, {
+        "item" : "Transportatn Gr & Restrct Acct",
+        "count" : "1289"
+      }, {
+        "item" : "Capital Equip Purchase Fund",
+        "count" : "765"
+      }, {
+        "item" : "Elimination of Water Pollution",
+        "count" : "756"
+      }, {
+        "item" : "Community Conservation & Dev",
+        "count" : "676"
+      }, {
+        "item" : "Capital Improvements&Purposes",
+        "count" : "641"
+      }, {
+        "item" : "Mass Transportation",
+        "count" : "636"
+      }, {
+        "item" : "Transportation",
+        "count" : "551"
+      }, {
+        "item" : "Insurance Fund",
+        "count" : "423"
+      }, {
+        "item" : "Univ & State Uni Facilities",
+        "count" : "350"
+      }, {
+        "item" : "Tourism Fund",
+        "count" : "343"
+      }, {
+        "item" : "Capital Improvements & Other P",
+        "count" : "336"
+      }, {
+        "item" : "Workers Compensation",
+        "count" : "258"
+      }, {
+        "item" : "Consumer Counsel/DPUC Fund",
+        "count" : "214"
+      }, {
+        "item" : "Specific Highway Purposes",
+        "count" : "195"
+      }, {
+        "item" : "Banking",
+        "count" : "183"
+      } ],
+      "smallest" : "Academic Scholarship Loans",
+      "not_null" : "41757",
+      "count" : "77322",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962355,
+    "name" : "SERVICE",
+    "dataTypeName" : "text",
+    "description" : "Service",
+    "fieldName" : "service",
+    "position" : 5,
+    "renderTypeName" : "text",
+    "tableColumnId" : 28293421,
+    "width" : 184,
+    "cachedContents" : {
+      "largest" : "Transportation",
+      "non_null" : "77322",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Conservation & Development",
+        "count" : "18184"
+      }, {
+        "item" : "General Government",
+        "count" : "15060"
+      }, {
+        "item" : "Education  Libraries & Museums",
+        "count" : "11692"
+      }, {
+        "item" : "Health & Hospitals",
+        "count" : "8800"
+      }, {
+        "item" : "Regulation & Protection",
+        "count" : "7997"
+      }, {
+        "item" : "Human Services",
+        "count" : "4257"
+      }, {
+        "item" : "Transportation",
+        "count" : "4148"
+      }, {
+        "item" : "Corrections",
+        "count" : "3511"
+      }, {
+        "item" : "Judicial",
+        "count" : "2406"
+      }, {
+        "item" : "Legislative",
+        "count" : "637"
+      }, {
+        "item" : "Non-Functional",
+        "count" : "630"
+      } ],
+      "smallest" : "Conservation & Development",
+      "not_null" : "41757",
+      "count" : "77322",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962356,
+    "name" : "DEPARTMENT",
+    "dataTypeName" : "text",
+    "description" : "Department",
+    "fieldName" : "department",
+    "position" : 6,
+    "renderTypeName" : "text",
+    "tableColumnId" : 28293422,
+    "width" : 220,
+    "cachedContents" : {
+      "largest" : "Workers' Comp Commission",
+      "non_null" : "77322",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Dept of Environmental Protectn",
+        "count" : "9617"
+      }, {
+        "item" : "Dept of Administrative Servcs",
+        "count" : "7346"
+      }, {
+        "item" : "Department of Public Health",
+        "count" : "4636"
+      }, {
+        "item" : "Department of Transportation",
+        "count" : "4079"
+      }, {
+        "item" : "Board of Regents for Higher Ed",
+        "count" : "4047"
+      }, {
+        "item" : "Dept of Economic & Cmmunty Dev",
+        "count" : "3678"
+      }, {
+        "item" : "Department of Education",
+        "count" : "3343"
+      }, {
+        "item" : "Dept of Emrg Svc & Public Prot",
+        "count" : "2874"
+      }, {
+        "item" : "Mental Health & Addiction Svcs",
+        "count" : "2804"
+      }, {
+        "item" : "Department of Social Services",
+        "count" : "2666"
+      }, {
+        "item" : "Office of Policy & Management",
+        "count" : "2295"
+      }, {
+        "item" : "Judicial Branch",
+        "count" : "2172"
+      }, {
+        "item" : "Dept of Children and Families",
+        "count" : "2166"
+      }, {
+        "item" : "Department of Housing",
+        "count" : "1607"
+      }, {
+        "item" : "CT Agricultural Experimnt Stat",
+        "count" : "1442"
+      }, {
+        "item" : "State Dept of Rehabilitation",
+        "count" : "1351"
+      }, {
+        "item" : "Department of Correction",
+        "count" : "1344"
+      }, {
+        "item" : "Military Department",
+        "count" : "1336"
+      }, {
+        "item" : "Department of Agriculture",
+        "count" : "1216"
+      }, {
+        "item" : "Dept Of Developmental Services",
+        "count" : "982"
+      } ],
+      "smallest" : "African American Affairs",
+      "not_null" : "41757",
+      "count" : "77322",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962358,
+    "name" : "PROGRAM",
+    "dataTypeName" : "text",
+    "description" : "Program",
+    "fieldName" : "program",
+    "position" : 7,
+    "renderTypeName" : "text",
+    "tableColumnId" : 28293424,
+    "width" : 184,
+    "cachedContents" : {
+      "largest" : "Ziprazidone Res On Outptnt",
+      "non_null" : "77321",
+      "null" : "1",
+      "top" : [ {
+        "item" : "Personal Services",
+        "count" : "1059"
+      }, {
+        "item" : "IT Capital Investment Program",
+        "count" : "996"
+      }, {
+        "item" : "Other Expenses",
+        "count" : "995"
+      }, {
+        "item" : "Non-Budgeted Operating Approp",
+        "count" : "851"
+      }, {
+        "item" : "Capital Equip Purchase Fund",
+        "count" : "693"
+      }, {
+        "item" : "Improvments Bldgs & Grounds",
+        "count" : "392"
+      }, {
+        "item" : "Equipment",
+        "count" : "348"
+      }, {
+        "item" : "FIRE  SAFETY & ENVIRON IMPROVE",
+        "count" : "310"
+      }, {
+        "item" : "Fire Safety & Envirnmnt Imprv",
+        "count" : "294"
+      }, {
+        "item" : "ALT  RENOVATE & IMPROVE BLDGS",
+        "count" : "281"
+      }, {
+        "item" : "ALT/IMPROVE TO BLDGS & GROUNDS",
+        "count" : "273"
+      }, {
+        "item" : "Conversion Value",
+        "count" : "259"
+      }, {
+        "item" : "Nonfunctional-Chnge to Accrual",
+        "count" : "242"
+      }, {
+        "item" : "Fringe Benefits",
+        "count" : "212"
+      }, {
+        "item" : "Parent Account Bonds",
+        "count" : "188"
+      }, {
+        "item" : "INFRA REPAIR & IMPROVEMENTS",
+        "count" : "183"
+      }, {
+        "item" : "REGIONAL VOC TECH SCHL REPAIR",
+        "count" : "179"
+      }, {
+        "item" : "Equipment - Cap Improvements",
+        "count" : "168"
+      }, {
+        "item" : "ASBESTOS REMOVAL",
+        "count" : "158"
+      }, {
+        "item" : "DCF - Alterations",
+        "count" : "157"
+      } ],
+      "smallest" : "1115 SUD Waiver",
+      "not_null" : "41756",
+      "count" : "77322",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  }, {
+    "id" : 204962360,
+    "name" : "RECOMMENDED_AMOUNT",
+    "dataTypeName" : "number",
+    "description" : "Recommended Amount",
+    "fieldName" : "recommended_amount",
+    "position" : 8,
+    "renderTypeName" : "number",
+    "tableColumnId" : 28293426,
+    "width" : 316,
+    "cachedContents" : {
+      "largest" : "5629171539.556",
+      "non_null" : "77322",
+      "average" : "10541446.39570190",
+      "null" : "0",
+      "top" : [ {
+        "item" : "0",
+        "count" : "3685"
+      }, {
+        "item" : "1000000",
+        "count" : "396"
+      }, {
+        "item" : "500000",
+        "count" : "393"
+      }, {
+        "item" : "5000000",
+        "count" : "376"
+      }, {
+        "item" : "2000000",
+        "count" : "339"
+      }, {
+        "item" : "100000",
+        "count" : "330"
+      }, {
+        "item" : "1",
+        "count" : "311"
+      }, {
+        "item" : "10000000",
+        "count" : "234"
+      }, {
+        "item" : "250000",
+        "count" : "215"
+      }, {
+        "item" : "200000",
+        "count" : "205"
+      }, {
+        "item" : "50000",
+        "count" : "198"
+      }, {
+        "item" : "3000000",
+        "count" : "155"
+      }, {
+        "item" : "400000",
+        "count" : "145"
+      }, {
+        "item" : "25000",
+        "count" : "142"
+      }, {
+        "item" : "150000",
+        "count" : "137"
+      }, {
+        "item" : "10000",
+        "count" : "132"
+      }, {
+        "item" : "300000",
+        "count" : "127"
+      }, {
+        "item" : "1500000",
+        "count" : "126"
+      }, {
+        "item" : "0.01",
+        "count" : "109"
+      }, {
+        "item" : "20000000",
+        "count" : "104"
+      } ],
+      "smallest" : "-33646501",
+      "not_null" : "41757",
+      "count" : "77322",
+      "sum" : "394186846520.877",
+      "cardinality" : "77322"
+    },
+    "format" : {
+      "humane" : "false",
+      "currency" : "USD",
+      "align" : "right"
+    }
+  }, {
+    "id" : 204962361,
+    "name" : "ACTUAL_AMOUNT",
+    "dataTypeName" : "number",
+    "description" : "Actual Amount",
+    "fieldName" : "actual_amount",
+    "position" : 9,
+    "renderTypeName" : "number",
+    "tableColumnId" : 28293427,
+    "width" : 256,
+    "cachedContents" : {
+      "largest" : "5727229282",
+      "non_null" : "77322",
+      "average" : "7290225.195584773",
+      "null" : "0",
+      "top" : [ {
+        "item" : "0",
+        "count" : "38137"
+      }, {
+        "item" : "100000",
+        "count" : "125"
+      }, {
+        "item" : "50000",
+        "count" : "70"
+      }, {
+        "item" : "400000",
+        "count" : "68"
+      }, {
+        "item" : "200000",
+        "count" : "64"
+      }, {
+        "item" : "500000",
+        "count" : "60"
+      }, {
+        "item" : "1000000",
+        "count" : "55"
+      }, {
+        "item" : "150000",
+        "count" : "52"
+      }, {
+        "item" : "250000",
+        "count" : "51"
+      }, {
+        "item" : "25000",
+        "count" : "48"
+      }, {
+        "item" : "300000",
+        "count" : "43"
+      }, {
+        "item" : "5000",
+        "count" : "38"
+      }, {
+        "item" : "20000",
+        "count" : "37"
+      }, {
+        "item" : "15000",
+        "count" : "34"
+      }, {
+        "item" : "75000",
+        "count" : "33"
+      }, {
+        "item" : "10000",
+        "count" : "33"
+      }, {
+        "item" : "1500000",
+        "count" : "31"
+      }, {
+        "item" : "40000",
+        "count" : "29"
+      }, {
+        "item" : "30000",
+        "count" : "27"
+      }, {
+        "item" : "2000000",
+        "count" : "27"
+      } ],
+      "smallest" : "-783594496.42",
+      "not_null" : "41757",
+      "count" : "77322",
+      "sum" : "272610680963.697",
+      "cardinality" : "77322"
+    },
+    "format" : { }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "metadata" : {
+    "custom_fields" : {
+      "Agency" : {
+        "Agency" : "Office of the Comptroller"
+      },
+      "Details" : {
+        "Update Frequency" : "Monthly",
+        "Temporal Coverage" : "2012 through present",
+        "Geographic Unit" : "Not applicable"
+      },
+      "Transparency App" : {
+        "Application" : "Open Budget"
+      }
+    },
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+    "renderTypeConfig" : {
+      "visible" : {
+        "table" : true
+      }
+    }
+  },
+  "owner" : {
+    "id" : "dx23-uz2k",
+    "displayName" : "PSAdmin",
+    "screenName" : "PSAdmin",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula" ]
+  },
+  "query" : { },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "dx23-uz2k",
+    "displayName" : "PSAdmin",
+    "screenName" : "PSAdmin",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula" ]
+  },
+  "tags" : [ "expenses", "osc", "open connecticut" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

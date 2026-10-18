@@ -2178,3 +2178,37 @@ field in one doesn't stop the others.
   them; the home page shows the visitor's own district.
 - **Size.** About 650 rows, under 300 KB; at most nine requests a day.
 
+## 117. Connecticut's state budget and town budgets, from data.ct.gov
+
+The last part of the budget work (decision 114), from data.ct.gov, which the owner
+approved. Both datasets are read by `sync-state-budget`, which now runs in parts that
+stand alone (Massachusetts, Connecticut, Connecticut's towns), each only when its
+dataset's rowsUpdatedAt has changed.
+
+- **The state budget.** The State Comptroller's "State of CT Expense Data 2012 –
+  Present" (43fc-9893), the data behind its OpenBudget site: one line per fund, agency
+  and program, summed on the portal. Only the funds the General Assembly appropriates
+  are kept (fund types General, Transportation and Other Budgeted): FY2027 comes to
+  $28.45 billion in about 700 lines. Federal and other restricted funds,
+  capital projects and pension funds are left out; their "recommended" amounts are
+  multi-year authority (in FY2026 the Infrastructure Improvement fund shows $9 billion
+  "recommended" against $1.2 billion spent), not the year's budget.
+- **What the amounts are.** The Comptroller publishes no definitions. The page calls
+  "Recommended Amount" budgeted, because OpenBudget compares spending with it as "what
+  was budgeted", and says so in its own words under "What the numbers mean"; "Actual
+  Amount" is spent. The data is refreshed after each monthly close, so the page gives
+  the date of the Comptroller's update rather than a date spending runs through, and
+  leaves out the share of the year gone.
+- **Where it is stored.** In `state_budget_lines` beside Massachusetts', one account
+  per fund, agency and program, the agency as the grouping (Massachusetts'
+  secretariat) and the service area as the category, with a new `fund` column. The
+  Budget tab's Massachusetts wording (enacted, secretariat, account numbers, the
+  Chapter 70 note) moved into each state's entry in `site/src/lib/states.ts`.
+- **Towns.** The Office of Policy and Management's "Summary Financial Information from
+  Adopted Municipal Budgets" (pcg4-s5rc) into a new `town_budgets` table: all 169
+  towns and the City of Groton, six years kept (about 1,000 rows). The Connecticut
+  Budget tab lists every town; Bristol's and Middletown's Budget tabs show their
+  adopted budget, revenue by source, the four spending parts the summary gives and
+  the mill rate, through the same summary the city pages already use for Boston's and
+  Worcester's operating budgets.
+

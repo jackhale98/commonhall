@@ -4,6 +4,7 @@ import {
   budgetLineRow,
   budgetYear,
   officialTitle,
+  townName,
   yearElapsed,
   type StateBudgetTotal,
 } from './state-budget';
@@ -108,5 +109,30 @@ describe('officialTitle', () => {
     expect(officialTitle('OF COUNSEL FEES')).toBe('Of Counsel Fees');
     expect(officialTitle('LOCAL AID TAX RELIEF')).toBe('Local Aid Tax Relief');
     expect(officialTitle('Managed Care Plan')).toBe('Managed Care Plan');
+  });
+});
+
+describe('Connecticut lines and towns', () => {
+  it('carry the fund only where the state has funds', () => {
+    const line = {
+      account: 'General Fund|Department of Social Services|Medicaid',
+      account_name: 'Medicaid',
+      department: 'Department of Social Services',
+      cabinet: 'Department of Social Services',
+      category: 'Human Services',
+      enacted: 10,
+      supplemental: 0,
+      total_enacted: 10,
+      available: 10,
+      spent: 4,
+    };
+    expect(budgetLineRow({ ...line, fund: 'General Fund' })).toMatchObject({ n: 'Medicaid', f: 'General Fund' });
+    expect(budgetLineRow({ ...line, fund: '' })).not.toHaveProperty('f');
+  });
+
+  it('name towns in title case', () => {
+    expect(townName('GROTON (CITY)')).toBe('Groton (City)');
+    expect(townName('NEW LONDON')).toBe('New London');
+    expect(townName('BRISTOL')).toBe('Bristol');
   });
 });

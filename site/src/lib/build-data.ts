@@ -34,7 +34,7 @@ import type { UnityRow } from './insights';
 import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type StateSession } from './state-people';
 import { DEMO } from './config';
 import { STATE_BILL_FILLER, STATE_BILL_FILLER_PG } from './state-filler';
-import type { StateBudgetLine, StateBudgetTotal } from './state-budget';
+import { TOWN_BUDGET_COLUMNS, type StateBudgetLine, type StateBudgetTotal, type TownBudget } from './state-budget';
 import { AREA_COLUMNS, type AgencyBudget, type AreaSpending, type MtsLineRow } from './federal-budget';
 import { classify, trackedYears, type FundingBill } from './appropriations';
 import { CITIES } from './cities';
@@ -58,6 +58,7 @@ import {
   bostonCapital,
   bostonOperating,
   printedOperating,
+  townOperating,
   type CapitalDocument,
   type CapitalItem,
   type CapitalView,
@@ -491,7 +492,7 @@ export function loadStateBudgetLines(state: string): Promise<StateBudgetLine[]> 
         return info
           ? selectAllOptional<StateBudgetLine>('state_budget_accounts', {
               select:
-                'account,account_name,department,cabinet,category,enacted,supplemental,total_enacted,available,spent',
+                'account,account_name,department,cabinet,category,enacted,supplemental,total_enacted,available,spent,fund',
               state: `eq.${state}`,
               fiscal_year: `eq.${info.newest_year}`,
               order: 'total_enacted.desc,account.asc',
@@ -501,6 +502,15 @@ export function loadStateBudgetLines(state: string): Promise<StateBudgetLine[]> 
     );
   return budgetLines.get(state)!;
 }
+
+/** Every town's adopted budgets in a state, newest year first (Connecticut's towns). */
+export const loadTownBudgets = memoByState((state) =>
+  selectAllOptional<TownBudget>('town_budgets', {
+    select: TOWN_BUDGET_COLUMNS,
+    state: `eq.${state}`,
+    order: 'fiscal_year.desc,town.asc',
+  }),
+);
 
 /** The Monthly Treasury Statement's lines held: the newest statement and, mid-year, the last of the year before. */
 export const loadMtsLines = memo(() =>
@@ -875,6 +885,11 @@ export const loadCaseAbout = memo(async () => {
 // the shared shapes in lib/city.ts, so its pages are filled from whatever it has.
 
 /** memo for loaders that take a city key. */
+/** memoByCity for loaders keyed by state. */
+function memoByState<T>(fn: (state: string) => Promise<T>): (state: string) => Promise<T> {
+  return memoByCity(fn);
+}
+
 function memoByCity<T>(fn: (city: string) => Promise<T>): (city: string) => Promise<T> {
   const cache = new Map<string, Promise<T>>();
   return (city) => {
@@ -942,7 +957,13 @@ export const loadCityOperating = memoByCity(async (city): Promise<OperatingSumma
       CITIES[city]?.planSources?.operating,
     );
   const doc = docs[0];
-  if (!doc) return null;
+  if (!doc) {
+    // A Connecticut town's adopted budget, from the state's summary of every town's.
+    const info = CITIES[city];
+    if (info?.state !== 'CT') return null;
+    const name = info.name.toUpperCase();
+    return townOperating((await loadTownBudgets(info.state)).filter((t) => t.town === name));
+  }
   return printedOperating(
     doc,
     printed.filter((l) => l.fiscal_year === doc.fiscal_year).map((l) => ({ ...l, amounts: l.amounts.map(Number) })),

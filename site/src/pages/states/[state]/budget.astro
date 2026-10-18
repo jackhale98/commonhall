@@ -3,12 +3,25 @@ import StateBudgetExplorer from '../../../components/StateBudgetExplorer';
 import StateHeader from '../../../components/StateHeader.astro';
 import BarList from '../../../components/viz/BarList';
 import Base from '../../../layouts/Base.astro';
-import { loadStateBudgetLines, loadStateBudgetTotals, loadStateBudgets } from '../../../lib/build-data';
+import {
+  loadStateBudgetLines,
+  loadStateBudgetTotals,
+  loadStateBudgets,
+  loadTownBudgets,
+} from '../../../lib/build-data';
+import { CITY_LIST } from '../../../lib/cities';
 import { formatMoney } from '../../../lib/finance';
 import { formatDate, stateName } from '../../../lib/format';
 import { budgetChange } from '../../../lib/local';
-import { href } from '../../../lib/paths';
-import { budgetGroups, budgetLineRow, budgetYear, yearElapsed, type BudgetGroup } from '../../../lib/state-budget';
+import { cityHref, href } from '../../../lib/paths';
+import {
+  budgetGroups,
+  budgetLineRow,
+  budgetYear,
+  townName,
+  yearElapsed,
+  type BudgetGroup,
+} from '../../../lib/state-budget';
 import { stateFeatures } from '../../../lib/states';
 
 /** Only states with a budget on file. */
@@ -32,9 +45,23 @@ const fy = (y: number) => `FY${String(y).slice(2)}`;
 const now = budgetYear(totals, year);
 const last = budgetYear(totals, year - 1);
 const asOf = info.source_updated_at ? new Date(info.source_updated_at) : null;
-const elapsed = asOf ? yearElapsed(year, asOf) : null;
+const asOfDate = asOf ? formatDate(asOf.toISOString().slice(0, 10)) : null;
+// A monthly source's update date isn't the date its spending runs to, so no share of the year is shown.
+const monthly = stateFeatures(code)?.budget?.monthly ?? false;
+const elapsed = asOf && !monthly ? yearElapsed(year, asOf) : null;
 const pct = (part: number, whole: number) => (whole > 0 ? `${Math.round((part / whole) * 100)}%` : '');
 const source = stateFeatures(code)?.budget;
+// How this state's figures are worded; Massachusetts' unless the state says otherwise.
+const amount = source?.amount ?? 'enacted';
+const Amount = amount.charAt(0).toUpperCase() + amount.slice(1);
+const [lineOne, lineMany] = source?.line ?? ['account', 'accounts'];
+const group = source?.group ?? {
+  title: 'By group',
+  rest: 'Everything else',
+  all: 'groups',
+  any: 'Any group',
+  column: 'Group',
+};
 
 // The largest groups, the rest folded into one bar; each with its change on last year.
 const bars = (groups: BudgetGroup[], top: number, rest: string) => {
@@ -51,11 +78,18 @@ const categories = budgetGroups(totals, year, 'category');
 const cabinets = budgetGroups(totals, year, 'cabinet');
 const rows = lines.map(budgetLineRow);
 const departments = new Set(rows.map((r) => r.d)).size;
+// Towns' adopted budgets (Connecticut's), newest year, with each town's page where we cover it.
+const townRows = await loadTownBudgets(code);
+const townYear = townRows[0]?.fiscal_year ?? null;
+const towns = townRows.filter((t) => t.fiscal_year === townYear);
+const townTotal = towns.reduce((n, t) => n + Number(t.total_spending), 0);
+const townEducation = towns.reduce((n, t) => n + Number(t.education), 0);
+const cityPages = new Map(CITY_LIST.filter((c) => c.state === code).map((c) => [c.name.toUpperCase(), c]));
 ---
 
 <Base
   title={`${name} budget`}
-  description={`${name}’s state budget for ${fy(year)}: what the Legislature enacted, line by line, and how much has been spent.`}
+  description={`${name}’s state budget for ${fy(year)}: what was ${amount}, line by line, and how much has been spent.`}
   section="states"
 >
   <StateHeader code={code} current="budget" />
@@ -63,12 +97,14 @@ const departments = new Set(rows.map((r) => r.d)).size;
   <section aria-labelledby="budget-h">
     <h2 id="budget-h">State budget, {fy(year)}</h2>
     <p class="small muted section-note">
-      July {year - 1} to June {year}: what was enacted, account by account, and how much has been spent{' '}
-      {asOf ? `through ${formatDate(asOf.toISOString().slice(0, 10))}` : 'so far'}.
+      July {year - 1} to June {year}:{' '}
+      {`${source?.scope ?? `what was ${amount} and how much has been spent`}${
+        asOfDate ? (monthly ? `, in the Comptroller’s update of ${asOfDate}` : ` through ${asOfDate}`) : ' so far'
+      }.`}
     </p>
     <dl class="stat-grid">
       <div class="stat">
-        <dt>Enacted</dt>
+        <dt>{Amount}</dt>
         <dd>{formatMoney(now.total_enacted)}</dd>
         {last.total_enacted > 0 && (
           <p class="small muted stat-note">
@@ -80,7 +116,7 @@ const departments = new Set(rows.map((r) => r.d)).size;
         <dt>Spent so far</dt>
         <dd>{formatMoney(now.spent)}</dd>
         <p class="small muted stat-note">
-          {pct(now.spent, now.total_enacted)} of what was enacted
+          {pct(now.spent, now.total_enacted)} of what was {amount}
           {elapsed !== null && `, with ${Math.round(elapsed * 100)}% of the year gone`}
         </p>
       </div>
@@ -96,7 +132,9 @@ const departments = new Set(rows.map((r) => r.d)).size;
           <dt>Last year, {fy(year - 1)}</dt>
           <dd>{formatMoney(last.spent)}</dd>
           <p class="small muted stat-note">
-            spent of {formatMoney(last.available)} available ({formatMoney(last.total_enacted)} enacted)
+            {Math.abs(last.available - last.total_enacted) >= 1
+              ? `spent of ${formatMoney(last.available)} available (${formatMoney(last.total_enacted)} ${amount})`
+              : `spent of ${formatMoney(last.total_enacted)} ${amount}`}
           </p>
         </div>
       )}
@@ -109,32 +147,33 @@ const departments = new Set(rows.map((r) => r.d)).size;
         </h3>
         <BarList
           items={bars(categories, 8, 'Everything else')}
-          label={`Enacted budget by category, ${fy(year)}`}
-          format={formatMoney}
-        />
-        <p class="small muted">The Comptroller’s categories. Change on {fy(year - 1)}.</p>
-      </section>
-      <section class="panel" aria-labelledby="cab-h">
-        <h3 id="cab-h" class="h-small">
-          By secretariat
-        </h3>
-        <BarList
-          items={bars(cabinets, 8, 'Every other office')}
-          label={`Enacted budget by secretariat, ${fy(year)}`}
-          tone="fill-sky"
+          label={`${Amount} budget by category, ${fy(year)}`}
           format={formatMoney}
         />
         <p class="small muted">
-          Money is enacted under one office and may be spent through another: Chapter 70 school aid is enacted under
-          Education and paid by the Department of Revenue, so its spending counts under Administration and Finance.
+          {source?.category.note} Change on {fy(year - 1)}.
         </p>
+      </section>
+      <section class="panel" aria-labelledby="cab-h">
+        <h3 id="cab-h" class="h-small">
+          {group.title}
+        </h3>
+        <BarList
+          items={bars(cabinets, 8, group.rest)}
+          label={`${Amount} budget ${group.title.toLowerCase()}, ${fy(year)}`}
+          tone="fill-sky"
+          format={formatMoney}
+        />
+        {group.note && <p class="small muted">{group.note}</p>}
         <details class="all-depts">
-          <summary>All {cabinets.length} secretariats and offices</summary>
+          <summary>
+            All {cabinets.length} {group.all}
+          </summary>
           <table class="dept-table">
             <thead>
               <tr>
-                <th scope="col">Secretariat</th>
-                <th scope="col">Enacted</th>
+                <th scope="col">{group.column}</th>
+                <th scope="col">{Amount}</th>
                 <th scope="col">Spent</th>
                 <th scope="col">Change</th>
               </tr>
@@ -158,8 +197,8 @@ const departments = new Set(rows.map((r) => r.d)).size;
   <section aria-labelledby="lines-h">
     <h2 id="lines-h">Every line item</h2>
     <p class="small muted section-note">
-      {rows.length.toLocaleString()} accounts with money in {fy(year)}, in {departments} departments and offices,
-      largest first.
+      {rows.length.toLocaleString()} {rows.length === 1 ? lineOne : lineMany} with money in {fy(year)}, in {departments}{' '}
+      {source?.departments ?? 'departments'}, largest first.
     </p>
     <StateBudgetExplorer
       client:visible
@@ -168,30 +207,88 @@ const departments = new Set(rows.map((r) => r.d)).size;
       cabinets={cabinets.map((c) => c.label).sort()}
       categories={categories.map((c) => c.label).sort()}
       yearLabel={fy(year)}
+      amount={amount}
+      cabinetAny={group.any}
+      categoryAny={source?.category.any ?? 'Any category'}
+      accountNumbers={source?.accountNumbers ?? false}
+      searchHint={source?.searchHint ?? 'Program or agency'}
     />
   </section>
+
+  {towns.length > 0 && townYear && (
+    <section aria-labelledby="towns-h">
+      <h2 id="towns-h">Town budgets, {fy(townYear)}</h2>
+      <p class="small muted section-note">
+        Each town’s adopted budget for July {townYear - 1} to June {townYear}: {towns.length} towns and cities, together{' '}
+        {formatMoney(townTotal)}, {pct(townEducation, townTotal)} of it for education. The mill rate is the property tax
+        on each $1,000 of assessed value.
+      </p>
+      <details class="all-depts">
+        <summary>All {towns.length} towns</summary>
+        <table class="dept-table">
+          <thead>
+            <tr>
+              <th scope="col">Town</th>
+              <th scope="col">Budget</th>
+              <th scope="col">Education</th>
+              <th scope="col">Mill rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {towns.map((t) => {
+              const page = cityPages.get(t.town);
+              return (
+                <tr>
+                  <th scope="row">
+                    {page ? <a href={cityHref(page, 'budget/')}>{townName(t.town)}</a> : townName(t.town)}
+                  </th>
+                  <td>{formatMoney(t.total_spending)}</td>
+                  <td>{pct(Number(t.education), Number(t.total_spending))}</td>
+                  <td>{t.mill_rate === null ? '—' : Number(t.mill_rate).toFixed(2)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </details>
+      <p class="small muted">
+        From the Office of Policy and Management’s{' '}
+        <a href="https://data.ct.gov/d/pcg4-s5rc" rel="noopener">
+          summary of adopted municipal budgets
+        </a>
+        , as each town reports it; the full budgets are in the state’s{' '}
+        <a href="https://opm-mbds.ct.gov/ords/r/fhms/mbds/home" rel="noopener">
+          Municipal Budget Database
+        </a>
+        .
+      </p>
+    </section>
+  )}
 
   {source && (
     <section aria-labelledby="terms-h">
       <h2 id="terms-h" class="h-small">
         What the numbers mean
       </h2>
-      <dl class="terms">
-        {source.definitions.map((d) => (
-          <div>
-            <dt>
-              {d.term} <span class="muted small">({d.column})</span>
-            </dt>
-            <dd>“{d.text}”</dd>
-          </div>
-        ))}
-      </dl>
+      {source.definitions.length > 0 && (
+        <dl class="terms">
+          {source.definitions.map((d) => (
+            <div>
+              <dt>
+                {d.term} <span class="muted small">({d.column})</span>
+              </dt>
+              <dd>“{d.text}”</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {source.note && <p class="terms-note">{source.note}</p>}
       <p class="small muted">
-        Definitions and figures from {source.publisher}’s{' '}
+        {source.definitions.length > 0 ? 'Definitions and figures' : 'Figures'} from {source.publisher}’s{' '}
         <a href={source.url} rel="noopener">
           {source.site}
         </a>
-        , checked daily{asOf ? `; spending through ${formatDate(asOf.toISOString().slice(0, 10))}` : ''}.
+        , checked daily{asOfDate ? (monthly ? `; last updated ${asOfDate}` : `; spending through ${asOfDate}`) : ''}.
       </p>
     </section>
   )}
@@ -261,6 +358,9 @@ const departments = new Set(rows.map((r) => r.d)).size;
   .terms dd {
     margin: var(--space-1) 0 0;
     color: var(--text-muted);
+  }
+  .terms-note {
+    max-width: 70ch;
   }
   :global(.capital-list p) {
     margin: 0;

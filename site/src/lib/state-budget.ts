@@ -87,6 +87,8 @@ export interface StateBudgetLine {
   total_enacted: number;
   available: number;
   spent: number;
+  /** The fund it's paid from (Connecticut); empty for Massachusetts. */
+  fund?: string;
 }
 
 /** A line item as budget.json serves it to the search. */
@@ -105,6 +107,8 @@ export interface BudgetLineRow {
   v: number;
   /** Spent so far. */
   x: number;
+  /** The fund, where the state has funds (Connecticut). */
+  f?: string;
 }
 
 export const budgetLineRow = (l: StateBudgetLine): BudgetLineRow => ({
@@ -117,6 +121,7 @@ export const budgetLineRow = (l: StateBudgetLine): BudgetLineRow => ({
   s: Number(l.supplemental),
   v: Number(l.available),
   x: Number(l.spent),
+  ...(l.fund ? { f: l.fund } : {}),
 });
 
 export interface BudgetGroup {
@@ -174,3 +179,30 @@ export function yearElapsed(fiscalYear: number, on: Date, startMonth = 7): numbe
   const end = Date.UTC(fiscalYear, startMonth - 1, 1);
   return Math.min(1, Math.max(0, (on.getTime() - start) / (end - start)));
 }
+
+/** A town's adopted budget for a year, in summary (town_budgets). */
+export interface TownBudget {
+  town: string;
+  fiscal_year: number;
+  property_tax: number;
+  state_revenue: number;
+  federal_revenue: number;
+  fund_balance: number;
+  other_revenue: number;
+  total_revenue: number;
+  education: number;
+  debt_service: number;
+  contingency: number;
+  other_spending: number;
+  total_spending: number;
+  mill_rate: number | null;
+  mill_rate_vehicles: number | null;
+}
+
+/** Columns the site reads from town_budgets. */
+export const TOWN_BUDGET_COLUMNS =
+  'town,fiscal_year,property_tax,state_revenue,federal_revenue,fund_balance,other_revenue,total_revenue,education,debt_service,contingency,other_spending,total_spending,mill_rate,mill_rate_vehicles';
+
+/** "GROTON (CITY)" → "Groton (City)", "NEW LONDON" → "New London". */
+export const townName = (town: string) =>
+  town.toLowerCase().replace(/(^|[\s(-])([a-z])/g, (_, p, c) => p + c.toUpperCase());

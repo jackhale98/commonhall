@@ -98,18 +98,16 @@ const stats = capital
       ]
   : [];
 const proposed = (stage: string | undefined) => stage === 'proposed';
+// What the page covers: the operating budget, the capital plan or budget, or both.
+const covers = [
+  ...(operating ? ['what the city spends to run itself', 'where the money comes from'] : []),
+  ...(capital ? ['what it plans to build'] : []),
+];
+const about = covers.length > 2 ? `${covers.slice(0, -1).join(', ')}, and ${covers.at(-1)}` : covers.join(' and ');
 ---
 
-<Base
-  title={`${city.name} budget`}
-  description={`${city.name}’s city budget: ${operating ? 'what it spends to run departments, where the money comes from, and ' : ''}what it plans to build.`}
-  section="states"
->
-  <CityHeader
-    city={city}
-    current="budget"
-    lede={`What the city spends${operating ? ' to run itself, where the money comes from,' : ''} and what it plans to build.`}
-  />
+<Base title={`${city.name} budget`} description={`${city.name}’s city budget: ${about}.`} section="states">
+  <CityHeader city={city} current="budget" lede={`${about.charAt(0).toUpperCase()}${about.slice(1)}.`} />
 
   {operating && (
     <section aria-labelledby="op-h">
@@ -140,6 +138,13 @@ const proposed = (stage: string | undefined) => stage === 'proposed';
             <p class="small muted stat-note">of {formatMoney(operating.revenueTotal)} in revenue</p>
           </div>
         )}
+        {(operating.facts ?? []).map((f) => (
+          <div class="stat">
+            <dt>{f.label}</dt>
+            <dd>{f.value}</dd>
+            {f.note && <p class="small muted stat-note">{f.note}</p>}
+          </div>
+        ))}
       </dl>
       <div class="budget-charts">
         {revenueBars.length > 0 && (
@@ -203,9 +208,10 @@ const proposed = (stage: string | undefined) => stage === 'proposed';
             </a>
           </>
         ))}
-        {operating.spendingUnit === 'departments'
-          ? ' on the city’s open data, checked weekly.'
-          : ', read from the printed summary; every group adds up to its printed total.'}
+        {operating.sourceNote ??
+          (operating.spendingUnit === 'departments'
+            ? ' on the city’s open data, checked weekly.'
+            : ', read from the printed summary; every group adds up to its printed total.')}
       </p>
     </section>
   )}

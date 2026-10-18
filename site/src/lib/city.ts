@@ -5,6 +5,7 @@
  * is a year's lines); the loaders turn each into these, and the pages only see these.
  */
 import { capitalStage, fundingSegments, spentLabel, type BudgetSummary, type CapitalProject } from './local';
+import type { TownBudget } from './state-budget';
 
 export interface CityMeeting {
   id: string;
@@ -41,9 +42,13 @@ export interface OperatingSummary {
   revenueTotal: number;
   revenue: { label: string; value: number }[];
   spending: { label: string; value: number; prev: number; group?: string }[];
-  /** "departments" (Boston) or "lines" (Worcester's summary). */
+  /** "departments" (Boston), "lines" (Worcester's summary) or "parts" (a Connecticut town's summary). */
   spendingUnit: string;
   sources: { label: string; url: string }[];
+  /** After the sources: how they're read, when not open data (Boston) or a printed summary (Worcester). */
+  sourceNote?: string;
+  /** More figures for the stat row (a town's mill rate). */
+  facts?: { label: string; value: string; note?: string }[];
 }
 
 /** One capital project, in the form the list, the explorer and its page share. */
@@ -338,5 +343,70 @@ export function printedOperating(
     spending,
     spendingUnit: 'lines',
     sources: [{ label: doc.title, url: doc.source_url }],
+  };
+}
+
+// ---- Connecticut towns' adopted budgets (the state's summary of each) -----------
+
+/**
+ * A town's adopted budget, as each Connecticut town reports it to the Office of Policy
+ * and Management: revenue by source and spending in four parts, with the year before
+ * and the mill rate. Null without a budget for the town.
+ */
+export function townOperating(rows: TownBudget[]): OperatingSummary | null {
+  const [now, before] = [...rows].sort((a, b) => b.fiscal_year - a.fiscal_year);
+  if (!now) return null;
+  const n = (v: number | string | null | undefined) => Number(v ?? 0);
+  const prev = before?.fiscal_year === now.fiscal_year - 1 ? before : undefined;
+  const part = (label: string, key: keyof TownBudget) => ({
+    label,
+    value: n(now[key] as number),
+    prev: prev ? n(prev[key] as number) : 0,
+  });
+  const revenue = [
+    { label: 'Property tax', value: n(now.property_tax) },
+    { label: 'State of Connecticut', value: n(now.state_revenue) },
+    { label: 'Federal government', value: n(now.federal_revenue) },
+    { label: 'Reserves (fund balance)', value: n(now.fund_balance) },
+    { label: 'Everything else', value: n(now.other_revenue) },
+  ]
+    .filter((r) => r.value > 0)
+    .sort((a, b) => b.value - a.value);
+  const mill = now.mill_rate === null ? null : n(now.mill_rate);
+  const millBefore = prev?.mill_rate === null || prev?.mill_rate === undefined ? null : n(prev.mill_rate);
+  return {
+    fiscalYear: now.fiscal_year,
+    stage: 'adopted',
+    prevLabel: fy(now.fiscal_year - 1),
+    total: n(now.total_spending),
+    prev: prev ? n(prev.total_spending) : 0,
+    revenueTotal: n(now.total_revenue),
+    revenue,
+    spending: [
+      part('Education', 'education'),
+      part('Debt service', 'debt_service'),
+      part('Contingency', 'contingency'),
+      part('Everything else', 'other_spending'),
+    ]
+      .filter((p) => p.value > 0)
+      .sort((a, b) => b.value - a.value),
+    spendingUnit: 'parts',
+    sources: [
+      {
+        label: 'the Office of Policy and Management’s summary of adopted municipal budgets',
+        url: 'https://data.ct.gov/d/pcg4-s5rc',
+      },
+    ],
+    sourceNote: ', as the town reports its adopted budget to the state; checked daily.',
+    facts:
+      mill === null
+        ? []
+        : [
+            {
+              label: 'Mill rate',
+              value: mill.toFixed(2),
+              note: `dollars of property tax per $1,000 of assessed value${millBefore === null ? '' : `; ${millBefore.toFixed(2)} in ${fy(now.fiscal_year - 1)}`}`,
+            },
+          ],
   };
 }

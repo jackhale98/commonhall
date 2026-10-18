@@ -42,6 +42,7 @@ import {
   CAMBRIDGE_DATA_JOB,
   CAMBRIDGE_JOB,
   MA_BUDGET_DOMAIN,
+  CT_BUDGET_DOMAIN,
   STATE_BUDGET_JOB,
   syncStateBudgets,
   FEDERAL_BUDGET_JOB,
@@ -258,7 +259,11 @@ async function main() {
         job: STATE_BUDGET_JOB,
         timeLimitMs,
         log: (m, d) => console.log(m, d ? JSON.stringify(d) : ''),
-        run: (ctx) => syncStateBudgets(ctx, { ma: new SocrataClient(MA_BUDGET_DOMAIN) }),
+        run: (ctx) =>
+          syncStateBudgets(ctx, {
+            ma: new SocrataClient(MA_BUDGET_DOMAIN),
+            ct: new SocrataClient(CT_BUDGET_DOMAIN),
+          }),
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);

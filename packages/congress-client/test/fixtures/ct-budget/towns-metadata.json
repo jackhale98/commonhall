@@ -1,0 +1,1552 @@
+{
+  "id" : "pcg4-s5rc",
+  "name" : "Summary Financial Information from Adopted Municipal Budgets, 2022-Present",
+  "assetType" : "dataset",
+  "attribution" : "Office of Policy and Management",
+  "attributionLink" : "https://opm-mbds.ct.gov/ords/r/fhms/mbds/home",
+  "averageRating" : 0,
+  "category" : "Local Government",
+  "createdAt" : 1738267827,
+  "description" : "This dataset includes financial information derived from adopted budgets reported by Connecticut municipalities to the Office of Policy and Management via OPM’s Fiscal Health Monitoring System (FHMS) portal. The dataset includes key summary data from the budgets for all 169 municipalities and the City of Groton dating back to FY22.\n\nFor questions regarding the budgetary information included in a municipality’s adopted budget, please contact the municipality directly. For questions or comments on the FHMS please contact us at opm-fhms@ct.gov\n\nThe complete adopted municipal budgets filed with OPM dating back to FY 2022 are available via the Municipal Budget Database System located at https://opm-mbds.ct.gov/ords/r/fhms/mbds/home.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 2167,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "licenseId" : "PUBLIC_DOMAIN",
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 41099169,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1738268029,
+  "publicationGroup" : 19770743,
+  "publicationStage" : "published",
+  "rowsUpdatedAt" : 1774976862,
+  "rowsUpdatedBy" : "9aur-i7yp",
+  "tableId" : 19770743,
+  "totalTimesRated" : 0,
+  "viewCount" : 1949,
+  "viewLastModified" : 1774977063,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1738268994,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 6719526,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1738268994,
+    "targetAudience" : "public",
+    "workflowId" : 2184,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "endedAt" : 1738268994,
+      "failureCount" : 0,
+      "startedAt" : 1738268994,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "rfiw-8538",
+      "displayName" : "Pauline Zaldonis"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 604670644,
+    "name" : "Fiscal Period of Budget",
+    "dataTypeName" : "number",
+    "description" : "Fiscal Period of Budget",
+    "fieldName" : "fiscal_period_of_budget",
+    "position" : 1,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514149,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "2026",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2023",
+        "count" : "170"
+      }, {
+        "item" : "2024",
+        "count" : "170"
+      }, {
+        "item" : "2026",
+        "count" : "170"
+      }, {
+        "item" : "2025",
+        "count" : "170"
+      }, {
+        "item" : "2022",
+        "count" : "168"
+      } ],
+      "smallest" : "2022",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "noCommas" : "true"
+    }
+  }, {
+    "id" : 604670627,
+    "name" : "Entity Name",
+    "dataTypeName" : "text",
+    "description" : "Entity Name",
+    "fieldName" : "entity_name",
+    "position" : 2,
+    "renderTypeName" : "text",
+    "tableColumnId" : 156514132,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "WOODSTOCK",
+      "null" : "0",
+      "top" : [ {
+        "item" : "THOMASTON",
+        "count" : "5"
+      }, {
+        "item" : "GRISWOLD",
+        "count" : "5"
+      }, {
+        "item" : "NEW MILFORD",
+        "count" : "5"
+      }, {
+        "item" : "WESTBROOK",
+        "count" : "5"
+      }, {
+        "item" : "MONROE",
+        "count" : "5"
+      }, {
+        "item" : "TORRINGTON",
+        "count" : "5"
+      }, {
+        "item" : "WEST HARTFORD",
+        "count" : "5"
+      }, {
+        "item" : "SHELTON",
+        "count" : "5"
+      }, {
+        "item" : "BRIDGEWATER",
+        "count" : "5"
+      }, {
+        "item" : "NEW HAVEN",
+        "count" : "5"
+      }, {
+        "item" : "KENT",
+        "count" : "5"
+      }, {
+        "item" : "CANAAN",
+        "count" : "5"
+      }, {
+        "item" : "HARTLAND",
+        "count" : "5"
+      }, {
+        "item" : "PLYMOUTH",
+        "count" : "5"
+      }, {
+        "item" : "NAUGATUCK",
+        "count" : "5"
+      }, {
+        "item" : "PROSPECT",
+        "count" : "5"
+      }, {
+        "item" : "SOUTH WINDSOR",
+        "count" : "5"
+      }, {
+        "item" : "EAST HARTFORD",
+        "count" : "5"
+      }, {
+        "item" : "CANTERBURY",
+        "count" : "5"
+      }, {
+        "item" : "THOMPSON",
+        "count" : "5"
+      } ],
+      "smallest" : "ANDOVER",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : { }
+  }, {
+    "id" : 604670628,
+    "name" : "Property Tax Revenue",
+    "dataTypeName" : "number",
+    "description" : "Property Tax Revenue",
+    "fieldName" : "property_tax_revenue",
+    "position" : 3,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514133,
+    "cachedContents" : {
+      "non_null" : "847",
+      "largest" : "643239831.00",
+      "null" : "1",
+      "top" : [ {
+        "item" : "12052661.00",
+        "count" : "1"
+      }, {
+        "item" : "7654152.00",
+        "count" : "1"
+      }, {
+        "item" : "53874317.00",
+        "count" : "1"
+      }, {
+        "item" : "31265929.00",
+        "count" : "1"
+      }, {
+        "item" : "96854653.00",
+        "count" : "1"
+      }, {
+        "item" : "43726426.00",
+        "count" : "1"
+      }, {
+        "item" : "6859841.00",
+        "count" : "1"
+      }, {
+        "item" : "4608414.00",
+        "count" : "1"
+      }, {
+        "item" : "298960452.00",
+        "count" : "1"
+      }, {
+        "item" : "13278526.00",
+        "count" : "1"
+      }, {
+        "item" : "2661960.00",
+        "count" : "1"
+      }, {
+        "item" : "31977309.00",
+        "count" : "1"
+      }, {
+        "item" : "37753607.00",
+        "count" : "1"
+      }, {
+        "item" : "98654359.00",
+        "count" : "1"
+      }, {
+        "item" : "6871309.00",
+        "count" : "1"
+      }, {
+        "item" : "10623147.00",
+        "count" : "1"
+      }, {
+        "item" : "7224415.00",
+        "count" : "1"
+      }, {
+        "item" : "5972410.00",
+        "count" : "1"
+      }, {
+        "item" : "143818222.00",
+        "count" : "1"
+      }, {
+        "item" : "19070184.00",
+        "count" : "1"
+      } ],
+      "smallest" : "2661960.00",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670629,
+    "name" : "Revenues from State of CT Government",
+    "dataTypeName" : "number",
+    "description" : "Revenues from State of CT Government",
+    "fieldName" : "revenues_from_state_of_ct",
+    "position" : 4,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514134,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "298847894.00",
+      "null" : "0",
+      "top" : [ {
+        "item" : "5152.00",
+        "count" : "3"
+      }, {
+        "item" : "1323345.00",
+        "count" : "3"
+      }, {
+        "item" : "295327.00",
+        "count" : "2"
+      }, {
+        "item" : "525000.00",
+        "count" : "2"
+      }, {
+        "item" : "277062.00",
+        "count" : "2"
+      }, {
+        "item" : "1403667.00",
+        "count" : "2"
+      }, {
+        "item" : "3263524.00",
+        "count" : "2"
+      }, {
+        "item" : "1383457.00",
+        "count" : "2"
+      }, {
+        "item" : "13680677.00",
+        "count" : "2"
+      }, {
+        "item" : "1563914.00",
+        "count" : "2"
+      }, {
+        "item" : "463000.00",
+        "count" : "2"
+      }, {
+        "item" : "2109731.00",
+        "count" : "2"
+      }, {
+        "item" : "3508430.00",
+        "count" : "2"
+      }, {
+        "item" : "1116300.00",
+        "count" : "1"
+      }, {
+        "item" : "229617.00",
+        "count" : "1"
+      }, {
+        "item" : "5285047.00",
+        "count" : "1"
+      }, {
+        "item" : "156551454.00",
+        "count" : "1"
+      }, {
+        "item" : "8306604.00",
+        "count" : "1"
+      }, {
+        "item" : "6546050.00",
+        "count" : "1"
+      }, {
+        "item" : "6169545.00",
+        "count" : "1"
+      } ],
+      "smallest" : "5152.00",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670630,
+    "name" : "Revenues from Federal Government",
+    "dataTypeName" : "number",
+    "description" : "Revenues from Federal Government",
+    "fieldName" : "revenues_from_federal",
+    "position" : 5,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514135,
+    "cachedContents" : {
+      "non_null" : "771",
+      "largest" : "38212398.00",
+      "null" : "77",
+      "top" : [ {
+        "item" : "0",
+        "count" : "584"
+      }, {
+        "item" : "1000.00",
+        "count" : "10"
+      }, {
+        "item" : "5000.00",
+        "count" : "8"
+      }, {
+        "item" : "3000.00",
+        "count" : "7"
+      }, {
+        "item" : "200000.00",
+        "count" : "6"
+      }, {
+        "item" : "2800.00",
+        "count" : "5"
+      }, {
+        "item" : "7000.00",
+        "count" : "4"
+      }, {
+        "item" : "9000.00",
+        "count" : "3"
+      }, {
+        "item" : "1500000.00",
+        "count" : "3"
+      }, {
+        "item" : "4900.00",
+        "count" : "3"
+      }, {
+        "item" : "125000.00",
+        "count" : "2"
+      }, {
+        "item" : "5300.00",
+        "count" : "2"
+      }, {
+        "item" : "18000.00",
+        "count" : "2"
+      }, {
+        "item" : "20000.00",
+        "count" : "2"
+      }, {
+        "item" : "121000.00",
+        "count" : "2"
+      }, {
+        "item" : "10000.00",
+        "count" : "2"
+      }, {
+        "item" : "140250.00",
+        "count" : "2"
+      }, {
+        "item" : "80880.00",
+        "count" : "2"
+      }, {
+        "item" : "941.00",
+        "count" : "2"
+      }, {
+        "item" : "14002.00",
+        "count" : "2"
+      } ],
+      "smallest" : "0",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670631,
+    "name" : "Use of Fund Balance",
+    "dataTypeName" : "number",
+    "description" : "Use of Fund Balance",
+    "fieldName" : "use_of_fund_balance",
+    "position" : 6,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514136,
+    "cachedContents" : {
+      "non_null" : "832",
+      "largest" : "23800000.00",
+      "null" : "16",
+      "top" : [ {
+        "item" : "0",
+        "count" : "275"
+      }, {
+        "item" : "500000.00",
+        "count" : "22"
+      }, {
+        "item" : "300000.00",
+        "count" : "13"
+      }, {
+        "item" : "200000.00",
+        "count" : "12"
+      }, {
+        "item" : "2500000.00",
+        "count" : "10"
+      }, {
+        "item" : "400000.00",
+        "count" : "10"
+      }, {
+        "item" : "750000.00",
+        "count" : "10"
+      }, {
+        "item" : "1200000.00",
+        "count" : "9"
+      }, {
+        "item" : "1000000.00",
+        "count" : "8"
+      }, {
+        "item" : "800000.00",
+        "count" : "8"
+      }, {
+        "item" : "3000000.00",
+        "count" : "7"
+      }, {
+        "item" : "2000000.00",
+        "count" : "7"
+      }, {
+        "item" : "600000.00",
+        "count" : "7"
+      }, {
+        "item" : "1500000.00",
+        "count" : "7"
+      }, {
+        "item" : "5000000.00",
+        "count" : "7"
+      }, {
+        "item" : "550000.00",
+        "count" : "6"
+      }, {
+        "item" : "775000.00",
+        "count" : "6"
+      }, {
+        "item" : "2750000.00",
+        "count" : "6"
+      }, {
+        "item" : "250000.00",
+        "count" : "5"
+      }, {
+        "item" : "700000.00",
+        "count" : "5"
+      } ],
+      "smallest" : "-1118775.00",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670632,
+    "name" : "All Other Revenue",
+    "dataTypeName" : "number",
+    "description" : "All Other Revenue",
+    "fieldName" : "all_other_revenue",
+    "position" : 7,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514137,
+    "cachedContents" : {
+      "non_null" : "845",
+      "largest" : "105060700.00",
+      "null" : "3",
+      "top" : [ {
+        "item" : "0",
+        "count" : "6"
+      }, {
+        "item" : "80000.00",
+        "count" : "2"
+      }, {
+        "item" : "355000.00",
+        "count" : "2"
+      }, {
+        "item" : "126800.00",
+        "count" : "2"
+      }, {
+        "item" : "183744.00",
+        "count" : "2"
+      }, {
+        "item" : "604900.00",
+        "count" : "2"
+      }, {
+        "item" : "440000.00",
+        "count" : "2"
+      }, {
+        "item" : "1560000.00",
+        "count" : "2"
+      }, {
+        "item" : "422516.00",
+        "count" : "1"
+      }, {
+        "item" : "1098150.00",
+        "count" : "1"
+      }, {
+        "item" : "9532737.00",
+        "count" : "1"
+      }, {
+        "item" : "4391010.00",
+        "count" : "1"
+      }, {
+        "item" : "1565197.00",
+        "count" : "1"
+      }, {
+        "item" : "6096708.00",
+        "count" : "1"
+      }, {
+        "item" : "702193.00",
+        "count" : "1"
+      }, {
+        "item" : "1038987.00",
+        "count" : "1"
+      }, {
+        "item" : "1214917.00",
+        "count" : "1"
+      }, {
+        "item" : "1260855.00",
+        "count" : "1"
+      }, {
+        "item" : "372107.00",
+        "count" : "1"
+      }, {
+        "item" : "11433290.00",
+        "count" : "1"
+      } ],
+      "smallest" : "0",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670633,
+    "name" : "Total Revenue",
+    "dataTypeName" : "number",
+    "description" : "Total Revenue",
+    "fieldName" : "total_revenue",
+    "position" : 8,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514138,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "702914916.00",
+      "null" : "0",
+      "top" : [ {
+        "item" : "121266233.00",
+        "count" : "2"
+      }, {
+        "item" : "43999860.00",
+        "count" : "1"
+      }, {
+        "item" : "57532017.00",
+        "count" : "1"
+      }, {
+        "item" : "58704902.00",
+        "count" : "1"
+      }, {
+        "item" : "5708337.00",
+        "count" : "1"
+      }, {
+        "item" : "102837661.00",
+        "count" : "1"
+      }, {
+        "item" : "133001163.00",
+        "count" : "1"
+      }, {
+        "item" : "243135108.00",
+        "count" : "1"
+      }, {
+        "item" : "17215594.00",
+        "count" : "1"
+      }, {
+        "item" : "9812863.00",
+        "count" : "1"
+      }, {
+        "item" : "44732619.00",
+        "count" : "1"
+      }, {
+        "item" : "5358176.00",
+        "count" : "1"
+      }, {
+        "item" : "36404479.00",
+        "count" : "1"
+      }, {
+        "item" : "152724330.00",
+        "count" : "1"
+      }, {
+        "item" : "31184242.00",
+        "count" : "1"
+      }, {
+        "item" : "132595791.00",
+        "count" : "1"
+      }, {
+        "item" : "13510693.00",
+        "count" : "1"
+      }, {
+        "item" : "26522194.00",
+        "count" : "1"
+      }, {
+        "item" : "51440042.00",
+        "count" : "1"
+      }, {
+        "item" : "8168976.00",
+        "count" : "1"
+      } ],
+      "smallest" : "3355632.00",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670634,
+    "name" : "Education Expenditures",
+    "dataTypeName" : "number",
+    "description" : "Education Expenditures",
+    "fieldName" : "education_expenditures",
+    "position" : 9,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514139,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "352077993.00",
+      "null" : "0",
+      "top" : [ {
+        "item" : "284013274.00",
+        "count" : "5"
+      }, {
+        "item" : "0",
+        "count" : "5"
+      }, {
+        "item" : "158375000.00",
+        "count" : "5"
+      }, {
+        "item" : "49085741.00",
+        "count" : "2"
+      }, {
+        "item" : "12883942.00",
+        "count" : "2"
+      }, {
+        "item" : "89960421.00",
+        "count" : "2"
+      }, {
+        "item" : "34051186.00",
+        "count" : "2"
+      }, {
+        "item" : "52154784.00",
+        "count" : "2"
+      }, {
+        "item" : "47451526.00",
+        "count" : "2"
+      }, {
+        "item" : "91394925.00",
+        "count" : "2"
+      }, {
+        "item" : "19277500.00",
+        "count" : "2"
+      }, {
+        "item" : "78722698.00",
+        "count" : "2"
+      }, {
+        "item" : "14527467.00",
+        "count" : "1"
+      }, {
+        "item" : "98204339.00",
+        "count" : "1"
+      }, {
+        "item" : "26234266.00",
+        "count" : "1"
+      }, {
+        "item" : "32924801.00",
+        "count" : "1"
+      }, {
+        "item" : "94336773.00",
+        "count" : "1"
+      }, {
+        "item" : "38090581.00",
+        "count" : "1"
+      }, {
+        "item" : "130068039.00",
+        "count" : "1"
+      }, {
+        "item" : "14670570.00",
+        "count" : "1"
+      } ],
+      "smallest" : "0",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670635,
+    "name" : "Debt Service",
+    "dataTypeName" : "number",
+    "description" : "Debt Service",
+    "fieldName" : "debt_service",
+    "position" : 10,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514140,
+    "cachedContents" : {
+      "non_null" : "842",
+      "largest" : "89179506.00",
+      "null" : "6",
+      "top" : [ {
+        "item" : "0",
+        "count" : "63"
+      }, {
+        "item" : "2075164.00",
+        "count" : "5"
+      }, {
+        "item" : "1382949.00",
+        "count" : "5"
+      }, {
+        "item" : "150000.00",
+        "count" : "5"
+      }, {
+        "item" : "2300000.00",
+        "count" : "4"
+      }, {
+        "item" : "50736.00",
+        "count" : "4"
+      }, {
+        "item" : "38906.00",
+        "count" : "4"
+      }, {
+        "item" : "600000.00",
+        "count" : "3"
+      }, {
+        "item" : "3773271.00",
+        "count" : "3"
+      }, {
+        "item" : "216664.00",
+        "count" : "3"
+      }, {
+        "item" : "9695416.00",
+        "count" : "2"
+      }, {
+        "item" : "22000000.00",
+        "count" : "2"
+      }, {
+        "item" : "10166847.00",
+        "count" : "2"
+      }, {
+        "item" : "22500000.00",
+        "count" : "2"
+      }, {
+        "item" : "17663064.00",
+        "count" : "2"
+      }, {
+        "item" : "625000.00",
+        "count" : "2"
+      }, {
+        "item" : "14922.00",
+        "count" : "2"
+      }, {
+        "item" : "4700000.00",
+        "count" : "2"
+      }, {
+        "item" : "42500.00",
+        "count" : "2"
+      }, {
+        "item" : "3071844.00",
+        "count" : "2"
+      } ],
+      "smallest" : "0",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670636,
+    "name" : "Contingency Amount",
+    "dataTypeName" : "number",
+    "description" : "Contingency Amount",
+    "fieldName" : "contingency_amount",
+    "position" : 11,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514141,
+    "cachedContents" : {
+      "non_null" : "831",
+      "largest" : "33956109.00",
+      "null" : "17",
+      "top" : [ {
+        "item" : "0",
+        "count" : "172"
+      }, {
+        "item" : "300000.00",
+        "count" : "29"
+      }, {
+        "item" : "100000.00",
+        "count" : "26"
+      }, {
+        "item" : "10000.00",
+        "count" : "24"
+      }, {
+        "item" : "30000.00",
+        "count" : "23"
+      }, {
+        "item" : "150000.00",
+        "count" : "22"
+      }, {
+        "item" : "50000.00",
+        "count" : "21"
+      }, {
+        "item" : "200000.00",
+        "count" : "20"
+      }, {
+        "item" : "75000.00",
+        "count" : "18"
+      }, {
+        "item" : "20000.00",
+        "count" : "13"
+      }, {
+        "item" : "40000.00",
+        "count" : "12"
+      }, {
+        "item" : "250000.00",
+        "count" : "11"
+      }, {
+        "item" : "15000.00",
+        "count" : "11"
+      }, {
+        "item" : "60000.00",
+        "count" : "10"
+      }, {
+        "item" : "25000.00",
+        "count" : "10"
+      }, {
+        "item" : "500000.00",
+        "count" : "10"
+      }, {
+        "item" : "1000000.00",
+        "count" : "9"
+      }, {
+        "item" : "5000.00",
+        "count" : "9"
+      }, {
+        "item" : "400000.00",
+        "count" : "9"
+      }, {
+        "item" : "125000.00",
+        "count" : "9"
+      } ],
+      "smallest" : "0",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670637,
+    "name" : "All Other Expenditures",
+    "dataTypeName" : "number",
+    "description" : "All Other Expenditures",
+    "fieldName" : "all_other_expenditures",
+    "position" : 12,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514142,
+    "cachedContents" : {
+      "non_null" : "845",
+      "largest" : "421330920.00",
+      "null" : "3",
+      "top" : [ {
+        "item" : "7546256.00",
+        "count" : "1"
+      }, {
+        "item" : "83099585.00",
+        "count" : "1"
+      }, {
+        "item" : "3881212.00",
+        "count" : "1"
+      }, {
+        "item" : "18154552.00",
+        "count" : "1"
+      }, {
+        "item" : "16631703.00",
+        "count" : "1"
+      }, {
+        "item" : "115219089.00",
+        "count" : "1"
+      }, {
+        "item" : "11097048.00",
+        "count" : "1"
+      }, {
+        "item" : "47424275.00",
+        "count" : "1"
+      }, {
+        "item" : "7904008.00",
+        "count" : "1"
+      }, {
+        "item" : "3138196.00",
+        "count" : "1"
+      }, {
+        "item" : "7355301.00",
+        "count" : "1"
+      }, {
+        "item" : "14702689.00",
+        "count" : "1"
+      }, {
+        "item" : "38003882.00",
+        "count" : "1"
+      }, {
+        "item" : "6563403.00",
+        "count" : "1"
+      }, {
+        "item" : "32028968.00",
+        "count" : "1"
+      }, {
+        "item" : "5860693.00",
+        "count" : "1"
+      }, {
+        "item" : "7797875.00",
+        "count" : "1"
+      }, {
+        "item" : "28781657.00",
+        "count" : "1"
+      }, {
+        "item" : "17206508.00",
+        "count" : "1"
+      }, {
+        "item" : "5694343.00",
+        "count" : "1"
+      } ],
+      "smallest" : "599187.00",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670638,
+    "name" : "Total Expenditures",
+    "dataTypeName" : "number",
+    "description" : "Total Expenditures",
+    "fieldName" : "total_expenditures",
+    "position" : 13,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514143,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "702914916.00",
+      "null" : "0",
+      "top" : [ {
+        "item" : "121266233.00",
+        "count" : "2"
+      }, {
+        "item" : "332341651.00",
+        "count" : "1"
+      }, {
+        "item" : "31184242.00",
+        "count" : "1"
+      }, {
+        "item" : "132212790.00",
+        "count" : "1"
+      }, {
+        "item" : "13868103.00",
+        "count" : "1"
+      }, {
+        "item" : "149019309.00",
+        "count" : "1"
+      }, {
+        "item" : "154420582.00",
+        "count" : "1"
+      }, {
+        "item" : "27502730.00",
+        "count" : "1"
+      }, {
+        "item" : "158276686.00",
+        "count" : "1"
+      }, {
+        "item" : "34128499.00",
+        "count" : "1"
+      }, {
+        "item" : "121500383.00",
+        "count" : "1"
+      }, {
+        "item" : "97619256.00",
+        "count" : "1"
+      }, {
+        "item" : "8168976.00",
+        "count" : "1"
+      }, {
+        "item" : "43999860.00",
+        "count" : "1"
+      }, {
+        "item" : "137512573.00",
+        "count" : "1"
+      }, {
+        "item" : "58704902.00",
+        "count" : "1"
+      }, {
+        "item" : "5708337.00",
+        "count" : "1"
+      }, {
+        "item" : "102837661.00",
+        "count" : "1"
+      }, {
+        "item" : "133001163.00",
+        "count" : "1"
+      }, {
+        "item" : "53853971.00",
+        "count" : "1"
+      } ],
+      "smallest" : "3355632.00",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "currency",
+      "decimalSeparator" : ".",
+      "currencyStyle" : "USD",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670639,
+    "name" : "Budgeted Tax Collection %",
+    "dataTypeName" : "number",
+    "description" : "Budgeted Tax Collection %",
+    "fieldName" : "budgeted_tax_collection",
+    "position" : 14,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514144,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "1.0000",
+      "null" : "0",
+      "top" : [ {
+        "item" : "0.9800",
+        "count" : "132"
+      }, {
+        "item" : "0.9850",
+        "count" : "112"
+      }, {
+        "item" : "0.9900",
+        "count" : "91"
+      }, {
+        "item" : "1.0000",
+        "count" : "47"
+      }, {
+        "item" : "0.9950",
+        "count" : "31"
+      }, {
+        "item" : "0.9875",
+        "count" : "27"
+      }, {
+        "item" : "0.9860",
+        "count" : "25"
+      }, {
+        "item" : "0.9910",
+        "count" : "22"
+      }, {
+        "item" : "0.9880",
+        "count" : "21"
+      }, {
+        "item" : "0.9930",
+        "count" : "21"
+      }, {
+        "item" : "0.9870",
+        "count" : "20"
+      }, {
+        "item" : "0.9700",
+        "count" : "18"
+      }, {
+        "item" : "0.9750",
+        "count" : "15"
+      }, {
+        "item" : "0.9820",
+        "count" : "14"
+      }, {
+        "item" : "0.9890",
+        "count" : "14"
+      }, {
+        "item" : "0.9825",
+        "count" : "13"
+      }, {
+        "item" : "0.9840",
+        "count" : "12"
+      }, {
+        "item" : "0.9940",
+        "count" : "10"
+      }, {
+        "item" : "0.9920",
+        "count" : "10"
+      }, {
+        "item" : "0.9925",
+        "count" : "9"
+      } ],
+      "smallest" : "0.0098",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "precisionStyle" : "percentage",
+      "percentScale" : "1",
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670640,
+    "name" : "Mill Rate - Real Estate/Personal Property",
+    "dataTypeName" : "number",
+    "description" : "Mill Rate - Real Estate/Personal Property",
+    "fieldName" : "mill_rate_real_estate_personal",
+    "position" : 15,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514145,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "147.00",
+      "null" : "0",
+      "top" : [ {
+        "item" : "43.45",
+        "count" : "5"
+      }, {
+        "item" : "27.17",
+        "count" : "5"
+      }, {
+        "item" : "11.00",
+        "count" : "5"
+      }, {
+        "item" : "22.00",
+        "count" : "5"
+      }, {
+        "item" : "23.00",
+        "count" : "5"
+      }, {
+        "item" : "29.17",
+        "count" : "5"
+      }, {
+        "item" : "34.50",
+        "count" : "4"
+      }, {
+        "item" : "27.77",
+        "count" : "4"
+      }, {
+        "item" : "29.54",
+        "count" : "4"
+      }, {
+        "item" : "27.00",
+        "count" : "4"
+      }, {
+        "item" : "36.00",
+        "count" : "4"
+      }, {
+        "item" : "28.60",
+        "count" : "4"
+      }, {
+        "item" : "68.95",
+        "count" : "4"
+      }, {
+        "item" : "33.14",
+        "count" : "3"
+      }, {
+        "item" : "28.40",
+        "count" : "3"
+      }, {
+        "item" : "38.60",
+        "count" : "3"
+      }, {
+        "item" : "40.20",
+        "count" : "3"
+      }, {
+        "item" : "14.50",
+        "count" : "3"
+      }, {
+        "item" : "35.70",
+        "count" : "3"
+      }, {
+        "item" : "22.97",
+        "count" : "3"
+      } ],
+      "smallest" : "3.67",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670641,
+    "name" : "Mill Rate - Motor Vehicle",
+    "dataTypeName" : "number",
+    "description" : "Mill Rate - Motor Vehicle",
+    "fieldName" : "mill_rate_motor_vehicle",
+    "position" : 16,
+    "renderTypeName" : "number",
+    "tableColumnId" : 156514146,
+    "cachedContents" : {
+      "non_null" : "846",
+      "largest" : "98.60",
+      "null" : "2",
+      "top" : [ {
+        "item" : "32.46",
+        "count" : "202"
+      }, {
+        "item" : "45.00",
+        "count" : "7"
+      }, {
+        "item" : "22.00",
+        "count" : "6"
+      }, {
+        "item" : "23.00",
+        "count" : "5"
+      }, {
+        "item" : "27.25",
+        "count" : "5"
+      }, {
+        "item" : "29.17",
+        "count" : "5"
+      }, {
+        "item" : "11.00",
+        "count" : "5"
+      }, {
+        "item" : "29.54",
+        "count" : "4"
+      }, {
+        "item" : "28.60",
+        "count" : "4"
+      }, {
+        "item" : "27.00",
+        "count" : "4"
+      }, {
+        "item" : "27.77",
+        "count" : "4"
+      }, {
+        "item" : "23.50",
+        "count" : "4"
+      }, {
+        "item" : "31.00",
+        "count" : "4"
+      }, {
+        "item" : "32.00",
+        "count" : "4"
+      }, {
+        "item" : "30.47",
+        "count" : "3"
+      }, {
+        "item" : "32.20",
+        "count" : "3"
+      }, {
+        "item" : "29.21",
+        "count" : "3"
+      }, {
+        "item" : "14.50",
+        "count" : "3"
+      }, {
+        "item" : "22.50",
+        "count" : "3"
+      }, {
+        "item" : "22.97",
+        "count" : "3"
+      } ],
+      "smallest" : "2.16",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 604670645,
+    "name" : "Date Budget Adopted",
+    "dataTypeName" : "calendar_date",
+    "description" : "Date Budget Adopted",
+    "fieldName" : "date_budget_adopted",
+    "position" : 17,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 156514150,
+    "cachedContents" : {
+      "non_null" : "846",
+      "largest" : "2025-09-30T00:00:00.000",
+      "null" : "2",
+      "top" : [ {
+        "item" : "2024-05-21T00:00:00.000",
+        "count" : "16"
+      }, {
+        "item" : "2021-05-04T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2023-05-16T00:00:00.000",
+        "count" : "15"
+      }, {
+        "item" : "2021-05-18T00:00:00.000",
+        "count" : "13"
+      }, {
+        "item" : "2022-05-17T00:00:00.000",
+        "count" : "13"
+      }, {
+        "item" : "2024-05-13T00:00:00.000",
+        "count" : "13"
+      }, {
+        "item" : "2022-05-03T00:00:00.000",
+        "count" : "13"
+      }, {
+        "item" : "2022-05-16T00:00:00.000",
+        "count" : "13"
+      }, {
+        "item" : "2023-05-15T00:00:00.000",
+        "count" : "12"
+      }, {
+        "item" : "2023-05-02T00:00:00.000",
+        "count" : "12"
+      }, {
+        "item" : "2025-05-06T00:00:00.000",
+        "count" : "12"
+      }, {
+        "item" : "2025-05-12T00:00:00.000",
+        "count" : "12"
+      }, {
+        "item" : "2022-05-10T00:00:00.000",
+        "count" : "11"
+      }, {
+        "item" : "2024-05-14T00:00:00.000",
+        "count" : "11"
+      }, {
+        "item" : "2024-05-20T00:00:00.000",
+        "count" : "11"
+      }, {
+        "item" : "2024-05-07T00:00:00.000",
+        "count" : "11"
+      }, {
+        "item" : "2022-05-09T00:00:00.000",
+        "count" : "11"
+      }, {
+        "item" : "2021-05-11T00:00:00.000",
+        "count" : "10"
+      }, {
+        "item" : "2024-06-04T00:00:00.000",
+        "count" : "9"
+      }, {
+        "item" : "2025-05-13T00:00:00.000",
+        "count" : "9"
+      } ],
+      "smallest" : "2020-05-12T00:00:00.000",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "view" : "date"
+    }
+  }, {
+    "id" : 604670643,
+    "name" : "Adopted Budget File Upload Date",
+    "dataTypeName" : "calendar_date",
+    "description" : "Adopted Budget File Upload Date",
+    "fieldName" : "adopted_budget_file_upload",
+    "position" : 18,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 156514148,
+    "cachedContents" : {
+      "non_null" : "848",
+      "largest" : "2025-10-02T12:04:57.000",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2025-05-28T14:19:37.000",
+        "count" : "1"
+      }, {
+        "item" : "2023-07-12T09:18:48.000",
+        "count" : "1"
+      }, {
+        "item" : "2023-09-14T11:31:41.000",
+        "count" : "1"
+      }, {
+        "item" : "2023-05-11T14:50:52.000",
+        "count" : "1"
+      }, {
+        "item" : "2021-12-01T10:15:41.000",
+        "count" : "1"
+      }, {
+        "item" : "2023-07-12T13:55:41.000",
+        "count" : "1"
+      }, {
+        "item" : "2023-05-09T11:18:45.000",
+        "count" : "1"
+      }, {
+        "item" : "2021-08-17T10:45:54.000",
+        "count" : "1"
+      }, {
+        "item" : "2025-06-26T10:07:09.000",
+        "count" : "1"
+      }, {
+        "item" : "2025-06-09T12:04:32.000",
+        "count" : "1"
+      }, {
+        "item" : "2021-06-09T15:15:02.000",
+        "count" : "1"
+      }, {
+        "item" : "2025-06-26T07:35:27.000",
+        "count" : "1"
+      }, {
+        "item" : "2022-06-01T09:00:35.000",
+        "count" : "1"
+      }, {
+        "item" : "2025-07-15T15:20:57.000",
+        "count" : "1"
+      }, {
+        "item" : "2023-05-22T10:37:37.000",
+        "count" : "1"
+      }, {
+        "item" : "2022-07-07T11:27:07.000",
+        "count" : "1"
+      }, {
+        "item" : "2025-05-27T12:41:15.000",
+        "count" : "1"
+      }, {
+        "item" : "2021-06-23T16:41:57.000",
+        "count" : "1"
+      }, {
+        "item" : "2025-05-13T13:58:17.000",
+        "count" : "1"
+      }, {
+        "item" : "2022-06-22T16:21:27.000",
+        "count" : "1"
+      } ],
+      "smallest" : "2021-05-24T09:03:41.000",
+      "count" : "848",
+      "cardinality" : "848"
+    },
+    "format" : {
+      "view" : "date"
+    }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "license" : {
+    "name" : "Public Domain"
+  },
+  "metadata" : {
+    "custom_fields" : {
+      "Agency" : {
+        "Agency" : "Office of Policy and Management"
+      },
+      "Details" : {
+        "Update Frequency" : "Annually",
+        "Temporal Coverage" : "2022-2025",
+        "Geographic Unit" : "Municipality"
+      }
+    },
+    "rowLabel" : "Municipality",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ]
+  },
+  "owner" : {
+    "id" : "7qka-mkbz",
+    "displayName" : "Bill Plummer",
+    "screenName" : "Bill Plummer",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula" ]
+  },
+  "query" : { },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "7qka-mkbz",
+    "displayName" : "Bill Plummer",
+    "screenName" : "Bill Plummer",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula" ]
+  },
+  "tags" : [ "municipal", "budget", "municipal budget", "mbds" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

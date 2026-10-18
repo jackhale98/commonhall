@@ -91,6 +91,11 @@ about, and take part in moderated public discussions.
   status page on cga.ct.gov.
 - The governor's executive orders (from portal.ct.gov) and Connecticut Supreme Court
   decisions, with pages where people can ask for a discussion.
+- The state budget (Budget tab): what was budgeted in the funds the General Assembly
+  appropriates and how much has been spent, by agency and service area, and every
+  program, searchable, from the State Comptroller's data on data.ct.gov.
+- Every town's adopted budget (Budget tab): total spending, the share for education
+  and the mill rate, from the Office of Policy and Management's summary.
 
 **Cities** (`/states/ma/boston/`, `/states/ma/worcester/`, `/states/ma/somerville/`,
 `/states/ma/cambridge/`, `/states/ct/bristol/`, `/states/ct/middletown/`): one set of
@@ -133,7 +138,7 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
 - 311 service requests by ward: how many, the share closed so far, typical time to
   close and the most common requests (summaries only; the city sets no target times).
 
-**Bristol, Connecticut** (tabs: Overview, Council, Committees)
+**Bristol, Connecticut** (tabs: Overview, Council, Committees, Budget)
 
 - The mayor and six councilors (two per district); an address in Bristol finds the
   whole council, since the district map is published only as a street index.
@@ -141,8 +146,11 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   Ordinance, Real Estate and Salary Committees, with agendas and minutes.
 - Every numbered agenda item (consent agenda, ordinances, contracts, appointments,
   committee reports), searchable, with each meeting it was on.
+- The adopted budget: revenue by source, education, debt service and the mill rate,
+  with the change on the year before (as for every Connecticut town, from the state's
+  summary).
 
-**Middletown, Connecticut** (tabs: Overview, Council, Neighborhoods)
+**Middletown, Connecticut** (tabs: Overview, Council, Neighborhoods, Budget)
 
 - The twelve Common Council members, all elected citywide.
 - Council meetings (regular, special, workshops) with agendas and minutes.
@@ -150,6 +158,7 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   the agenda gives one; items carried to later meetings keep one page.
 - 311 requests from SeeClickFix (summaries only): how many, typical time to close,
   the most common requests.
+- The adopted budget, like Bristol's.
 
 **Cambridge** (tabs: Overview, Council, Committees, Neighborhoods, Budget)
 
@@ -209,6 +218,8 @@ automatically.
 | Federal receipts and outlays | [Monthly Treasury Statement](https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/) (Treasury Fiscal Data API) | daily (a new statement each month) |
 | Federal agencies' budgets; awards by state and district | [USAspending.gov](https://www.usaspending.gov/) | daily (awards weekly) |
 | Massachusetts state budget and spending | [Comptroller's CTHRU](https://www.macomptroller.org/cthru/) | daily |
+| Connecticut state budget and spending | [State Comptroller's expense data](https://data.ct.gov/d/43fc-9893) (data.ct.gov) | daily (the Comptroller updates it after each monthly close) |
+| Connecticut town budgets | [OPM's summary of adopted municipal budgets](https://data.ct.gov/d/pcg4-s5rc) (data.ct.gov) | daily (towns report once a year) |
 | Massachusetts ballot questions | [Secretary of the Commonwealth, Information for Voters](https://www.sec.state.ma.us/divisions/elections/research-and-statistics/2026-information-for-voters/2026-ballot-questions.htm) | weekly |
 | Connecticut governor's executive orders | [portal.ct.gov](https://portal.ct.gov/governor/governors-actions/executive-orders) (Governor's office list and PDFs) | weekly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
@@ -296,7 +307,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-middletown-311` | daily | Middletown (CT) 311 report from SeeClickFix (only the report is stored) |
 | `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |
 | `sync-cambridge-data` | daily | Cambridge 311 report, operating and revenue budgets and capital plan from data.cambridgema.gov |
-| `sync-state-budget` | daily | State budgets line by line with spending so far (Massachusetts from the Comptroller's CTHRU), read only when the source has changed |
+| `sync-state-budget` | daily | State budgets line by line with spending so far (Massachusetts from the Comptroller's CTHRU, Connecticut from the State Comptroller on data.ct.gov) and Connecticut's town budgets, each read only when its source has changed |
 | `sync-federal-budget` | daily | The Monthly Treasury Statement's receipts and outlays (when a new one is out), agencies' budgets, and federal awards by state and congressional district (weekly), from the Treasury and USAspending |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load Middletown agendas (GitHub Action) | daily | Middletown (CT) Common Council members, meetings and agenda items (resolutions, ordinances, appropriations) from the city's agenda PDFs |
@@ -396,7 +407,7 @@ The full guide is [docs/discussions.md](docs/discussions.md).
 | Campaign finance (FEC) | Ready; fills in over the first week after deploy (about 535 members, refreshed weekly) |
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
 | Massachusetts bills | Live; refreshed with the hourly Open States sync |
-| Massachusetts state budget | Ready; loads on the first daily run after deploy |
+| Massachusetts and Connecticut state budgets, Connecticut town budgets | Ready; load on the first daily run after deploy |
 | Federal spending (Treasury statement, agencies, awards by district) | Ready; loads on the first daily run after deploy |
 | Connecticut bills, orders and Supreme Court | Bills and decisions arrive with the hourly syncs; orders after the first "Load CT governor orders" run |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
