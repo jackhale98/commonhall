@@ -61,13 +61,6 @@ npm run test:db
 - New `docs/decisions.md` entries are appended at the end with the next number.
 - The project is named CommonHall everywhere. Don't reintroduce "civic-tracker" or "Civic Tracker".
 
-## Open fixes from the October 2026 review
-
-Work through these in order. Delete each item from this list in the same change that fixes it.
-
-**Operations**
-10. Monitoring: `sync-health` pings a `HEARTBEAT_URL` secret when one is set; the owner chooses the dead-man's-switch service (a new third-party service, rule 9) and sets the secret.
-
 ## Res Publica
 
 [Res Publica](https://library.commonhall.org) is a separate repo: a library of founding texts and landmark Supreme Court cases. The two sites link by shared IDs: Supreme Court cases by CourtListener cluster ID, and Constitution clauses by Res Publica refs such as `Constitution.1.8.3`. Don't copy Res Publica data into CommonHall's database; read its published static index at build time.
