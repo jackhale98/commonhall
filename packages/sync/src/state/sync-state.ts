@@ -20,6 +20,7 @@
  * the catch-up gets it. New-bill feed events are only written once a state's first
  * full load is done.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   BudgetExhaustedError,
   HttpError,
@@ -171,7 +172,7 @@ export function stateBillRow(bill: OSBill): Record<string, unknown> | null {
     latest_passage_date: toDate(bill.latest_passage_date),
     primary_sponsor_id: sponsor?.person?.id ?? null,
     primary_sponsor_name: sponsor?.person?.name ?? sponsor?.name ?? null,
-    openstates_url: bill.openstates_url ?? null,
+    openstates_url: safeUrl(bill.openstates_url),
     updated_at: bill.updated_at ?? null,
     subjects: [...new Set((bill.subject ?? []).map((t) => t.trim()).filter(Boolean))].slice(0, 12),
     // Only when the summary was asked for (first-class states), so others keep theirs.
@@ -313,9 +314,9 @@ export function stateLegislatorRow(person: OSPerson): Record<string, unknown> | 
     chamber: chamber === 'upper' || chamber === 'lower' || chamber === 'legislature' ? chamber : null,
     district: role?.district !== undefined && role?.district !== null ? String(role.district) : null,
     title: role?.title ?? null,
-    photo_url: person.image || null,
+    photo_url: safeUrl(person.image),
     email: person.email || null,
-    openstates_url: person.openstates_url ?? null,
+    openstates_url: safeUrl(person.openstates_url),
     current: true,
     updated_at: person.updated_at ?? null,
   };

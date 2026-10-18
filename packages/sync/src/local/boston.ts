@@ -22,6 +22,7 @@
  * `syncLegistarCity` with them, a cron schedule and a `private.job_schedule` row, and
  * an entry in the site's city registry (site/src/lib/cities.ts).
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   BOSTON_COMMITTEES,
   BudgetExhaustedError,
@@ -409,9 +410,9 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent, c
       date: toDate(e.EventDate),
       time: e.EventTime,
       location: e.EventLocation,
-      agenda_url: e.EventAgendaFile,
-      minutes_url: e.EventMinutesFile,
-      legistar_url: e.EventInSiteURL,
+      agenda_url: safeUrl(e.EventAgendaFile),
+      minutes_url: safeUrl(e.EventMinutesFile),
+      legistar_url: safeUrl(e.EventInSiteURL),
       status: e.EventAgendaStatusName,
       last_modified: legistarUtc(e.EventLastModifiedUtc),
       committees: meetingCommittees(e, city),
@@ -449,7 +450,7 @@ async function syncMeeting(sql: Sql, client: LegistarClient, e: LegistarEvent, c
           nay_total: count('nay'),
           present_total: count('present'),
           absent_total: count('not_voting'),
-          source_url: e.EventInSiteURL,
+          source_url: safeUrl(e.EventInSiteURL),
         })
       ) {
         written += 1;

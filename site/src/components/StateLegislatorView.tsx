@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useState } from 'preact/hooks';
 import { formatDate, partyClass, stateName } from '../lib/format';
 import { stateBillFallbackHref, stateCommitteeHref, stateHref } from '../lib/paths';
@@ -181,7 +182,7 @@ export default function StateLegislatorView() {
                 <span class="small muted">Web</span>
                 <span class="cluster">
                   {uniqueHosts(person.links).map((url) => (
-                    <a href={url} rel="noopener">
+                    <a href={safeUrl(url) ?? undefined} rel="noopener">
                       {linkHost(url)}
                     </a>
                   ))}
@@ -295,7 +296,7 @@ export default function StateLegislatorView() {
           <>
             {' '}
             (
-            <a href={person.openstates_url} rel="noopener">
+            <a href={safeUrl(person.openstates_url) ?? undefined} rel="noopener">
               profile
             </a>
             )

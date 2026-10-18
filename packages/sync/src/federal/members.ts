@@ -6,6 +6,7 @@
  *    contact form and social accounts.
  * Rows are only rewritten when a value changed.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   congressStartYear,
   summarizeLegislator,
@@ -93,9 +94,9 @@ export function buildMemberRows(
       district: chamber === 'house' ? (item.district ?? leg?.district ?? 0) : null,
       chamber,
       current: currentIds.has(id),
-      photo_url: item.depiction?.imageUrl ?? null,
+      photo_url: safeUrl(item.depiction?.imageUrl),
       lis_id: leg?.lisId ?? formerLis.get(id) ?? null,
-      website: leg?.website ?? null,
+      website: safeUrl(leg?.website),
       phone: leg?.phone ?? null,
       office: leg?.office ?? null,
       contact_form: leg?.contactForm ?? null,

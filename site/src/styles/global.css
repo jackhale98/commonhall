@@ -1957,6 +1957,15 @@ nav[aria-label='Breadcrumb'] {
 .polis-panel .discussion-embed {
   margin: 0;
 }
+/* The Pol.is conversation (an iframe the site builds; its height follows Pol.is's resize messages). */
+.polis-frame {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
 
 /* Full-bleed decorations must never cause sideways scrolling. */
 html,

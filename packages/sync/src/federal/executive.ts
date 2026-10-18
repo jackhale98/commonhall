@@ -3,6 +3,7 @@
  * presidential nominations to the Senate (Congress.gov). One hourly job keeps
  * both current; each run costs a request or two once the first load is done.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   BudgetExhaustedError,
   type CongressClient,
@@ -65,8 +66,8 @@ export function executiveOrderRow(doc: FrExecutiveOrder): ExecutiveOrderRow {
     signing_date: doc.signing_date,
     publication_date: doc.publication_date,
     citation: doc.citation,
-    html_url: doc.html_url,
-    pdf_url: doc.pdf_url,
+    html_url: safeUrl(doc.html_url) ?? '',
+    pdf_url: safeUrl(doc.pdf_url),
     abstract: doc.abstract?.trim() || null,
     notes,
     revokes: eoNumbersAfter(notes, /^Revokes\b/),

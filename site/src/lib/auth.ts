@@ -5,6 +5,7 @@
  */
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from './config';
+import { safeNext as checkNext } from '@civic/congress-client/safe-url';
 import { href } from './paths';
 
 export const STORAGE_KEY = 'civic-auth';
@@ -92,9 +93,9 @@ export function takePendingFollow(): PendingFollow | null {
 }
 
 /** Only allow same-site relative paths as post-login destinations. */
+/** A same-site path to return to after signing in, or null (no open redirects: `/\\evil.com` is refused). */
 export function safeNext(next: string | null): string | null {
-  if (!next || !next.startsWith('/') || next.startsWith('//')) return null;
-  return next;
+  return checkNext(next, window.location.origin);
 }
 
 export async function followMany(targets: PendingTarget[]): Promise<void> {

@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import type { ComponentChildren } from 'preact';
 import type { StateBill } from '../lib/types';
 import { formatDate, stateName, tidyTitle } from '../lib/format';
@@ -32,12 +33,12 @@ export default function StateBillView({ bill, children }: { bill: StateBill; chi
       <div class="cluster" style={{ margin: '1rem 0' }}>
         <FollowButton targetType="state_bill" targetId={bill.id} label={bill.identifier} />
         {official && (
-          <a class="button" href={official} rel="noopener">
+          <a class="button" href={safeUrl(official) ?? undefined} rel="noopener">
             Full text on {new URL(official).hostname.replace(/^www\./, '')}
           </a>
         )}
         {bill.openstates_url && (
-          <a class="button" href={bill.openstates_url} rel="noopener">
+          <a class="button" href={safeUrl(bill.openstates_url) ?? undefined} rel="noopener">
             History on Open States
           </a>
         )}

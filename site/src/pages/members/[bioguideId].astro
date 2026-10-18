@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import BillListItem from '../../components/BillListItem';
 import CampaignFinance from '../../components/CampaignFinance.astro';
 import FollowButton from '../../components/FollowButton';
@@ -206,14 +207,14 @@ const SOCIAL_LABELS: Record<string, string> = {
         <ul class="plain">
           {member.website && (
             <li>
-              <a href={member.website} rel="noopener">
+              <a href={safeUrl(member.website) ?? undefined} rel="noopener">
                 Official website
               </a>
             </li>
           )}
           {member.contact_form && (
             <li>
-              <a href={member.contact_form} rel="noopener">
+              <a href={safeUrl(member.contact_form) ?? undefined} rel="noopener">
                 Contact form
               </a>
             </li>
@@ -226,7 +227,7 @@ const SOCIAL_LABELS: Record<string, string> = {
           {member.office && <li>{member.office}</li>}
           {social.map(([k, url]) => (
             <li>
-              <a href={url} rel="noopener">
+              <a href={safeUrl(url) ?? undefined} rel="noopener">
                 {SOCIAL_LABELS[k] ?? k}
               </a>
             </li>

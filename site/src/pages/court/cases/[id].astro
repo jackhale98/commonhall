@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../components/DiscussionLink.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadCaseAbout, loadDiscussionsByTarget, loadScotusCases, loadScotusOutcomeMap } from '../../../lib/build-data';
@@ -150,7 +151,7 @@ const opinions = [
   </dl>
 
   <p class="cluster">
-    <a class="button" href={c.url} rel="noopener">
+    <a class="button" href={safeUrl(c.url) ?? undefined} rel="noopener">
       Read the opinions
     </a>
   </p>

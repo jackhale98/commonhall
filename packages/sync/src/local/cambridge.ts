@@ -18,6 +18,7 @@
  * replaces only its own. Public communications, applications and other officers'
  * communications are left out (see CAMBRIDGE_TYPES).
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   CAMBRIDGE,
   CAMBRIDGE_COMMITTEES,
@@ -145,8 +146,8 @@ export function iqm2MeetingRow(m: Iqm2Meeting, iqm2: Iqm2Client, agendaUrl: stri
     date,
     time: clockTime(m.Date),
     location: m.Location?.Name?.trim() || null,
-    agenda_url: agendaUrl,
-    minutes_url: minutesUrl,
+    agenda_url: safeUrl(agendaUrl),
+    minutes_url: safeUrl(minutesUrl),
     legistar_url: iqm2.meetingUrl(m.ID),
     status: /cancel/i.test(m.Status) || kind.cancelled ? 'Cancelled' : null,
     committees,
@@ -368,7 +369,7 @@ export async function writeCambridgeMatter(
       intro_date: dates[0] ?? null,
       agenda_date: dates.at(-1) ?? null,
       passed_date: passed?.action_date ?? null,
-      legistar_url: older ? existing.legistar_url : input.url,
+      legistar_url: older ? existing.legistar_url : safeUrl(input.url),
       latest_action_date: latest?.action_date ?? null,
       latest_action_text: latest
         ? latest.action_text

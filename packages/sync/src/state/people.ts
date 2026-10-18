@@ -10,6 +10,7 @@
  * load adds offices and links, fills a missing email or photo, adds legislators the
  * API sync hasn't reached yet, and replaces each state's committees.
  */
+import { safeUrl } from '@civic/congress-client';
 import type { Sql } from '../db.ts';
 
 /** A legislator file, as far as we use it. */
@@ -44,7 +45,9 @@ function uniqueUrls(urls: string[]): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const raw of urls) {
-    const url = raw.trim();
+    // Only http(s) links (CLAUDE.md rule 3): a repository entry could hold any string.
+    const url = safeUrl(raw);
+    if (!url) continue;
     let key: string;
     try {
       key = decodeURI(url).replace(/\s+/g, ' ').replace(/\/$/, '').toLowerCase();
@@ -70,7 +73,7 @@ export function peopleLegislatorRow(p: PeoplePerson, state: string, today: strin
     state,
     chamber: role.type,
     district: role.district !== undefined && role.district !== null ? String(role.district) : null,
-    photo_url: p.image || null,
+    photo_url: safeUrl(p.image),
     email: p.email || null,
     offices: (p.offices ?? [])
       .filter((o) => o.address || o.voice)
@@ -106,7 +109,7 @@ export function peopleCommitteeRows(
       chamber: c.chamber && CHAMBERS.has(c.chamber) ? c.chamber : null,
       classification: c.classification === 'subcommittee' ? 'subcommittee' : 'committee',
       parent_id: c.parent ?? null,
-      url: c.links?.[0]?.url ?? c.sources?.[0]?.url ?? null,
+      url: safeUrl(c.links?.[0]?.url) ?? safeUrl(c.sources?.[0]?.url),
       member_count: members.length,
     },
     members,
@@ -139,7 +142,7 @@ export function peopleExecutiveRow(p: PeoplePerson, state: string, today: string
     name: p.name,
     party: party?.name ?? null,
     role: known ?? role.type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    photo_url: p.image || null,
+    photo_url: safeUrl(p.image),
     email: p.email || null,
     offices: (p.offices ?? [])
       .filter((o) => o.address || o.voice)

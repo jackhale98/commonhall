@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { initials } from '../lib/format';
 
 interface Props {
@@ -24,7 +25,7 @@ export default function MemberPhoto({ name, url, bioguideId, size = 96, eager = 
   const height = Math.round(size * 1.2);
   const style = { width: `${size}px`, height: `${height}px` };
   const portrait = bioguideId ? congressPortrait(bioguideId) : null;
-  const src = url ?? portrait;
+  const src = safeUrl(url) ?? portrait;
   if (!src) {
     // Initials scale with the badge, so two letters fit a small one.
     return (

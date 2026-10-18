@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useState } from 'preact/hooks';
 import { partyClass, stateName } from '../lib/format';
 import { href, stateCommitteeHref, stateHref, stateLegislatorHref } from '../lib/paths';
@@ -111,7 +112,7 @@ export default function StateCommitteeView() {
       )}
       {committee.url && (
         <p>
-          <a class="button" href={committee.url} rel="noopener">
+          <a class="button" href={safeUrl(committee.url) ?? undefined} rel="noopener">
             Hearings and documents on {linkHost(committee.url)}
           </a>
         </p>

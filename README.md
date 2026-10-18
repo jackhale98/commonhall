@@ -287,8 +287,10 @@ The reasoning behind the main design choices is recorded in
 - **Minimal data.** An account stores your email, what you follow and, only if you
   choose to save it, your matched address and districts. Delete any of it, or your
   whole account, at any time.
-- **Discussions stay anonymous.** Pol.is receives a random ID for you and nothing
-  else: never your name, email, account ID or address.
+- **Discussions stay anonymous.** Discussions are Pol.is polls in an iframe; no
+  Pol.is code runs in the site's own pages. When you're signed in, Pol.is receives a
+  random ID for you, never your name, email, account ID or address. Like any site
+  you load, Pol.is sees your IP address and keeps its own cookie in its frame.
 
 Full details are on the site's [privacy page](https://commonhall.org/privacy/)
 and [discussion rules](https://commonhall.org/moderation/).

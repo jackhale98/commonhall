@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../components/DiscussionLink.astro';
 import Base from '../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadExecutiveOrders } from '../../../lib/build-data';
@@ -98,11 +99,11 @@ const label = order.eo_number ? `Executive Order ${order.eo_number}` : 'Executiv
   </dl>
 
   <p class="cluster">
-    <a class="button" href={order.html_url} rel="noopener">
+    <a class="button" href={safeUrl(order.html_url) ?? undefined} rel="noopener">
       Read the order
     </a>
     {order.pdf_url && (
-      <a href={order.pdf_url} rel="noopener">
+      <a href={safeUrl(order.pdf_url) ?? undefined} rel="noopener">
         Official PDF
       </a>
     )}

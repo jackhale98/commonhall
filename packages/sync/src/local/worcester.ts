@@ -10,6 +10,7 @@
  *    standing committee meetings are kept (PrimeGov also lists boards, school
  *    councils and commissions).
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   HttpClient,
   PrimeGovClient,
@@ -57,7 +58,7 @@ export function worcesterOfficialRow(c: WorcesterCouncilor) {
     district: c.district,
     title: c.title,
     email: c.email,
-    photo_url: c.photo_url,
+    photo_url: safeUrl(c.photo_url),
     current: true,
   };
 }

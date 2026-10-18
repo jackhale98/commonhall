@@ -96,8 +96,11 @@ Treat results as indicative and publish participation counts with them.
 - The only user identifier sent to Pol.is is `profiles.polis_xid`, a random UUID
   created per user, sent only when the user may take part. Never the auth id,
   email, address or districts.
-- `data-parent_url` is the page's clean URL without query string or fragment, and
-  `document.referrer` is reduced to the site origin before `embed.js` reads it.
+- The site builds the Pol.is iframe itself (`PolisDiscussion.tsx`); no Pol.is
+  script runs in our pages, so Pol.is can't read the page or the session stored in
+  localStorage. The frame's address carries `parent_url` (the page's clean URL
+  without query string or fragment) and `referrer` (the site origin), and the frame
+  sends only the origin as its referrer (`referrerpolicy="origin"`).
 - Removing a saved address clears the address fields but keeps the profile row,
   so the user stays the same Pol.is participant. Deleting the account deletes it.
 

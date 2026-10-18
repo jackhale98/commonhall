@@ -4,6 +4,7 @@
  * `archive_cache`. Used by the public fetch-on-demand function, so every call is
  * bounded: a fixed number of requests per item and an hourly cap overall.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   billId,
   congressForDate,
@@ -141,8 +142,8 @@ export async function fetchBillPayload(client: CongressClient, id: string): Prom
       latest_action_text: detail.latestAction?.text ?? null,
       status: deriveStatus(ref.type, actions),
       summary_text: htmlToText(latestSummary?.text),
-      text_url: pickTextUrl(text),
-      congress_gov_url: detail.legislationUrl ?? congressGovBillUrl(ref.congress, ref.type, ref.number),
+      text_url: safeUrl(pickTextUrl(text)),
+      congress_gov_url: safeUrl(detail.legislationUrl) ?? congressGovBillUrl(ref.congress, ref.type, ref.number),
       law_number: detail.laws?.[0]?.number ?? null,
       cosponsors_count: rows.filter((r) => !r.withdrawn_date).length,
     },
@@ -167,8 +168,8 @@ function memberRow(m: MemberDetail) {
     district: chamber === 'house' ? (last?.district ?? m.district ?? 0) : null,
     chamber,
     current: m.currentMember === true,
-    photo_url: m.depiction?.imageUrl ?? null,
-    website: m.officialWebsiteUrl ?? null,
+    photo_url: safeUrl(m.depiction?.imageUrl),
+    website: safeUrl(m.officialWebsiteUrl),
     phone: m.addressInformation?.phoneNumber ?? null,
     office: m.addressInformation?.officeAddress ?? null,
     contact_form: null,

@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import Base from '../../../../layouts/Base.astro';
 import { loadBallotQuestions, type BallotArgument, type BallotQuestion } from '../../../../lib/build-data';
 import { ballotResult, electionLabel } from '../../../../lib/ballot';
@@ -170,7 +171,7 @@ const sides: { key: 'for' | 'against'; label: string; arg: BallotArgument | null
     {source ? (
       <>
         From {source.publisher}’s{' '}
-        <a href={q.source_url} rel="noopener">
+        <a href={safeUrl(q.source_url) ?? undefined} rel="noopener">
           {source.guide} {year}
         </a>
         , as published. The guide is also available in{' '}
@@ -182,7 +183,7 @@ const sides: { key: 'for' | 'against'; label: string; arg: BallotArgument | null
     ) : (
       <>
         From the{' '}
-        <a href={q.source_url} rel="noopener">
+        <a href={safeUrl(q.source_url) ?? undefined} rel="noopener">
           state’s official write-up
         </a>
         , as published.

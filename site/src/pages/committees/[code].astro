@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import MeetingList from '../../components/MeetingList.astro';
 import MemberChip from '../../components/MemberChip';
 import Base from '../../layouts/Base.astro';
@@ -78,7 +79,7 @@ const billRow = (id: string) => billById.get(id);
     {c.jurisdiction && <p class="lede">{c.jurisdiction}</p>}
     <p class="cluster small">
       {c.url && (
-        <a class="button" href={c.url} rel="noopener">
+        <a class="button" href={safeUrl(c.url) ?? undefined} rel="noopener">
           Committee website
         </a>
       )}

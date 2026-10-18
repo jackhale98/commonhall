@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useState } from 'preact/hooks';
 import { parseBillId } from '@civic/congress-client/ids';
 import { onDemand } from '../lib/functions';
@@ -146,12 +147,12 @@ export default function BillFallback() {
         <div class="cluster" style={{ marginTop: '1rem' }}>
           <FollowButton targetType="bill" targetId={bill.id} label={billNumberLabel(bill)} />
           {bill.text_url && (
-            <a class="button" href={bill.text_url} rel="noopener">
+            <a class="button" href={safeUrl(bill.text_url) ?? undefined} rel="noopener">
               Read the text
             </a>
           )}
           {bill.congress_gov_url && (
-            <a class="button" href={bill.congress_gov_url} rel="noopener">
+            <a class="button" href={safeUrl(bill.congress_gov_url) ?? undefined} rel="noopener">
               On Congress.gov
             </a>
           )}

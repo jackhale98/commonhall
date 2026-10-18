@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { parseBillId, parseVoteId } from '@civic/congress-client/ids';
 import { billNumberLabel, formatDateTime, partyLabel, stateName } from '../lib/format';
@@ -227,7 +228,7 @@ export default function VoteView({ initial }: Props) {
       )}
       {vote.source_url && (
         <p>
-          <a href={vote.source_url} rel="noopener">
+          <a href={safeUrl(vote.source_url) ?? undefined} rel="noopener">
             Official record
           </a>
         </p>

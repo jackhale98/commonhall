@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useState } from 'preact/hooks';
 import { onDemand } from '../lib/functions';
 import { memberRole, partyClass, partyLabel } from '../lib/format';
@@ -72,7 +73,7 @@ export default function MemberFallback() {
           </p>
           {member.website && (
             <p>
-              <a href={member.website} rel="noopener">
+              <a href={safeUrl(member.website) ?? undefined} rel="noopener">
                 Official website
               </a>
             </p>

@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 /**
  * A city's council and committee meetings as rows: when, which committee (linked)
  * or the full council, cancellations, the dockets on a committee's agenda where the
@@ -100,17 +101,17 @@ const session = city.committeeSession;
         )}
         <p class="cluster small meeting-links">
           {m.agenda_url && (
-            <a href={m.agenda_url} rel="noopener">
+            <a href={safeUrl(m.agenda_url) ?? undefined} rel="noopener">
               Agenda
             </a>
           )}
           {m.minutes_url && (
-            <a href={m.minutes_url} rel="noopener">
+            <a href={safeUrl(m.minutes_url) ?? undefined} rel="noopener">
               Minutes
             </a>
           )}
           {!m.agenda_url && !m.minutes_url && m.legistar_url && (
-            <a href={m.legistar_url} rel="noopener">
+            <a href={safeUrl(m.legistar_url) ?? undefined} rel="noopener">
               Meeting details
             </a>
           )}

@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useState } from 'preact/hooks';
 import { formatDate } from '../lib/format';
 import { cityOf, matterLabel } from '../lib/cities';
@@ -73,7 +74,7 @@ export default function LocalMatterView(props: Props) {
       <div class="cluster" style={{ margin: '1rem 0' }}>
         <FollowButton targetType="local_matter" targetId={matter.id} label={label} />
         {matter.legistar_url && (
-          <a class="button" href={matter.legistar_url} rel="noopener">
+          <a class="button" href={safeUrl(matter.legistar_url) ?? undefined} rel="noopener">
             {city?.recordLabel ?? 'Full record'}
           </a>
         )}

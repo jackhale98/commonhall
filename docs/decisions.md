@@ -1860,3 +1860,29 @@ The state high courts get the same, with fixes to what they showed before:
 Migration 063 marks every state decision to be read again (about 600, newest
 first, six per three-hourly run, so about two weeks).
 
+## 105. Safe links, a Content Security Policy and Pol.is in its own frame
+
+From the October 2026 review (`CLAUDE.md`):
+
+- **Sign-in redirects.** `safeNext` resolves the return path against the site's
+  origin and keeps it only when it stays there; `/\evil.com` (which browsers read as
+  `//evil.com`) and `//evil.com` are refused.
+- **Upstream URLs.** `safeUrl()` (`congress-client/src/safe-url.ts`, shared by the
+  syncs and the site) keeps only absolute http(s) URLs. The syncs apply it where an
+  upstream string becomes a stored link or photo (Congress.gov, Federal Register,
+  Open States and openstates/people, Legistar, IQM2, city sites), and every page
+  applies it again where such a value becomes an `href` or image `src`; a value that
+  fails renders as text without a link.
+- **Content Security Policy**, as a `<meta>` tag from Astro's `security.csp` (GitHub
+  Pages can't send headers): scripts only from this site or hashed by Astro at
+  build, no plugins, frames only from pol.is, connections only to this site and
+  Supabase, images from any https source (photos come from many government sites).
+  Style attributes stay allowed. The few scripts that must run before the page is
+  drawn (theme, the "scripts run" mark, photo fallbacks), the menu and the 404
+  redirect are small files in `site/public/js/` rather than inline code.
+- **Pol.is.** The site builds the Pol.is iframe itself (the same address
+  `embed.js` built: `/{site_id}/{page_id}?…`) instead of loading `embed.js` into the
+  page, so no Pol.is script can read the page or the session in localStorage. The
+  frame is sandboxed, sends only the site's origin as its referrer, and grows to the
+  height Pol.is reports.
+

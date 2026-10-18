@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { NOMINATION_STATUS, type NominationRow, type NominationStatus } from '../lib/executive';
 import { formatDate } from '../lib/format';
@@ -166,7 +167,7 @@ export default function NominationExplorer({ initial, agencies }: Props) {
                   {n.s === 'confirmed' ? ` · confirmed ${formatDate(n.d)}` : n.r && ` · received ${formatDate(n.r)}`}
                 </p>
                 <p class="nom-name">
-                  <a href={n.u} rel="noopener">
+                  <a href={safeUrl(n.u) ?? undefined} rel="noopener">
                     {n.w}
                   </a>
                 </p>

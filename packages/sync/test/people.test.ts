@@ -35,7 +35,7 @@ describe('openstates/people legislators', () => {
     ]);
     // "Profile/L M0" and "Profile/L%20M0" are the same page.
     expect(row.links).toEqual([
-      'https://malegislature.gov/Legislators/Profile/L M0',
+      'https://malegislature.gov/Legislators/Profile/L%20M0',
       'https://malegislature.gov/Legislators/Profile/L_M2',
     ]);
   });

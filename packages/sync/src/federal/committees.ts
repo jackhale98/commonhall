@@ -7,6 +7,7 @@
  *    synced from now on; bills loaded earlier are caught up a batch at a time;
  *  - hearings and markups from Congress.gov's committee-meeting endpoints.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   BudgetExhaustedError,
   billId,
@@ -65,7 +66,7 @@ export function committeeRows(committees: LegislatorCommittee[]): CommitteeRow[]
       parent_code: null,
       chamber: c.type,
       name: c.name.trim(),
-      url: c.url ?? null,
+      url: safeUrl(c.url),
       jurisdiction: c.jurisdiction?.trim() || null,
       address: c.address ?? null,
       phone: c.phone ?? null,

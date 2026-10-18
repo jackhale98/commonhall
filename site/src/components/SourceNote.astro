@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 /** "Councilors from the city's website, checked weekly. Meetings from …" — where a page's data comes from. */
 import type { Source } from '../lib/cities';
 
@@ -15,7 +16,7 @@ const parts = Astro.props.parts.filter((p) => p.source);
       {i > 0 && ' '}
       <span>
         {p.what} from{' '}
-        <a href={p.source!.url} rel="noopener">
+        <a href={safeUrl(p.source!.url) ?? undefined} rel="noopener">
           {p.source!.label}
         </a>
         {p.source!.cadence && `, checked ${p.source!.cadence}`}.

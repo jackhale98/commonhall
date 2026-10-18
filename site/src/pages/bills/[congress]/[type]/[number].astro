@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import BillFacts from '../../../../components/BillFacts';
 import BillLive from '../../../../components/BillLive';
@@ -109,12 +110,12 @@ const restBlocks = summaryRest.map(summaryBlock);
     <div class="cluster bill-actions-row">
       <FollowButton client:idle targetType="bill" targetId={bill.id} label={label} />
       {bill.text_url && (
-        <a class="button" href={bill.text_url} rel="noopener">
+        <a class="button" href={safeUrl(bill.text_url) ?? undefined} rel="noopener">
           Read the text
         </a>
       )}
       {bill.congress_gov_url && (
-        <a class="button" href={bill.congress_gov_url} rel="noopener">
+        <a class="button" href={safeUrl(bill.congress_gov_url) ?? undefined} rel="noopener">
           On Congress.gov
         </a>
       )}

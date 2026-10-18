@@ -1,3 +1,4 @@
+import { safeUrl } from '@civic/congress-client/safe-url';
 import { formatDateTime } from '../lib/format';
 import { KIND_FILL, type MeetingKind } from '../lib/meetings';
 
@@ -27,7 +28,7 @@ export default function MeetingItem({ m, hideCommittees = false }: { m: MeetingR
         {m.status && m.status !== 'Scheduled' && <span class="chip">{m.status}</span>}
       </p>
       <p class="meeting-title">
-        <a href={m.url} rel="noopener">
+        <a href={safeUrl(m.url) ?? undefined} rel="noopener">
           {m.title ?? 'Committee meeting'}
         </a>
       </p>
@@ -44,7 +45,7 @@ export default function MeetingItem({ m, hideCommittees = false }: { m: MeetingR
           <>
             {' '}
             ·{' '}
-            <a href={m.video} rel="noopener">
+            <a href={safeUrl(m.video) ?? undefined} rel="noopener">
               Video
             </a>
           </>

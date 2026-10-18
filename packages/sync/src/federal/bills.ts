@@ -8,6 +8,7 @@
  *     when a value actually changed;
  *  4. report what changed so callers can emit feed events.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   billId,
   congressGovBillUrl,
@@ -261,7 +262,7 @@ export async function syncBill(
     policy_area: detail.policyArea?.name ?? null,
     latest_action_date: toDate(detail.latestAction?.actionDate),
     latest_action_text: detail.latestAction?.text?.trim() ?? null,
-    congress_gov_url: detail.legislationUrl ?? congressGovBillUrl(congress, t, number),
+    congress_gov_url: safeUrl(detail.legislationUrl) ?? congressGovBillUrl(congress, t, number),
     law_number: detail.laws?.[0]?.number ?? null,
     update_date: toTimestamp(detail.updateDate),
     update_date_including_text: toTimestamp(detail.updateDateIncludingText),
@@ -285,7 +286,7 @@ export async function syncBill(
   } else if (counts.summaries_count === 0 && !skipped.includes('summaries')) {
     row.summary_text = null;
   }
-  if (textVersions) row.text_url = pickTextUrl(textVersions);
+  if (textVersions) row.text_url = safeUrl(pickTextUrl(textVersions));
   if (titles) {
     row.short_title = pickShortTitle(titles);
     row.titles_rev = TITLES_REV;

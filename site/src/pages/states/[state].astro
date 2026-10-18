@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import Hemicycle from '../../components/viz/Hemicycle';
 import MemberPhoto from '../../components/MemberPhoto';
 import StateHeader from '../../components/StateHeader.astro';
@@ -127,7 +128,11 @@ const latestCase = stateCases.get(code)?.[0];
             <MemberPhoto name={e.name} url={e.photo_url} size={40} />
             <span class="official-text">
               {e.links[0] ? (
-                <a href={e.links[0]} rel="noopener" title={`Official site (${linkHost(e.links[0])})`}>
+                <a
+                  href={safeUrl(e.links[0]) ?? undefined}
+                  rel="noopener"
+                  title={`Official site (${linkHost(e.links[0])})`}
+                >
                   {e.name}
                 </a>
               ) : (

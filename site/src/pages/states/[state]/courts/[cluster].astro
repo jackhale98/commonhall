@@ -1,4 +1,5 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import Base from '../../../../layouts/Base.astro';
 import { loadDiscussionsByTarget, loadStateCourtCases, type StateCourtCase } from '../../../../lib/build-data';
@@ -80,7 +81,7 @@ const opinions = [
   <DiscussionLink discussion={discussion} targetType="state_court_case" targetId={id} />
 
   <p class="cluster" style="margin-block: var(--space-4)">
-    <a class="button" href={c.url} rel="noopener">
+    <a class="button" href={safeUrl(c.url) ?? undefined} rel="noopener">
       Read the opinions on CourtListener
     </a>
   </p>

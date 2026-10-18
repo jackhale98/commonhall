@@ -18,6 +18,7 @@
  *  - Councilors: replaced only when the page reads as complete (six councilors and
  *    the mayor), so a changed layout fails loudly instead of emptying the city.
  */
+import { safeUrl } from '@civic/congress-client';
 import {
   BRISTOL_COUNCIL_URL,
   HttpClient,
@@ -88,7 +89,7 @@ export async function storeCouncilors(sql: Sql, city: string, councilors: CityCo
           district: c.district,
           title: c.title,
           email: c.email,
-          photo_url: c.photo_url,
+          photo_url: safeUrl(c.photo_url),
           current: true,
         })
       )

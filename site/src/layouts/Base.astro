@@ -95,40 +95,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
     <link rel="manifest" href={href('site.webmanifest')} />
     <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={bricolageLatin} as="font" type="font/woff2" crossorigin />
-    <script is:inline>
-      // Mark that scripts run, so the collapsible menu starts closed (it stays open without JS).
-      document.documentElement.classList.add('js');
-      // Apply a saved theme before first paint. Storage may be unavailable; ignore errors.
-      try {
-        const saved = localStorage.getItem('theme');
-        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
-      } catch {
-        // Storage unavailable; fall back to the system theme.
-      }
-    </script>
-    <script is:inline>
-      // Photos load from their public sources; on error try data-fallback, then show initials.
-      document.addEventListener(
-        'error',
-        (e) => {
-          const img = e.target;
-          if (!(img instanceof HTMLImageElement) || !img.classList.contains('photo')) return;
-          if (img.dataset.fallback) {
-            img.src = img.dataset.fallback;
-            delete img.dataset.fallback;
-            return;
-          }
-          const span = document.createElement('span');
-          span.className = 'photo photo-fallback';
-          span.setAttribute('aria-hidden', 'true');
-          span.style.cssText = img.style.cssText;
-          span.style.fontSize = Math.min(19, Math.round((img.width || 96) * 0.4)) + 'px';
-          span.textContent = img.dataset.initials || '';
-          img.replaceWith(span);
-        },
-        true,
-      );
-    </script>
+    <script is:inline src={href('js/head.js')}></script>
     <slot name="head" />
   </head>
   <body>
@@ -396,58 +363,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
         sync();
       });
     </script>
-    <script is:inline>
-      // Expanding menu on narrow screens: toggle, close on Escape or when a link is chosen.
-      (function () {
-        const button = document.getElementById('menu-toggle');
-        const menu = document.getElementById('site-menu');
-        if (!button || !menu) return;
-        const set = (open) => {
-          button.setAttribute('aria-expanded', String(open));
-          menu.toggleAttribute('data-open', open);
-        };
-        button.addEventListener('click', () => {
-          const open = button.getAttribute('aria-expanded') !== 'true';
-          set(open);
-          if (open) menu.querySelector('a, input')?.focus();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
-            set(false);
-            button.focus();
-          }
-        });
-        menu.addEventListener('click', (e) => {
-          if (e.target instanceof Element && e.target.closest('a')) set(false);
-        });
-        window.matchMedia('(min-width: 64rem)').addEventListener('change', (e) => e.matches && set(false));
-
-        // Wide screens: Congress and States & local open a small menu on click (not hover).
-        const groups = [...menu.querySelectorAll('.nav-group-button')];
-        const close = (except) => groups.forEach((g) => g !== except && g.setAttribute('aria-expanded', 'false'));
-        groups.forEach((g) =>
-          g.addEventListener('click', () => {
-            const open = g.getAttribute('aria-expanded') !== 'true';
-            close(g);
-            g.setAttribute('aria-expanded', String(open));
-          }),
-        );
-        document.addEventListener('click', (e) => {
-          if (!(e.target instanceof Element) || !e.target.closest('.nav-group')) close();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key !== 'Escape') return;
-          const open = groups.find((g) => g.getAttribute('aria-expanded') === 'true');
-          if (open) {
-            close();
-            open.focus();
-          }
-        });
-        menu.addEventListener('focusout', (e) => {
-          if (!(e.relatedTarget instanceof Element) || !e.relatedTarget.closest('.nav-group')) close();
-        });
-      })();
-    </script>
+    <script is:inline src={href('js/menu.js')}></script>
   </body>
 </html>
 
