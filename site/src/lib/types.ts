@@ -39,6 +39,8 @@ export interface Bill {
   law_number: string | null;
   update_date: string | null;
   cosponsors_count: number;
+  /** Res Publica refs of the provisions the sponsor cites as authority (House bills); null until read. */
+  constitution_refs?: string[] | null;
 }
 
 export interface BillAction {
@@ -65,7 +67,7 @@ export const BILL_LIST_COLUMNS =
   'id,congress,bill_type,number,title,short_title,introduced_date,latest_action_date,latest_action_text,status,sponsor_id,policy_area';
 
 export const BILL_PAGE_COLUMNS =
-  'id,congress,bill_type,number,origin_chamber,title,short_title,introduced_date,sponsor_id,policy_area,latest_action_date,latest_action_text,status,summary_text,text_url,congress_gov_url,law_number,update_date,cosponsors_count';
+  'id,congress,bill_type,number,origin_chamber,title,short_title,introduced_date,sponsor_id,policy_area,latest_action_date,latest_action_text,status,summary_text,text_url,congress_gov_url,law_number,update_date,cosponsors_count,constitution_refs';
 
 export const MEMBER_COLUMNS =
   'bioguide_id,name,sort_name,party,party_name,state,district,chamber,current,photo_url,website,phone,office,contact_form,social';

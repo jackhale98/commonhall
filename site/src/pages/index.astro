@@ -1,4 +1,5 @@
 ---
+import { RES_PUBLICA_URL } from '../lib/respublica';
 import BillListItem from '../components/BillListItem';
 import DiscussionCard from '../components/DiscussionCard.astro';
 import FeedView from '../components/FeedView';
@@ -258,6 +259,19 @@ const recentCaseOutcome = recentCase && outcomes.get(recentCase.cluster_id);
       </ul>
     )}
   </section>
+  <section class="library-band" aria-labelledby="library-h">
+    <div>
+      <p class="kicker">Res Publica, our sister library</p>
+      <h2 id="library-h">Read the founding texts behind it all</h2>
+      <p>
+        The Constitution, the Federalist Papers and the ratification debate, every passage linked to what it cites and
+        what answers it. Bill pages link the clauses their sponsors cite.
+      </p>
+    </div>
+    <a class="button" href={RES_PUBLICA_URL} rel="noopener">
+      Open Res Publica →
+    </a>
+  </section>
 </Base>
 
 <script>
@@ -395,6 +409,29 @@ const recentCaseOutcome = recentCase && outcomes.get(recentCase.cluster_id);
     align-items: center;
     gap: var(--space-2);
     font-weight: 600;
+  }
+  .library-band {
+    display: grid;
+    gap: var(--space-3);
+    align-items: center;
+    margin-top: var(--space-6);
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+  }
+  @media (min-width: 48rem) {
+    .library-band {
+      grid-template-columns: 1fr auto;
+    }
+  }
+  .library-band h2 {
+    margin: 0 0 var(--space-2);
+  }
+  .library-band p:last-child {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--text-muted);
   }
   .discuss-band {
     display: grid;

@@ -2,6 +2,7 @@
 import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import BillFacts from '../../../../components/BillFacts';
+import CitedAuthority from '../../../../components/CitedAuthority';
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
 import VoteList from '../../../../components/VoteList';
@@ -17,9 +18,11 @@ import {
   loadBillCommittees,
   loadCommittees,
   loadVotesByBill,
+  loadConstitutionIndex,
 } from '../../../../lib/build-data';
 import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraphs } from '../../../../lib/format';
 import { href } from '../../../../lib/paths';
+import { clauseLinks } from '../../../../lib/respublica';
 import type { Bill } from '../../../../lib/types';
 
 export async function getStaticPaths() {
@@ -58,6 +61,7 @@ const sponsor = bill.sponsor_id ? members.get(bill.sponsor_id) : undefined;
 const title = billDisplayTitle(bill);
 const label = billNumberLabel(bill);
 const summary = paragraphs(bill.summary_text);
+const cited = clauseLinks(bill.constitution_refs, await loadConstitutionIndex());
 const description = `${label} (${congressLabel(bill.congress)}): ${bill.title}`.slice(0, 300);
 const liveActions = actions.map(({ seq, action_date, text, chamber, source_system }) => ({
   seq,
@@ -108,6 +112,7 @@ const restBlocks = summaryRest.map(summaryBlock);
       {bill.policy_area && <span>Policy area: {bill.policy_area}</span>}
       {bill.law_number && <span>Public Law {bill.law_number}</span>}
     </p>
+    <CitedAuthority links={cited} />
     <div class="cluster bill-actions-row">
       <FollowButton client:idle targetType="bill" targetId={bill.id} label={label} />
       {bill.text_url && (

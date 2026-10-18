@@ -754,6 +754,10 @@ details.more > summary {
   color: var(--text-muted);
   font-style: italic;
 }
+/* The constitutional authority a bill's sponsor cites, under the bill's dates. */
+.cited-authority {
+  margin: var(--space-1) 0 0;
+}
 
 .badge {
   display: inline-flex;

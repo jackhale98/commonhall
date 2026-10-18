@@ -38,6 +38,8 @@ import { TOWN_BUDGET_COLUMNS, type StateBudgetLine, type StateBudgetTotal, type 
 import { AREA_COLUMNS, type AgencyBudget, type AreaSpending, type MtsLineRow } from './federal-budget';
 import { classify, trackedYears, type FundingBill } from './appropriations';
 import { CITIES } from './cities';
+import { HttpClient } from '@civic/congress-client/http';
+import { RES_PUBLICA_REFS, constitutionIndex, type ClauseIndex } from './respublica';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
   CAPITAL_COLUMNS,
@@ -502,6 +504,22 @@ export function loadStateBudgetLines(state: string): Promise<StateBudgetLine[]> 
     );
   return budgetLines.get(state)!;
 }
+
+/**
+ * The Constitution's provisions on Res Publica (labels and links), read from its
+ * published index once per build. Null when the library can't be reached or its index
+ * has changed shape: the site builds without the links rather than fail.
+ */
+export const loadConstitutionIndex = memo(async (): Promise<ClauseIndex | null> => {
+  if (DEMO) return null;
+  try {
+    const http = new HttpClient({ maxAttempts: 3, timeoutMs: 20_000 });
+    return constitutionIndex(await http.getJson(RES_PUBLICA_REFS));
+  } catch (error) {
+    console.warn(`[build-data] Res Publica index unavailable; building without clause links: ${String(error)}`);
+    return null;
+  }
+});
 
 /** Every town's adopted budgets in a state, newest year first (Connecticut's towns). */
 export const loadTownBudgets = memoByState((state) =>

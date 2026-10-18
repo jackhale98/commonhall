@@ -21,7 +21,7 @@ import {
 } from '@civic/congress-client';
 import { insertMany, upsertIfChanged, type AnySql, type Sql } from '../db.ts';
 import type { JobRun } from '../job.ts';
-import { catchUpBillTitles } from './bills.ts';
+import { catchUpBillTitles, catchUpConstitutionRefs } from './bills.ts';
 import { toDate, toTimestamp } from '../text.ts';
 
 export const COMMITTEES_JOB = 'committees';
@@ -384,6 +384,10 @@ export async function syncCommittees(
     const titles = await catchUpBillTitles(run.sql, options.client, options.catchUpBatch ?? 60, run.outOfTime);
     run.rowsWritten += titles.changed;
     run.log('bill titles catch-up', titles);
+    // And the constitutional authority House bills cite, for bills stored before it was read.
+    const authority = await catchUpConstitutionRefs(run.sql, options.client, options.catchUpBatch ?? 60, run.outOfTime);
+    run.rowsWritten += authority.checked;
+    run.log('bill constitutional authority catch-up', authority);
   } catch (error) {
     if (!(error instanceof BudgetExhaustedError)) throw error;
     run.log('committees: budget exhausted', {});

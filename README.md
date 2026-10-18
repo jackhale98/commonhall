@@ -35,7 +35,10 @@ about, and take part in moderated public discussions.
   list opens on bills that moved past committee, latest action first; all activity
   is one click away.
 - Read a bill's plain status tracker, summary, full action history, sponsor,
-  cosponsors (with a party breakdown) and related roll-call votes.
+  cosponsors (with a party breakdown) and related roll-call votes. A House bill's
+  page links the constitutional provisions its sponsor cites as Congress's authority
+  to the clause in [Res Publica](https://respublicalibrary.org/), our sister library
+  of founding texts.
 - See every roll-call vote: the result, a party-by-party breakdown and how each
   member voted. The votes page highlights the closest votes.
 - Look up any member of Congress: photo, contact details, sponsored bills, recent
@@ -206,6 +209,7 @@ automatically.
 | What | Source | Refreshed |
 | --- | --- | --- |
 | Federal bills, actions, summaries, members | [Congress.gov API](https://api.congress.gov/) | every 10 minutes |
+| Constitution clause labels and links | [Res Publica](https://respublicalibrary.org/)'s published index (`/data/refs.json`) | each site build |
 | House and Senate roll-call votes | Congress.gov and [senate.gov](https://www.senate.gov/legislative/votes.htm) | every 10 minutes |
 | Committees and rosters | congress-legislators | daily |
 | Bill referrals, hearings and markups | Congress.gov | hourly |
@@ -289,7 +293,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | --- | --- | --- |
 | `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events |
 | `sync-members` | daily | Members of Congress |
-| `sync-committees` | hourly | Congressional committee rosters (daily), hearings and markups, and older bills' committee referrals |
+| `sync-committees` | hourly | Congressional committee rosters (daily), hearings and markups, and older bills' committee referrals and constitutional authority statements |
 | `sync-finance` | hourly | Campaign finance summaries from OpenFEC for members whose figures are over a week old |
 | `sync-executive` | hourly | Executive orders from the Federal Register and presidential nominations from Congress.gov |
 | `sync-scotus` | hourly | U.S. Supreme Court decisions, syllabi and separate opinions from CourtListener |

@@ -2212,3 +2212,36 @@ dataset's rowsUpdatedAt has changed.
   the mill rate, through the same summary the city pages already use for Boston's and
   Worcester's operating budgets.
 
+## 118. Linking to Res Publica: the clauses a bill's sponsor cites
+
+Res Publica (respublicalibrary.org) is CommonHall's sister library of founding texts;
+the two link by shared refs (`Constitution.1.8.3`), never by copying texts. The owner
+approved two links to start, ahead of the Supreme Court links that wait on Res
+Publica's case import:
+
+- **Site-wide.** "Founding texts: Res Publica" in the footer, and a short section at
+  the end of the home page.
+- **Bills.** Every House bill and joint resolution is introduced with a constitutional
+  authority statement (House Rule XII, clause 7), printed in the Congressional Record
+  and returned by Congress.gov with the bill as `constitutionalAuthorityStatementText`
+  (documented for the bill item in its BillEndpoint documentation, though its OpenAPI
+  document lists it only for laws). The bill sync reads it from the detail it already
+  fetches, so it costs no requests; `packages/sync/src/federal/authority.ts` turns the
+  numbered provisions into refs and `bills.constitution_refs` stores them. Sponsors
+  write them every way there is ("Article 1, section 8", "Clause 18 of section 8 of
+  Article I", "Art. 1 Sec. 8 Cl. 1", "Amendment XVI"), so the parser reads the parts in
+  any order; it was checked against every statement in four days of the Record (201
+  statements, two without a numbered provision). Only what the sponsor numbered is
+  read: clause names ("the Commerce Clause") are not turned into numbers, and most
+  statements cite only "Article I, Section 8". Bills stored before are caught up by
+  `sync-committees`, 60 an hour (about 11,000, so about eight days).
+- **How the page says it.** "Constitutional authority the sponsor cites:" and the
+  provisions, each linked to its text on Res Publica: the statement is the sponsor's,
+  not ours. A cited clause Res Publica doesn't have links to its section or article.
+- **Reading Res Publica.** Its `/data/refs.json` (every ref with its label and page) is
+  read once per build, and the Constitution's provisions (191) are kept: for
+  prerendered bill pages, and copied to this site's `/data/constitution.json` for bill
+  pages that load on request, so visitors' browsers never call the other site. Each
+  link must stay on respublicalibrary.org and passes `safeUrl`. When the index can't be
+  read or has changed shape, the site builds without the links rather than fail.
+

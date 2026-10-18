@@ -1,4 +1,5 @@
 ---
+import { RES_PUBLICA_URL } from '../lib/respublica';
 import '@fontsource-variable/inter/wght.css';
 import '@fontsource-variable/bricolage-grotesque/wght.css';
 import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
@@ -314,6 +315,11 @@ const phoneNav = PHONE_NAV.map((section) => ({
             </li>
             <li>
               <a href={href('status/')}>Data status</a>
+            </li>
+            <li>
+              <a href={RES_PUBLICA_URL} rel="noopener">
+                Founding texts: Res Publica
+              </a>
             </li>
             <li>
               <a href="https://github.com/jackhale98/commonhall">Source code</a>

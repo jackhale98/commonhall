@@ -56,6 +56,12 @@ export type BillDetail = Omit<Schemas['BillDetail'], 'sponsors' | 'latestAction'
   textVersions?: CountRef;
   titles?: CountRef;
   laws?: Schemas['laws'][];
+  /**
+   * The sponsor's constitutional authority statement as the Congressional Record prints it
+   * (House bills and joint resolutions). Documented for the bill item in Congress.gov's
+   * Documentation/BillEndpoint.md; the OpenAPI document lists it only on the law item.
+   */
+  constitutionalAuthorityStatementText?: string;
 };
 
 export interface RecordedVoteRef {

@@ -22,6 +22,7 @@ import {
   type TextVersion,
 } from '@civic/congress-client';
 import { insertMany, upsertIfChanged, type AnySql, type Sql } from '../db.ts';
+import { constitutionRefs } from './authority.ts';
 import { writeBillCommittees } from './committees.ts';
 import { chamberFromText, htmlToText, nameFromFullName, partyCode, stateCode, toDate, toTimestamp } from '../text.ts';
 
@@ -264,6 +265,7 @@ export async function syncBill(
     latest_action_text: detail.latestAction?.text?.trim() ?? null,
     congress_gov_url: safeUrl(detail.legislationUrl) ?? congressGovBillUrl(congress, t, number),
     law_number: detail.laws?.[0]?.number ?? null,
+    constitution_refs: constitutionRefs(detail.constitutionalAuthorityStatementText),
     update_date: toTimestamp(detail.updateDate),
     update_date_including_text: toTimestamp(detail.updateDateIncludingText),
     ...counts,
@@ -417,4 +419,41 @@ export async function catchUpBillTitles(
     checked++;
   }
   return { checked, changed };
+}
+
+/**
+ * House bills and joint resolutions whose constitutional authority statement hasn't been
+ * read (stored before it was): fetch their detail again, most recently active first,
+ * and store the provisions they cite. One detail request per bill.
+ */
+export async function catchUpConstitutionRefs(
+  sql: Sql,
+  client: CongressClient,
+  limit: number,
+  outOfTime: () => boolean,
+): Promise<{ checked: number; cited: number }> {
+  const due = await sql<{ id: string; congress: number; bill_type: string; number: number }[]>`
+    select id, congress, bill_type, number from public.bills
+     where constitution_refs is null and bill_type in ('hr', 'hjres')
+     order by latest_action_date desc nulls last, id
+     limit ${limit}`;
+  let checked = 0;
+  let cited = 0;
+  for (const b of due) {
+    if (outOfTime() || client.budget.remaining < 2) break;
+    let refs: string[];
+    try {
+      refs = constitutionRefs(
+        (await client.getBill(b.congress, b.bill_type, b.number)).constitutionalAuthorityStatementText,
+      );
+    } catch (error) {
+      // A bill Congress.gov no longer serves has no statement to read; asking every hour wouldn't change that.
+      if (!(error instanceof HttpError && error.status === 404)) throw error;
+      refs = [];
+    }
+    await sql`update public.bills set constitution_refs = ${refs}::text[] where id = ${b.id}`;
+    if (refs.length) cited++;
+    checked++;
+  }
+  return { checked, cited };
 }

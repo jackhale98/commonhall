@@ -3,13 +3,15 @@ import { useEffect, useState } from 'preact/hooks';
 import { parseBillId } from '@civic/congress-client/ids';
 import { onDemand } from '../lib/functions';
 import { billDisplayTitle, billNumberLabel, congressLabel, formatDate, paragraphs } from '../lib/format';
-import { billHref } from '../lib/paths';
+import { billHref, href } from '../lib/paths';
+import { clauseLinks, type ClauseIndex } from '../lib/respublica';
 import { redirectIfPrerendered } from '../lib/prerendered';
 import { select } from '../lib/rest';
 import { BILL_PAGE_COLUMNS, type Bill, type BillAction, type Member } from '../lib/types';
 import { BILL_COMMITTEE_COLUMNS, type BillCommittee } from '../lib/committees';
 import ActionTimeline from './ActionTimeline';
 import BillFacts from './BillFacts';
+import CitedAuthority from './CitedAuthority';
 import DiscussionRequest from './DiscussionRequest';
 import FollowButton from './FollowButton';
 import StatusTracker from './StatusTracker';
@@ -145,6 +147,7 @@ export default function BillFallback() {
           {bill.policy_area && <span>Policy area: {bill.policy_area}</span>}
           {bill.law_number && <span>Public Law {bill.law_number}</span>}
         </p>
+        {(bill.constitution_refs?.length ?? 0) > 0 && <CitedClauses refs={bill.constitution_refs!} />}
         <div class="cluster" style={{ marginTop: '1rem' }}>
           <FollowButton targetType="bill" targetId={bill.id} label={billNumberLabel(bill)} />
           {bill.text_url && (
@@ -205,4 +208,16 @@ export default function BillFallback() {
       )}
     </article>
   );
+}
+
+/** The clauses a sponsor cites, linked through this site's copy of Res Publica's index (built with the site). */
+function CitedClauses({ refs }: { refs: string[] }) {
+  const [index, setIndex] = useState<ClauseIndex | null>(null);
+  useEffect(() => {
+    fetch(href('data/constitution.json'))
+      .then((r) => (r.ok ? (r.json() as Promise<ClauseIndex>) : null))
+      .then(setIndex)
+      .catch(() => undefined);
+  }, []);
+  return <CitedAuthority links={clauseLinks(refs, index)} />;
 }

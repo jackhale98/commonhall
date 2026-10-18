@@ -80,6 +80,8 @@ beforeEach(async () => {
   await sql`insert into public.bills (id, congress, bill_type, number, title) values ('119-hr-1', 119, 'hr', 1, 'Test')
             on conflict (id) do update set committees_checked = false`;
   await sql`update public.bills set committees_checked = true where id <> '119-hr-1'`;
+  // This test is about committees: every bill's constitutional authority counts as read.
+  await sql`update public.bills set constitution_refs = '{}' where constitution_refs is null`;
 });
 
 describe('sync-committees', () => {

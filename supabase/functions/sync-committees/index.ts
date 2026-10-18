@@ -1,6 +1,7 @@
 /**
  * Hourly (pg_cron): committee rosters (daily, congress-legislators), hearings and
- * markups (Congress.gov), and a batch of older bills' committee referrals.
+ * markups (Congress.gov), and a batch of older bills' committee referrals, short titles
+ * and constitutional authority statements.
  */
 import { CongressClient, LegislatorsClient, congressForDate } from '@civic/congress-client';
 import { COMMITTEES_JOB, hourlyBudget, runJob, syncCommittees, type CommitteesCursor } from '@civic/sync';

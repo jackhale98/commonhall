@@ -37,6 +37,8 @@ export interface UpstreamBill {
   textVersions: any[];
   titles: any[];
   laws?: any[];
+  /** The constitutional authority statement, as the Record prints it (House bills). */
+  authorityStatement?: string;
 }
 
 export interface UpstreamMember {
@@ -130,6 +132,7 @@ export class FakeCongress {
               },
             }
           : {}),
+        ...(b.authorityStatement ? { constitutionalAuthorityStatementText: b.authorityStatement } : {}),
         introducedDate: b.introducedDate,
         latestAction: b.actions[0] ? { actionDate: b.actions[0].actionDate, text: b.actions[0].text } : undefined,
         laws: b.laws,
