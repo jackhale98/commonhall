@@ -24,6 +24,16 @@ export interface StateFeatures {
     /** What the order's title is ("its title", "the Governor’s office’s description of it"). */
     titleNote?: string;
   };
+  /** Where the state budget comes from, for the Budget tab (state_budget_lines). */
+  budget?: {
+    /** Who publishes it: "the Office of the Comptroller". */
+    publisher: string;
+    /** The site's name and address: CTHRU. */
+    site: string;
+    url: string;
+    /** How the source defines each amount, quoted word for word: our label, the source's column, its definition. */
+    definitions: { term: string; column: string; text: string }[];
+  };
   /** Where the statewide ballot questions' write-ups come from, for the Ballot questions tab. */
   ballot?: {
     /** Who writes and publishes them: "the Secretary of the Commonwealth". */
@@ -47,6 +57,39 @@ export const STATE_FEATURES: Record<string, StateFeatures> = {
       site: 'mass.gov',
       url: 'https://www.mass.gov/massachusetts-executive-orders',
       list: 'the Trial Court Law Libraries’ list of governors’ executive orders',
+    },
+    budget: {
+      publisher: 'the Office of the Comptroller of the Commonwealth',
+      site: 'CTHRU',
+      url: 'https://www.macomptroller.org/cthru/',
+      // CTHRU's data dictionary for "Budget_Actual_With_Other_Spending_Authorizationv3_Gen2".
+      definitions: [
+        {
+          term: 'Original enacted budget',
+          column: 'Original Enacted Budget',
+          text: 'The Original Enacted Budget is the amount of spending authorized for each appropriation or account in the annual budget bill, or GAA, which is enacted and signed into law prior to or just after the start of each fiscal year.',
+        },
+        {
+          term: 'Supplemental budgets',
+          column: 'Supplemental Budget Appropriations',
+          text: 'Subsequent to the enactment of the GAA, “supplemental budgets” may be enacted to the extent that some accounts need additional spending authorization during a fiscal year, or new accounts need to be created to fund programs or purposes that were not contemplated when the GAA was signed.',
+        },
+        {
+          term: 'Enacted',
+          column: 'Total Enacted Budget Appropriation',
+          text: 'The amount of spending authorizations in the GAA and any subsequent supplemental budget acts.',
+        },
+        {
+          term: 'Available',
+          column: 'Total Available for Spending',
+          text: 'The amount available in an account for expenditure in the fiscal year. Equal to Total Enacted Budget Appropriation + Retained Revenue Collected + Other Spending Authorization minus Planned Savings (9C Spending Cuts).',
+        },
+        {
+          term: 'Spent',
+          column: 'Total Expenses',
+          text: 'The total amount expended in the fiscal year; for the current active fiscal year (but not for closed fiscal years), this includes the amount of expenses accrued but not yet paid out as cash to vendors.',
+        },
+      ],
     },
     ballot: {
       publisher: 'the Secretary of the Commonwealth',

@@ -38,6 +38,24 @@ export class SocrataClient {
     return this.http.getJson<T[]>(url.toString());
   }
 
+  /**
+   * A dataset's description from the portal (`/api/views/{id}.json`): its name, when
+   * its rows last changed (rowsUpdatedAt, seconds since 1970) and its column names,
+   * so a sync can skip an unchanged dataset and notice a renamed column.
+   */
+  async metadata(dataset: string): Promise<SocrataMetadata> {
+    const view = await this.http.getJson<{
+      name?: string;
+      rowsUpdatedAt?: number;
+      columns?: { fieldName?: string }[];
+    }>(`https://${this.domain}/api/views/${dataset}.json`);
+    return {
+      name: view.name ?? dataset,
+      rowsUpdatedAt: typeof view.rowsUpdatedAt === 'number' ? new Date(view.rowsUpdatedAt * 1000).toISOString() : null,
+      columns: (view.columns ?? []).map((c) => c.fieldName ?? '').filter(Boolean),
+    };
+  }
+
   /** Every row of a query, a page at a time, checked against `shape` (shape.ts) when given. */
   async all<T>(dataset: string, query: SocrataQuery = {}, shape?: Shape, pageSize = 5000): Promise<T[]> {
     const out: T[] = [];
@@ -48,6 +66,13 @@ export class SocrataClient {
     }
     return shape ? checkShape(`Socrata ${this.domain} ${dataset}`, out, shape) : out;
   }
+}
+
+export interface SocrataMetadata {
+  name: string;
+  /** When the rows last changed (ISO), or null when the portal doesn't say. */
+  rowsUpdatedAt: string | null;
+  columns: string[];
 }
 
 /** A SoQL string literal. */

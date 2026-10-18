@@ -71,6 +71,9 @@ about, and take part in moderated public discussions.
   full text on malegislature.gov.
 - The governor's executive orders and Supreme Judicial Court decisions (Governor
   and Courts tabs), each with a page where people can ask for a discussion.
+- The state budget (Budget tab): what was enacted for the year and how much has been
+  spent so far, by category and secretariat, and every line item, searchable, from
+  the Comptroller's CTHRU, with the Comptroller's own definitions.
 
 **Connecticut** (in depth, like Massachusetts)
 
@@ -194,6 +197,7 @@ automatically.
 | Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
 | Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) | every 3 hours |
 | Massachusetts governor's executive orders | [mass.gov](https://www.mass.gov/massachusetts-executive-orders) (Trial Court Law Libraries' list) | weekly |
+| Massachusetts state budget and spending | [Comptroller's CTHRU](https://www.macomptroller.org/cthru/) | daily |
 | Massachusetts ballot questions | [Secretary of the Commonwealth, Information for Voters](https://www.sec.state.ma.us/divisions/elections/research-and-statistics/2026-information-for-voters/2026-ballot-questions.htm) | weekly |
 | Connecticut governor's executive orders | [portal.ct.gov](https://portal.ct.gov/governor/governors-actions/executive-orders) (Governor's office list and PDFs) | weekly |
 | Campaign finance | [OpenFEC](https://api.open.fec.gov/developers/) | weekly per member |
@@ -281,6 +285,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-middletown-311` | daily | Middletown (CT) 311 report from SeeClickFix (only the report is stored) |
 | `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |
 | `sync-cambridge-data` | daily | Cambridge 311 report, operating and revenue budgets and capital plan from data.cambridgema.gov |
+| `sync-state-budget` | daily | State budgets line by line with spending so far (Massachusetts from the Comptroller's CTHRU), read only when the source has changed |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load Middletown agendas (GitHub Action) | daily | Middletown (CT) Common Council members, meetings and agenda items (resolutions, ordinances, appropriations) from the city's agenda PDFs |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
@@ -379,6 +384,7 @@ The full guide is [docs/discussions.md](docs/discussions.md).
 | Campaign finance (FEC) | Ready; fills in over the first week after deploy (about 535 members, refreshed weekly) |
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
 | Massachusetts bills | Live; refreshed with the hourly Open States sync |
+| Massachusetts state budget | Ready; loads on the first daily run after deploy |
 | Connecticut bills, orders and Supreme Court | Bills and decisions arrive with the hourly syncs; orders after the first "Load CT governor orders" run |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
 | Committees, rosters, hearings | Ready; rosters load on the first hourly run, referrals fill in as bills load |

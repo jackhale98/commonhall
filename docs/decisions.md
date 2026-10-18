@@ -2081,3 +2081,37 @@ From the same review (decisions 111 and 112):
   sponsored bills, show five sponsored bills with a link to all of them, and move
   campaign money after committees and contact on phones. On wide screens committees
   and contact stay beside both.
+
+## 114. State budgets: Massachusetts from the Comptroller's CTHRU
+
+The owner approved four budget sources (October 2026): the Massachusetts
+Comptroller's CTHRU, data.ct.gov, the Treasury's Fiscal Data API and USAspending.
+Massachusetts comes first, as a Budget tab on the state's pages like Boston's.
+
+- **Source.** CTHRU's "Budget_Actual_With_Other_Spending_Authorizationv3_Gen2"
+  (cthru.data.socrata.com, kv7m-35wn), the dataset behind CTHRU's budget pages,
+  refreshed daily: every appropriation account by fiscal year since 2005 with the
+  original enacted budget (the GAA), supplemental budgets, the total enacted, the
+  total available for spending and total expenses. `sync-state-budget` runs daily,
+  reads the dataset's `rowsUpdatedAt` first and skips an unchanged dataset, and
+  otherwise reads three fiscal years summed on the portal in one or two requests.
+  It fails when a column it needs is gone and keeps the stored budget when the newest
+  year reads fewer than 700 accounts with money (FY27 has 930 in October).
+- **Accounts by department.** An account's enacted amount sits with the department it
+  was appropriated to and its spending with the department that spends it (Chapter
+  70 school aid is enacted under Education and paid by the Department of Revenue).
+  Summing by account alone and labelling each with one department put $4.4 billion
+  under a $38 million office, so `state_budget_lines` keeps one row per account and
+  department, as the Comptroller reports them; `state_budget_totals` adds them up by
+  secretariat and category (the Comptroller's appropriation classes), and
+  `state_budget_accounts` adds each account back together under the department with
+  the most enacted, for the line-item search. Rows with no amount are left out:
+  about 4,500 rows, 1.3 MB.
+- **What the page says.** "Enacted" is the total enacted (GAA and supplementals),
+  "Spent so far" is total expenses, with how much of the year has gone, and last
+  year's spending beside what was available. The Comptroller's definitions of each
+  column are quoted on the page word for word, and account names keep their initials
+  (MBTA, DCF) when put in title case.
+- **Build cost.** The tab reads the totals view (a few hundred rows) and the newest
+  year's accounts (about 930 rows), and serves those as `budget.json` for the search;
+  only states with a budget get the tab.

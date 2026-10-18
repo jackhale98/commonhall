@@ -7,6 +7,8 @@ import Base from '../../layouts/Base.astro';
 import {
   loadBallotQuestions,
   loadRecentStateBills,
+  loadStateBudgetTotals,
+  loadStateBudgets,
   loadStateCourtCases,
   loadStateExecutives,
   loadStateLegislators,
@@ -26,6 +28,8 @@ import {
 import { chamberLabel, executiveRank, linkHost, sessionStatus } from '../../lib/state-people';
 import { STATE_COURT_NAMES, legislatureChambers, partyGroups } from '../../lib/state-tabs';
 import { citiesIn } from '../../lib/cities';
+import { formatMoney } from '../../lib/finance';
+import { budgetYear } from '../../lib/state-budget';
 import { electionLabel } from '../../lib/ballot';
 
 export function getStaticPaths() {
@@ -59,6 +63,10 @@ const upcomingBallot = ((await loadBallotQuestions()).get(code) ?? []).filter((q
 const ballotDate = upcomingBallot.map((q) => q.election_date).sort()[0];
 const ballot = upcomingBallot.filter((q) => q.election_date === ballotDate);
 const cities = citiesIn(code);
+// The state budget, when we hold one: enacted this year and spent so far.
+const budgetInfo = (await loadStateBudgets()).get(code);
+const budget = budgetInfo ? budgetYear(await loadStateBudgetTotals(code), budgetInfo.newest_year) : null;
+const spentPct = budget?.total_enacted ? `${Math.round((budget.spent / budget.total_enacted) * 100)}%` : '';
 // The governor's latest order and the high court's latest decision, when we have them.
 const [stateOrders, stateCases] = await Promise.all([loadStateOrders(), loadStateCourtCases()]);
 const latestOrder = stateOrders.get(code)?.[0];
@@ -172,6 +180,24 @@ const latestCase = stateCases.get(code)?.[0];
           </li>
         ))}
       </ul>
+    </section>
+  )}
+
+  {budgetInfo && budget && budget.total_enacted > 0 && (
+    <section aria-labelledby="state-budget-h">
+      <div class="section-head">
+        <h2 id="state-budget-h" class="h-small">
+          State budget
+        </h2>
+        <a class="see-all" href={href(`${base}budget/`)}>
+          Budget
+        </a>
+      </div>
+      <p>
+        <strong>{formatMoney(budget.total_enacted)}</strong> enacted for FY{String(budgetInfo.newest_year).slice(2)} ·{' '}
+        <strong>{formatMoney(budget.spent)}</strong> spent so far ({spentPct})
+        {budgetInfo.source_updated_at && `, through ${formatDate(budgetInfo.source_updated_at.slice(0, 10))}`}.
+      </p>
     </section>
   )}
 

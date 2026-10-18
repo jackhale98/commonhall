@@ -34,6 +34,7 @@ import type { UnityRow } from './insights';
 import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type StateSession } from './state-people';
 import { DEMO } from './config';
 import { STATE_BILL_FILLER, STATE_BILL_FILLER_PG } from './state-filler';
+import type { StateBudgetLine, StateBudgetTotal } from './state-budget';
 import { CITIES } from './cities';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
@@ -412,6 +413,54 @@ export const loadStateExecutives = memo(async () => {
   });
   return groupBy(rows, (r) => r.state);
 });
+
+/** Each state budget we hold: its newest fiscal year and when the source last changed (state_budgets). */
+export interface StateBudgetInfo {
+  state: string;
+  newest_year: number;
+  source_updated_at: string | null;
+}
+
+export const loadStateBudgets = memo(async () => {
+  const rows = await selectAllOptional<StateBudgetInfo>('state_budgets', {
+    select: 'state,newest_year,source_updated_at',
+  });
+  return new Map(rows.map((r) => [r.state, r]));
+});
+
+/** A state's budget totals by secretariat and category, for the newest year and the one before. */
+export async function loadStateBudgetTotals(state: string): Promise<StateBudgetTotal[]> {
+  const info = (await loadStateBudgets()).get(state);
+  if (!info) return [];
+  return selectAllOptional<StateBudgetTotal>('state_budget_totals', {
+    select: 'fiscal_year,cabinet,category,accounts,enacted,supplemental,total_enacted,available,spent',
+    state: `eq.${state}`,
+    fiscal_year: `gte.${info.newest_year - 1}`,
+  });
+}
+
+const budgetLines = new Map<string, Promise<StateBudgetLine[]>>();
+
+/** A state's line items for its newest year, largest first (the Budget tab and its budget.json). */
+export function loadStateBudgetLines(state: string): Promise<StateBudgetLine[]> {
+  if (!budgetLines.has(state))
+    budgetLines.set(
+      state,
+      loadStateBudgets().then((budgets) => {
+        const info = budgets.get(state);
+        return info
+          ? selectAllOptional<StateBudgetLine>('state_budget_accounts', {
+              select:
+                'account,account_name,department,cabinet,category,enacted,supplemental,total_enacted,available,spent',
+              state: `eq.${state}`,
+              fiscal_year: `eq.${info.newest_year}`,
+              order: 'total_enacted.desc,account.asc',
+            })
+          : [];
+      }),
+    );
+  return budgetLines.get(state)!;
+}
 
 export interface StateCourtCase {
   cluster_id: number;

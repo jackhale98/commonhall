@@ -362,6 +362,9 @@ Common problems:
    archive over the next hour or so (about 1,500 requests, one a second). 311 and
    the budget arrive with `sync-cambridge-data` daily; to load them now:
    `select private.invoke_sync('sync-cambridge-data');`
+6. **State budgets** (no key): the Massachusetts budget, line by line with spending
+   so far, arrives with `sync-state-budget` daily (about 4,500 rows in a few seconds);
+   to load it now: `select private.invoke_sync('sync-state-budget');`
 
 ## 9. Switch the site to live data
 

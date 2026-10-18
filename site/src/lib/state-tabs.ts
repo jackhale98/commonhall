@@ -1,6 +1,7 @@
 /**
  * A state's pages, as tabs: Overview, Legislature (state lawmakers), Bills,
- * Committees, Ballot questions, Congress (its members of Congress) and Local (cities we cover).
+ * Committees, Ballot questions, Budget, Governor, Courts, Congress (its members of
+ * Congress) and Local (cities we cover).
  * Tabs with nothing behind them are left out: territories have no legislature,
  * and Local appears only where we cover a city.
  */
@@ -8,7 +9,16 @@ import { citiesIn } from './cities';
 import { href, stateHref } from './paths';
 
 export type StateTab =
-  'overview' | 'legislature' | 'bills' | 'committees' | 'ballot' | 'governor' | 'courts' | 'congress' | 'local';
+  | 'overview'
+  | 'legislature'
+  | 'bills'
+  | 'committees'
+  | 'ballot'
+  | 'budget'
+  | 'governor'
+  | 'courts'
+  | 'congress'
+  | 'local';
 
 /** A state's high court, by CourtListener court id. */
 export const STATE_COURT_NAMES: Record<string, string> = {
@@ -31,6 +41,8 @@ export interface StateTabCounts {
   cases: number;
   /** Statewide ballot questions on file. */
   ballot: number;
+  /** A state budget on file (state_budgets). */
+  budget: boolean;
 }
 
 export function stateTabs(code: string, current: StateTab, counts: StateTabCounts) {
@@ -53,6 +65,7 @@ export function stateTabs(code: string, current: StateTab, counts: StateTabCount
       show: counts.legislature && counts.committees > 0,
     },
     { key: 'ballot', label: 'Ballot questions', href: href(`${base}ballot/`), show: counts.ballot > 0 },
+    { key: 'budget', label: 'Budget', href: href(`${base}budget/`), show: counts.budget },
     { key: 'governor', label: 'Governor', href: href(`${base}governor/`), show: counts.orders > 0 },
     { key: 'courts', label: 'Courts', href: href(`${base}courts/`), show: counts.cases > 0 },
     { key: 'congress', label: 'Congress', href: href(`${base}congress/`), count: counts.congress, show: true },

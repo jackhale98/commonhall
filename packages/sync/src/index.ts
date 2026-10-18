@@ -14,6 +14,7 @@ export * from './state/reps.ts';
 export * from './state/people.ts';
 export * from './state/photos.ts';
 export * from './state/courts.ts';
+export * from './state/budget.ts';
 export * from './local/boston.ts';
 export * from './local/worcester.ts';
 export * from './local/worcester-budget.ts';

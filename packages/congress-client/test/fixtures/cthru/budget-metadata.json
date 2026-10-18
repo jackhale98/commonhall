@@ -1,0 +1,115 @@
+{
+ "id": "kv7m-35wn",
+ "name": "Budget_Actual_With_Other_Spending_Authorizationv3_Gen2",
+ "rowsUpdatedAt": 1792145503,
+ "columns": [
+  {
+   "fieldName": "fiscal_year",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "fund_number",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "fund_name",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "cabinet_secretariat_name",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "department_name",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "department_code",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "appropriation_account_number",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "appropriation_account_name",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "beginning_balance_prior_appropriation_continued",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "original_enacted_budget",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "supplemental_budget_appropriations",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "transfer_in",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "transfer_out",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "authorized_retained_revenue_floor",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "authorized_retained_revenue_ceiling",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "retained_revenue_estimate",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "retained_revenue_collected",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "planned_saving_9c_cuts",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "total_enacted_budget_appropriation",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "other_statutorily_authorized_spending",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "total_available_for_spending",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "total_expenses",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "balance_forward_prior_appropriation_continued",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "unexpended_reverted",
+   "dataTypeName": "number"
+  },
+  {
+   "fieldName": "appropriation_class",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "appropriation_class_name",
+   "dataTypeName": "text"
+  },
+  {
+   "fieldName": "appropriation_class_description",
+   "dataTypeName": "text"
+  }
+ ]
+}

@@ -9,6 +9,7 @@
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts somerville [--minutes 60] [--since 2024-01-01] | somerville-311
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts bristol | middletown-311
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts cambridge | cambridge-data
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts state-budget
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -37,6 +38,9 @@ import {
   CAMBRIDGE_DATA_DOMAIN,
   CAMBRIDGE_DATA_JOB,
   CAMBRIDGE_JOB,
+  MA_BUDGET_DOMAIN,
+  STATE_BUDGET_JOB,
+  syncStateBudgets,
   syncCambridge,
   syncCambridgeData,
   type CambridgeCursor,
@@ -243,9 +247,19 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'state-budget') {
+      const result = await runJob({
+        sql,
+        job: STATE_BUDGET_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ? JSON.stringify(d) : ''),
+        run: (ctx) => syncStateBudgets(ctx, { ma: new SocrataClient(MA_BUDGET_DOMAIN) }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget|somerville|somerville-311|bristol|middletown-311|cambridge|cambridge-data> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget|somerville|somerville-311|bristol|middletown-311|cambridge|cambridge-data|state-budget> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

@@ -1,0 +1,268 @@
+---
+import StateBudgetExplorer from '../../../components/StateBudgetExplorer';
+import StateHeader from '../../../components/StateHeader.astro';
+import BarList from '../../../components/viz/BarList';
+import Base from '../../../layouts/Base.astro';
+import { loadStateBudgetLines, loadStateBudgetTotals, loadStateBudgets } from '../../../lib/build-data';
+import { formatMoney } from '../../../lib/finance';
+import { formatDate, stateName } from '../../../lib/format';
+import { budgetChange } from '../../../lib/local';
+import { href } from '../../../lib/paths';
+import { budgetGroups, budgetLineRow, budgetYear, yearElapsed, type BudgetGroup } from '../../../lib/state-budget';
+import { stateFeatures } from '../../../lib/states';
+
+/** Only states with a budget on file. */
+export async function getStaticPaths() {
+  return [...(await loadStateBudgets()).keys()].map((code) => ({
+    params: { state: code.toLowerCase() },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const name = stateName(code);
+const info = (await loadStateBudgets()).get(code)!;
+const [totals, lines] = await Promise.all([loadStateBudgetTotals(code), loadStateBudgetLines(code)]);
+const year = info.newest_year;
+const fy = (y: number) => `FY${String(y).slice(2)}`;
+const now = budgetYear(totals, year);
+const last = budgetYear(totals, year - 1);
+const asOf = info.source_updated_at ? new Date(info.source_updated_at) : null;
+const elapsed = asOf ? yearElapsed(year, asOf) : null;
+const pct = (part: number, whole: number) => (whole > 0 ? `${Math.round((part / whole) * 100)}%` : '');
+const source = stateFeatures(code)?.budget;
+
+// The largest groups, the rest folded into one bar; each with its change on last year.
+const bars = (groups: BudgetGroup[], top: number, rest: string) => {
+  const items = groups.map((g) => ({ label: g.label, value: g.value, note: budgetChange(g.value, g.prev) }));
+  const tail = groups.slice(top);
+  return tail.length
+    ? [
+        ...items.slice(0, top),
+        { label: rest, value: tail.reduce((n, g) => n + g.value, 0), note: `(${tail.length} more)` },
+      ]
+    : items;
+};
+const categories = budgetGroups(totals, year, 'category');
+const cabinets = budgetGroups(totals, year, 'cabinet');
+const rows = lines.map(budgetLineRow);
+const departments = new Set(rows.map((r) => r.d)).size;
+---
+
+<Base
+  title={`${name} budget`}
+  description={`${name}’s state budget for ${fy(year)}: what the Legislature enacted, line by line, and how much has been spent.`}
+  section="states"
+>
+  <StateHeader code={code} current="budget" />
+
+  <section aria-labelledby="budget-h">
+    <h2 id="budget-h">State budget, {fy(year)}</h2>
+    <p class="small muted section-note">
+      July {year - 1} to June {year}: what was enacted, account by account, and how much has been spent{' '}
+      {asOf ? `through ${formatDate(asOf.toISOString().slice(0, 10))}` : 'so far'}.
+    </p>
+    <dl class="stat-grid">
+      <div class="stat">
+        <dt>Enacted</dt>
+        <dd>{formatMoney(now.total_enacted)}</dd>
+        {last.total_enacted > 0 && (
+          <p class="small muted stat-note">
+            {budgetChange(now.total_enacted, last.total_enacted)} on {fy(year - 1)} ({formatMoney(last.total_enacted)})
+          </p>
+        )}
+      </div>
+      <div class="stat">
+        <dt>Spent so far</dt>
+        <dd>{formatMoney(now.spent)}</dd>
+        <p class="small muted stat-note">
+          {pct(now.spent, now.total_enacted)} of what was enacted
+          {elapsed !== null && `, with ${Math.round(elapsed * 100)}% of the year gone`}
+        </p>
+      </div>
+      {now.supplemental > 0 && (
+        <div class="stat">
+          <dt>In supplemental budgets</dt>
+          <dd>{formatMoney(now.supplemental)}</dd>
+          <p class="small muted stat-note">on top of the {formatMoney(now.enacted)} in the annual budget</p>
+        </div>
+      )}
+      {last.spent > 0 && (
+        <div class="stat">
+          <dt>Last year, {fy(year - 1)}</dt>
+          <dd>{formatMoney(last.spent)}</dd>
+          <p class="small muted stat-note">
+            spent of {formatMoney(last.available)} available ({formatMoney(last.total_enacted)} enacted)
+          </p>
+        </div>
+      )}
+    </dl>
+
+    <div class="budget-charts">
+      <section class="panel" aria-labelledby="cat-h">
+        <h3 id="cat-h" class="h-small">
+          What it pays for
+        </h3>
+        <BarList
+          items={bars(categories, 8, 'Everything else')}
+          label={`Enacted budget by category, ${fy(year)}`}
+          format={formatMoney}
+        />
+        <p class="small muted">The Comptroller’s categories. Change on {fy(year - 1)}.</p>
+      </section>
+      <section class="panel" aria-labelledby="cab-h">
+        <h3 id="cab-h" class="h-small">
+          By secretariat
+        </h3>
+        <BarList
+          items={bars(cabinets, 8, 'Every other office')}
+          label={`Enacted budget by secretariat, ${fy(year)}`}
+          tone="fill-sky"
+          format={formatMoney}
+        />
+        <p class="small muted">
+          Money is enacted under one office and may be spent through another: Chapter 70 school aid is enacted under
+          Education and paid by the Department of Revenue, so its spending counts under Administration and Finance.
+        </p>
+        <details class="all-depts">
+          <summary>All {cabinets.length} secretariats and offices</summary>
+          <table class="dept-table">
+            <thead>
+              <tr>
+                <th scope="col">Secretariat</th>
+                <th scope="col">Enacted</th>
+                <th scope="col">Spent</th>
+                <th scope="col">Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cabinets.map((c) => (
+                <tr>
+                  <th scope="row">{c.label}</th>
+                  <td>{formatMoney(c.value)}</td>
+                  <td>{formatMoney(c.spent)}</td>
+                  <td>{budgetChange(c.value, c.prev)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      </section>
+    </div>
+  </section>
+
+  <section aria-labelledby="lines-h">
+    <h2 id="lines-h">Every line item</h2>
+    <p class="small muted section-note">
+      {rows.length.toLocaleString()} accounts with money in {fy(year)}, in {departments} departments and offices,
+      largest first.
+    </p>
+    <StateBudgetExplorer
+      client:visible
+      initial={rows.slice(0, 10)}
+      jsonUrl={href(`states/${code.toLowerCase()}/budget.json`)}
+      cabinets={cabinets.map((c) => c.label).sort()}
+      categories={categories.map((c) => c.label).sort()}
+      yearLabel={fy(year)}
+    />
+  </section>
+
+  {source && (
+    <section aria-labelledby="terms-h">
+      <h2 id="terms-h" class="h-small">
+        What the numbers mean
+      </h2>
+      <dl class="terms">
+        {source.definitions.map((d) => (
+          <div>
+            <dt>
+              {d.term} <span class="muted small">({d.column})</span>
+            </dt>
+            <dd>“{d.text}”</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="small muted">
+        Definitions and figures from {source.publisher}’s{' '}
+        <a href={source.url} rel="noopener">
+          {source.site}
+        </a>
+        , checked daily{asOf ? `; spending through ${formatDate(asOf.toISOString().slice(0, 10))}` : ''}.
+      </p>
+    </section>
+  )}
+</Base>
+
+<style>
+  .stat-grid {
+    margin-bottom: var(--space-5);
+  }
+  .section-note {
+    margin-top: 0;
+    max-width: 70ch;
+  }
+  .budget-charts {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  @media (min-width: 60rem) {
+    .budget-charts {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .budget-charts .h-small {
+    margin-top: 0;
+  }
+  .all-depts summary {
+    cursor: pointer;
+    color: var(--link);
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .dept-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step--1);
+  }
+  .dept-table th,
+  .dept-table td {
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .dept-table th[scope='row'],
+  .dept-table thead th:first-child {
+    text-align: left;
+    font-weight: 500;
+  }
+  section + section {
+    margin-top: var(--space-6);
+  }
+  .budget-charts > section + section {
+    margin-top: 0;
+  }
+  .terms {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 70ch;
+  }
+  .terms dt {
+    font-weight: 650;
+  }
+  .terms dd {
+    margin: var(--space-1) 0 0;
+    color: var(--text-muted);
+  }
+  :global(.capital-list p) {
+    margin: 0;
+  }
+</style>
