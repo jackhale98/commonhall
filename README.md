@@ -216,8 +216,8 @@ automatically.
 | Member contact details and IDs | [congress-legislators](https://github.com/unitedstates/congress-legislators) (public domain) | daily |
 | Executive orders | [Federal Register API](https://www.federalregister.gov/developers/documentation/api/v1) | hourly |
 | Nominations | Congress.gov | hourly |
-| Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
-| Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) | every 3 hours |
+| Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | every 6 hours |
+| Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) | daily |
 | Massachusetts governor's executive orders | [mass.gov](https://www.mass.gov/massachusetts-executive-orders) (Trial Court Law Libraries' list) | weekly |
 | Federal receipts and outlays | [Monthly Treasury Statement](https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/) (Treasury Fiscal Data API) | daily (a new statement each month) |
 | Federal agencies' budgets; awards by state and district | [USAspending.gov](https://www.usaspending.gov/) | daily (awards weekly) |
@@ -296,7 +296,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-committees` | hourly | Congressional committee rosters (daily), hearings and markups, and older bills' committee referrals and constitutional authority statements |
 | `sync-finance` | hourly | Campaign finance summaries from OpenFEC for members whose figures are over a week old |
 | `sync-executive` | hourly | Executive orders from the Federal Register and presidential nominations from Congress.gov |
-| `sync-scotus` | hourly | U.S. Supreme Court decisions, syllabi and separate opinions from CourtListener |
+| `sync-scotus` | every 6 hours | U.S. Supreme Court decisions, syllabi and separate opinions from CourtListener (20 requests a day with `sync-state-courts`; Res Publica shares the token) |
 | `sync-state` | hourly (daily Open States budget) | State bills, Massachusetts and Connecticut first (with histories and floor roll calls) |
 | `sync-boston` | every 15 minutes | Council meetings, matters, sponsors and councilors |
 | `sync-boston-311` | daily | Boston 311 request counts per day, council district and type, from both of the city's 311 systems (Analyze Boston) |
@@ -306,7 +306,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-worcester` | hourly | Worcester council and committee meetings; councilors and committee members weekly |
 | `sync-somerville` | every 15 minutes | Somerville council and committee meetings, matters and sponsors; councilors weekly |
 | `sync-somerville-311` | daily | Somerville 311 service requests per day, ward and type, summarised on the city's portal; stores the report |
-| `sync-state-courts` | every 3 hours | Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
+| `sync-state-courts` | daily | Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions from CourtListener (shares the free tier with `sync-scotus`) |
 | `sync-bristol` | hourly | Bristol (CT) council and committee meetings and agenda items from CivicClerk; councilors weekly |
 | `sync-middletown-311` | daily | Middletown (CT) 311 report from SeeClickFix (only the report is stored) |
 | `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |

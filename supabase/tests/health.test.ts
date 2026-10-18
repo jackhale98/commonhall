@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { RequestBudget } from '@civic/congress-client';
-import { hourlyBudget, jobBudgets, runJob } from '@civic/sync';
+import { DAILY_SHARES, hourlyBudget, jobBudgets, runJob } from '@civic/sync';
 import { connect } from './db.ts';
 
 const sql = connect();
@@ -120,10 +120,13 @@ describe('database-only jobs', () => {
 
 describe('daily shares', () => {
   it('holds a job to its share of a shared daily limit', async () => {
-    await sql`select public.record_api_usage('courtlistener:scotus', 60)`;
-    await sql`select public.record_api_usage('courtlistener', 30)`;
+    // The Supreme Court job's share is spent (counted against it), while the API as a whole has
+    // room this hour: it stops, and the state courts keep theirs.
+    const { scotus, 'state-courts': state } = DAILY_SHARES.courtlistener!;
+    await sql`select public.record_api_usage('courtlistener:scotus', ${scotus!})`;
+    await sql`select public.record_api_usage('courtlistener', 2)`;
     expect((await hourlyBudget(sql, 'courtlistener', 10, 'scotus')).limit).toBe(0);
-    expect((await hourlyBudget(sql, 'courtlistener', 8, 'state-courts')).limit).toBe(8);
+    expect((await hourlyBudget(sql, 'courtlistener', 8, 'state-courts')).limit).toBe(Math.min(8, state!));
   });
 
   it('charges a job under the API and its share', async () => {

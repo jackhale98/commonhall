@@ -2270,3 +2270,18 @@ has a newer action than the build (or the build had none). Sampled on the live s
 copy was about 3 KB of a 41 KB bill page: about 9 MB across 2,776 prerendered bills, and
 much more on long bills (H.R. 1). Most of every page is still the shared header, footer
 and scripts, about 25 KB, of which the header's two copies of the menu are the largest.
+
+## 121. CourtListener: a small share for CommonHall, the rest for Res Publica
+
+Res Publica's import of landmark cases (its decisions 39–43) reads CourtListener with
+the same token as CommonHall: CourtListener's terms allow one account per person, so a
+second token isn't an option. Its default allowance is 5 requests a minute, 50 an hour
+and 125 a day, and CommonHall's two jobs could take up to 110 a day. They now take at
+most 20 (`sync-scotus` 12, `sync-state-courts` 8, and no more than 10 in an hour;
+`packages/sync/src/job.ts`), and run less often: the Supreme Court every 6 hours, the
+state courts once a day (migration 072, which also changes their expected intervals in
+`private.job_schedule` so the health check doesn't call them overdue). That covers the
+usual flow of decisions: a few a week from each state court, and on the Supreme Court's
+busiest June days still within a day or two. When Res Publica needs less, the caps and
+schedules can go back up in the same two places.
+
