@@ -322,14 +322,17 @@ const phoneNav = PHONE_NAV.map((section) => ({
           </ul>
         </nav>
         <div class="footer-col footer-sources">
-          <h2>Data from</h2>
-          <ul>
-            {sources.map((source) => (
-              <li>
-                <a href={source.url}>{source.name}</a>
-              </li>
-            ))}
-          </ul>
+          <h2>Data</h2>
+          <details>
+            <summary>From {sources.length} public sources</summary>
+            <ul>
+              {sources.map((source) => (
+                <li>
+                  <a href={source.url}>{source.name}</a>
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
       </div>
     </footer>
@@ -867,6 +870,16 @@ const phoneNav = PHONE_NAV.map((section) => ({
   .footer-col :global(a:hover) {
     color: var(--link);
     text-decoration: underline;
+  }
+  .footer-sources summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .footer-sources details[open] summary {
+    margin-bottom: var(--space-2);
   }
   /* Phones: About and the data sources each as wrapped lines. */
   @media (max-width: 40rem) {

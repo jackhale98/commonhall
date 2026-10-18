@@ -171,10 +171,13 @@ export default function SearchPalette() {
             },
           ]
         : [];
+    // The best few instant matches, then bills from full-text search (a topic word like
+    // "housing" names few people or committees but many bills), then the other matches.
     return [
       ...reps,
-      ...hits,
+      ...hits.slice(0, 3),
       ...bills,
+      ...hits.slice(3),
       {
         k: 'all',
         t: `Search all bills for “${term}”`,

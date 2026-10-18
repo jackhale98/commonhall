@@ -1756,8 +1756,21 @@ nav[aria-label='Breadcrumb'] {
   .palette {
     margin-top: 1rem;
   }
+  /* Phones: the kind above the title, and the title on up to two lines, so a bill's name isn't cut short. */
+  .palette-results li {
+    display: grid;
+    gap: 2px;
+  }
   .palette-kind {
-    width: 4.5rem;
+    width: auto;
+    font-size: 0.65rem;
+  }
+  .palette-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    line-height: 1.3;
   }
   .palette-foot {
     display: none;
@@ -1952,6 +1965,22 @@ nav[aria-label='Breadcrumb'] {
   .explorer-filters .clear-filters {
     justify-self: start;
   }
+  /* Less-used filters wait behind "More filters" unless one is set. */
+  .explorer-filters:not(.show-all) .filter-secondary:not(.is-set, [aria-pressed='true']) {
+    display: none;
+  }
+}
+/* "More filters" is for phones only; wider screens show every filter. */
+.more-filters {
+  min-height: 40px;
+  font-size: var(--step--1);
+  font-weight: 560;
+  background: var(--bg-raised);
+}
+@media (min-width: 40.0625rem) {
+  .more-filters {
+    display: none;
+  }
 }
 
 .status-open {
@@ -1990,6 +2019,8 @@ html,
 body {
   overflow-x: clip;
 }
+/* Long official titles ("To amend title 10…") end after three lines in lists; the bill page has them whole. */
+.bill-item .bill-title,
 .card-grid .bill-title {
   display: -webkit-box;
   -webkit-line-clamp: 3;

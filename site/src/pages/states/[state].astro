@@ -212,13 +212,28 @@ const latestCase = stateCases.get(code)?.[0];
     </section>
   )}
 
-  {cities.map((c) => (
-    <a class="card local-card" href={cityHref(c)}>
-      <span class="kicker">Local government</span>
-      <strong>{c.name}</strong>
-      <span class="small muted">{c.summary} →</span>
-    </a>
-  ))}
+  {cities.length > 0 && (
+    <section aria-labelledby="local-h">
+      <div class="section-head">
+        <h2 id="local-h" class="h-small">
+          City councils
+        </h2>
+        <a class="see-all" href={href(`${base}local/`)}>
+          Local
+        </a>
+      </div>
+      <ul class="plain-rows local-rows">
+        {cities.map((c) => (
+          <li>
+            <p class="bill-title-sm">
+              <a href={cityHref(c)}>{c.name}</a>
+            </p>
+            <p class="small muted">{c.summary}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 </Base>
 
 <style>
@@ -236,18 +251,7 @@ const latestCase = stateCases.get(code)?.[0];
   .glance :global(.legend) {
     font-size: 0.78rem;
   }
-  .local-card {
-    display: grid;
-    gap: var(--space-1);
-    border-left: 5px solid var(--highlight);
-    text-decoration: none;
-    color: var(--text);
-    margin-block: var(--space-5);
-  }
-  .local-card .kicker {
+  .local-rows p {
     margin: 0;
-  }
-  .local-card strong {
-    font-size: var(--step-1);
   }
 </style>

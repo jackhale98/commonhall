@@ -142,12 +142,21 @@ export function activeNav(path: string): { group?: NavGroup; item?: NavItem } {
 
 /**
  * The phone menu: every page under a heading, one link per row, all the same size.
+ * Your own pages come first, where a thumb reaches without scrolling the menu.
  * Keys match NAV's item and group keys, so the current page is marked the same way.
  */
 export const PHONE_NAV: {
   heading: string;
   items: { key: string; label: string; path: string; child?: boolean }[];
 }[] = [
+  {
+    heading: 'Yours',
+    items: [
+      { key: 'reps', label: 'Your representatives', path: 'reps/' },
+      { key: 'feed', label: 'Your feed', path: 'feed/' },
+      { key: 'account', label: 'Account', path: 'account/' },
+    ],
+  },
   {
     heading: 'Congress',
     items: [
@@ -175,12 +184,7 @@ export const PHONE_NAV: {
     ],
   },
   {
-    heading: 'Take part',
-    items: [
-      { key: 'reps', label: 'Find your representatives', path: 'reps/' },
-      { key: 'discuss', label: 'Discussions', path: 'discussions/' },
-      { key: 'feed', label: 'Your feed', path: 'feed/' },
-      { key: 'account', label: 'Account', path: 'account/' },
-    ],
+    heading: 'Have your say',
+    items: [{ key: 'discuss', label: 'Discussions', path: 'discussions/' }],
   },
 ];

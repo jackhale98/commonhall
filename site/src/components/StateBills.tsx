@@ -3,6 +3,7 @@ import { STATE_BILL_COLUMNS, type StateBill } from '../lib/types';
 import { stateBillHref } from '../lib/paths';
 import { formatDate, tidyTitle } from '../lib/format';
 import { selectWithCount } from '../lib/rest';
+import { STATE_BILL_FILLER_PG } from '../lib/state-filler';
 
 const PAGE = 10;
 /** Phones get half a page, so the sections below stay close. */
@@ -43,7 +44,10 @@ export default function StateBills({
     selectWithCount<StateBill>('state_bills', {
       select: STATE_BILL_COLUMNS,
       state: `eq.${state}`,
-      ...(term ? { or: `(title.ilike.*${term}*,identifier.ilike.*${term}*)` } : {}),
+      // Browsing leaves out agency reports filed like bills; a search finds everything.
+      ...(term
+        ? { or: `(title.ilike.*${term}*,identifier.ilike.*${term}*)` }
+        : { title: `not.imatch.${STATE_BILL_FILLER_PG}` }),
       order: 'latest_action_date.desc.nullslast,id.asc',
       limit: size,
       offset: (page - 1) * size,

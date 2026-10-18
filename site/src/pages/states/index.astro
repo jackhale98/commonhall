@@ -45,31 +45,20 @@ const tiles = LEGISLATURE_STATES.map((code) => {
   <header class="page-head wash">
     <p class="kicker">States &amp; local</p>
     <h1>Beyond Washington</h1>
-    <p class="lede">Pick a state for its members of Congress, state legislators and recent state bills.</p>
+    <p class="lede">
+      Pick a state for its members of Congress, state legislators and recent state bills, and in some states its
+      governor, courts and city councils.
+    </p>
   </header>
-
-  <div class="featured-row">
-    {FEATURED_STATES.map((code) => (
-      <a class="card feature" href={stateHref(code)}>
-        <span class="kicker">{STATE_FEATURES[code]!.featured.kicker}</span>
-        <strong>{stateName(code)}</strong>
-        <span class="small muted">{STATE_FEATURES[code]!.featured.blurb}</span>
-      </a>
-    ))}
-    {CITY_LIST.map((c) => (
-      <a class="card feature" href={cityHref(c)}>
-        <span class="kicker">Local government</span>
-        <strong>{c.council}</strong>
-        <span class="small muted">{c.summary}.</span>
-      </a>
-    ))}
-  </div>
 
   <section aria-labelledby="map-h">
     <div class="section-head">
       <h2 id="map-h" class="h-small">
         Pick a state
       </h2>
+      <a class="see-all your-state" id="your-state" hidden href={href('states/')}>
+        Your state
+      </a>
       <form class="state-jump" action={href('states/')} onsubmit="return false">
         <label for="state-pick" class="visually-hidden">
           Go to a state
@@ -100,6 +89,36 @@ const tiles = LEGISLATURE_STATES.map((code) => {
         ))}
         .
       </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="featured-h">
+    <h2 id="featured-h" class="h-small">
+      In depth: states and cities
+    </h2>
+    <div class="featured-row">
+      {FEATURED_STATES.map((code) => {
+        const cities = CITY_LIST.filter((c) => c.state === code);
+        return (
+          <div class="card feature">
+            <a class="feature-state" href={stateHref(code)}>
+              {stateName(code)}
+            </a>
+            <span class="small muted">{STATE_FEATURES[code]!.featured.blurb}</span>
+            {cities.length > 0 && (
+              <p class="feature-cities">
+                <span class="small muted">City councils:</span>{' '}
+                {cities.map((c, i) => (
+                  <>
+                    {i > 0 && ' · '}
+                    <a href={cityHref(c)}>{c.name}</a>
+                  </>
+                ))}
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   </section>
 
@@ -145,11 +164,23 @@ const tiles = LEGISLATURE_STATES.map((code) => {
 </Base>
 
 <script>
+  import { deviceArea } from '../../lib/my-area';
+  import { stateName } from '../../lib/format';
+  import { stateHref } from '../../lib/paths';
+
   // The menu jumps straight to the chosen state's page.
   const pick = document.getElementById('state-pick') as HTMLSelectElement | null;
   pick?.addEventListener('change', () => {
     if (pick.value) window.location.href = `${pick.dataset.base}${pick.value}/`;
   });
+  // A shortcut to the visitor's own state when their districts are remembered on this device.
+  const area = deviceArea();
+  const yours = document.getElementById('your-state') as HTMLAnchorElement | null;
+  if (area?.state && yours) {
+    yours.href = stateHref(area.state);
+    yours.textContent = stateName(area.state);
+    yours.hidden = false;
+  }
 </script>
 
 <style>
@@ -179,19 +210,34 @@ const tiles = LEGISLATURE_STATES.map((code) => {
   .coverage-table thead th:nth-child(2) {
     text-align: left;
   }
+  #featured-h {
+    margin-top: var(--space-6);
+  }
   .featured-row {
     display: grid;
     gap: var(--space-3);
     grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    margin: var(--space-4) 0 var(--space-5);
+    margin: 0 0 var(--space-5);
   }
   .feature {
     display: grid;
     gap: var(--space-1);
     border-left: 5px solid var(--highlight);
   }
-  .feature strong {
+  .feature-state {
+    font-family: var(--font-heading);
     font-size: var(--step-1);
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .feature-state:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .feature-cities {
+    margin: var(--space-1) 0 0;
+    font-weight: 600;
   }
   /* Phones: the map takes the panel's full width, so each tile is as large as it can be. */
   @media (max-width: 40rem) {

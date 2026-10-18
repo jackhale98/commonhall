@@ -31,7 +31,9 @@ about, and take part in moderated public discussions.
 **Congress**
 
 - Browse and search every bill and resolution in the current Congress, filter by
-  chamber, status, policy area, sponsor's party or whether it has a discussion.
+  chamber, status, policy area, sponsor's party or whether it has a discussion. The
+  list opens on bills that moved past committee, latest action first; all activity
+  is one click away.
 - Read a bill's plain status tracker, summary, full action history, sponsor,
   cosponsors (with a party breakdown) and related roll-call votes.
 - See every roll-call vote: the result, a party-by-party breakdown and how each

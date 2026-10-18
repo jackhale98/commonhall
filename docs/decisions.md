@@ -2030,3 +2030,31 @@ their own representatives each visit. Now:
   this term and so on). They were counts, not news, and took a phone screen; each
   section page still shows its own. On phones "Latest" shows four items and no longer
   hides the ballot.
+
+## 112. Lists that open on what matters, and less to scroll past
+
+From the same review (decision 111), the list pages put charts, filters and noise
+between a reader and the list:
+
+- **Bills open on bills that moved past committee** (passed a chamber, sent to the
+  President, vetoed or law), latest action first, 25 to a page with a pager. Most of
+  each day's activity is new bills referred to committee, which buried the rest. "Show
+  all activity" (`?scope=all`) lists everything; any search or filter searches all
+  bills, so links like `?sponsor=` and `?policy=` are unchanged. "Where bills stand"
+  and "Most active topics" move below the list. On phones chamber, party, sort and
+  "Has a discussion" sit behind "More filters" unless one is set, and long official
+  titles end after three lines in lists.
+- **A state's latest bills leave out agency reports** filed like bills ("A
+  communication from the Comptroller…", "…Audited Financial Statements"), which filled
+  Massachusetts' list. The pattern (`lib/state-filler.ts`) runs in the query
+  (`not.imatch`, so the limit and count are of bills) and again in the page; a search
+  on the Bills tab still finds them.
+- **The states page leads with the picker**: the state menu and map first (with a
+  shortcut to the visitor's own state when it is remembered on the device), then one
+  card per in-depth state listing its city councils, replacing eight large cards. A
+  state's Overview lists its city councils as rows instead of cards.
+- **Search** shows the best three instant matches, then bills from full-text search,
+  then the rest, so a topic word ("housing") reaches bills before a list of
+  committees; on phones each result's kind sits above a two-line title.
+- **The phone menu starts with Yours** (your representatives, feed, account), and
+  the footer's 21 data sources fold under "From 21 public sources".

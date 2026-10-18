@@ -1,5 +1,5 @@
 ---
-import BillExplorer from '../../components/BillExplorer';
+import BillExplorer, { MOVING } from '../../components/BillExplorer';
 import FollowedItems from '../../components/FollowedItems';
 import BarList from '../../components/viz/BarList';
 import Pipeline from '../../components/viz/Pipeline';
@@ -17,9 +17,11 @@ const [bills, policyAreas, members, discussions] = await Promise.all([
   loadDiscussions(),
 ]);
 const discussed = discussions.filter((d) => d.target_type === 'bill' && d.target_id).map((d) => d.target_id!);
-// loadBills() is ordered by latest action, newest first.
-const initial: Bill[] = bills
-  .slice(0, 50)
+// loadBills() is ordered by latest action, newest first. The page opens on bills that
+// moved past committee (BillExplorer's MOVING); the rest are a click away.
+const moving = bills.filter((b) => MOVING.includes(b.status));
+const initial: Bill[] = (DEMO ? bills : moving)
+  .slice(0, DEMO ? 50 : 25)
   .map(
     ({
       id,
@@ -61,24 +63,10 @@ const initial: Bill[] = bills
     </p>
   </header>
   <FollowedItems client:idle kind={{ type: 'bill' }} title="Bills you follow" />
-  {bills.length > 0 && (
-    <div class="glance" aria-label="At a glance">
-      <section class="panel" aria-labelledby="stage-h">
-        <h2 id="stage-h" class="h-small">
-          Where bills stand
-        </h2>
-        <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
-      </section>
-      <section class="panel" aria-labelledby="topics-h">
-        <h2 id="topics-h" class="h-small">
-          Most active topics
-        </h2>
-        <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
-      </section>
-    </div>
-  )}
   <noscript>
-    <p class="notice">Search and filters need JavaScript. The most recently active bills are listed below.</p>
+    <p class="notice">
+      Search and filters need JavaScript. The bills that most recently moved past committee are listed below.
+    </p>
   </noscript>
   {DEMO ? (
     <BillExplorer
@@ -114,9 +102,26 @@ const initial: Bill[] = bills
       client:load
       congress={CURRENT_CONGRESS}
       initial={initial}
+      initialTotal={moving.length}
       policyAreas={policyAreas}
       discussed={discussed}
     />
+  )}
+  {bills.length > 0 && (
+    <div class="glance" aria-label="Congress at a glance">
+      <section class="panel" aria-labelledby="stage-h">
+        <h2 id="stage-h" class="h-small">
+          Where bills stand
+        </h2>
+        <Pipeline stages={pipeline(bills)} label="Bills and joint resolutions by stage" />
+      </section>
+      <section class="panel" aria-labelledby="topics-h">
+        <h2 id="topics-h" class="h-small">
+          Most active topics
+        </h2>
+        <BarList items={topPolicyAreas(bills, 7)} label="Bills by policy area" />
+      </section>
+    </div>
   )}
 </Base>
 
@@ -124,7 +129,7 @@ const initial: Bill[] = bills
   .glance {
     display: grid;
     gap: var(--space-4);
-    margin: 0 0 var(--space-5);
+    margin: var(--space-6) 0 var(--space-5);
   }
   .glance .h-small {
     margin-top: 0;

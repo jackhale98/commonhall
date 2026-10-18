@@ -10,6 +10,8 @@ type DemoBill = Bill & { sponsor_party?: string | null; summary_text?: string | 
 interface Props {
   congress: number;
   initial: DemoBill[];
+  /** How many bills the opening view (moving, see MOVING) holds, for its pager. */
+  initialTotal?: number;
   policyAreas: string[];
   /** Demo mode: `initial` holds every bill and filtering happens in the browser. */
   local?: boolean;
@@ -17,10 +19,23 @@ interface Props {
   discussed?: string[];
 }
 
+/**
+ * Bills that moved past committee: the page opens on these, latest action first,
+ * since most of each day's activity is new bills sent to committee. Simple and
+ * concurrent resolutions "agreed to" (mostly commemorations) are left out.
+ */
+export const MOVING = ['passed_house', 'passed_senate', 'passed_both', 'to_president', 'vetoed', 'law'];
+
+/** The opening view (only bills that moved) applies until the reader filters or searches. */
+const unfiltered = (f: Filters) =>
+  !f.q && !f.chamber && !f.status && !f.policy && !f.party && !f.sponsor && !f.discussed;
+export const movingOnly = (f: Filters) => f.scope === 'moving' && unfiltered(f);
+
 /** In-browser equivalent of the database filters, for the demo build. */
 export function filterLocally(bills: DemoBill[], f: Filters, discussed: string[] = []): DemoBill[] {
   const words = f.q.toLowerCase().split(/\s+/).filter(Boolean);
   const out = bills.filter((b) => {
+    if (movingOnly(f) && !MOVING.includes(b.status)) return false;
     const house = b.bill_type.startsWith('h');
     if (f.chamber === 'house' && !house) return false;
     if (f.chamber === 'senate' && house) return false;
@@ -47,6 +62,8 @@ export interface Filters {
   sort: 'latest' | 'introduced';
   /** Only bills with a published discussion. */
   discussed: boolean;
+  /** With no other filter: only bills that moved past committee (the default), or all. */
+  scope: 'moving' | 'all';
   page: number;
 }
 
@@ -60,6 +77,7 @@ const EMPTY: Filters = {
   sponsor: '',
   sort: 'latest',
   discussed: false,
+  scope: 'moving',
   page: 1,
 };
 
@@ -75,6 +93,7 @@ function readFilters(): Filters {
     sponsor: /^[A-Z]\d{6}$/.test(p.get('sponsor') ?? '') ? p.get('sponsor')! : '',
     sort: p.get('sort') === 'introduced' ? 'introduced' : 'latest',
     discussed: p.get('discussed') === '1',
+    scope: p.get('scope') === 'all' ? 'all' : 'moving',
     page: Math.max(1, Number(p.get('page') ?? 1) || 1),
   };
 }
@@ -89,21 +108,13 @@ function writeFilters(f: Filters) {
   if (f.sponsor) p.set('sponsor', f.sponsor);
   if (f.sort !== 'latest') p.set('sort', f.sort);
   if (f.discussed) p.set('discussed', '1');
+  if (f.scope === 'all') p.set('scope', 'all');
   if (f.page > 1) p.set('page', String(f.page));
   const qs = p.toString();
   window.history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
 }
 
-const isDefault = (f: Filters) =>
-  !f.q &&
-  !f.chamber &&
-  !f.status &&
-  !f.policy &&
-  !f.party &&
-  !f.sponsor &&
-  !f.discussed &&
-  f.sort === 'latest' &&
-  f.page === 1;
+const isDefault = (f: Filters) => unfiltered(f) && f.scope === 'moving' && f.sort === 'latest' && f.page === 1;
 
 /** An estimated count to three significant figures: 12,345 → "12,300". */
 const roughly = (n: number) => Number(n.toPrecision(3)).toLocaleString();
@@ -117,6 +128,7 @@ function restFilters(f: Filters, congress: number, discussed: string[]): Params 
   if (f.chamber === 'house') params.bill_type = 'in.(hr,hjres,hconres,hres)';
   if (f.chamber === 'senate') params.bill_type = 'in.(s,sjres,sconres,sres)';
   if (f.status) params.status = `eq.${f.status}`;
+  if (movingOnly(f)) params.status = `in.(${MOVING.join(',')})`;
   if (f.policy) params.policy_area = `eq.${f.policy}`;
   if (f.sponsor) params.sponsor_id = `eq.${f.sponsor}`;
   if (f.party) {
@@ -127,7 +139,14 @@ function restFilters(f: Filters, congress: number, discussed: string[]): Params 
   return params;
 }
 
-export default function BillExplorer({ congress, initial, policyAreas, local = false, discussed = [] }: Props) {
+export default function BillExplorer({
+  congress,
+  initial,
+  initialTotal,
+  policyAreas,
+  local = false,
+  discussed = [],
+}: Props) {
   const [filters, setFilters] = useState<Filters>(EMPTY);
   const [bills, setBills] = useState<Bill[]>(initial);
   const [total, setTotal] = useState<number | null>(null);
@@ -135,6 +154,8 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
   const [error, setError] = useState('');
   const request = useRef(0);
   const [hydrated, setHydrated] = useState(false);
+  // Phones show status and topic; chamber, party, sort and discussions sit behind "More filters".
+  const [moreFilters, setMoreFilters] = useState(false);
 
   useEffect(() => {
     setFilters(readFilters());
@@ -144,9 +165,9 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
   useEffect(() => {
     if (!hydrated) return;
     writeFilters(filters);
-    if (isDefault(filters)) {
-      setBills(local ? initial.slice(0, PAGE_SIZE * 2) : initial);
-      setTotal(null);
+    if (isDefault(filters) && !local) {
+      setBills(initial);
+      setTotal(initialTotal ?? null);
       setState('idle');
       return;
     }
@@ -224,14 +245,14 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
             Search
           </button>
         </div>
-        <div class="explorer-filters" role="group" aria-label="Filters">
+        <div class={moreFilters ? 'explorer-filters show-all' : 'explorer-filters'} role="group" aria-label="Filters">
           <label for="bills-chamber" class="visually-hidden">
             Chamber
           </label>
           <select
             id="bills-chamber"
             value={filters.chamber}
-            class={filters.chamber ? 'is-set' : ''}
+            class={filters.chamber ? 'filter-secondary is-set' : 'filter-secondary'}
             onChange={(e) => update({ chamber: e.currentTarget.value as Filters['chamber'] })}
           >
             <option value="">Both chambers</option>
@@ -272,7 +293,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
           <select
             id="bills-party"
             value={filters.party}
-            class={filters.party ? 'is-set' : ''}
+            class={filters.party ? 'filter-secondary is-set' : 'filter-secondary'}
             onChange={(e) => update({ party: e.currentTarget.value as Filters['party'] })}
           >
             <option value="">Any sponsor party</option>
@@ -288,6 +309,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
               <select
                 id="bills-sort"
                 value={filters.sort}
+                class={filters.sort !== 'latest' ? 'filter-secondary is-set' : 'filter-secondary'}
                 onChange={(e) => update({ sort: e.currentTarget.value as Filters['sort'] })}
               >
                 <option value="latest">Sort: latest action</option>
@@ -298,13 +320,21 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
           {discussed.length > 0 && (
             <button
               type="button"
-              class="filter-toggle"
+              class="filter-toggle filter-secondary"
               aria-pressed={filters.discussed}
               onClick={() => update({ discussed: !filters.discussed })}
             >
               Has a discussion
             </button>
           )}
+          <button
+            type="button"
+            class="more-filters"
+            aria-expanded={moreFilters}
+            onClick={() => setMoreFilters((v) => !v)}
+          >
+            {moreFilters ? 'Fewer filters' : 'More filters'}
+          </button>
           {!isDefault({ ...filters, page: 1 }) && (
             <button type="button" class="link-button clear-filters" onClick={() => setFilters(EMPTY)}>
               Clear all
@@ -322,14 +352,26 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
         </p>
       )}
       <h2 class="visually-hidden">Results</h2>
-      <p class="small muted" aria-live="polite">
+      <p class="small muted explorer-count" aria-live="polite">
         {state === 'loading'
           ? 'Loading…'
           : state === 'error'
             ? error
             : total === null
               ? 'Most recently active bills'
-              : `${total > EXACT_COUNT_LIMIT ? `About ${roughly(total)}` : total.toLocaleString()} ${total === 1 ? 'bill' : 'bills'}${filters.q ? ' matching' : ''}`}
+              : `${total > EXACT_COUNT_LIMIT && !isDefault(filters) ? `About ${roughly(total)}` : total.toLocaleString()} ${total === 1 ? 'bill' : 'bills'}${filters.q ? ' matching' : movingOnly(filters) ? ' that moved past committee, latest action first' : ''}`}
+        {state === 'idle' && unfiltered(filters) && (
+          <>
+            {' · '}
+            <button
+              type="button"
+              class="link-button"
+              onClick={() => update({ scope: filters.scope === 'moving' ? 'all' : 'moving' })}
+            >
+              {filters.scope === 'moving' ? 'Show all activity' : 'Only bills that moved'}
+            </button>
+          </>
+        )}
       </p>
 
       {bills.length === 0 && state === 'idle' ? (

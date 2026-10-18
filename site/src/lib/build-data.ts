@@ -33,6 +33,7 @@ import { FINANCE_COLUMNS, type MemberFinance } from './finance';
 import type { UnityRow } from './insights';
 import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type StateSession } from './state-people';
 import { DEMO } from './config';
+import { STATE_BILL_FILLER, STATE_BILL_FILLER_PG } from './state-filler';
 import { CITIES } from './cities';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
@@ -562,21 +563,16 @@ export const loadStateCommitteeChairs = memo(async () => {
 });
 
 /**
- * Communications, reports and petitions filed like bills ("Communication from the
- * Treasurer…", "Monthly report of…"); left out of "latest bills" lists, still searchable.
- */
-export const STATE_BILL_FILLER =
-  /^(communication|message|letter|petition of|report)\b|\b(monthly|quarterly|annual) report/i;
-
-/**
  * The 10 most recently active bills for a state (leaving out filler and bills with no
- * recorded action yet), and how many bills it has (one request per state page).
+ * recorded action yet), and how many bills it has besides filler (one request per state page).
  */
 export async function loadRecentStateBills(state: string): Promise<{ bills: StateBill[]; total: number }> {
   const params = {
     select: STATE_BILL_COLUMNS,
     state: `eq.${state}`,
     order: 'latest_action_date.desc.nullslast,id.asc',
+    // Agencies file dozens of reports on some days (Massachusetts): skip them in the query.
+    title: `not.imatch.${STATE_BILL_FILLER_PG}`,
     limit: 40,
   };
   const latest = (rows: StateBill[]) =>
