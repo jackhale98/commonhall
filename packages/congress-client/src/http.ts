@@ -103,6 +103,15 @@ export interface HttpOptions {
   timeoutMs?: number;
 }
 
+/** How the syncs and loaders identify themselves (one place; CLAUDE.md "Data sources and parsers"). */
+export const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
+/** A browser-like user agent, for sites whose firewalls turn some scripted ones away (CivicClerk, Middletown). */
+export const BROWSER_USER_AGENT =
+  'Mozilla/5.0 (compatible; commonhall/1.0; +https://github.com/jackhale98/commonhall) AppleWebKit/537.36 (KHTML, like Gecko)';
+/** A desktop browser's user agent, for a headless browser on sites that refuse headless ones (sec.state.ma.us). */
+export const DESKTOP_USER_AGENT =
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /** Retry-After as milliseconds (seconds or an HTTP date), or null. */
@@ -147,7 +156,7 @@ export class HttpClient {
     this.timeoutMs = options.timeoutMs ?? 60_000;
     this.sleep = options.sleep ?? defaultSleep;
     this.headers = {
-      'user-agent': options.userAgent ?? 'commonhall (+https://github.com/jackhale98/commonhall)',
+      'user-agent': options.userAgent ?? USER_AGENT,
       ...options.headers,
     };
   }

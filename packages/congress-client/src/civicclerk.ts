@@ -12,7 +12,7 @@
  * meeting is "T19:00:00Z"), so they are read as local times. The API's firewall
  * refuses some non-browser user agents, so the client sends a browser-like one.
  */
-import { HttpClient, type HttpOptions } from './http.ts';
+import { HttpClient, type HttpOptions, BROWSER_USER_AGENT } from './http.ts';
 import { checkRecord, checkShape, type Shape } from './shape.ts';
 
 export interface CivicClerkFile {
@@ -80,8 +80,7 @@ export const CIVICCLERK_ITEM_SHAPE = {
 } satisfies Shape;
 
 /** A browser-like user agent: the API's firewall turns some scripted ones away. */
-export const CIVICCLERK_USER_AGENT =
-  'Mozilla/5.0 (compatible; commonhall/1.0; +https://github.com/jackhale98/commonhall) AppleWebKit/537.36 (KHTML, like Gecko)';
+export const CIVICCLERK_USER_AGENT = BROWSER_USER_AGENT;
 
 interface ODataPage<T> {
   value: T[];
