@@ -68,7 +68,6 @@ Work through these in order. Delete each item from this list in the same change 
 10. Monitoring: `sync-health` pings a `HEARTBEAT_URL` secret when one is set; the owner chooses the dead-man's-switch service (a new third-party service, rule 9) and sets the secret.
 
 **Code health**
-14. Move the agenda, order, ballot and budget loaders' write logic from `scripts/` into `packages/sync` with DB tests; share one `pdfText` and one `USER_AGENT`; use `HttpClient` (`load-worcester-budget.ts:155,178` doesn't check HTTP status).
 16. Docs pass on `README.md`: the triplicated "Cities" lines (81-84), missing blank lines (122-123, 139-140), the duplicate `sync-state-courts` row (263, 268), about nine jobs missing from the table, "Boston City Council" only (line 6), and wrong frequencies (353, 358). Fix `deployment.md:396` (invocations are about 17,000 a month), the "Nightly" comment in `sync-boston/index.ts:2`, and the out-of-order sections in `decisions.md`. Rename leftovers in `package.json:2`, `supabase/config.toml:5`, `LICENSE:3` and `.env.example:4`.
 17. Add a CI check that compares the README's scheduled-jobs table with the `cron.schedule` calls in the migrations.
 

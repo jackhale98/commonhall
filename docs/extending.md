@@ -77,6 +77,11 @@ States). For more:
 - Run it inside `runJob` (scheduled functions) or `recordRun` (GitHub Actions
   loaders, `scripts/lib/record-run.ts`), so it has a lease, a last success and a
   last error.
+- A GitHub Actions loader's logic goes in `packages/sync/src/loaders/` (exported
+  from `@civic/sync/loaders`, Node only) as a `loadX(sql, options)` function with
+  its fetching, PDF text (`pdfText`) and clock passed in, tested in
+  `supabase/tests/loaders-*.test.ts` against recorded fixtures; the script in
+  `scripts/` only connects (`scripts/lib/db.ts`), builds those and calls it.
 - Use `HttpClient` from `@civic/congress-client` for requests: retries, backoff, a
   60-second timeout and keys kept out of errors.
 - Check the fields you read with `checkShape` (and `checkKept` where a mapper skips

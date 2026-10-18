@@ -1973,3 +1973,31 @@ requests are retried. The state Bills tab's title and number search (`ilike
 `identifier` (migration 067, a few MB at 30,000 bills) serve it. Federal bills and
 council items already search with full-text indexes.
 
+## 110. Loaders in packages/sync, with database tests
+
+From the October 2026 review (`CLAUDE.md`): the GitHub Actions loaders kept their
+database logic in `scripts/`, untested, each with its own copy of the PDF reader and
+user agent, and the Worcester budget loader didn't check HTTP status on PDFs. Now:
+
+- Each loader's logic is a `loadX(sql, options)` function in
+  `packages/sync/src/loaders/` (Connecticut and Massachusetts governor's orders,
+  Massachusetts ballot questions, Worcester agendas and budget, Middletown agendas),
+  exported from `@civic/sync/loaders`, a Node-only entry point that the Edge
+  Functions never import. Fetching, PDF text, the clock and (for the headless-browser
+  loaders) page reading are passed in; Playwright stays in the scripts.
+- One `pdfText` (`loaders/pdf.ts`), one set of user agents (`USER_AGENT`,
+  `BROWSER_USER_AGENT`, `DESKTOP_USER_AGENT` in congress-client's `http.ts`), and
+  every request through `HttpClient` (status checked, retried; `post()` added for the
+  Middletown listing form).
+- Each has a DB test against recorded fixtures: a first load, a quiet rerun, and its
+  guards (minimum counts, changed layouts, a failed download).
+- Behaviour is unchanged, with two small differences: the Worcester agendas loader
+  now records a failed meeting listing in `sync_state` (it used to fail before the
+  run was recorded), and Middletown's requests use the shared browser-like user
+  agent.
+
+Kept as they were, worth tightening later: the Worcester budget loader treats an
+empty search result as nothing to load and deletes all of Worcester's operating rows
+when it loads one year; the Middletown loader counts each listed meeting as written
+even when unchanged.
+
