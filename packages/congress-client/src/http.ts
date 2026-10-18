@@ -162,7 +162,23 @@ export class HttpClient {
   }
 
   /** GET a URL, retrying 429 and 5xx with exponential backoff. Other 4xx throw immediately. */
-  async get(url: string, accept = 'application/json'): Promise<Response> {
+  get(url: string, accept = 'application/json'): Promise<Response> {
+    return this.request(url, accept, null);
+  }
+
+  /**
+   * POST a body, retried like `get`. Only for requests that read (a search or listing
+   * form, such as Middletown's Agenda Center), which are safe to send twice.
+   */
+  post(url: string, body: string, contentType: string, accept = 'text/html'): Promise<Response> {
+    return this.request(url, accept, { body, contentType });
+  }
+
+  private async request(
+    url: string,
+    accept: string,
+    post: { body: string; contentType: string } | null,
+  ): Promise<Response> {
     let attempt = 0;
     for (;;) {
       attempt += 1;
@@ -176,7 +192,13 @@ export class HttpClient {
       let networkError: unknown;
       try {
         response = await this.fetchImpl(url, {
-          headers: { ...this.headers, accept },
+          ...(post
+            ? {
+                method: 'POST',
+                body: post.body,
+                headers: { ...this.headers, accept, 'content-type': post.contentType },
+              }
+            : { headers: { ...this.headers, accept } }),
           signal: AbortSignal.timeout(this.timeoutMs),
         });
       } catch (error) {

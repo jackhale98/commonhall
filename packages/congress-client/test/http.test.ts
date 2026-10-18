@@ -79,6 +79,26 @@ describe('HttpClient', () => {
     expect(delays[0]).toBeLessThanOrEqual(13_000);
   });
 
+  it('posts a body with its content type, retrying like a GET', async () => {
+    const sent: RequestInit[] = [];
+    let i = 0;
+    const fetch = async (_url: string, init?: RequestInit) => {
+      sent.push(init!);
+      return i++ === 0 ? new Response('oops', { status: 502 }) : new Response('<table></table>');
+    };
+    const client = new HttpClient({ fetch, sleep: noSleep, userAgent: 'test-agent' });
+    const response = await client.post('https://example.test/list', 'year=2026', 'application/x-www-form-urlencoded');
+    await expect(response.text()).resolves.toBe('<table></table>');
+    expect(sent).toHaveLength(2);
+    expect(sent[1]).toMatchObject({
+      method: 'POST',
+      body: 'year=2026',
+      headers: { 'user-agent': 'test-agent', accept: 'text/html', 'content-type': 'application/x-www-form-urlencoded' },
+    });
+    const missing = new HttpClient({ fetch: async () => new Response('no', { status: 404 }), sleep: noSleep });
+    await expect(missing.post('https://example.test/list', '', 'text/plain')).rejects.toBeInstanceOf(HttpError);
+  });
+
   it('does not retry other 4xx', async () => {
     const { fetch, calls } = sequence(() => new Response('missing', { status: 404 }));
     const client = new HttpClient({ fetch, sleep: noSleep });
