@@ -5,6 +5,7 @@ import BillFacts from '../../../../components/BillFacts';
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
 import VoteList from '../../../../components/VoteList';
+import YourRepsOnBill from '../../../../components/YourRepsOnBill';
 import Base from '../../../../layouts/Base.astro';
 import {
   loadActions,
@@ -149,6 +150,13 @@ const restBlocks = summaryRest.map(summaryBlock);
           actions={[]}
         />
       </section>
+
+      <YourRepsOnBill
+        client:idle
+        sponsorId={bill.sponsor_id}
+        cosponsorIds={cosponsors.map((c) => c.member_id)}
+        votes={votes.map((v) => ({ id: v.id, chamber: v.chamber, question: v.question, date: v.date }))}
+      />
 
       <section aria-labelledby="summary-h">
         <h2 id="summary-h">Summary</h2>

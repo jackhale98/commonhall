@@ -31,22 +31,35 @@ export default function VoteList({ votes }: { votes: VoteListItemData[] }) {
           <p class="meta">
             {v.chamber === 'house' ? 'House' : 'Senate'} roll call {v.roll_number} · {formatDate(v.date)}
           </p>
-          <p style={{ margin: 0 }}>
-            {v.position && (
-              <>
-                <strong class={`position-${v.position}`}>{POSITION[v.position]}</strong> ·{' '}
-              </>
-            )}
-            <a href={voteHref(v.id)}>{v.question ?? 'Roll-call vote'}</a>{' '}
-            <span class="muted">
-              ({v.result ?? '—'}, {v.yea_total}–{v.nay_total})
-            </span>
-          </p>
-          {(v.bill || v.subject) && (
-            <p class="vote-about">
-              {v.bill && <strong>{v.bill}</strong>}
-              {v.bill && v.subject && ' · '}
-              {v.subject}
+          {v.bill || v.subject ? (
+            <>
+              {/* What it was on first ("Keith Sonderling to be Secretary of Labor"), then the formal question. */}
+              <p style={{ margin: 0 }}>
+                {v.position && (
+                  <>
+                    <strong class={`position-${v.position}`}>{POSITION[v.position]}</strong> ·{' '}
+                  </>
+                )}
+                <a href={voteHref(v.id)}>{[v.bill, v.subject].filter(Boolean).join(': ')}</a>
+              </p>
+              <p class="vote-about">
+                {v.question ?? 'Roll-call vote'}{' '}
+                <span class="muted">
+                  ({v.result ?? '—'}, {v.yea_total}–{v.nay_total})
+                </span>
+              </p>
+            </>
+          ) : (
+            <p style={{ margin: 0 }}>
+              {v.position && (
+                <>
+                  <strong class={`position-${v.position}`}>{POSITION[v.position]}</strong> ·{' '}
+                </>
+              )}
+              <a href={voteHref(v.id)}>{v.question ?? 'Roll-call vote'}</a>{' '}
+              <span class="muted">
+                ({v.result ?? '—'}, {v.yea_total}–{v.nay_total})
+              </span>
             </p>
           )}
           <StackedBar size="sm" segments={voteSegments(v)} label={`${v.yea_total} yea, ${v.nay_total} nay`} />

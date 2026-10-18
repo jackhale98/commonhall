@@ -539,47 +539,54 @@ th {
 .tracker-label {
   margin-bottom: var(--space-3);
 }
+/* Steps run across the page, joined by a line. */
 .tracker-steps {
   list-style: none;
   padding: 0;
   margin: 0 0 var(--space-4);
   display: grid;
-  grid-auto-flow: row;
-  gap: var(--space-2);
-}
-@media (min-width: 40rem) {
-  .tracker-steps {
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    gap: 0;
-  }
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
 }
 .step {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--space-2);
+  position: relative;
+  text-align: center;
   font-size: var(--step--1);
   color: var(--text-muted);
 }
-@media (min-width: 40rem) {
+.step + .step::before {
+  content: '';
+  position: absolute;
+  top: 0.75rem;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.step-done + .step::before,
+.step-done + .step-current::before {
+  background: var(--brand);
+}
+/* Phones: two short columns (Introduced, Committee, Passed House | Passed Senate, To President,
+   Law) instead of six cramped labels in a row or a tall list. */
+@media (max-width: 40rem) {
+  .tracker-steps {
+    grid-auto-flow: column;
+    grid-template-rows: repeat(3, auto);
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--space-2) var(--space-3);
+  }
   .step {
-    flex-direction: column;
-    text-align: center;
-    position: relative;
+    flex-direction: row;
+    text-align: left;
   }
   .step + .step::before {
-    content: '';
-    position: absolute;
-    top: 0.75rem;
-    right: 50%;
-    width: 100%;
-    height: 2px;
-    background: var(--border);
-    z-index: 0;
-  }
-  .step-done + .step::before,
-  .step-done + .step-current::before {
-    background: var(--brand);
+    display: none;
   }
 }
 .step-dot {
@@ -3405,6 +3412,29 @@ button .ch-loader,
 }
 .your-area .your-city {
   margin-block: var(--space-5) 0;
+}
+/* A bill's page: what the visitor's members of Congress did on it (YourRepsOnBill). */
+.your-reps-bill {
+  margin-block: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+}
+.your-reps-bill .section-head {
+  margin-top: 0;
+}
+.your-reps-bill li:last-child {
+  border-bottom: 0;
+}
+.your-reps-bill li > strong {
+  margin-left: auto;
+}
+/* A vote's formal question ("On the Nomination PN1129") under the heading that says what it was on. */
+.vote-question {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-2);
+  font-size: var(--step-1);
+  color: var(--text-muted);
 }
 
 /* The visitor's city inside Your government (YourCity). */

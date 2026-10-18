@@ -53,3 +53,43 @@ export function groupVotes(rows: RepVoteRow[], names: Map<string, string>, limit
   for (const g of groups.values()) g.positions.sort((a, b) => a.name.localeCompare(b.name));
   return [...groups.values()];
 }
+
+/** A roll call on a bill, as the bill page passes it to Your members of Congress. */
+export interface BillVote {
+  id: string;
+  chamber: 'house' | 'senate';
+  question: string | null;
+  date: string | null;
+}
+
+const SAID: Record<RepVoteRow['position'], string> = {
+  yea: 'Yes',
+  nay: 'No',
+  present: 'Present',
+  not_voting: 'Didn’t vote',
+};
+
+/**
+ * What one of the visitor's members of Congress did on a bill, in plain words:
+ * sponsored or cosponsored it, and their position on each roll call in their own
+ * chamber, oldest first. A chamber with no roll call on the bill says so (a bill can
+ * pass by unanimous consent without one).
+ */
+export function billRecord(
+  rep: { bioguide_id: string; chamber: 'house' | 'senate' | null },
+  bill: { sponsorId: string | null; cosponsorIds: string[]; votes: BillVote[] },
+  positions: { vote_id: string; member_id: string; position: RepVoteRow['position'] }[],
+): string[] {
+  const facts: string[] = [];
+  if (bill.sponsorId === rep.bioguide_id) facts.push('Sponsored it');
+  else if (bill.cosponsorIds.includes(rep.bioguide_id)) facts.push('Cosponsor');
+  const theirs = bill.votes
+    .filter((v) => v.chamber === rep.chamber)
+    .sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
+  for (const v of theirs) {
+    const p = positions.find((x) => x.vote_id === v.id && x.member_id === rep.bioguide_id);
+    if (p) facts.push(`${SAID[p.position]} on “${v.question ?? 'the roll call'}”`);
+  }
+  if (theirs.length === 0) facts.push(`No ${rep.chamber === 'senate' ? 'Senate' : 'House'} roll call on it`);
+  return facts;
+}

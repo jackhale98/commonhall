@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupVotes, lastName, type RepVoteRow } from './rep-votes';
+import { billRecord, groupVotes, lastName, type RepVoteRow } from './rep-votes';
 
 const row = (vote_id: string, member_id: string, extra: Partial<RepVoteRow> = {}): RepVoteRow => ({
   member_id,
@@ -62,5 +62,30 @@ describe('groupVotes', () => {
   it('stops at the limit', () => {
     const rows = ['a', 'b', 'c', 'd', 'e'].map((id) => row(id, 'W000817', { bill_id: `119-hr-${id.charCodeAt(0)}` }));
     expect(groupVotes(rows, names, 3)).toHaveLength(3);
+  });
+});
+
+describe('billRecord', () => {
+  const lynch = { bioguide_id: 'L000562', chamber: 'house' as const };
+  const warren = { bioguide_id: 'W000817', chamber: 'senate' as const };
+  const votes = [
+    { id: 'house-139', chamber: 'house' as const, question: 'On Passage', date: '2026-04-27' },
+    { id: 'house-120', chamber: 'house' as const, question: 'On the Rule', date: '2026-04-20' },
+  ];
+
+  it('names sponsorship and each vote in the member’s chamber, oldest first', () => {
+    const facts = billRecord(lynch, { sponsorId: null, cosponsorIds: ['L000562'], votes }, [
+      { vote_id: 'house-139', member_id: 'L000562', position: 'yea' },
+      { vote_id: 'house-120', member_id: 'L000562', position: 'not_voting' },
+    ]);
+    expect(facts).toEqual(['Cosponsor', 'Didn’t vote on “On the Rule”', 'Yes on “On Passage”']);
+  });
+
+  it('says when the member’s chamber held no roll call', () => {
+    expect(billRecord(warren, { sponsorId: null, cosponsorIds: [], votes }, [])).toEqual(['No Senate roll call on it']);
+    expect(billRecord(warren, { sponsorId: 'W000817', cosponsorIds: [], votes: [] }, [])).toEqual([
+      'Sponsored it',
+      'No Senate roll call on it',
+    ]);
   });
 });

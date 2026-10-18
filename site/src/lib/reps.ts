@@ -52,19 +52,25 @@ export interface Profile extends SavedDistricts {
   address_label: string | null;
 }
 
+/** The two senators and the House member for saved districts, senators first. */
+export function federalReps(d: Pick<SavedDistricts, 'state' | 'congressional_district'>): Promise<FederalRep[]> {
+  if (!d.state) return Promise.resolve([]);
+  return select<FederalRep>('members', {
+    select: 'bioguide_id,name,party,state,district,chamber,photo_url',
+    current: 'eq.true',
+    state: `eq.${d.state}`,
+    or:
+      d.congressional_district === null
+        ? '(chamber.eq.senate)'
+        : `(chamber.eq.senate,and(chamber.eq.house,district.eq.${d.congressional_district}))`,
+    order: 'chamber.desc,name.asc',
+  });
+}
+
 export async function repsFromProfile(p: Profile): Promise<Result | null> {
   if (!p.state) return null;
   const [federal, upper, lower, local] = await Promise.all([
-    select<FederalRep>('members', {
-      select: 'bioguide_id,name,party,state,district,chamber,photo_url',
-      current: 'eq.true',
-      state: `eq.${p.state}`,
-      or:
-        p.congressional_district === null
-          ? '(chamber.eq.senate)'
-          : `(chamber.eq.senate,and(chamber.eq.house,district.eq.${p.congressional_district}))`,
-      order: 'chamber.desc,name.asc',
-    }),
+    federalReps(p),
     p.state_upper_district
       ? select<StateRep>('state_legislators', {
           select: 'id,name,party,state,chamber,district,photo_url,openstates_url',

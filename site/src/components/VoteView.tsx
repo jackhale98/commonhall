@@ -2,8 +2,10 @@ import { safeUrl } from '@civic/congress-client/safe-url';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { parseBillId, parseVoteId } from '@civic/congress-client/ids';
 import { billNumberLabel, formatDateTime, partyLabel, stateName } from '../lib/format';
+import { savedDistricts, type SavedDistricts } from '../lib/auth';
 import { billHref } from '../lib/paths';
 import { select } from '../lib/rest';
+import { voteAbout } from '../lib/votes';
 import type { Member } from '../lib/types';
 import { voteSegments } from '../lib/charts';
 import MemberChip from './MemberChip';
@@ -58,6 +60,14 @@ export default function VoteView({ initial }: Props) {
     initial ? 'ready' : 'loading',
   );
   const [stateFilter, setStateFilter] = useState('');
+  // The visitor's saved districts, to show how their own members voted first.
+  const [mine, setMine] = useState<SavedDistricts | null>(null);
+
+  useEffect(() => {
+    savedDistricts()
+      .then(setMine)
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (initial) return;
@@ -101,6 +111,16 @@ export default function VoteView({ initial }: Props) {
 
   const bill = vote.bill_id ? parseBillId(vote.bill_id) : null;
   const chamber = vote.chamber === 'house' ? 'House' : 'Senate';
+  // What the vote was on ("Keith Sonderling to be Secretary of Labor"), as the heading;
+  // the formal question ("On the Nomination PN1129") under it.
+  const subject = voteAbout(vote).subject;
+  const yours = mine?.state
+    ? rows.filter(
+        (r) =>
+          r.member?.state === mine.state &&
+          (vote.chamber === 'senate' || r.member?.district === mine.congressional_district),
+      )
+    : [];
   const filtered = rows
     .filter((r) => !stateFilter || r.member?.state === stateFilter)
     .sort((a, b) => (a.member?.name ?? a.member_id).localeCompare(b.member?.name ?? b.member_id));
@@ -110,8 +130,9 @@ export default function VoteView({ initial }: Props) {
       <p class="eyebrow">
         {chamber} roll call {vote.roll_number} · {vote.congress}th Congress, session {vote.session}
       </p>
-      <h1>{vote.question ?? 'Roll-call vote'}</h1>
-      {vote.title && <p class="official-title">{vote.title}</p>}
+      <h1>{subject ?? vote.question ?? 'Roll-call vote'}</h1>
+      {subject && vote.question && <p class="vote-question">{vote.question}</p>}
+      {vote.title && vote.title !== subject && <p class="official-title">{vote.title}</p>}
       <p class="meta cluster small">
         {vote.date && <span>{formatDateTime(vote.date)}</span>}
         {vote.majority_requirement && <span>{vote.majority_requirement} majority required</span>}
@@ -134,6 +155,23 @@ export default function VoteView({ initial }: Props) {
         </p>
         <StackedBar segments={voteSegments(vote)} legend />
       </div>
+
+      {yours.length > 0 && (
+        <section class="your-reps-bill" aria-labelledby="your-vote-h">
+          <h2 id="your-vote-h" class="h-small">
+            How your {vote.chamber === 'senate' ? (yours.length === 1 ? 'senator' : 'senators') : 'representative'}{' '}
+            voted
+          </h2>
+          <ul class="member-rows">
+            {yours.map((r) => (
+              <li key={r.member_id}>
+                {r.member ? <MemberChip member={r.member} /> : r.member_id}
+                <strong class={`position-${r.position}`}>{POSITION_LABELS[r.position]}</strong>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <h2>By party</h2>
       {/* Party names without party colours: the bars' green and red mean yea and nay here. */}

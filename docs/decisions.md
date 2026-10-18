@@ -2058,3 +2058,25 @@ between a reader and the list:
   committees; on phones each result's kind sits above a two-line title.
 - **The phone menu starts with Yours** (your representatives, feed, account), and
   the footer's 21 data sources fold under "From 21 public sources".
+
+## 113. Detail pages: your members first, and what a vote was on
+
+From the same review (decisions 111 and 112):
+
+- **Bill pages** say what the visitor's own members of Congress did on the bill, when
+  their districts are saved (YourRepsOnBill, prebuilt and live bill pages alike):
+  sponsored or cosponsored it, and Yes, No, Present or didn't vote on each of its
+  roll calls in their chamber; a chamber with no roll call says so, since bills often
+  pass by unanimous consent. It is one read of `members` and one of `vote_positions`
+  (the bill's vote ids and the two or three members). On phones the status tracker
+  is two short columns instead of a six-row list, so the summary starts sooner.
+- **Vote pages** lead with what the vote was on ("Keith Sonderling to be Secretary of
+  Labor") with the formal question ("On the Nomination PN1129") under it, and show
+  how the visitor's senators or representative voted above the party breakdown,
+  read from the positions the page already loads. Vote lists (a member's votes, the
+  votes page) put the same subject first and the question and tally second.
+- **Member pages** put Call the office and Write to them (or Website) beside Follow,
+  add jump links (Votes, Bills, Committees, Contact, Money), show recent votes before
+  sponsored bills, show five sponsored bills with a link to all of them, and move
+  campaign money after committees and contact on phones. On wide screens committees
+  and contact stay beside both.

@@ -15,6 +15,7 @@ import FollowButton from './FollowButton';
 import StatusTracker from './StatusTracker';
 import Loader from './Loader';
 import VoteList, { type VoteListItemData } from './VoteList';
+import YourRepsOnBill from './YourRepsOnBill';
 
 type MemberRef = Pick<Member, 'bioguide_id' | 'name' | 'party' | 'state' | 'district' | 'chamber'>;
 
@@ -179,6 +180,12 @@ export default function BillFallback() {
           </div>
         )}
       </section>
+
+      <YourRepsOnBill
+        sponsorId={bill.sponsor_id}
+        cosponsorIds={active.map((c) => c.member_id)}
+        votes={(view.votes ?? []).map((v) => ({ id: v.id, chamber: v.chamber, question: v.question, date: v.date }))}
+      />
 
       <section>
         <h2>Summary</h2>
