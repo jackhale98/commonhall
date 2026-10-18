@@ -1048,7 +1048,9 @@ state's co-sponsors were kept. So:
   the full record. It does nothing until the 120th Congress begins in January 2027;
   without it the federal tables (about 75 MB) would double every two years.
 
-Expected size once everything has loaded: about 290–325 MB.
+Expected size once everything has loaded: about 290–325 MB, rising to about 370–405 MB
+by the end of the 120th Congress now that the last Congress's vote positions are kept
+(§94, rechecked in §108).
 
 ## 78. Senate amendment votes link the bill they amend
 
@@ -1932,4 +1934,30 @@ From the October 2026 review (`CLAUDE.md`):
   (adding `/fail` when the check failed), for a dead-man's-switch service that
   alerts when the checks fail or stop running (GitHub disables scheduled workflows
   after 60 days without commits). Which service is the owner's choice.
+
+## 108. Prebuilt pages for followed items; the size projection rechecked
+
+From the October 2026 review (`CLAUDE.md`):
+
+- **Followed items.** Every followed bill, state bill and council item got its own
+  prebuilt page, so one account following 500 bills added 500 pages to the site
+  (§102's budget). `followed_targets` now counts followers (still no user ids), and
+  the prerender views take a followed item only with two or more followers. One
+  follower's item opens from the client-rendered fallback page, as items newer than
+  the last build already do.
+- **State bills of a past session** are no longer deleted when a new session starts
+  if someone follows them, a discussion is about them or someone asked for one
+  (`sync-state.ts`, CLAUDE.md rule 5).
+- **Database size, rechecked.** §77 expected 290–325 MB once loaded, with each past
+  Congress trimmed to bills and vote totals. §94 (migration 054) now keeps the
+  member-by-member positions of the Congress just ended. Measured in October 2026:
+  383,646 positions for 1,591 roll calls of the 119th Congress so far (about 241 a
+  roll call), about 180 bytes each with indexes; a full Congress is about 450,000
+  positions, **about 80 MB**. From January 2027 the 119th's stay while the 120th's
+  grow, so the peak, at the end of 2028, is about **370–405 MB**: under the 500 MB
+  free tier, but at the size alarm's 400 MB. If the alarm fires, the planned step is
+  to keep the last Congress's positions only for final votes (passage, conference
+  reports, suspensions, veto overrides) and nominations, about 40% of roll calls,
+  which cuts the 80 MB to about 32 MB. Members' pages for that Congress would then
+  show their votes on final passage, not every procedural vote.
 

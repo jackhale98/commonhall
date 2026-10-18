@@ -467,9 +467,19 @@ async function refreshSessions(sql: Sql, client: OpenStatesClient, cursor: State
     const session = currentSession(all, now);
     if (!session) continue;
     if (sessions[state] && sessions[state] !== session.identifier) {
-      // A new session: start over for this state and drop the old session's bills.
-      const removed =
-        await sql`delete from public.state_bills where state = ${state} and session <> ${session.identifier} returning 1`;
+      // A new session: start over for this state and drop the old session's bills, except
+      // those people follow, discuss or asked to discuss (CLAUDE.md rule 5): they keep
+      // their pages and the follows and discussions keep their target.
+      const removed = await sql`
+        delete from public.state_bills b
+         where b.state = ${state} and b.session <> ${session.identifier}
+           and not exists (select 1 from public.follows f where f.target_type = 'state_bill' and f.target_id = b.id)
+           and not exists (select 1 from public.discussions d where d.target_type = 'state_bill' and d.target_id = b.id)
+           and not exists (
+             select 1 from public.discussion_requests r where r.target_type = 'state_bill' and r.target_id = b.id)
+           and not exists (
+             select 1 from public.discussion_requests_anon a where a.target_type = 'state_bill' and a.target_id = b.id)
+        returning 1`;
       written += removed.length;
       bills[state] = { session: session.identifier };
     }

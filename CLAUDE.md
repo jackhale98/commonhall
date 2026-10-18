@@ -65,10 +65,7 @@ npm run test:db
 Work through these in order. Delete each item from this list in the same change that fixes it.
 
 **Operations**
-9. `packages/sync/src/state/sync-state.ts:468-472` deletes every old-session state bill when a new session starts, orphaning follows and discussions. Keep followed or discussed bills.
 10. Monitoring: `sync-health` pings a `HEARTBEAT_URL` secret when one is set; the owner chooses the dead-man's-switch service (a new third-party service, rule 9) and sets the secret.
-11. `bills_prerender` (`20261009000024_prerender_security_invoker.sql:66`) prebuilds every followed bill. Cap it or require a minimum number of followers.
-12. Recheck the database-size projection in `docs/decisions.md` now that `20261010000054_retention.sql:116-117` keeps the previous Congress's vote positions.
 13. `site/src/lib/rest.ts:64` `selectWithCount` always asks for an exact count and skips retries; `StateBills.tsx:43-50` does unindexed `ilike` searches. Use estimated counts and add a trigram index.
 
 **Code health**

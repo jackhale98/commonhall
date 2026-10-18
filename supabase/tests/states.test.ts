@@ -434,6 +434,31 @@ describe('sync-state', () => {
     expect(rows.map((r) => r.session)).toEqual(['90', '90']);
   });
 
+  it('keeps an old-session bill someone follows or asked to discuss', async () => {
+    const api = new FakeOpenStates();
+    api.addBills('tx', 3);
+    await runState(api);
+    const old = await sql<{ id: string }[]>`select id from public.state_bills order by id`;
+    const user = await createUser(sql);
+    await sql`insert into public.follows (user_id, target_type, target_id) values (${user}, 'state_bill', ${old[0]!.id})`;
+    await sql`
+      insert into public.discussion_requests_anon (client_id, target_type, target_id)
+      values (gen_random_uuid(), 'state_bill', ${old[1]!.id})`;
+    api.sessions.tx = '90';
+    api.bills.tx = [];
+    api.addBills('tx', 2, 100);
+    await sql`update public.sync_state set cursor = jsonb_set(cursor, '{sessionsCheckedAt}', '"2026-01-01T00:00:00Z"') where job = ${STATE_JOB}`;
+    await runState(api);
+    const rows = await sql<
+      { id: string; session: string }[]
+    >`select id, session from public.state_bills order by session, id`;
+    // The followed and the requested bill stay; the third old one goes.
+    expect(rows.filter((r) => r.session !== '90').map((r) => r.id)).toEqual([old[0]!.id, old[1]!.id]);
+    expect(rows.filter((r) => r.session === '90')).toHaveLength(2);
+    await sql`delete from public.follows where user_id = ${user}`;
+    await sql`delete from public.discussion_requests_anon where target_type = 'state_bill'`;
+  });
+
   it('respects the daily request budget', async () => {
     await sql`select public.record_api_usage(${OPENSTATES_API}, 440)`;
     const budget = await dailyBudget(sql, OPENSTATES_API, 450, 200);

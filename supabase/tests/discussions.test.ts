@@ -200,20 +200,34 @@ describe('prerender views', () => {
       ('ma-boston-2', 'ma-boston', 2, 'Quiet matter') on conflict do nothing`;
     await sql`insert into public.follows (user_id, target_type, target_id) values (${user}, 'local_matter', 'ma-boston-1')`;
 
+    const prebuilt = async () =>
+      (
+        await asAnon(sql, (tx) => tx`select id from public.bills_prerender where id like '119-hr-9900%' order by id`)
+      ).map((r) => r.id);
+    const prebuiltMatters = async () =>
+      (await asAnon(sql, (tx) => tx`select id from public.local_matters_prerender where id like 'ma-boston-_'`)).map(
+        (r) => r.id,
+      );
+    // One follower isn't enough for a prebuilt page (it opens from the fallback page).
+    expect(await prebuilt()).toEqual(['119-hr-99001', '119-hr-99002']);
+    expect(await prebuiltMatters()).toEqual([]);
+    // A second follower is.
+    const second = await createUser(sql);
+    await sql`insert into public.follows (user_id, target_type, target_id) values (${second}, 'bill', '119-hr-99003'),
+      (${second}, 'local_matter', 'ma-boston-1')`;
+    expect(await prebuilt()).toEqual(['119-hr-99001', '119-hr-99002', '119-hr-99003']);
+    expect(await prebuiltMatters()).toEqual(['ma-boston-1']);
     const bills = await asAnon(
       sql,
       (tx) => tx`select * from public.bills_prerender where id like '119-hr-9900%' order by id`,
     );
-    expect(bills).toEqual([
-      { id: '119-hr-99001', congress: 119 },
-      { id: '119-hr-99002', congress: 119 },
-      { id: '119-hr-99003', congress: 119 },
-    ]);
-    const matters = await asAnon(
-      sql,
-      (tx) => tx`select id from public.local_matters_prerender where id like 'ma-boston-_'`,
-    );
-    expect(matters.map((r) => r.id)).toEqual(['ma-boston-1']);
+    expect(bills[0]).toEqual({ id: '119-hr-99001', congress: 119 });
+    // Unfollowing brings it back under the threshold.
+    await sql`delete from public.follows where user_id = ${second}`;
+    expect(await prebuilt()).toEqual(['119-hr-99001', '119-hr-99002']);
+    const [count] =
+      await sql`select followers from public.followed_targets where target_type = 'bill' and target_id = '119-hr-99003'`;
+    expect(count!.followers).toBe(1);
 
     // The views run with the caller's rights; follows reach them only as "followed by someone".
     const options = await sql`
