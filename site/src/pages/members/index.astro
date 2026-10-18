@@ -1,8 +1,6 @@
 ---
 import FindMyReps from '../../components/FindMyReps';
-import MemberChip from '../../components/MemberChip';
 import MemberInsights from '../../components/MemberInsights.astro';
-import MemberPhoto from '../../components/MemberPhoto';
 import YourMembers from '../../components/YourMembers';
 import Hemicycle from '../../components/viz/Hemicycle';
 import { chamberGroups } from '../../lib/charts';
@@ -10,6 +8,7 @@ import Base from '../../layouts/Base.astro';
 import { CURRENT_CONGRESS, loadMembers } from '../../lib/build-data';
 import { DEMO } from '../../lib/config';
 import { congressLabel, stateName } from '../../lib/format';
+import { href, stateHref } from '../../lib/paths';
 
 const all = await loadMembers();
 const sortKey = (m: { sort_name: string | null; name: string }) => m.sort_name ?? m.name;
@@ -17,17 +16,6 @@ const members = [...all.values()]
   .filter((m) => m.current && m.state)
   .sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
 const states = [...new Set(members.map((m) => m.state!))].sort();
-// Within a state: senators by name, then representatives by district.
-const seatRank = new Map(
-  [...members]
-    .sort(
-      (a, b) =>
-        (a.chamber === 'senate' ? 0 : 1) - (b.chamber === 'senate' ? 0 : 1) ||
-        (a.district ?? 0) - (b.district ?? 0) ||
-        sortKey(a).localeCompare(sortKey(b)),
-    )
-    .map((m, i) => [m.bioguide_id, i]),
-);
 const counts = {
   senate: members.filter((m) => m.chamber === 'senate').length,
   house: members.filter((m) => m.chamber === 'house').length,
@@ -117,22 +105,7 @@ const senate = chamberGroups(all.values(), 'senate');
       </button>
     </div>
     <p class="small" id="results-state" hidden></p>
-    <ul class="member-rows" id="member-rows">
-      {members.map((m) => (
-        <li
-          data-party={(m.party ?? '').charAt(0)}
-          data-chamber={m.chamber}
-          data-state={m.state}
-          data-district={m.chamber === 'house' ? (m.district ?? 0) : ''}
-          data-q={`${m.name} ${stateName(m.state)}`.toLowerCase()}
-          data-rank={seatRank.get(m.bioguide_id)}
-        >
-          <MemberPhoto name={m.name} url={m.photo_url} bioguideId={m.bioguide_id} size={28} />
-          <MemberChip member={m} />
-          {m.chamber === 'senate' && <span class="small muted">Senator</span>}
-        </li>
-      ))}
-    </ul>
+    <ul class="member-rows" id="member-rows" data-src={href('members/members.json')}></ul>
     <p class="no-match muted" id="member-none" hidden>
       No members match.
     </p>
@@ -151,7 +124,7 @@ const senate = chamberGroups(all.values(), 'senate');
       <ul class="state-picker">
         {states.map((s) => (
           <li>
-            <a href={`?state=${s}`} data-state={s} title={stateName(s)} aria-label={stateName(s)}>
+            <a href={stateHref(s)} data-state={s} title={stateName(s)} aria-label={stateName(s)}>
               {s}
             </a>
           </li>
@@ -162,8 +135,9 @@ const senate = chamberGroups(all.values(), 'senate');
 </Base>
 
 <script>
-  import { stateName } from '../../lib/format';
-  import { stateHref } from '../../lib/paths';
+  import { congressPortrait } from '../../components/MemberPhoto';
+  import { initials, memberTag, partyClass, partyLabel, stateName } from '../../lib/format';
+  import { memberHref, stateHref } from '../../lib/paths';
 
   const PAGE = 25;
   const form = document.getElementById('member-filter') as HTMLFormElement;
@@ -175,21 +149,73 @@ const senate = chamberGroups(all.values(), 'senate');
   const clear = document.getElementById('member-clear')!;
   const none = document.getElementById('member-none')!;
   const more = document.getElementById('member-more')!;
-  const rows = [...document.querySelectorAll<HTMLElement>('#member-rows > li')].map((li, i) => ({
-    li,
-    nameRank: i,
-    seatRank: Number(li.dataset.rank ?? i),
-    q: li.dataset.q ?? '',
-    state: (li.dataset.state ?? '').toLowerCase(),
-    district: li.dataset.district === '' ? null : Number(li.dataset.district),
-    party: li.dataset.party ?? '',
-    chamber: li.dataset.chamber ?? '',
-  }));
+  /** [bioguide ID, name, party letter, chamber, state, district, photo, seat rank], as members.json.ts writes them. */
+  type MemberData = [string, string, string, string, string, number | null, string | null, number];
+  interface Row {
+    id: string;
+    name: string;
+    photo: string | null;
+    li: HTMLLIElement | null;
+    nameRank: number;
+    seatRank: number;
+    q: string;
+    state: string;
+    district: number | null;
+    party: string;
+    chamber: string;
+  }
+  const list = document.getElementById('member-rows')!;
+  let rows: Row[] = [];
+  let loaded = false;
+
+  /** A member's row, built the first time a search shows it (the same markup as MemberPhoto and MemberChip). */
+  function rowElement(row: Row): HTMLLIElement {
+    if (row.li) return row.li;
+    const portrait = congressPortrait(row.id);
+    const li = document.createElement('li');
+    const img = document.createElement('img');
+    img.className = 'photo';
+    img.src = row.photo ?? portrait;
+    img.alt = '';
+    img.width = 28;
+    img.height = 34;
+    img.style.width = '28px';
+    img.style.height = '34px';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer';
+    img.dataset.initials = initials(row.name);
+    if (row.photo) img.dataset.fallback = portrait;
+    const chip = document.createElement('span');
+    chip.className = 'member-chip';
+    const link = document.createElement('a');
+    link.href = memberHref(row.id);
+    link.textContent = row.name;
+    const party = document.createElement('span');
+    party.className = `party ${partyClass(row.party)}`;
+    party.title = partyLabel(row.party);
+    party.textContent = memberTag({
+      party: row.party,
+      state: row.state.toUpperCase(),
+      district: row.district,
+      chamber: row.chamber,
+    });
+    chip.append(link, ' ', party);
+    li.append(img, chip);
+    if (row.chamber === 'senate') {
+      const role = document.createElement('span');
+      role.className = 'small muted';
+      role.textContent = 'Senator';
+      li.append(role);
+    }
+    row.li = li;
+    return li;
+  }
   const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
   let limit = PAGE;
 
   /** How well a row matches the typed text: 0 district, 1 state, 2 name; null for no match. */
-  function score(row: (typeof rows)[number], q: string): number | null {
+  function score(row: Row, q: string): number | null {
     if (!q) return 2;
     const seat = /^([a-z]{2})[\s-]*(\d{1,2}|al)$/.exec(q);
     if (seat) {
@@ -222,11 +248,8 @@ const senate = chamberGroups(all.values(), 'senate');
         (a, b) => a.s! - b.s! || (byState || a.s === 1 ? a.r.seatRank - b.r.seatRank : a.r.nameRank - b.r.nameRank),
       );
     if (fromUser) limit = PAGE;
-    const shown = new Set(matches.slice(0, limit).map((m) => m.r));
-    // Reorder the list itself, so screen readers and keyboards follow the visible order.
-    const list = document.getElementById('member-rows')!;
-    for (const { r } of matches) list.append(r.li);
-    for (const r of rows) r.li.hidden = !shown.has(r);
+    // Only the rows on show are in the list, in the order shown (for screen readers and keyboards too).
+    list.replaceChildren(...matches.slice(0, limit).map(({ r }) => rowElement(r)));
 
     results.classList.toggle('is-active', active);
     form.classList.toggle('is-sticky', active);
@@ -234,11 +257,15 @@ const senate = chamberGroups(all.values(), 'senate');
     // Party unity and campaign money sit above the results; they step aside during a search.
     insights.hidden = active;
     clear.hidden = !active;
-    none.hidden = matches.length > 0;
+    none.hidden = !loaded || matches.length > 0;
     more.hidden = matches.length <= limit;
     more.textContent = `Show more (${matches.length - limit} left)`;
     const n = matches.length;
-    heading.textContent = active ? `${n} ${n === 1 ? 'member' : 'members'}` : `All ${rows.length} members`;
+    heading.textContent = !loaded
+      ? 'Loading members…'
+      : active
+        ? `${n} ${n === 1 ? 'member' : 'members'}`
+        : `All ${rows.length} members`;
     if (state) {
       const senators = matches.filter((m) => m.r.chamber === 'senate').length;
       const reps = n - senators;
@@ -269,6 +296,31 @@ const senate = chamberGroups(all.values(), 'senate');
   }
   apply();
   results.classList.add('is-ready');
+
+  // The members arrive as one small file after the page is up (535 rows in the page were
+  // 330 KB and 3,000 elements that old devices parsed before anything was searched).
+  fetch(list.dataset.src!)
+    .then((r) => (r.ok ? (r.json() as Promise<MemberData[]>) : Promise.reject(new Error(String(r.status)))))
+    .then((data) => {
+      rows = data.map(([id, name, party, chamber, state, district, photo, seatRank], i) => ({
+        id,
+        name,
+        photo,
+        li: null,
+        nameRank: i,
+        seatRank,
+        q: `${name} ${stateName(state)}`.toLowerCase(),
+        state: state.toLowerCase(),
+        district,
+        party,
+        chamber,
+      }));
+      loaded = true;
+      apply(false);
+    })
+    .catch(() => {
+      heading.textContent = 'Members could not be loaded. Reload the page to try again.';
+    });
 
   form.addEventListener('input', () => apply());
   form.addEventListener('submit', (e) => {
@@ -353,8 +405,8 @@ const senate = chamberGroups(all.values(), 'senate');
     }
   }
 
-  /* Without JavaScript every member is listed; with it, only matches once a search starts. */
-  :global(html.js) .member-results:not(.is-active) {
+  /* The results show once a search starts (without JavaScript, the states link to their pages). */
+  .member-results:not(.is-active) {
     display: none;
   }
   .member-results {
@@ -373,17 +425,12 @@ const senate = chamberGroups(all.values(), 'senate');
     margin: var(--space-1) 0 0;
   }
   .member-rows {
-    columns: 20rem;
-    column-gap: var(--space-5);
-    margin-top: var(--space-3);
-  }
-  :global(html.js) .member-rows {
-    columns: auto;
     display: grid;
     gap: 0 var(--space-5);
+    margin-top: var(--space-3);
   }
   @media (min-width: 48rem) {
-    :global(html.js) .member-rows {
+    .member-rows {
       grid-template-columns: 1fr 1fr;
     }
   }

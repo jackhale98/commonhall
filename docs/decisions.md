@@ -2285,3 +2285,14 @@ usual flow of decisions: a few a week from each state court, and on the Supreme 
 busiest June days still within a day or two. When Res Publica needs less, the caps and
 schedules can go back up in the same two places.
 
+
+## 122. The members search loads its members as a file
+
+The members page used to carry every member's row in its HTML, hidden until a search
+showed it: 535 rows, about 330 KB of a 440 KB page and 3,000 of its 4,300 elements,
+which an older iPad took about five seconds to parse and lay out. The rows now come from
+`/members/members.json` (about 30 KB, 10 KB compressed, one short array per member),
+fetched once the page is up, and the browser builds only the rows a search shows. The
+page is about 100 KB with 1,500 elements. Without JavaScript, the states in "Browse by
+state" link to each state's page, which lists its delegation, instead of the page
+listing every member.
