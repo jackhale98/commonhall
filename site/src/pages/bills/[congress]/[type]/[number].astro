@@ -3,6 +3,7 @@ import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../../components/DiscussionLink.astro';
 import BillFacts from '../../../../components/BillFacts';
 import CitedAuthority from '../../../../components/CitedAuthority';
+import ActionTimeline from '../../../../components/ActionTimeline';
 import BillLive from '../../../../components/BillLive';
 import FollowButton from '../../../../components/FollowButton';
 import VoteList from '../../../../components/VoteList';
@@ -211,8 +212,11 @@ const restBlocks = summaryRest.map(summaryBlock);
           status={bill.status}
           latest_action_date={bill.latest_action_date}
           latest_action_text={bill.latest_action_text}
-          actions={liveActions}
-        />
+          actions={[]}
+          builtActions={liveActions.length}
+        >
+          <ActionTimeline actions={liveActions} />
+        </BillLive>
       </section>
 
       {votes.length > 0 && (

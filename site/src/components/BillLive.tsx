@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { BillStatus } from '@civic/congress-client/status';
 import { formatDate } from '../lib/format';
@@ -20,6 +21,13 @@ interface Props extends Live {
   billType: string;
   /** Render only the tracker and latest action (the timeline lives elsewhere on the page). */
   part: 'summary' | 'timeline';
+  /**
+   * Timeline: how many actions the build had. The build's timeline comes as the
+   * children (static HTML), not as `actions`, so the actions aren't in the page twice
+   * (once as HTML, once as the island's props).
+   */
+  builtActions?: number;
+  children?: ComponentChildren;
 }
 
 type Current = Omit<Live, 'actions'>;
@@ -45,6 +53,9 @@ const currentBill = (id: string) => {
 export default function BillLive(props: Props) {
   const [live, setLive] = useState<Live>(props);
   const [checked, setChecked] = useState<'idle' | 'fresh' | 'error'>('idle');
+  /** Actions read from the database because the build's are out of date (timeline only). */
+  const [fresh, setFresh] = useState<Action[] | null>(null);
+  const built = props.builtActions ?? props.actions.length;
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +65,7 @@ export default function BillLive(props: Props) {
         if (cancelled || !row) return;
         const newer = (row.latest_action_date ?? '') > (props.latest_action_date ?? '');
         const actions =
-          props.part === 'timeline' && (newer || props.actions.length === 0)
+          props.part === 'timeline' && (newer || built === 0)
             ? await select<Action>('bill_actions', {
                 bill_id: `eq.${props.billId}`,
                 select: 'seq,action_date,text,chamber,source_system',
@@ -63,6 +74,7 @@ export default function BillLive(props: Props) {
             : null;
         if (cancelled) return;
         setLive((prev) => ({ ...prev, ...row, actions: actions ?? prev.actions }));
+        if (actions) setFresh(actions);
         setChecked('fresh');
       } catch {
         if (!cancelled) setChecked('error');
@@ -73,7 +85,8 @@ export default function BillLive(props: Props) {
     };
   }, [props.billId, props.part]);
 
-  if (props.part === 'timeline') return <ActionTimeline actions={live.actions} />;
+  if (props.part === 'timeline')
+    return fresh || !props.children ? <ActionTimeline actions={fresh ?? live.actions} /> : <>{props.children}</>;
 
   return (
     <div class="bill-live">

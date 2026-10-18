@@ -2258,3 +2258,15 @@ layout class (`.site-header`, `.footer-col`, …) used nowhere else, apart from
 about 5 KB a page, about 57 MB across the site's 11,300 pages, with no visible change.
 The header still carries its menu twice (phone and desktop); folding that into one is
 the next saving if the site nears the budget again.
+
+## 120. A bill's actions in its page once
+
+Decision 102 named the next saving: a prerendered bill page carried its actions twice,
+as the timeline's HTML and again as the timeline island's props (JSON escaped into an
+attribute). The timeline needs no JavaScript (its earlier actions sit in a `<details>`),
+so the page now renders it once as static HTML in the island's slot; the island takes
+only the number of actions the build had, and replaces the timeline only when the bill
+has a newer action than the build (or the build had none). Sampled on the live site, the
+copy was about 3 KB of a 41 KB bill page: about 9 MB across 2,776 prerendered bills, and
+much more on long bills (H.R. 1). Most of every page is still the shared header, footer
+and scripts, about 25 KB, of which the header's two copies of the menu are the largest.
