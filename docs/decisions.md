@@ -2245,3 +2245,16 @@ Publica's case import:
   link must stay on respublicalibrary.org and passes `safeUrl`. When the index can't be
   read or has changed shape, the site builds without the links rather than fail.
 
+
+## 119. Layout styles are global, to keep the site under its size budget
+
+Adding the Res Publica footer link and home section (decision 118) took the built
+site to 501 MB, over the deploy guard's 500 MB, and the deploy stopped. Most of every
+page is shared chrome: the header alone was about 18 KB, and the layout's scoped
+styles put a `data-astro-cid-…` attribute on each of its elements (137 in the header).
+The layout's `<style>` in `Base.astro` is now `is:global`: every selector in it is a
+layout class (`.site-header`, `.footer-col`, …) used nowhere else, apart from
+`.badge` and `.is-current`, which it only matches inside its own elements. That saves
+about 5 KB a page, about 57 MB across the site's 11,300 pages, with no visible change.
+The header still carries its menu twice (phone and desktop); folding that into one is
+the next saving if the site nears the budget again.

@@ -380,7 +380,12 @@ const phoneNav = PHONE_NAV.map((section) => ({
   </body>
 </html>
 
-<style>
+<style is:global>
+  /*
+   * Global, not scoped: the header and footer are on every page, and scoping would add an
+   * attribute to each of their elements (about 5 KB a page, over 50 MB across the site).
+   * Every selector here is a layout class.
+   */
   .site-header {
     position: sticky;
     top: 0;
@@ -507,8 +512,8 @@ const phoneNav = PHONE_NAV.map((section) => ({
     border-radius: 10px;
   }
   /* Without scripts the menus open on keyboard focus; with them, on click. */
-  :global(html:not(.js)) .nav-group:not(:focus-within) .nav-pop,
-  :global(html.js) .nav-group-button[aria-expanded='false'] + .nav-pop {
+  html:not(.js) .nav-group:not(:focus-within) .nav-pop,
+  html.js .nav-group-button[aria-expanded='false'] + .nav-pop {
     display: none;
   }
   .header-actions {
@@ -539,7 +544,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
     color: var(--brand-strong);
     background: var(--brand-soft);
   }
-  .icon-link :global(.badge) {
+  .icon-link .badge {
     position: absolute;
     top: 2px;
     right: -2px;
@@ -620,7 +625,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
       overflow-y: auto;
       overscroll-behavior: contain;
     }
-    :global(html.js) .site-menu:not([data-open]) {
+    html.js .site-menu:not([data-open]) {
       display: none;
     }
     .nav-list {
@@ -713,7 +718,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
     align-items: center;
   }
   /* A city under its state in the menus. */
-  .nav-child :global(a),
+  .nav-child a,
   .nav-child a {
     padding-left: 1.6rem;
   }
@@ -831,23 +836,23 @@ const phoneNav = PHONE_NAV.map((section) => ({
     background: none;
     color: var(--text);
   }
-  .brand-egg :global(.ch-loader) {
+  .brand-egg .ch-loader {
     /* Buttons colour loader marks like their text; this one stays the logo's colours. */
     --ch-seat: var(--brand);
     width: 2rem;
     height: 2rem;
   }
   /* Still until clicked; then the roll call plays once. */
-  .brand-egg:not(.is-playing) :global(.ch-seat),
-  .brand-egg:not(.is-playing) :global(.ch-seat circle),
-  .brand-egg:not(.is-playing) :global(.ch-you),
-  .brand-egg:not(.is-playing) :global(.ch-ring) {
+  .brand-egg:not(.is-playing) .ch-seat,
+  .brand-egg:not(.is-playing) .ch-seat circle,
+  .brand-egg:not(.is-playing) .ch-you,
+  .brand-egg:not(.is-playing) .ch-ring {
     animation: none !important;
   }
-  .brand-egg.is-playing :global(.ch-seat),
-  .brand-egg.is-playing :global(.ch-seat circle),
-  .brand-egg.is-playing :global(.ch-you),
-  .brand-egg.is-playing :global(.ch-ring) {
+  .brand-egg.is-playing .ch-seat,
+  .brand-egg.is-playing .ch-seat circle,
+  .brand-egg.is-playing .ch-you,
+  .brand-egg.is-playing .ch-ring {
     animation-iteration-count: 1 !important;
   }
   .footer-brand p {
@@ -870,14 +875,14 @@ const phoneNav = PHONE_NAV.map((section) => ({
     display: grid;
     gap: 0;
   }
-  .footer-col :global(a) {
+  .footer-col a {
     color: var(--text);
     text-decoration: none;
     /* A comfortable tap target on phones without spreading the list out. */
     display: inline-block;
     padding-block: 0.3rem;
   }
-  .footer-col :global(a:hover) {
+  .footer-col a:hover {
     color: var(--link);
     text-decoration: underline;
   }
