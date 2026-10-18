@@ -14,6 +14,12 @@ import { href } from '../../lib/paths';
     sees your IP address when your browser asks for a page. Some pages fetch fresh data from our database (Supabase) as
     you read.
   </p>
+  <p>
+    To stop one visitor from using up what everyone shares, a few actions are limited per visitor: looking up your
+    representatives by address, loading a bill or member we don’t hold yet, and asking for a discussion without an
+    account. For that we keep a one-way scramble (a hash) of your IP address mixed with the date, for one day; never the
+    address itself.
+  </p>
 
   <h2>If you sign in</h2>
   <ul>

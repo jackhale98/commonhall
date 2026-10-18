@@ -1,10 +1,12 @@
 /**
  * Public: Find my reps. POST {"address": "1600 Pennsylvania Ave NW, Washington, DC"}.
  * Returns districts, senators and House member, and state legislators.
- * The address is used for this request only: it is not stored or logged.
+ * The address is used for this request only: it is not stored or logged. Each
+ * client may make 20 lookups an hour (withinClientLimit), on top of the shared
+ * hourly Open States budget.
  */
 import { CensusGeocoder, OpenStatesClient, congressForDate } from '@civic/congress-client';
-import { findReps } from '@civic/sync';
+import { clientIp, findReps, withinClientLimit } from '@civic/sync';
 import { connect, log } from '../_shared/runtime.ts';
 
 const logger = log('geocode');
@@ -50,6 +52,9 @@ Deno.serve(async (req) => {
   const key = Deno.env.get('OPENSTATES_API_KEY');
   const sql = connect();
   try {
+    if (!(await withinClientLimit(sql, 'geocode', clientIp(req.headers), 20))) {
+      return respond({ error: 'Too many lookups from you right now; please try again in a while.' }, 429);
+    }
     const result = await findReps(
       sql,
       {

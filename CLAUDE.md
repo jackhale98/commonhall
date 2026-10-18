@@ -64,12 +64,6 @@ npm run test:db
 
 Work through these in order. Delete each item from this list in the same change that fixes it.
 
-**Security**
-3. `20261009000019_anonymous_requests.sql:33-35`: the 300-an-hour cap is site-wide and `client_id` is caller-chosen. Add a per-client limit and a purge job for `discussion_requests_anon`.
-5. `fetch-on-demand` and the Open States part of `geocode` have only site-wide hourly caps. Add a per-client limit in front.
-6. `supabase-deploy.yml:24-29,41-43` and `ci.yml`: pin actions to SHAs and the CLI to a version; move secrets to step level. `backfill.yml:42,57-58`: pass inputs through `env:`.
-7. Revoke update on `profiles.polis_xid` from `authenticated`; cap signed-in `discussion_requests` per user like follows.
-
 **Operations**
 8. `20261008000003_schedules.sql:57-76` `check_database_size` raises after writing its status row, which rolls the write back, and `db-size` is missing from `private.job_schedule`. The size alarm can never fire. Record without raising and register the job.
 9. `packages/sync/src/state/sync-state.ts:468-472` deletes every old-session state bill when a new session starts, orphaning follows and discussions. Keep followed or discussed bills.

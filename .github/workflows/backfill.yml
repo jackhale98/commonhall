@@ -31,16 +31,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - id: run
         name: Backfill
-        run: npm run backfill -- ${{ inputs.congress && format('--congress {0}', inputs.congress) || '' }} ${{ inputs.reset && '--reset' || '' }}
+        run: |
+          args=()
+          if [ -n "$CONGRESS" ]; then args+=(--congress "$CONGRESS"); fi
+          if [ "$RESET" = 'true' ]; then args+=(--reset); fi
+          npm run backfill -- "${args[@]}"
         env:
+          CONGRESS: ${{ inputs.congress }}
+          RESET: ${{ inputs.reset }}
           # Use the Supavisor session pooler URL (IPv4); Actions runners cannot reach the IPv6-only direct host.
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
@@ -49,10 +55,16 @@ jobs:
         if: steps.run.outputs.done == 'false' && fromJSON(inputs.max_chain || '0') > 0
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO_ID: ${{ github.repository_id }}
+          REPO_NAME: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          CONGRESS: ${{ inputs.congress }}
+          MAX_CHAIN: ${{ inputs.max_chain }}
         # Look the repository up by its permanent id, so the chain survives a rename
         # made while this run was going (github.repository is the name at start).
         run: |
-          repo="$(gh api "repositories/${{ github.repository_id }}" --jq .full_name 2>/dev/null || true)"
-          gh workflow run backfill.yml --repo "${repo:-${{ github.repository }}}" --ref "${{ github.ref_name }}" \
-            -f congress="${{ inputs.congress }}" \
-            -f max_chain="$(( ${{ inputs.max_chain }} - 1 ))"
+          case "$MAX_CHAIN" in ''|*[!0-9]*) echo "max_chain must be a number"; exit 1;; esac
+          repo="$(gh api "repositories/$REPO_ID" --jq .full_name 2>/dev/null || true)"
+          gh workflow run backfill.yml --repo "${repo:-$REPO_NAME}" --ref "$REF_NAME" \
+            -f congress="$CONGRESS" \
+            -f max_chain="$(( MAX_CHAIN - 1 ))"

@@ -7,10 +7,11 @@
  *   POST /functions/v1/fetch-on-demand  {"kind":"member","id":"A000375"}
  *
  * Results are cached in archive_cache; uncached lookups share an hourly cap so
- * visitors cannot exhaust the Congress.gov budget.
+ * visitors cannot exhaust the Congress.gov budget, and each client may make 60
+ * lookups an hour (withinClientLimit).
  */
 import { BudgetExhaustedError, CongressClient, HttpError, RequestBudget } from '@civic/congress-client';
-import { OnDemandError, getOnDemand, validateRequest } from '@civic/sync';
+import { OnDemandError, clientIp, getOnDemand, validateRequest, withinClientLimit } from '@civic/sync';
 import { connect, env, log } from '../_shared/runtime.ts';
 
 const logger = log('fetch-on-demand');
@@ -56,6 +57,9 @@ Deno.serve(async (req) => {
 
   const sql = connect();
   try {
+    if (!(await withinClientLimit(sql, 'fetch-on-demand', clientIp(req.headers), 60))) {
+      return respond({ error: 'Too many lookups from you right now; try again later.' }, 429, { 'retry-after': '600' });
+    }
     const apiKey = env('CONGRESS_API_KEY');
     const result = await getOnDemand(
       sql,

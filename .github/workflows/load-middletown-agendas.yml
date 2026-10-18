@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -32,6 +32,10 @@ jobs:
         run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends poppler-utils)
       - run: npm ci
       - name: Load the agendas
-        run: npx tsx scripts/load-middletown-agendas.ts ${{ inputs.force && '--force' || '' }}
+        run: |
+          args=()
+          if [ "$FORCE" = 'true' ]; then args+=(--force); fi
+          npx tsx scripts/load-middletown-agendas.ts "${args[@]}"
         env:
+          FORCE: ${{ inputs.force }}
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

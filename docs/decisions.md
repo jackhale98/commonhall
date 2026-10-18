@@ -1886,3 +1886,26 @@ From the October 2026 review (`CLAUDE.md`):
   frame is sandboxed, sends only the site's origin as its referrer, and grows to the
   height Pol.is reports.
 
+## 106. Per-client limits, locked profile ids, pinned workflows
+
+From the October 2026 review (`CLAUDE.md`):
+
+- **Per-client limits.** `private.rate_limits` counts hits per bucket and client in
+  fixed windows (`private.hit_rate_limit`). The client is a SHA-256 of the caller's
+  IP address with the date mixed in, so no address is stored and keys can't be
+  linked across days; rows are purged after a day (`purge-rate-limits`). Limits:
+  anonymous discussion requests 20 an hour per address and 20 per browser id, on top
+  of the site-wide 300; `fetch-on-demand` 60 lookups an hour and `geocode` 20 an hour
+  per client, on top of their shared API budgets (`withinClientLimit` in
+  `packages/sync/src/rate-limit.ts`). The privacy page says so.
+- **Retention.** Anonymous discussion requests older than 180 days are purged
+  (`purge-discussion-requests-anon`), like feed events.
+- **Signed-in requests** are capped at 300 per user, like follows (500).
+- **profiles.** Signed-in users may insert and update only their own address
+  fields; `polis_xid`, the random id Pol.is sees, is set by the database and can't
+  be changed. TRUNCATE (which row-level security doesn't cover) is revoked from users
+  on the per-user tables.
+- **Workflows.** Every action is pinned to a commit SHA (the tag in a comment), the
+  Supabase CLI to 2.120.0 and Deno to 2.9.7. Secrets are set on the steps that use
+  them, and workflow inputs reach shell commands only through `env:`, quoted.
+
