@@ -1909,3 +1909,27 @@ From the October 2026 review (`CLAUDE.md`):
   Supabase CLI to 2.120.0 and Deno to 2.9.7. Secrets are set on the steps that use
   them, and workflow inputs reach shell commands only through `env:`, quoted.
 
+## 107. Database jobs in the health check; warnings apart from failures
+
+From the October 2026 review (`CLAUDE.md`):
+
+- **The size alarm.** `private.check_database_size` wrote its status row and then
+  raised, which rolled the row back, and `db-size` wasn't in `private.job_schedule`:
+  the alarm could never fire. It now records the error and returns, and is
+  registered (weekly, warns above 400 MB).
+- **Database-only jobs** (the purges, the member-stats refresh, the monthly trim)
+  run through `private.run_db_job`, which records each run's start, success or
+  error in `sync_state` (the job's own work is rolled back on error; the record
+  stays), and each is registered in `private.job_schedule`, so `health_rows()` and
+  the Data status page see one that stops or fails. A DB test checks that every SQL
+  cron job is wrapped and registered.
+- **Warnings and failures.** The daily Sync health check fails only on job
+  problems (failed, overdue, died mid-run, never ran). A dataset with nothing new
+  for longer than usual is a warning: listed, annotated on the run and in its
+  summary, but not failing it, so one quiet source doesn't keep the alert
+  permanently red and hide a real failure.
+- **A second channel.** When the `HEARTBEAT_URL` secret is set, each run pings it
+  (adding `/fail` when the check failed), for a dead-man's-switch service that
+  alerts when the checks fail or stop running (GitHub disables scheduled workflows
+  after 60 days without commits). Which service is the owner's choice.
+

@@ -86,6 +86,38 @@ describe('sync_health', () => {
   });
 });
 
+describe('database-only jobs', () => {
+  it('records the size alarm instead of rolling it back', async () => {
+    await sql`select private.check_database_size(1)`;
+    expect((await problems())['db-size']).toBe('last run failed');
+    const [row] = await sql`select last_error from public.sync_state where job = 'db-size'`;
+    expect(row!.last_error).toMatch(/above the 1 MB limit/);
+    await sql`select private.check_database_size(100000)`;
+    expect((await problems())['db-size']).toBeUndefined();
+  });
+
+  it('records a SQL job’s success and failure', async () => {
+    await sql`select private.run_db_job('purge-geo-cache', 'delete from public.geo_cache where expires_at < now()')`;
+    expect((await problems())['purge-geo-cache']).toBeUndefined();
+    await sql`select private.run_db_job('purge-geo-cache', 'select 1/0')`;
+    expect((await problems())['purge-geo-cache']).toBe('last run failed');
+    const [row] = await sql`select last_error from public.sync_state where job = 'purge-geo-cache'`;
+    expect(row!.last_error).toBe('division by zero');
+  });
+
+  it('runs every SQL cron job through the recorder, each one registered', async () => {
+    const jobs = await sql<{ jobname: string; command: string }[]>`
+      select jobname, command from cron.job where command not like '%invoke_sync%'`;
+    const registered = new Set((await sql<{ job: string }[]>`select job from private.job_schedule`).map((r) => r.job));
+    for (const j of jobs) {
+      const recorded = j.jobname === 'check-database-size' ? 'db-size' : j.jobname;
+      expect(registered.has(recorded), `${j.jobname} is in private.job_schedule`).toBe(true);
+      if (j.jobname !== 'check-database-size')
+        expect(j.command, `${j.jobname} runs through run_db_job`).toContain(`run_db_job('${j.jobname}'`);
+    }
+  });
+});
+
 describe('daily shares', () => {
   it('holds a job to its share of a shared daily limit', async () => {
     await sql`select public.record_api_usage('courtlistener:scotus', 60)`;

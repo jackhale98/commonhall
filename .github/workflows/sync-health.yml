@@ -1,9 +1,14 @@
 name: Sync health
 
-# Daily: fails when a sync job or loader failed, is overdue or died mid-run, or a
-# dataset has had nothing new for longer than usual (private.sync_health()). A failed
-# run is how the owner hears about it: GitHub emails a failed scheduled workflow.
-# The same list, without error text, is on the site's Data status page.
+# Daily: fails when a sync job, loader or database job failed, is overdue or died
+# mid-run (private.sync_health()). A dataset with nothing new for longer than usual
+# is a warning on the run, not a failure. A failed run is how the owner hears about
+# it: GitHub emails a failed scheduled workflow. The same list, without error text,
+# is on the site's Data status page.
+#
+# A second channel: when the HEARTBEAT_URL secret is set (a dead-man's-switch check,
+# e.g. healthchecks.io), each run pings it, adding /fail when the check failed, so an
+# outside service alerts if the checks fail or stop running at all.
 #
 # GitHub turns off scheduled workflows in a repository with no commits for 60 days;
 # re-enable it on the Actions tab if that happens.
@@ -27,6 +32,17 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Check jobs and data
+        id: check
         run: npx tsx scripts/check-health.ts
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - name: Ping the heartbeat
+        if: always()
+        env:
+          HEARTBEAT_URL: ${{ secrets.HEARTBEAT_URL }}
+          OUTCOME: ${{ steps.check.outcome }}
+        run: |
+          if [ -z "$HEARTBEAT_URL" ]; then echo "No HEARTBEAT_URL set; skipping."; exit 0; fi
+          url="$HEARTBEAT_URL"
+          if [ "$OUTCOME" != 'success' ]; then url="${url%/}/fail"; fi
+          curl -fsS -m 10 --retry 3 -o /dev/null "$url"

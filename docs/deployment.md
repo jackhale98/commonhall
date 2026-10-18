@@ -158,15 +158,22 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | Load council districts | manually (once, and after redistricting) | `SUPABASE_DB_URL` |
 | Load Supreme Court Database | monthly (3rd, 07:41 UTC) and manually | `SUPABASE_DB_URL` |
 | Load Middletown agendas | 11:37 UTC daily and manually | `SUPABASE_DB_URL` (installs `pdftotext`) |
-| Sync health | 13:13 UTC daily and manually | `SUPABASE_DB_URL` |
+| Sync health | 13:13 UTC daily and manually | `SUPABASE_DB_URL`; optional `HEARTBEAT_URL` |
 
 **Sync health** is how you hear that something broke. It fails when a job's last run
-failed, a job is overdue or died mid-run, or a dataset has had nothing new for much
-longer than usual (`private.sync_health()`), and GitHub emails you about a failed
-scheduled workflow. The run's summary lists each problem and where the job runs. The
-same list, without error text, is public at `/status/`. A new job or loader needs a
-row in `private.job_schedule` (its name in `sync_state`, a label and how often it
-runs); new cities, courts and states' governor's orders are checked without changes.
+failed, or a job is overdue, died mid-run or never ran (`private.sync_health()`;
+database-only jobs such as the purges and the member-stats refresh included), and
+GitHub emails you about a failed scheduled workflow. A dataset with nothing new for
+much longer than usual is a warning on the run, not a failure. The run's summary
+lists each problem and where the job runs. The same list, without error text, is
+public at `/status/`. A new job or loader needs a row in `private.job_schedule` (its
+name in `sync_state`, a label and how often it runs); a new SQL cron job runs through
+`private.run_db_job`. New cities, courts and states' governor's orders are checked
+without changes.
+
+For a second channel, set the `HEARTBEAT_URL` secret to a dead-man's-switch check
+(for example a healthchecks.io check URL): each run pings it, adding `/fail` when the
+check failed, so you also hear when the checks stop running.
 
 GitHub turns off scheduled workflows in a repository with no activity for 60 days.
 If the nightly rebuild stops, re-enable it from the Actions tab.

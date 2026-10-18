@@ -1,9 +1,14 @@
 /**
- * The daily health check: prints private.sync_health() (jobs that failed, are
- * overdue or died mid-run; datasets with nothing new for longer than usual) and
- * exits 1 when there is anything, so the "Sync health" workflow fails and GitHub
- * emails the owner. Also prints failed function responses from the last hours
- * (pg_net keeps about six), for context.
+ * The daily health check: prints private.sync_health() and exits 1 on a failure,
+ * so the "Sync health" workflow fails and GitHub emails the owner.
+ *
+ * - Failures: a job or loader that failed, is overdue, died mid-run or never ran.
+ * - Warnings: a dataset with nothing new for longer than usual (a quiet source, or a
+ *   council in recess). Listed and annotated, but they don't fail the run, so one
+ *   quiet source doesn't keep the alert red and hide a real failure.
+ *
+ * Also prints failed function responses from the last hours (pg_net keeps about
+ * six), for context.
  *
  *   SUPABASE_DB_URL=… npx tsx scripts/check-health.ts
  */
@@ -29,21 +34,41 @@ async function main() {
       console.log('All jobs and datasets are healthy.');
       return;
     }
-    console.log(`${problems.length} problem${problems.length === 1 ? '' : 's'}:`);
-    for (const p of problems) {
-      console.log(`- [${p.kind}] ${p.label} (${p.name}): ${p.problem}${p.runner ? ` — runs in ${p.runner}` : ''}`);
-      if (p.error) console.log(`    ${p.error}`);
+    const failures = problems.filter((p) => p.kind === 'job');
+    const warnings = problems.filter((p) => p.kind !== 'job');
+    const line = (p: (typeof problems)[number]) =>
+      `[${p.kind}] ${p.label} (${p.name}): ${p.problem}${p.runner ? ` — runs in ${p.runner}` : ''}`;
+    if (failures.length) {
+      console.log(`${failures.length} failure${failures.length === 1 ? '' : 's'}:`);
+      for (const p of failures) {
+        console.log(`- ${line(p)}`);
+        if (p.error) console.log(`    ${p.error}`);
+      }
+    }
+    if (warnings.length) {
+      console.log(`${warnings.length} warning${warnings.length === 1 ? '' : 's'} (not failing the check):`);
+      for (const p of warnings) {
+        console.log(`- ${line(p)}`);
+        // An annotation on the run, so warnings show without failing it.
+        if (process.env.GITHUB_ACTIONS) console.log(`::warning title=${p.label}::${p.problem}`);
+      }
     }
     // A GitHub Actions summary, so the failure email links straight to the list.
     if (process.env.GITHUB_STEP_SUMMARY) {
       const { appendFileSync } = await import('node:fs');
       appendFileSync(
         process.env.GITHUB_STEP_SUMMARY,
-        ['| Kind | What | Problem | Runs in |', '|---|---|---|---|']
-          .concat(problems.map((p) => `| ${p.kind} | ${p.label} | ${p.problem} | ${p.runner ?? ''} |`))
+        ['| Severity | Kind | What | Problem | Runs in |', '|---|---|---|---|---|']
+          .concat(
+            problems.map(
+              (p) =>
+                `| ${p.kind === 'job' ? 'failure' : 'warning'} | ${p.kind} | ${p.label} | ${p.problem} | ${p.runner ?? ''} |`,
+            ),
+          )
           .join('\n') + '\n',
       );
     }
+    if (!failures.length) return;
     process.exitCode = 1;
   } finally {
     await sql.end();
