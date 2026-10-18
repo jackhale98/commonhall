@@ -58,10 +58,22 @@ export async function select<T>(table: string, params: Params = {}, init: Reques
   return (await response.json()) as T[];
 }
 
-/** Like select, plus the exact total count (for pagination UIs). */
-export async function selectWithCount<T>(table: string, params: Params = {}): Promise<{ rows: T[]; count: number }> {
+/** PostgREST counts exactly up to its row limit (1,000) and estimates from the planner above it. */
+export const EXACT_COUNT_LIMIT = 1000;
+
+/**
+ * Like select, plus the total count (for pagination UIs). In the browser the count is
+ * estimated (`count=estimated`: exact up to EXACT_COUNT_LIMIT rows, the planner's
+ * estimate above), so a search never makes the database count every match; at build
+ * time it is exact. Retries like select at build time.
+ */
+export async function selectWithCount<T>(
+  table: string,
+  params: Params = {},
+  count: 'exact' | 'estimated' = import.meta.env.SSR ? 'exact' : 'estimated',
+): Promise<{ rows: T[]; count: number }> {
   if (!hasSupabase) return { rows: [], count: 0 };
-  const response = await check(await fetch(url(table, params), { headers: headers({ prefer: 'count=exact' }) }));
+  const response = await check(await fetchRows(url(table, params), { headers: headers({ prefer: `count=${count}` }) }));
   const range = response.headers.get('content-range') ?? '';
   const total = Number(range.split('/')[1]);
   const rows = (await response.json()) as T[];

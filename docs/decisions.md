@@ -1961,3 +1961,15 @@ From the October 2026 review (`CLAUDE.md`):
   which cuts the 80 MB to about 32 MB. Members' pages for that Congress would then
   show their votes on final passage, not every procedural vote.
 
+## 109. Estimated counts and an index for state bill search
+
+From the October 2026 review (`CLAUDE.md`): `selectWithCount` asked PostgREST for an
+exact count on every browser query, so a search counted every match, and it skipped
+the build-time retries `select` has. In the browser it now asks for an estimated count
+(exact up to PostgREST's 1,000-row limit, the planner's estimate above), and the bill
+list says "About 12,300 bills" above that; at build time counts stay exact and
+requests are retried. The state Bills tab's title and number search (`ilike
+'%term%'`) read every bill of the state; trigram indexes on `state_bills.title` and
+`identifier` (migration 067, a few MB at 30,000 bills) serve it. Federal bills and
+council items already search with full-text indexes.
+

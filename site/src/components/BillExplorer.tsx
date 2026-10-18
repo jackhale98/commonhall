@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { BILL_STATUSES, STATUS_LABELS } from '@civic/congress-client/status';
 import { memberHref } from '../lib/paths';
-import { RestError, inList, rpc, selectWithCount, type Params } from '../lib/rest';
+import { EXACT_COUNT_LIMIT, RestError, inList, rpc, selectWithCount, type Params } from '../lib/rest';
 import { BILL_LIST_COLUMNS, type BillListItem as Bill } from '../lib/types';
 import BillListItem from './BillListItem';
 
@@ -104,6 +104,9 @@ const isDefault = (f: Filters) =>
   !f.discussed &&
   f.sort === 'latest' &&
   f.page === 1;
+
+/** An estimated count to three significant figures: 12,345 → "12,300". */
+const roughly = (n: number) => Number(n.toPrecision(3)).toLocaleString();
 
 /** Build PostgREST filters shared by the table query and the search RPC. */
 function restFilters(f: Filters, congress: number, discussed: string[]): Params {
@@ -326,7 +329,7 @@ export default function BillExplorer({ congress, initial, policyAreas, local = f
             ? error
             : total === null
               ? 'Most recently active bills'
-              : `${total.toLocaleString()} ${total === 1 ? 'bill' : 'bills'}${filters.q ? ' matching' : ''}`}
+              : `${total > EXACT_COUNT_LIMIT ? `About ${roughly(total)}` : total.toLocaleString()} ${total === 1 ? 'bill' : 'bills'}${filters.q ? ' matching' : ''}`}
       </p>
 
       {bills.length === 0 && state === 'idle' ? (
