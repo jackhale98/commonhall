@@ -16,10 +16,10 @@ import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import { parse } from 'yaml';
 import { lightenPhotos, writeStatePeople, type PeopleCommittee, type PeoplePerson, type Sql } from '@civic/sync';
+import { USER_AGENT } from '@civic/congress-client';
 import { recordRun } from './lib/record-run.ts';
 
 const ARCHIVE = 'https://codeload.github.com/openstates/people/tar.gz/refs/heads/main';
-const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
 
 /** Unpack the archive's legislature and committee files; returns the data directory. */
 async function download(dir: string): Promise<string> {

@@ -45,7 +45,7 @@ jobs:
           if [ ${#files[@]} -gt 0 ]; then deno check "${files[@]}"; fi
 
   db:
-    name: Database (migrations, RLS, sync jobs)
+    name: Database (migrations, RLS, sync jobs, functions, Pol.is privacy)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -59,4 +59,21 @@ jobs:
           version: 2.120.0
       - name: Start local Supabase
         run: supabase start -x studio,imgproxy,storage-api,realtime,logflare,vector,supavisor,edge-runtime,mailpit,postgres-meta
+      # Before the DB tests, which reload the seed data: needs the seeded example discussion.
+      - name: Pol.is privacy check
+        run: |
+          eval "$(supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
+          npx playwright install --with-deps chromium
+          PUBLIC_SUPABASE_URL="$API_URL" PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" \
+            PUBLIC_POLIS_SITE_ID=polis_site_id_test PUBLIC_OPEN_PARTICIPATION=false npm run build
+          (cd site && npx astro preview --port 4321 > /tmp/preview.log 2>&1 &)
+          for _ in $(seq 1 30); do curl -s -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" SITE=http://localhost:4321/ npm run check:polis
       - run: npm run test:db
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.9.7
+      - name: Serve Edge Functions (smoke test)
+        run: scripts/smoke-functions.sh
+        env:
+          SUPABASE_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres

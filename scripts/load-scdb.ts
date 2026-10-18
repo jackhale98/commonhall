@@ -22,9 +22,8 @@ import {
   writeScdbOutcomes,
   type Sql,
 } from '@civic/sync';
+import { USER_AGENT } from '@civic/congress-client';
 import { recordRun } from './lib/record-run.ts';
-
-const USER_AGENT = 'commonhall (+https://github.com/jackhale98/commonhall)';
 
 async function get(url: string): Promise<Response> {
   const response = await fetch(url, { headers: { 'user-agent': USER_AGENT } });
