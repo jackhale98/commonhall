@@ -2144,3 +2144,37 @@ The second part of the budget work (decision 114): a Budget page under Congress
 - **Which years.** The fiscal year under way, and from April to September the next
   one too, whose bills the committees write over the spring and summer. The home
   page's "Latest" carries a funding card while any of the year's twelve is unfinished.
+
+## 116. Federal spending: the Treasury's monthly statement and USAspending
+
+The third part of the budget work (decision 114), from two sources the owner approved,
+both public and without a key: the Treasury's Fiscal Data API and USAspending.gov.
+One daily job, `sync-federal-budget`, in three parts that stand alone, so a renamed
+field in one doesn't stop the others.
+
+- **Money in and out.** The Monthly Treasury Statement's Table 9: receipts by source
+  and outlays by budget function for the fiscal year to date, with the same months of
+  the year before. It is read only when a new statement is out, and each one is
+  checked: both totals must be there and the lines must add up to them. Two
+  statements are kept, the newest and, while a year is under way, the last one of the
+  year before, so the Budget page shows a whole year beside the months of the new one.
+  The two lines that reduce outlays (offsetting receipts, credit repayments) are named
+  under the chart rather than drawn as bars.
+- **Agencies.** USAspending's agency list: each agency's budget authority, obligations
+  and outlays for the year under way, one request a day. Agencies link to their
+  USAspending page by slug, checked and passed through `safeUrl`.
+- **Awards by place.** USAspending's geography search, by place of performance, for
+  each state and congressional district, in three groups: contracts (A–D), grants
+  (02–05) and other assistance (06–11). The year shown is the newest that ended at
+  least four months earlier (FY2025 until late January 2027), so agencies' late
+  reports are in; it is reread weekly, and only one year is kept. Six requests, all
+  read before anything is written, so a run that stops partway keeps the stored year.
+- **What is shown where.** "Other" assistance turned out to be almost all direct
+  payments (in Connecticut $83 billion of $103 billion is direct payments for a
+  specified use), counted where they are recorded, and districts' amounts don't add up
+  to their state's. So districts show contracts and grants only, states show direct
+  payments separately, and every place that shows them says how they are counted.
+  Each state's Congress tab lists its districts beside the members who represent
+  them; the home page shows the visitor's own district.
+- **Size.** About 650 rows, under 300 KB; at most nine requests a day.
+

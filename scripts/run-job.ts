@@ -10,6 +10,7 @@
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts bristol | middletown-311
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts cambridge | cambridge-data
  *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts state-budget
+ *   SUPABASE_DB_URL=… npx tsx scripts/run-job.ts federal-budget
  */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -18,12 +19,14 @@ import {
   AnalyzeBostonClient,
   CivicClerkClient,
   CourtListenerClient,
+  FiscalDataClient,
   Iqm2Client,
   LegistarClient,
   OpenStatesClient,
   PrimeGovClient,
   SocrataClient,
   SeeClickFixClient,
+  UsaSpendingClient,
 } from '@civic/congress-client';
 import {
   BOSTON_311_JOB,
@@ -41,6 +44,8 @@ import {
   MA_BUDGET_DOMAIN,
   STATE_BUDGET_JOB,
   syncStateBudgets,
+  FEDERAL_BUDGET_JOB,
+  syncFederalBudget,
   syncCambridge,
   syncCambridgeData,
   type CambridgeCursor,
@@ -257,9 +262,20 @@ async function main() {
       });
       console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
       if (result.status === 'error') process.exit(1);
+    } else if (job === 'federal-budget') {
+      const result = await runJob({
+        sql,
+        job: FEDERAL_BUDGET_JOB,
+        timeLimitMs,
+        log: (m, d) => console.log(m, d ? JSON.stringify(d) : ''),
+        run: (ctx) =>
+          syncFederalBudget(ctx, { treasury: new FiscalDataClient(), usaspending: new UsaSpendingClient() }),
+      });
+      console.log(JSON.stringify({ status: result.status, rowsWritten: result.rowsWritten }));
+      if (result.status === 'error') process.exit(1);
     } else {
       throw new Error(
-        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget|somerville|somerville-311|bristol|middletown-311|cambridge|cambridge-data|state-budget> [--minutes N] [--since YYYY-MM-DD]',
+        'Usage: run-job.ts <boston|worcester|state|state-courts|capital-plan|boston-zba|boston-311|city-budget|somerville|somerville-311|bristol|middletown-311|cambridge|cambridge-data|state-budget|federal-budget> [--minutes N] [--since YYYY-MM-DD]',
       );
     }
   } finally {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { savedDistricts } from '../lib/auth';
 import { CITIES } from '../lib/cities';
+import { AREA_COLUMNS, districtSpending, type AreaSpending } from '../lib/federal-budget';
+import { formatMoney } from '../lib/finance';
 import { formatDate, partyLetter } from '../lib/format';
 import type { MyArea } from '../lib/my-area';
 import { cityHref, href, localOfficialHref, memberHref, stateLegislatorHref, voteHref } from '../lib/paths';
@@ -26,6 +28,7 @@ export default function YourArea() {
   const [area, setArea] = useState<MyArea | null>(null);
   const [reps, setReps] = useState<Result | null>(null);
   const [votes, setVotes] = useState<RepVoteGroup[] | null>(null);
+  const [money, setMoney] = useState<AreaSpending | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -33,6 +36,16 @@ export default function YourArea() {
       if (!a?.state) return;
       document.documentElement.dataset.area = '';
       setArea(a);
+      // Federal contracts and grants in their congressional district (one closed year is held).
+      const state = a.state;
+      select<AreaSpending>('federal_area_spending', {
+        select: AREA_COLUMNS,
+        state: `eq.${state}`,
+        district: 'not.is.null',
+        limit: 60,
+      })
+        .then((rows) => setMoney(districtSpending(rows, state, a.congressional_district)))
+        .catch(() => undefined);
       const r = await repsFromProfile({ ...a, address_label: a.label });
       setReps(r);
       const names = new Map((r?.federal ?? []).map((m) => [m.bioguide_id, lastName(m.name)]));
@@ -106,6 +119,13 @@ export default function YourArea() {
                 </li>
               )}
             </ul>
+          )}
+          {money && (
+            <p class="small muted ya-foot">
+              Federal contracts and grants in your congressional district, FY{String(money.fiscal_year).slice(2)}:{' '}
+              <strong>{formatMoney(Number(money.contracts) + Number(money.grants))}</strong> ·{' '}
+              <a href={href(`states/${money.state.toLowerCase()}/congress/#federal-h`)}>By district</a>
+            </p>
           )}
           {city && atLarge > 0 && (
             <p class="small muted ya-foot">

@@ -27,7 +27,7 @@ export interface MemberFinance {
 export const FINANCE_COLUMNS =
   'member_id,candidate_id,committee_name,election_year,period,coverage_end,receipts,disbursements,cash_on_hand,debts,individual_small,individual_large,pacs,party,self_funding,transfers,by_size,in_state,out_of_state,top_states,top_employers,top_committees';
 
-/** $4.47B, $4.4M, $512K, $950. */
+/** $5.40T, $4.47B, $4.4M, $512K, $950. */
 export function formatMoney(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return '—';
   const n = Number(value);
@@ -36,6 +36,7 @@ export function formatMoney(value: number | string | null | undefined): string {
   // Round half up from the whole amount (2,150,000 → 2.2M); toFixed on a float can round 2.15 down.
   const scaled = (unit: number, digits: number) =>
     (Math.round(abs / (unit / 10 ** digits)) / 10 ** digits).toFixed(digits);
+  if (abs >= 1e12) return `${sign}$${scaled(1e12, 2)}T`;
   if (abs >= 1e9) return `${sign}$${scaled(1e9, abs >= 1e10 ? 1 : 2)}B`;
   if (abs >= 1e6) return `${sign}$${scaled(1e6, abs >= 1e7 ? 0 : 1)}M`;
   if (abs >= 1e3) return `${sign}$${scaled(1e3, 0)}K`;

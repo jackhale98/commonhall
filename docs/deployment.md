@@ -365,6 +365,10 @@ Common problems:
 6. **State budgets** (no key): the Massachusetts budget, line by line with spending
    so far, arrives with `sync-state-budget` daily (about 4,500 rows in a few seconds);
    to load it now: `select private.invoke_sync('sync-state-budget');`
+7. **Federal spending** (no key): the Monthly Treasury Statement, agencies' budgets
+   and federal awards by state and district arrive with `sync-federal-budget` daily
+   (about 650 rows in about ten seconds); to load them now:
+   `select private.invoke_sync('sync-federal-budget');`
 
 ## 9. Switch the site to live data
 

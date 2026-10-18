@@ -1,4 +1,6 @@
 ---
+import { safeUrl } from '@civic/congress-client/safe-url';
+import BarList from '../../components/viz/BarList';
 import Base from '../../layouts/Base.astro';
 import {
   STAGE_LABELS,
@@ -8,9 +10,12 @@ import {
   type FundingBill,
   type FundingStage,
 } from '../../lib/appropriations';
-import { loadFundingBills } from '../../lib/build-data';
-import { billNumberLabel, formatDate } from '../../lib/format';
-import { billHref } from '../../lib/paths';
+import { loadAgencyBudgets, loadAreaSpending, loadFundingBills, loadMtsLines } from '../../lib/build-data';
+import { agencyHref, perPerson, statementMonth, statements, type StatementItem } from '../../lib/federal-budget';
+import { formatMoney } from '../../lib/finance';
+import { billNumberLabel, formatDate, stateName } from '../../lib/format';
+import { budgetChange } from '../../lib/local';
+import { billHref, href } from '../../lib/paths';
 
 const today = new Date().toISOString().slice(0, 10);
 const bills = await loadFundingBills();
@@ -26,11 +31,54 @@ const fy = (y: number) => `FY${y}`;
 const name = (b: FundingBill) => b.short_title?.trim() || b.title;
 const label = (b: FundingBill) => billNumberLabel(b);
 const chip = (stage: FundingStage) => `status-chip status-${stage}`;
+
+// The Treasury's monthly statement: the last whole year, and the year under way when it has begun.
+const [mtsLines, agencies, areas] = await Promise.all([loadMtsLines(), loadAgencyBudgets(), loadAreaSpending()]);
+const held = statements(mtsLines);
+const whole = held.find((st) => st.months === 12) ?? held[0] ?? null;
+const soFar = held[0] && held[0] !== whole ? held[0] : null;
+const change = (value: number, prev: number) => budgetChange(value, prev);
+const bars = (items: StatementItem[], top: number) => {
+  const shown = items.slice(0, top).map((i) => ({ label: i.label, value: i.value, note: change(i.value, i.prev) }));
+  const rest = items.slice(top);
+  return rest.length
+    ? [
+        ...shown,
+        {
+          label: 'Everything else',
+          value: rest.reduce((n, i) => n + i.value, 0),
+          note: `(${rest.length} more)`,
+        },
+      ]
+    : shown;
+};
+const deficitWord = (n: number) => (n >= 0 ? 'Deficit' : 'Surplus');
+
+// Agencies' budgets for the year under way, and awards by state for the last closed year.
+const agencyYear = agencies[0]?.fiscal_year ?? null;
+const funded = agencies.filter((a) => Number(a.budget_authority) > 0);
+const agencyBars = funded.slice(0, 10).map((a) => ({
+  label: a.name,
+  value: Number(a.budget_authority),
+  href: agencyHref(a.slug) ?? undefined,
+}));
+const states = areas
+  .filter((a) => a.district === null)
+  .sort((a, b) => stateName(a.state).localeCompare(stateName(b.state)));
+const areaYear = states[0]?.fiscal_year ?? null;
+const statePages = new Set(states.map((a) => a.state));
+
+const jumps = [
+  { id: `fy-${years[0]!.year}`, label: 'Spending bills' },
+  ...(whole ? [{ id: 'money-h', label: 'Money in and out' }] : []),
+  ...(funded.length ? [{ id: 'agencies-h', label: 'Agencies' }] : []),
+  ...(states.length ? [{ id: 'states-h', label: 'By state' }] : []),
+];
 ---
 
 <Base
   title="Federal budget"
-  description="How Congress funds the government each year: the twelve annual spending bills and any stopgap, and where each stands."
+  description="How Congress funds the government each year, where each of the twelve spending bills stands, and where the money comes from and goes."
   section="bills"
 >
   <header class="page-head wash">
@@ -38,9 +86,17 @@ const chip = (stage: FundingStage) => `status-chip status-${stage}`;
     <h1>Federal budget</h1>
     <p class="lede">
       Each year Congress passes twelve spending bills, one for each part of the government, or a stopgap to keep it
-      funded while it finishes them. Here is where each one stands.
+      funded while it finishes them. Here is where each one stands, and where the money comes from and goes.
     </p>
   </header>
+
+  {jumps.length > 1 && (
+    <nav class="page-jumps" aria-label="On this page">
+      {jumps.map((j) => (
+        <a href={`#${j.id}`}>{j.label}</a>
+      ))}
+    </nav>
+  )}
 
   {years.map(({ started, stop, ...y }) => (
     <section aria-labelledby={`fy-${y.year}`} class="funding-year">
@@ -184,6 +240,209 @@ const chip = (stage: FundingStage) => `status-chip status-${stage}`;
     named in their Congressional Research Service summaries. “Reported by committee” means the bill is on the floor
     calendar.
   </p>
+
+  {whole && (
+    <section aria-labelledby="money-h" class="budget-part">
+      <h2 id="money-h">Money in and out</h2>
+      {soFar && (
+        <>
+          <p class="small muted section-note">
+            Fiscal year {soFar.fiscalYear} so far: {soFar.months} {soFar.months === 1 ? 'month' : 'months'}, through{' '}
+            {statementMonth(soFar.date)}, beside the same months a year before.
+          </p>
+          <dl class="stat-grid">
+            <div class="stat">
+              <dt>Took in</dt>
+              <dd>{formatMoney(soFar.receipts)}</dd>
+              <p class="small muted stat-note">{change(soFar.receipts, soFar.prior.receipts)}</p>
+            </div>
+            <div class="stat">
+              <dt>Spent</dt>
+              <dd>{formatMoney(soFar.outlays)}</dd>
+              <p class="small muted stat-note">{change(soFar.outlays, soFar.prior.outlays)}</p>
+            </div>
+            <div class="stat">
+              <dt>{deficitWord(soFar.deficit)}</dt>
+              <dd>{formatMoney(Math.abs(soFar.deficit))}</dd>
+              <p class="small muted stat-note">
+                {`${deficitWord(soFar.prior.deficit).toLowerCase()} of ${formatMoney(Math.abs(soFar.prior.deficit))} a year before`}
+              </p>
+            </div>
+          </dl>
+        </>
+      )}
+      <h3 class="h-small">
+        Fiscal year {whole.fiscalYear}
+        {whole.months === 12 ? '' : `, through ${statementMonth(whole.date)}`}
+      </h3>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Took in</dt>
+          <dd>{formatMoney(whole.receipts)}</dd>
+          <p class="small muted stat-note">
+            {`${change(whole.receipts, whole.prior.receipts)} on FY${whole.fiscalYear - 1} (${formatMoney(whole.prior.receipts)})`}
+          </p>
+        </div>
+        <div class="stat">
+          <dt>Spent</dt>
+          <dd>{formatMoney(whole.outlays)}</dd>
+          <p class="small muted stat-note">
+            {`${change(whole.outlays, whole.prior.outlays)} on FY${whole.fiscalYear - 1} (${formatMoney(whole.prior.outlays)})`}
+          </p>
+        </div>
+        <div class="stat">
+          <dt>{deficitWord(whole.deficit)}</dt>
+          <dd>{formatMoney(Math.abs(whole.deficit))}</dd>
+          <p class="small muted stat-note">
+            {`${deficitWord(whole.prior.deficit).toLowerCase()} of ${formatMoney(Math.abs(whole.prior.deficit))} in FY${whole.fiscalYear - 1}`}
+          </p>
+        </div>
+      </dl>
+      <div class="budget-charts">
+        <section class="panel" aria-labelledby="sources-h">
+          <h4 id="sources-h" class="h-small">
+            Where it came from
+          </h4>
+          <BarList
+            items={bars(whole.sources, 8)}
+            label={`Receipts by source, fiscal year ${whole.fiscalYear}`}
+            format={formatMoney}
+          />
+          <p class="small muted">Receipts by source, with the change on FY{whole.fiscalYear - 1}.</p>
+        </section>
+        <section class="panel" aria-labelledby="functions-h">
+          <h4 id="functions-h" class="h-small">
+            Where it went
+          </h4>
+          <BarList
+            items={bars(whole.functions, 10)}
+            label={`Outlays by budget function, fiscal year ${whole.fiscalYear}`}
+            tone="fill-sky"
+            format={formatMoney}
+          />
+          <p class="small muted">
+            Outlays by budget function, with the change on FY{whole.fiscalYear - 1}.
+            {whole.negatives.length > 0 &&
+              ` Not shown: ${whole.negatives
+                .map((n) => `${n.label} (${formatMoney(n.value)})`)
+                .join(' and ')}, which reduce outlays to the ${formatMoney(whole.outlays)} total.`}
+          </p>
+        </section>
+      </div>
+      <p class="small muted">
+        From the Treasury’s Monthly Treasury Statement for {statementMonth(held[0]!.date)}, Table 9, through the{' '}
+        <a href="https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/" rel="noopener">
+          Fiscal Data API
+        </a>
+        . Each month’s statement comes out about the eighth working day of the next.
+      </p>
+    </section>
+  )}
+
+  {funded.length > 0 && (
+    <section aria-labelledby="agencies-h" class="budget-part">
+      <h2 id="agencies-h">Agencies’ budgets, fiscal year {agencyYear}</h2>
+      <p class="small muted section-note">
+        Budget authority is the money an agency may commit, including balances carried over from earlier years, so it
+        adds up to more than a year’s spending; obligations are what it has committed so far, and outlays what it has
+        paid. The ten largest of {funded.length} agencies, as they report to USAspending.gov.
+      </p>
+      <div class="panel">
+        <BarList
+          items={agencyBars}
+          label={`Budget authority by agency, fiscal year ${agencyYear}`}
+          format={formatMoney}
+        />
+      </div>
+      <details class="all-rows">
+        <summary>All {funded.length} agencies</summary>
+        <table class="money-table">
+          <thead>
+            <tr>
+              <th scope="col">Agency</th>
+              <th scope="col">Budget authority</th>
+              <th scope="col">Obligated</th>
+              <th scope="col">Paid out</th>
+            </tr>
+          </thead>
+          <tbody>
+            {funded.map((a) => {
+              const link = agencyHref(a.slug);
+              return (
+                <tr>
+                  <th scope="row">
+                    {link ? (
+                      <a href={link} rel="noopener">
+                        {a.name}
+                      </a>
+                    ) : (
+                      a.name
+                    )}
+                  </th>
+                  <td>{formatMoney(a.budget_authority)}</td>
+                  <td>{formatMoney(a.obligated)}</td>
+                  <td>{formatMoney(a.outlays)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </details>
+    </section>
+  )}
+
+  {states.length > 0 && (
+    <section aria-labelledby="states-h" class="budget-part">
+      <h2 id="states-h">Federal awards by state, fiscal year {areaYear}</h2>
+      <p class="small muted section-note">
+        Contracts and grants for work done or aid used in each state from October {areaYear! - 1} to September{' '}
+        {areaYear}, and direct payments, as reported to USAspending.gov. Each state’s Congress tab has its congressional
+        districts.
+      </p>
+      <details class="all-rows">
+        <summary>All {states.length} states and territories</summary>
+        <table class="money-table">
+          <thead>
+            <tr>
+              <th scope="col">State</th>
+              <th scope="col">Contracts and grants</th>
+              <th scope="col">Per person</th>
+              <th scope="col">Direct payments</th>
+            </tr>
+          </thead>
+          <tbody>
+            {states.map((a) => {
+              const awards = Number(a.contracts) + Number(a.grants);
+              const each = perPerson(awards, a.population);
+              return (
+                <tr>
+                  <th scope="row">
+                    {statePages.has(a.state) ? (
+                      <a href={href(`states/${a.state.toLowerCase()}/`)}>{stateName(a.state)}</a>
+                    ) : (
+                      stateName(a.state)
+                    )}
+                  </th>
+                  <td>{formatMoney(awards)}</td>
+                  <td>{each === null ? '—' : `$${Math.round(each).toLocaleString()}`}</td>
+                  <td>{formatMoney(a.other)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </details>
+      <p class="small muted">
+        Amounts are obligations: money committed in the year, some of it paid later. A contract counts where its work is
+        done; direct payments (benefits, payments to insurers and the like) count where they are recorded, which can be
+        far from the people they serve. Loans count at their cost to the government. From{' '}
+        <a href={safeUrl('https://www.usaspending.gov/search') ?? undefined} rel="noopener">
+          USAspending.gov
+        </a>
+        , read weekly.
+      </p>
+    </section>
+  )}
 </Base>
 
 <style>
@@ -251,7 +510,41 @@ const chip = (stage: FundingStage) => `status-chip status-${stage}`;
     }
   }
   .source-note {
-    margin-top: var(--space-6);
+    margin-top: var(--space-5);
     max-width: 70ch;
+  }
+  .budget-part {
+    margin-top: var(--space-7);
+  }
+  .budget-part .stat-grid {
+    margin-bottom: var(--space-4);
+  }
+  .budget-part > p.small {
+    max-width: 70ch;
+  }
+  .budget-charts {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+  @media (min-width: 60rem) {
+    .budget-charts {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .budget-charts .h-small {
+    margin-top: 0;
+  }
+  .all-rows {
+    margin-top: var(--space-3);
+  }
+  .all-rows summary {
+    cursor: pointer;
+    color: var(--link);
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
 </style>

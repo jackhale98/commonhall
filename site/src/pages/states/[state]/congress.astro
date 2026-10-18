@@ -4,7 +4,9 @@ import MemberPhoto from '../../../components/MemberPhoto';
 import PinnedPeople from '../../../components/PinnedPeople';
 import StateHeader from '../../../components/StateHeader.astro';
 import Base from '../../../layouts/Base.astro';
-import { loadMembers } from '../../../lib/build-data';
+import { loadAreaSpending, loadMembers } from '../../../lib/build-data';
+import { perPerson } from '../../../lib/federal-budget';
+import { formatMoney } from '../../../lib/finance';
 import { STATE_CODES, memberTag, stateName } from '../../../lib/format';
 import { href, memberHref } from '../../../lib/paths';
 
@@ -30,6 +32,14 @@ const groups = [
     people: house,
   },
 ].filter((g) => g.people.length > 0);
+// Federal awards here for the last closed fiscal year, statewide and by district, with each district's member.
+const areas = (await loadAreaSpending()).filter((a) => a.state === code);
+const statewide = areas.find((a) => a.district === null) ?? null;
+const districts = areas.filter((a) => a.district !== null).sort((a, b) => a.district! - b.district!);
+const memberFor = (district: number) =>
+  house.length === 1 ? house[0] : house.find((m) => (m.district ?? 0) === district);
+const awards = statewide ? Number(statewide.contracts) + Number(statewide.grants) : 0;
+const each = statewide ? perPerson(awards, statewide.population) : null;
 ---
 
 <Base
@@ -73,6 +83,65 @@ const groups = [
       </div>
     </section>
   ))}
+  {statewide && (
+    <section aria-labelledby="federal-h">
+      <h2 id="federal-h" class="h-small">
+        Federal money in {name}, fiscal year {statewide.fiscal_year}
+      </h2>
+      <dl class="stat-grid">
+        <div class="stat">
+          <dt>Contracts and grants</dt>
+          <dd>{formatMoney(awards)}</dd>
+          <p class="small muted stat-note">
+            {`${formatMoney(statewide.contracts)} in contracts, ${formatMoney(statewide.grants)} in grants${each === null ? '' : `; $${Math.round(each).toLocaleString()} a person`}`}
+          </p>
+        </div>
+        <div class="stat">
+          <dt>Direct payments and other aid</dt>
+          <dd>{formatMoney(statewide.other)}</dd>
+        </div>
+      </dl>
+      {districts.length > 1 && (
+        <table class="money-table">
+          <caption class="visually-hidden">Federal contracts and grants by congressional district</caption>
+          <thead>
+            <tr>
+              <th scope="col">District</th>
+              <th scope="col">Contracts</th>
+              <th scope="col">Grants</th>
+            </tr>
+          </thead>
+          <tbody>
+            {districts.map((d) => {
+              const m = memberFor(d.district!);
+              return (
+                <tr>
+                  <th scope="row">
+                    {d.district}
+                    {m && (
+                      <>
+                        {' '}
+                        · <a href={memberHref(m.bioguide_id)}>{m.name}</a>
+                      </>
+                    )}
+                  </th>
+                  <td>{formatMoney(d.contracts)}</td>
+                  <td>{formatMoney(d.grants)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+      <p class="small muted">
+        Money obligated from October {statewide.fiscal_year - 1} to September {statewide.fiscal_year}, by where the work
+        is done or the aid is used, as reported to USAspending.gov.{' '}
+        {districts.length > 1 && 'Districts don’t add up to the state: some awards are recorded for the whole state. '}
+        Direct payments count where they are recorded, which can be far from the people they serve.{' '}
+        <a href={href('budget/#states-h')}>Every state</a>
+      </p>
+    </section>
+  )}
   <p class="small muted tab-note">
     These are {name}’s members of the U.S. Congress in Washington; state lawmakers are on the{' '}
     <a href={href(`states/${code.toLowerCase()}/legislature/`)}>Legislature</a> tab. See how they vote on{' '}

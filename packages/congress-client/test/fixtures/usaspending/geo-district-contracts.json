@@ -1,0 +1,137 @@
+{
+ "scope": "place_of_performance",
+ "geo_layer": "district",
+ "spending_level": "transactions",
+ "results": [
+  {
+   "shape_code": "1198",
+   "display_name": "DC-98",
+   "aggregated_amount": 31423287828.13,
+   "population": 670050,
+   "per_capita": 46896.93
+  },
+  {
+   "shape_code": "2509",
+   "display_name": "MA-09",
+   "aggregated_amount": 389068362.07,
+   "population": 792963,
+   "per_capita": 490.65
+  },
+  {
+   "shape_code": "0903",
+   "display_name": "CT-03",
+   "aggregated_amount": 5367274068.7,
+   "population": 719381,
+   "per_capita": 7460.96
+  },
+  {
+   "shape_code": "2508",
+   "display_name": "MA-08",
+   "aggregated_amount": 877403682.81,
+   "population": 772956,
+   "per_capita": 1135.13
+  },
+  {
+   "shape_code": "2507",
+   "display_name": "MA-07",
+   "aggregated_amount": 2014026202.46,
+   "population": 761699,
+   "per_capita": 2644.12
+  },
+  {
+   "shape_code": "0200",
+   "display_name": "AK-00",
+   "aggregated_amount": 3853465212.15,
+   "population": 732673,
+   "per_capita": 5259.46
+  },
+  {
+   "shape_code": "2503",
+   "display_name": "MA-03",
+   "aggregated_amount": 2462329674.46,
+   "population": 775520,
+   "per_capita": 3175.07
+  },
+  {
+   "shape_code": "4210",
+   "display_name": "PA-10",
+   "aggregated_amount": 4295626331.47,
+   "population": 764361,
+   "per_capita": 5619.89
+  },
+  {
+   "shape_code": "2505",
+   "display_name": "MA-05",
+   "aggregated_amount": 4904341237.05,
+   "population": 766453,
+   "per_capita": 6398.75
+  },
+  {
+   "shape_code": "0901",
+   "display_name": "CT-01",
+   "aggregated_amount": 7606675019.17,
+   "population": 717721,
+   "per_capita": 10598.37
+  },
+  {
+   "shape_code": "1807",
+   "display_name": "IN-07",
+   "aggregated_amount": 2845029587.37,
+   "population": 749635,
+   "per_capita": 3795.22
+  },
+  {
+   "shape_code": "2506",
+   "display_name": "MA-06",
+   "aggregated_amount": 7622574237.6,
+   "population": 780128,
+   "per_capita": 9770.93
+  },
+  {
+   "shape_code": "0902",
+   "display_name": "CT-02",
+   "aggregated_amount": 21885234978.47,
+   "population": 729071,
+   "per_capita": 30017.97
+  },
+  {
+   "shape_code": "2502",
+   "display_name": "MA-02",
+   "aggregated_amount": 252933073.61,
+   "population": 781228,
+   "per_capita": 323.76
+  },
+  {
+   "shape_code": "2501",
+   "display_name": "MA-01",
+   "aggregated_amount": 665942099.54,
+   "population": 776085,
+   "per_capita": 858.08
+  },
+  {
+   "shape_code": "0904",
+   "display_name": "CT-04",
+   "aggregated_amount": 102381833.34,
+   "population": 718640,
+   "per_capita": 142.47
+  },
+  {
+   "shape_code": "0905",
+   "display_name": "CT-05",
+   "aggregated_amount": 178471116.39,
+   "population": 720784,
+   "per_capita": 247.61
+  },
+  {
+   "shape_code": "2504",
+   "display_name": "MA-04",
+   "aggregated_amount": 138297813.67,
+   "population": 777691,
+   "per_capita": 177.83
+  }
+ ],
+ "messages": [
+  "For searches, time period start and end dates are currently limited to an earliest date of 2007-10-01.  For data going back to 2000-10-01, use either the Custom Award Download feature on the website or one of our download or bulk_download API endpoints as listed on https://api.usaspending.gov/docs/endpoints. ",
+  "The 'subawards' field will be deprecated in the future. Set 'spending_level' to 'subawards' instead. See documentation for more information."
+ ]
+}

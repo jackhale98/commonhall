@@ -5,6 +5,7 @@ import MemberPhoto from '../../components/MemberPhoto';
 import StateHeader from '../../components/StateHeader.astro';
 import Base from '../../layouts/Base.astro';
 import {
+  loadAreaSpending,
   loadBallotQuestions,
   loadRecentStateBills,
   loadStateBudgetTotals,
@@ -67,6 +68,8 @@ const cities = citiesIn(code);
 const budgetInfo = (await loadStateBudgets()).get(code);
 const budget = budgetInfo ? budgetYear(await loadStateBudgetTotals(code), budgetInfo.newest_year) : null;
 const spentPct = budget?.total_enacted ? `${Math.round((budget.spent / budget.total_enacted) * 100)}%` : '';
+// Federal awards here for the last closed fiscal year (USAspending), when we have them.
+const federal = (await loadAreaSpending()).find((a) => a.state === code && a.district === null);
 // The governor's latest order and the high court's latest decision, when we have them.
 const [stateOrders, stateCases] = await Promise.all([loadStateOrders(), loadStateCourtCases()]);
 const latestOrder = stateOrders.get(code)?.[0];
@@ -197,6 +200,24 @@ const latestCase = stateCases.get(code)?.[0];
         <strong>{formatMoney(budget.total_enacted)}</strong> enacted for FY{String(budgetInfo.newest_year).slice(2)} ·{' '}
         <strong>{formatMoney(budget.spent)}</strong> spent so far ({spentPct})
         {budgetInfo.source_updated_at && `, through ${formatDate(budgetInfo.source_updated_at.slice(0, 10))}`}.
+      </p>
+    </section>
+  )}
+
+  {federal && (
+    <section aria-labelledby="federal-money-h">
+      <div class="section-head">
+        <h2 id="federal-money-h" class="h-small">
+          Federal money
+        </h2>
+        <a class="see-all" href={href(`${base}congress/#federal-h`)}>
+          By district
+        </a>
+      </div>
+      <p>
+        <strong>{formatMoney(Number(federal.contracts) + Number(federal.grants))}</strong> in federal contracts and
+        grants in FY{String(federal.fiscal_year).slice(2)} · <strong>{formatMoney(federal.other)}</strong> in direct
+        payments and other aid, from USAspending.gov.
       </p>
     </section>
   )}

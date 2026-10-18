@@ -30,3 +30,5 @@ export * from './middletown-agenda.ts';
 export * from './seeclickfix.ts';
 export * from './iqm2.ts';
 export * from './cambridge.ts';
+export * from './treasury.ts';
+export * from './usaspending.ts';

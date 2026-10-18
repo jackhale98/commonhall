@@ -35,6 +35,7 @@ import { STATE_COMMITTEE_COLUMNS, type StateCommittee, type StateExecutive, type
 import { DEMO } from './config';
 import { STATE_BILL_FILLER, STATE_BILL_FILLER_PG } from './state-filler';
 import type { StateBudgetLine, StateBudgetTotal } from './state-budget';
+import { AREA_COLUMNS, type AgencyBudget, type AreaSpending, type MtsLineRow } from './federal-budget';
 import { classify, trackedYears, type FundingBill } from './appropriations';
 import { CITIES } from './cities';
 import { DISCUSSION_COLUMNS } from './discussions';
@@ -500,6 +501,28 @@ export function loadStateBudgetLines(state: string): Promise<StateBudgetLine[]> 
     );
   return budgetLines.get(state)!;
 }
+
+/** The Monthly Treasury Statement's lines held: the newest statement and, mid-year, the last of the year before. */
+export const loadMtsLines = memo(() =>
+  selectAllOptional<MtsLineRow>('federal_mts_lines', {
+    select: 'record_date,line,section,level,kind,label,month,fytd,prior_fytd',
+    order: 'record_date.desc,line.asc',
+  }),
+);
+
+/** Every federal agency's budget for the year under way, largest first. */
+export const loadAgencyBudgets = memo(() =>
+  selectAllOptional<AgencyBudget>('federal_agency_budgets', {
+    select:
+      'toptier_code,name,abbreviation,slug,fiscal_year,fiscal_quarter,budget_authority,obligated,outlays,share,justification_url',
+    order: 'budget_authority.desc,name.asc',
+  }),
+);
+
+/** Federal awards by state and congressional district for the newest closed fiscal year. */
+export const loadAreaSpending = memo(() =>
+  selectAllOptional<AreaSpending>('federal_area_spending', { select: AREA_COLUMNS, order: 'area.asc' }),
+);
 
 export interface StateCourtCase {
   cluster_id: number;

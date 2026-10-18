@@ -50,7 +50,13 @@ about, and take part in moderated public discussions.
   employers of their largest donors.
 - Follow the federal budget (`/budget/`): the twelve annual spending bills for the
   fiscal year, where each stands in the House and Senate, any stopgap and the date it
-  funds the government to, matched from the bills by title (no extra source).
+  funds the government to, matched from the bills by title (no extra source). The same
+  page shows where the money came from and went (receipts by source and outlays by
+  function, from the Monthly Treasury Statement), each agency's budget and federal
+  awards by state, from USAspending.gov.
+- See federal contracts and grants in each congressional district, beside the member
+  who represents it (each state's Congress tab), and in your own district on the home
+  page.
 
 **The executive branch**
 
@@ -200,6 +206,8 @@ automatically.
 | Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) (Free Law Project) | hourly |
 | Massachusetts Supreme Judicial Court and Connecticut Supreme Court decisions | [CourtListener](https://www.courtlistener.com/) | every 3 hours |
 | Massachusetts governor's executive orders | [mass.gov](https://www.mass.gov/massachusetts-executive-orders) (Trial Court Law Libraries' list) | weekly |
+| Federal receipts and outlays | [Monthly Treasury Statement](https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/) (Treasury Fiscal Data API) | daily (a new statement each month) |
+| Federal agencies' budgets; awards by state and district | [USAspending.gov](https://www.usaspending.gov/) | daily (awards weekly) |
 | Massachusetts state budget and spending | [Comptroller's CTHRU](https://www.macomptroller.org/cthru/) | daily |
 | Massachusetts ballot questions | [Secretary of the Commonwealth, Information for Voters](https://www.sec.state.ma.us/divisions/elections/research-and-statistics/2026-information-for-voters/2026-ballot-questions.htm) | weekly |
 | Connecticut governor's executive orders | [portal.ct.gov](https://portal.ct.gov/governor/governors-actions/executive-orders) (Governor's office list and PDFs) | weekly |
@@ -289,6 +297,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `sync-cambridge` | every 30 minutes | Cambridge council and committee meetings, items, sponsors and roll calls (PrimeGov; the 2025 IQM2 archive once); councillors weekly |
 | `sync-cambridge-data` | daily | Cambridge 311 report, operating and revenue budgets and capital plan from data.cambridgema.gov |
 | `sync-state-budget` | daily | State budgets line by line with spending so far (Massachusetts from the Comptroller's CTHRU), read only when the source has changed |
+| `sync-federal-budget` | daily | The Monthly Treasury Statement's receipts and outlays (when a new one is out), agencies' budgets, and federal awards by state and congressional district (weekly), from the Treasury and USAspending |
 | Load Worcester agendas (GitHub Action) | daily | The items on Worcester City Council agendas from PrimeGov (HTML or PDF), as council matters with sponsors |
 | Load Middletown agendas (GitHub Action) | daily | Middletown (CT) Common Council members, meetings and agenda items (resolutions, ordinances, appropriations) from the city's agenda PDFs |
 | Load governor orders (GitHub Action) | weekly | Massachusetts governors' executive orders from mass.gov, read in a headless browser |
@@ -388,6 +397,7 @@ The full guide is [docs/discussions.md](docs/discussions.md).
 | Accounts, following, feed, Find my reps | Ready; sign-in needs an email (SMTP) provider in Supabase Auth |
 | Massachusetts bills | Live; refreshed with the hourly Open States sync |
 | Massachusetts state budget | Ready; loads on the first daily run after deploy |
+| Federal spending (Treasury statement, agencies, awards by district) | Ready; loads on the first daily run after deploy |
 | Connecticut bills, orders and Supreme Court | Bills and decisions arrive with the hourly syncs; orders after the first "Load CT governor orders" run |
 | Discussions | Example discussions open as a preview; pilot topics to be chosen |
 | Committees, rosters, hearings | Ready; rosters load on the first hourly run, referrals fill in as bills load |
