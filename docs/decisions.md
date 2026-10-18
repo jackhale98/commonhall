@@ -2296,3 +2296,13 @@ fetched once the page is up, and the browser builds only the rows a search shows
 page is about 100 KB with 1,500 elements. Without JavaScript, the states in "Browse by
 state" link to each state's page, which lists its delegation, instead of the page
 listing every member.
+
+## 123. The roll call plays while the next page loads
+
+Every page is a separate static file, so following a link leaves the old page on screen
+until the new one arrives, and on a slow device or connection that can look like a hang.
+`site/public/js/navigating.js` shows a small badge at the bottom of the screen with the
+roll-call loader and "Loading…" when a link to another page on the site is followed. It
+fades in only after 0.3 seconds, so fast loads never show it. It is built in the browser
+from the footer logo's mark, so pages carry no extra markup, and it is removed when the
+Back button restores a page, or after 20 seconds if a load is stopped.

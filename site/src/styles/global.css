@@ -3798,3 +3798,29 @@ button .ch-loader,
   color: var(--text-muted);
   font-weight: 600;
 }
+
+/* The roll call while the next page loads (public/js/navigating.js). */
+.ch-navigating {
+  position: fixed;
+  bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-hover);
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  font-weight: 500;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: ch-appear 0.2s 0.3s ease-out both;
+}
+.ch-navigating .ch-loader {
+  width: 1.75rem;
+  height: 1.75rem;
+}
