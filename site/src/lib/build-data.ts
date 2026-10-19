@@ -39,7 +39,7 @@ import { AREA_COLUMNS, type AgencyBudget, type AreaSpending, type MtsLineRow } f
 import { classify, trackedYears, type FundingBill } from './appropriations';
 import { CITIES } from './cities';
 import { HttpClient } from '@civic/congress-client/http';
-import { RES_PUBLICA_REFS, constitutionIndex, type ClauseIndex } from './respublica';
+import { RES_PUBLICA_REFS, caseIndex, constitutionIndex } from './respublica';
 import { DISCUSSION_COLUMNS } from './discussions';
 import {
   CAPITAL_COLUMNS,
@@ -505,21 +505,39 @@ export function loadStateBudgetLines(state: string): Promise<StateBudgetLine[]> 
   return budgetLines.get(state)!;
 }
 
-/**
- * The Constitution's provisions on Res Publica (labels and links), read from its
- * published index once per build. Null when the library can't be reached or its index
- * has changed shape: the site builds without the links rather than fail.
- */
-export const loadConstitutionIndex = memo(async (): Promise<ClauseIndex | null> => {
+/** Res Publica's published index of refs, read once per build; null when it can't be reached. */
+const loadResPublicaRefs = memo(async (): Promise<unknown> => {
   if (DEMO) return null;
   try {
     const http = new HttpClient({ maxAttempts: 3, timeoutMs: 20_000 });
-    return constitutionIndex(await http.getJson(RES_PUBLICA_REFS));
+    return await http.getJson(RES_PUBLICA_REFS);
   } catch (error) {
-    console.warn(`[build-data] Res Publica index unavailable; building without clause links: ${String(error)}`);
+    console.warn(`[build-data] Res Publica index unavailable; building without its links: ${String(error)}`);
     return null;
   }
 });
+
+/** Parse part of Res Publica's index, or null (with a warning) when it has changed shape. */
+async function fromResPublica<T>(what: string, parse: (raw: unknown) => T): Promise<T | null> {
+  const raw = await loadResPublicaRefs();
+  if (raw === null) return null;
+  try {
+    return parse(raw);
+  } catch (error) {
+    console.warn(`[build-data] Res Publica index has no usable ${what}; building without them: ${String(error)}`);
+    return null;
+  }
+}
+
+/**
+ * The Constitution's provisions on Res Publica (labels and links). Null when the
+ * library can't be reached or its index has changed shape: the site builds without the
+ * links rather than fail.
+ */
+export const loadConstitutionIndex = memo(() => fromResPublica('Constitution refs', constitutionIndex));
+
+/** Res Publica's landmark cases by CourtListener cluster ID; null like loadConstitutionIndex. */
+export const loadResPublicaCases = memo(() => fromResPublica('cases', caseIndex));
 
 /** Every town's adopted budgets in a state, newest year first (Connecticut's towns). */
 export const loadTownBudgets = memoByState((state) =>
@@ -881,11 +899,19 @@ export const loadCaseAbout = memo(async () => {
     }),
     loadScotusOutcomeMap(),
   ]);
+  // The provision each case turned on, read on its own so a database without the column yet still builds.
+  const provisions = await selectAllOptional<{ scdb_case_id: string; law_supp: number }>('scotus_outcomes', {
+    select: 'scdb_case_id,law_supp',
+    law_supp: 'not.is.null',
+  });
+  const lawSuppById = new Map(provisions.map((p) => [p.scdb_case_id, p.law_supp]));
   const topicById = new Map(topics.map((t) => [t.scdb_case_id, caseTopic(t.issue_area, t.issue)]));
   const about = new Map<number, CaseAbout>();
   for (const [clusterId, o] of outcomes) {
     const t = topicById.get(o.scdb_case_id);
     if (t && (t.area || t.issue)) about.set(clusterId, { ...t });
+    const lawSupp = lawSuppById.get(o.scdb_case_id);
+    if (lawSupp != null) about.set(clusterId, { ...about.get(clusterId), lawSupp });
   }
   for (const s of summaries) about.set(s.cluster_id, { ...about.get(s.cluster_id), summary: s.syllabus_text });
   for (const l of lineups) {

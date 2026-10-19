@@ -2316,3 +2316,31 @@ state courts every 3 hours (migration 073, which also restores their expected in
 in `private.job_schedule`). That leaves about 15 a day of CourtListener's 125 for Res
 Publica's own updates on the shared token. If Res Publica needs more again, lower the
 same two places as §121 did.
+
+## 125. Linking Supreme Court decisions to Res Publica
+
+The last two links planned in §118, now that Res Publica has imported its landmark
+cases:
+
+- **The provision a case turned on.** The Supreme Court Database codes the legal
+  provision the Court considered in each case (`lawSupp`); codes 100–241 are the
+  Constitution's articles and amendments. The SCDB loader now stores it
+  (`scotus_outcomes.law_supp`, migration 074), and a decision's page shows SCDB's own
+  description of it, word for word from the codebook ("Fourteenth Amendment (due
+  process)"), linked to that text on Res Publica. The table from code to Res Publica
+  ref is in `site/src/lib/respublica.ts`; a test checks every ref is in the library.
+  SCDB numbers paragraphs where the Constitution has clauses (the same divisions), and
+  three codes give no article (151–153) and are left out. Statutes (300 and above)
+  get no line. About a third of the decisions since the 2020 term have one; the rest
+  turned on statutes or rules (124 of 377 in the 2026_01 release). Decisions newer
+  than the latest release have none until the next one.
+- **Landmark cases.** Res Publica's `refs.json` names each case it holds as
+  `Case.<CourtListener cluster ID>`, the same ID CommonHall's decisions are stored
+  under, so no separate `cases.json` is needed: a decision Res Publica holds gets a
+  short note linking to its page there. Res Publica's cases go back to the founding
+  and CommonHall's start with the 2020 term, so few overlap today (Dobbs, Kennedy v.
+  Bremerton, Americans for Prosperity Foundation v. Bonta); more will as it adds
+  recent cases.
+- **Reading the index.** `refs.json` is fetched once per build for both the
+  Constitution's refs and the cases; each part is checked for shape and a minimum
+  count on its own, and the site builds without that part's links if it fails.

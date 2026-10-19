@@ -27,6 +27,8 @@ export interface ScdbOutcomeRow extends Record<string, unknown> {
   /** Topic codes (SCDB issue and issueArea); labels live in the site. */
   issue: number | null;
   issue_area: number | null;
+  /** The legal provision the Court considered (SCDB lawSupp); labels live in the site. */
+  law_supp: number | null;
   release: string;
 }
 
@@ -99,6 +101,7 @@ export function scdbOutcomeRows(csv: string, release: string, firstTerm = SCDB_F
       min_votes: int(get(r, 'minVotes')),
       issue: int(get(r, 'issue')),
       issue_area: int(get(r, 'issueArea')),
+      law_supp: int(get(r, 'lawSupp')),
       release,
     });
   }

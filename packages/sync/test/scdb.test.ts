@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { caseCenteredCsvUrl, latestReleaseUrl, parseCsv, scdbOutcomeRows } from '../src/federal/scdb.ts';
 
@@ -34,6 +35,22 @@ describe('SCDB', () => {
     });
     expect(rows[1]!.case_name).toBe('SMITH, "JR." v. JONES');
     expect(rows[1]).toMatchObject({ issue: null, issue_area: null });
+  });
+
+  it('reads the provision each case turned on from a recorded release (2026_01)', () => {
+    // Four rows of the case-centered file by citation, as published.
+    const csv = readFileSync(
+      new URL('../../congress-client/test/fixtures/scdb/case-centered-sample.csv', import.meta.url),
+      'utf8',
+    );
+    const rows = scdbOutcomeRows(csv, '2026_01');
+    expect(rows.map((r) => [r.scdb_case_id, r.law_supp])).toEqual([
+      ['2021-013', 239], // Bruen: Second Amendment
+      ['2021-019', 230], // Dobbs: Fourteenth Amendment (due process)
+      ['2021-061', 203], // Kennedy v. Bremerton: establishment of religion
+      ['2023-015', 305], // Loper Bright: Administrative Procedure Act
+    ]);
+    expect(rows[1]!.case_name).toBe('DOBBS v. JACKSON WOMEN’S HEALTH ORGANIZATION');
   });
 
   it('refuses a file without the case-centered columns', () => {

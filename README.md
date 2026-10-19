@@ -75,6 +75,9 @@ about, and take part in moderated public discussions.
   opinions where they are listed separately, and decisions per term.
 - What each case is about: its topic (Supreme Court Database) and the background
   from the Court's official syllabus, word for word; searchable and filterable.
+- The provision of the Constitution a case turned on (Supreme Court Database),
+  linked to its text on Res Publica, and a link to Res Publica's own page for the
+  landmark cases it holds.
 
 **Massachusetts** (the featured state)
 
@@ -209,7 +212,7 @@ automatically.
 | What | Source | Refreshed |
 | --- | --- | --- |
 | Federal bills, actions, summaries, members | [Congress.gov API](https://api.congress.gov/) | every 10 minutes |
-| Constitution clause labels and links | [Res Publica](https://respublicalibrary.org/)'s published index (`/data/refs.json`) | each site build |
+| Constitution clause labels and links; landmark cases | [Res Publica](https://respublicalibrary.org/)'s published index (`/data/refs.json`) | each site build |
 | House and Senate roll-call votes | Congress.gov and [senate.gov](https://www.senate.gov/legislative/votes.htm) | every 10 minutes |
 | Committees and rosters | congress-legislators | daily |
 | Bill referrals, hearings and markups | Congress.gov | hourly |
@@ -319,7 +322,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | Load MA ballot questions (GitHub Action) | weekly | Massachusetts' statewide ballot questions from the Secretary of the Commonwealth's Information for Voters guide, read in a headless browser |
 | Load CT governor orders (GitHub Action) | weekly | Connecticut governors' executive orders from portal.ct.gov; a short summary from each new order's PDF (`pdftotext`) |
 | Load Worcester budget (GitHub Action) | monthly | Worcester's capital budget and operating revenue and spending summaries from the city's PDFs, checked against their printed totals |
-| Load Supreme Court Database (GitHub Action) | monthly | Who won each Supreme Court case, the disposition and the vote split, from the Supreme Court Database |
+| Load Supreme Court Database (GitHub Action) | monthly | Who won each Supreme Court case, the disposition, the vote split and the provision considered, from the Supreme Court Database |
 | Load council districts (GitHub Action) | on demand | A city's council districts (or boundary) for the district maps and address lookups; run once per city and after redistricting |
 | Load state people and committees (GitHub Action) | weekly | Legislators' offices, phones and links; every state's committees and members |
 | Nightly rebuild | daily | Rebuilds the website so new notable items get their own page |

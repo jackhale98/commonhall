@@ -1,862 +1,1790 @@
 {
- "Amendment": {
-  "label": "Amendment",
-  "url": "/amendments/"
- },
- "Amendment.1": {
-  "label": "Amendment I",
-  "url": "/amendments/#Amendment.1"
- },
- "Amendment.1.1": {
-  "label": "Amendment I",
-  "url": "/amendments/#Amendment.1.1"
- },
- "Amendment.10": {
-  "label": "Amendment X",
-  "url": "/amendments/#Amendment.10"
- },
- "Amendment.10.1": {
-  "label": "Amendment X",
-  "url": "/amendments/#Amendment.10.1"
- },
- "Amendment.11": {
-  "label": "Amendment XI",
-  "url": "/amendments/#Amendment.11"
- },
- "Amendment.11.1": {
-  "label": "Amendment XI",
-  "url": "/amendments/#Amendment.11.1"
- },
- "Amendment.12": {
-  "label": "Amendment XII",
-  "url": "/amendments/#Amendment.12"
- },
- "Amendment.12.1": {
-  "label": "Amendment XII",
-  "url": "/amendments/#Amendment.12.1"
- },
- "Amendment.13": {
-  "label": "Amendment XIII",
-  "url": "/amendments/#Amendment.13"
- },
- "Amendment.13.1": {
-  "label": "Amendment XIII, Section 1",
-  "url": "/amendments/#Amendment.13.1"
- },
- "Amendment.13.2": {
-  "label": "Amendment XIII, Section 2",
-  "url": "/amendments/#Amendment.13.2"
- },
- "Amendment.14": {
-  "label": "Amendment XIV",
-  "url": "/amendments/#Amendment.14"
- },
- "Amendment.14.1": {
-  "label": "Amendment XIV, Section 1",
-  "url": "/amendments/#Amendment.14.1"
- },
- "Amendment.14.2": {
-  "label": "Amendment XIV, Section 2",
-  "url": "/amendments/#Amendment.14.2"
- },
- "Amendment.14.3": {
-  "label": "Amendment XIV, Section 3",
-  "url": "/amendments/#Amendment.14.3"
- },
- "Amendment.14.4": {
-  "label": "Amendment XIV, Section 4",
-  "url": "/amendments/#Amendment.14.4"
- },
- "Amendment.14.5": {
-  "label": "Amendment XIV, Section 5",
-  "url": "/amendments/#Amendment.14.5"
- },
- "Amendment.15": {
-  "label": "Amendment XV",
-  "url": "/amendments/#Amendment.15"
- },
- "Amendment.15.1": {
-  "label": "Amendment XV, Section 1",
-  "url": "/amendments/#Amendment.15.1"
- },
- "Amendment.15.2": {
-  "label": "Amendment XV, Section 2",
-  "url": "/amendments/#Amendment.15.2"
- },
- "Amendment.16": {
-  "label": "Amendment XVI",
-  "url": "/amendments/#Amendment.16"
- },
- "Amendment.16.1": {
-  "label": "Amendment XVI",
-  "url": "/amendments/#Amendment.16.1"
- },
- "Amendment.17": {
-  "label": "Amendment XVII",
-  "url": "/amendments/#Amendment.17"
- },
- "Amendment.17.1": {
-  "label": "Amendment XVII, Clause 1",
-  "url": "/amendments/#Amendment.17.1"
- },
- "Amendment.17.2": {
-  "label": "Amendment XVII, Clause 2",
-  "url": "/amendments/#Amendment.17.2"
- },
- "Amendment.17.3": {
-  "label": "Amendment XVII, Clause 3",
-  "url": "/amendments/#Amendment.17.3"
- },
- "Amendment.18": {
-  "label": "Amendment XVIII",
-  "url": "/amendments/#Amendment.18"
- },
- "Amendment.18.1": {
-  "label": "Amendment XVIII, Section 1",
-  "url": "/amendments/#Amendment.18.1"
- },
- "Amendment.18.2": {
-  "label": "Amendment XVIII, Section 2",
-  "url": "/amendments/#Amendment.18.2"
- },
- "Amendment.18.3": {
-  "label": "Amendment XVIII, Section 3",
-  "url": "/amendments/#Amendment.18.3"
- },
- "Amendment.19": {
-  "label": "Amendment XIX",
-  "url": "/amendments/#Amendment.19"
- },
- "Amendment.19.1": {
-  "label": "Amendment XIX, Clause 1",
-  "url": "/amendments/#Amendment.19.1"
- },
- "Amendment.19.2": {
-  "label": "Amendment XIX, Clause 2",
-  "url": "/amendments/#Amendment.19.2"
- },
- "Amendment.2": {
-  "label": "Amendment II",
-  "url": "/amendments/#Amendment.2"
- },
- "Amendment.2.1": {
-  "label": "Amendment II",
-  "url": "/amendments/#Amendment.2.1"
- },
- "Amendment.20": {
-  "label": "Amendment XX",
-  "url": "/amendments/#Amendment.20"
- },
- "Amendment.20.1": {
-  "label": "Amendment XX, Section 1",
-  "url": "/amendments/#Amendment.20.1"
- },
- "Amendment.20.2": {
-  "label": "Amendment XX, Section 2",
-  "url": "/amendments/#Amendment.20.2"
- },
- "Amendment.20.3": {
-  "label": "Amendment XX, Section 3",
-  "url": "/amendments/#Amendment.20.3"
- },
- "Amendment.20.4": {
-  "label": "Amendment XX, Section 4",
-  "url": "/amendments/#Amendment.20.4"
- },
- "Amendment.20.5": {
-  "label": "Amendment XX, Section 5",
-  "url": "/amendments/#Amendment.20.5"
- },
- "Amendment.20.6": {
-  "label": "Amendment XX, Section 6",
-  "url": "/amendments/#Amendment.20.6"
- },
- "Amendment.21": {
-  "label": "Amendment XXI",
-  "url": "/amendments/#Amendment.21"
- },
- "Amendment.21.1": {
-  "label": "Amendment XXI, Section 1",
-  "url": "/amendments/#Amendment.21.1"
- },
- "Amendment.21.2": {
-  "label": "Amendment XXI, Section 2",
-  "url": "/amendments/#Amendment.21.2"
- },
- "Amendment.21.3": {
-  "label": "Amendment XXI, Section 3",
-  "url": "/amendments/#Amendment.21.3"
- },
- "Amendment.22": {
-  "label": "Amendment XXII",
-  "url": "/amendments/#Amendment.22"
- },
- "Amendment.22.1": {
-  "label": "Amendment XXII, Section 1",
-  "url": "/amendments/#Amendment.22.1"
- },
- "Amendment.22.2": {
-  "label": "Amendment XXII, Section 2",
-  "url": "/amendments/#Amendment.22.2"
- },
- "Amendment.23": {
-  "label": "Amendment XXIII",
-  "url": "/amendments/#Amendment.23"
- },
- "Amendment.23.1": {
-  "label": "Amendment XXIII, Section 1",
-  "url": "/amendments/#Amendment.23.1"
- },
- "Amendment.23.2": {
-  "label": "Amendment XXIII, Section 2",
-  "url": "/amendments/#Amendment.23.2"
- },
- "Amendment.24": {
-  "label": "Amendment XXIV",
-  "url": "/amendments/#Amendment.24"
- },
- "Amendment.24.1": {
-  "label": "Amendment XXIV, Section 1",
-  "url": "/amendments/#Amendment.24.1"
- },
- "Amendment.24.2": {
-  "label": "Amendment XXIV, Section 2",
-  "url": "/amendments/#Amendment.24.2"
- },
- "Amendment.25": {
-  "label": "Amendment XXV",
-  "url": "/amendments/#Amendment.25"
- },
- "Amendment.25.1": {
-  "label": "Amendment XXV, Section 1",
-  "url": "/amendments/#Amendment.25.1"
- },
- "Amendment.25.2": {
-  "label": "Amendment XXV, Section 2",
-  "url": "/amendments/#Amendment.25.2"
- },
- "Amendment.25.3": {
-  "label": "Amendment XXV, Section 3",
-  "url": "/amendments/#Amendment.25.3"
- },
- "Amendment.25.4": {
-  "label": "Amendment XXV, Section 4",
-  "url": "/amendments/#Amendment.25.4"
- },
- "Amendment.26": {
-  "label": "Amendment XXVI",
-  "url": "/amendments/#Amendment.26"
- },
- "Amendment.26.1": {
-  "label": "Amendment XXVI, Section 1",
-  "url": "/amendments/#Amendment.26.1"
- },
- "Amendment.26.2": {
-  "label": "Amendment XXVI, Section 2",
-  "url": "/amendments/#Amendment.26.2"
- },
- "Amendment.27": {
-  "label": "Amendment XXVII",
-  "url": "/amendments/#Amendment.27"
- },
- "Amendment.27.1": {
-  "label": "Amendment XXVII",
-  "url": "/amendments/#Amendment.27.1"
- },
- "Amendment.3": {
-  "label": "Amendment III",
-  "url": "/amendments/#Amendment.3"
- },
- "Amendment.3.1": {
-  "label": "Amendment III",
-  "url": "/amendments/#Amendment.3.1"
- },
- "Amendment.4": {
-  "label": "Amendment IV",
-  "url": "/amendments/#Amendment.4"
- },
- "Amendment.4.1": {
-  "label": "Amendment IV",
-  "url": "/amendments/#Amendment.4.1"
- },
- "Amendment.5": {
-  "label": "Amendment V",
-  "url": "/amendments/#Amendment.5"
- },
- "Amendment.5.1": {
-  "label": "Amendment V",
-  "url": "/amendments/#Amendment.5.1"
- },
- "Amendment.6": {
-  "label": "Amendment VI",
-  "url": "/amendments/#Amendment.6"
- },
- "Amendment.6.1": {
-  "label": "Amendment VI",
-  "url": "/amendments/#Amendment.6.1"
- },
- "Amendment.7": {
-  "label": "Amendment VII",
-  "url": "/amendments/#Amendment.7"
- },
- "Amendment.7.1": {
-  "label": "Amendment VII",
-  "url": "/amendments/#Amendment.7.1"
- },
- "Amendment.8": {
-  "label": "Amendment VIII",
-  "url": "/amendments/#Amendment.8"
- },
- "Amendment.8.1": {
-  "label": "Amendment VIII",
-  "url": "/amendments/#Amendment.8.1"
- },
- "Amendment.9": {
-  "label": "Amendment IX",
-  "url": "/amendments/#Amendment.9"
- },
- "Amendment.9.1": {
-  "label": "Amendment IX",
-  "url": "/amendments/#Amendment.9.1"
- },
- "Brutus.1": {
-  "label": "Brutus 1",
-  "url": "/brutus/1/"
- },
- "Constitution": {
-  "label": "Constitution",
-  "url": "/constitution/"
- },
- "Constitution.1": {
-  "label": "Article I",
-  "url": "/constitution/#Constitution.1"
- },
- "Constitution.1.1": {
-  "label": "Article I, Section 1",
-  "url": "/constitution/#Constitution.1.1"
- },
- "Constitution.1.1.1": {
-  "label": "Article I, Section 1, Clause 1",
-  "url": "/constitution/#Constitution.1.1.1"
- },
- "Constitution.1.10": {
-  "label": "Article I, Section 10",
-  "url": "/constitution/#Constitution.1.10"
- },
- "Constitution.1.10.1": {
-  "label": "Article I, Section 10, Clause 1",
-  "url": "/constitution/#Constitution.1.10.1"
- },
- "Constitution.1.10.2": {
-  "label": "Article I, Section 10, Clause 2",
-  "url": "/constitution/#Constitution.1.10.2"
- },
- "Constitution.1.10.3": {
-  "label": "Article I, Section 10, Clause 3",
-  "url": "/constitution/#Constitution.1.10.3"
- },
- "Constitution.1.2": {
-  "label": "Article I, Section 2",
-  "url": "/constitution/#Constitution.1.2"
- },
- "Constitution.1.2.1": {
-  "label": "Article I, Section 2, Clause 1",
-  "url": "/constitution/#Constitution.1.2.1"
- },
- "Constitution.1.2.2": {
-  "label": "Article I, Section 2, Clause 2",
-  "url": "/constitution/#Constitution.1.2.2"
- },
- "Constitution.1.2.3": {
-  "label": "Article I, Section 2, Clause 3",
-  "url": "/constitution/#Constitution.1.2.3"
- },
- "Constitution.1.2.4": {
-  "label": "Article I, Section 2, Clause 4",
-  "url": "/constitution/#Constitution.1.2.4"
- },
- "Constitution.1.2.5": {
-  "label": "Article I, Section 2, Clause 5",
-  "url": "/constitution/#Constitution.1.2.5"
- },
- "Constitution.1.3": {
-  "label": "Article I, Section 3",
-  "url": "/constitution/#Constitution.1.3"
- },
- "Constitution.1.3.1": {
-  "label": "Article I, Section 3, Clause 1",
-  "url": "/constitution/#Constitution.1.3.1"
- },
- "Constitution.1.3.2": {
-  "label": "Article I, Section 3, Clause 2",
-  "url": "/constitution/#Constitution.1.3.2"
- },
- "Constitution.1.3.3": {
-  "label": "Article I, Section 3, Clause 3",
-  "url": "/constitution/#Constitution.1.3.3"
- },
- "Constitution.1.3.4": {
-  "label": "Article I, Section 3, Clause 4",
-  "url": "/constitution/#Constitution.1.3.4"
- },
- "Constitution.1.3.5": {
-  "label": "Article I, Section 3, Clause 5",
-  "url": "/constitution/#Constitution.1.3.5"
- },
- "Constitution.1.3.6": {
-  "label": "Article I, Section 3, Clause 6",
-  "url": "/constitution/#Constitution.1.3.6"
- },
- "Constitution.1.3.7": {
-  "label": "Article I, Section 3, Clause 7",
-  "url": "/constitution/#Constitution.1.3.7"
- },
- "Constitution.1.4": {
-  "label": "Article I, Section 4",
-  "url": "/constitution/#Constitution.1.4"
- },
- "Constitution.1.4.1": {
-  "label": "Article I, Section 4, Clause 1",
-  "url": "/constitution/#Constitution.1.4.1"
- },
- "Constitution.1.4.2": {
-  "label": "Article I, Section 4, Clause 2",
-  "url": "/constitution/#Constitution.1.4.2"
- },
- "Constitution.1.5": {
-  "label": "Article I, Section 5",
-  "url": "/constitution/#Constitution.1.5"
- },
- "Constitution.1.5.1": {
-  "label": "Article I, Section 5, Clause 1",
-  "url": "/constitution/#Constitution.1.5.1"
- },
- "Constitution.1.5.2": {
-  "label": "Article I, Section 5, Clause 2",
-  "url": "/constitution/#Constitution.1.5.2"
- },
- "Constitution.1.5.3": {
-  "label": "Article I, Section 5, Clause 3",
-  "url": "/constitution/#Constitution.1.5.3"
- },
- "Constitution.1.5.4": {
-  "label": "Article I, Section 5, Clause 4",
-  "url": "/constitution/#Constitution.1.5.4"
- },
- "Constitution.1.6": {
-  "label": "Article I, Section 6",
-  "url": "/constitution/#Constitution.1.6"
- },
- "Constitution.1.6.1": {
-  "label": "Article I, Section 6, Clause 1",
-  "url": "/constitution/#Constitution.1.6.1"
- },
- "Constitution.1.6.2": {
-  "label": "Article I, Section 6, Clause 2",
-  "url": "/constitution/#Constitution.1.6.2"
- },
- "Constitution.1.7": {
-  "label": "Article I, Section 7",
-  "url": "/constitution/#Constitution.1.7"
- },
- "Constitution.1.7.1": {
-  "label": "Article I, Section 7, Clause 1",
-  "url": "/constitution/#Constitution.1.7.1"
- },
- "Constitution.1.7.2": {
-  "label": "Article I, Section 7, Clause 2",
-  "url": "/constitution/#Constitution.1.7.2"
- },
- "Constitution.1.7.3": {
-  "label": "Article I, Section 7, Clause 3",
-  "url": "/constitution/#Constitution.1.7.3"
- },
- "Constitution.1.8": {
-  "label": "Article I, Section 8",
-  "url": "/constitution/#Constitution.1.8"
- },
- "Constitution.1.8.1": {
-  "label": "Article I, Section 8, Clause 1",
-  "url": "/constitution/#Constitution.1.8.1"
- },
- "Constitution.1.8.10": {
-  "label": "Article I, Section 8, Clause 10",
-  "url": "/constitution/#Constitution.1.8.10"
- },
- "Constitution.1.8.11": {
-  "label": "Article I, Section 8, Clause 11",
-  "url": "/constitution/#Constitution.1.8.11"
- },
- "Constitution.1.8.12": {
-  "label": "Article I, Section 8, Clause 12",
-  "url": "/constitution/#Constitution.1.8.12"
- },
- "Constitution.1.8.13": {
-  "label": "Article I, Section 8, Clause 13",
-  "url": "/constitution/#Constitution.1.8.13"
- },
- "Constitution.1.8.14": {
-  "label": "Article I, Section 8, Clause 14",
-  "url": "/constitution/#Constitution.1.8.14"
- },
- "Constitution.1.8.15": {
-  "label": "Article I, Section 8, Clause 15",
-  "url": "/constitution/#Constitution.1.8.15"
- },
- "Constitution.1.8.16": {
-  "label": "Article I, Section 8, Clause 16",
-  "url": "/constitution/#Constitution.1.8.16"
- },
- "Constitution.1.8.17": {
-  "label": "Article I, Section 8, Clause 17",
-  "url": "/constitution/#Constitution.1.8.17"
- },
- "Constitution.1.8.18": {
-  "label": "Article I, Section 8, Clause 18",
-  "url": "/constitution/#Constitution.1.8.18"
- },
- "Constitution.1.8.2": {
-  "label": "Article I, Section 8, Clause 2",
-  "url": "/constitution/#Constitution.1.8.2"
- },
- "Constitution.1.8.3": {
-  "label": "Article I, Section 8, Clause 3",
-  "url": "/constitution/#Constitution.1.8.3"
- },
- "Constitution.1.8.4": {
-  "label": "Article I, Section 8, Clause 4",
-  "url": "/constitution/#Constitution.1.8.4"
- },
- "Constitution.1.8.5": {
-  "label": "Article I, Section 8, Clause 5",
-  "url": "/constitution/#Constitution.1.8.5"
- },
- "Constitution.1.8.6": {
-  "label": "Article I, Section 8, Clause 6",
-  "url": "/constitution/#Constitution.1.8.6"
- },
- "Constitution.1.8.7": {
-  "label": "Article I, Section 8, Clause 7",
-  "url": "/constitution/#Constitution.1.8.7"
- },
- "Constitution.1.8.8": {
-  "label": "Article I, Section 8, Clause 8",
-  "url": "/constitution/#Constitution.1.8.8"
- },
- "Constitution.1.8.9": {
-  "label": "Article I, Section 8, Clause 9",
-  "url": "/constitution/#Constitution.1.8.9"
- },
- "Constitution.1.9": {
-  "label": "Article I, Section 9",
-  "url": "/constitution/#Constitution.1.9"
- },
- "Constitution.1.9.1": {
-  "label": "Article I, Section 9, Clause 1",
-  "url": "/constitution/#Constitution.1.9.1"
- },
- "Constitution.1.9.2": {
-  "label": "Article I, Section 9, Clause 2",
-  "url": "/constitution/#Constitution.1.9.2"
- },
- "Constitution.1.9.3": {
-  "label": "Article I, Section 9, Clause 3",
-  "url": "/constitution/#Constitution.1.9.3"
- },
- "Constitution.1.9.4": {
-  "label": "Article I, Section 9, Clause 4",
-  "url": "/constitution/#Constitution.1.9.4"
- },
- "Constitution.1.9.5": {
-  "label": "Article I, Section 9, Clause 5",
-  "url": "/constitution/#Constitution.1.9.5"
- },
- "Constitution.1.9.6": {
-  "label": "Article I, Section 9, Clause 6",
-  "url": "/constitution/#Constitution.1.9.6"
- },
- "Constitution.1.9.7": {
-  "label": "Article I, Section 9, Clause 7",
-  "url": "/constitution/#Constitution.1.9.7"
- },
- "Constitution.1.9.8": {
-  "label": "Article I, Section 9, Clause 8",
-  "url": "/constitution/#Constitution.1.9.8"
- },
- "Constitution.2": {
-  "label": "Article II",
-  "url": "/constitution/#Constitution.2"
- },
- "Constitution.2.1": {
-  "label": "Article II, Section 1",
-  "url": "/constitution/#Constitution.2.1"
- },
- "Constitution.2.1.1": {
-  "label": "Article II, Section 1, Clause 1",
-  "url": "/constitution/#Constitution.2.1.1"
- },
- "Constitution.2.1.2": {
-  "label": "Article II, Section 1, Clause 2",
-  "url": "/constitution/#Constitution.2.1.2"
- },
- "Constitution.2.1.3": {
-  "label": "Article II, Section 1, Clause 3",
-  "url": "/constitution/#Constitution.2.1.3"
- },
- "Constitution.2.1.4": {
-  "label": "Article II, Section 1, Clause 4",
-  "url": "/constitution/#Constitution.2.1.4"
- },
- "Constitution.2.1.5": {
-  "label": "Article II, Section 1, Clause 5",
-  "url": "/constitution/#Constitution.2.1.5"
- },
- "Constitution.2.1.6": {
-  "label": "Article II, Section 1, Clause 6",
-  "url": "/constitution/#Constitution.2.1.6"
- },
- "Constitution.2.1.7": {
-  "label": "Article II, Section 1, Clause 7",
-  "url": "/constitution/#Constitution.2.1.7"
- },
- "Constitution.2.1.8": {
-  "label": "Article II, Section 1, Clause 8",
-  "url": "/constitution/#Constitution.2.1.8"
- },
- "Constitution.2.2": {
-  "label": "Article II, Section 2",
-  "url": "/constitution/#Constitution.2.2"
- },
- "Constitution.2.2.1": {
-  "label": "Article II, Section 2, Clause 1",
-  "url": "/constitution/#Constitution.2.2.1"
- },
- "Constitution.2.2.2": {
-  "label": "Article II, Section 2, Clause 2",
-  "url": "/constitution/#Constitution.2.2.2"
- },
- "Constitution.2.2.3": {
-  "label": "Article II, Section 2, Clause 3",
-  "url": "/constitution/#Constitution.2.2.3"
- },
- "Constitution.2.3": {
-  "label": "Article II, Section 3",
-  "url": "/constitution/#Constitution.2.3"
- },
- "Constitution.2.3.1": {
-  "label": "Article II, Section 3, Clause 1",
-  "url": "/constitution/#Constitution.2.3.1"
- },
- "Constitution.2.4": {
-  "label": "Article II, Section 4",
-  "url": "/constitution/#Constitution.2.4"
- },
- "Constitution.2.4.1": {
-  "label": "Article II, Section 4, Clause 1",
-  "url": "/constitution/#Constitution.2.4.1"
- },
- "Constitution.3": {
-  "label": "Article III",
-  "url": "/constitution/#Constitution.3"
- },
- "Constitution.3.1": {
-  "label": "Article III, Section 1",
-  "url": "/constitution/#Constitution.3.1"
- },
- "Constitution.3.1.1": {
-  "label": "Article III, Section 1, Clause 1",
-  "url": "/constitution/#Constitution.3.1.1"
- },
- "Constitution.3.2": {
-  "label": "Article III, Section 2",
-  "url": "/constitution/#Constitution.3.2"
- },
- "Constitution.3.2.1": {
-  "label": "Article III, Section 2, Clause 1",
-  "url": "/constitution/#Constitution.3.2.1"
- },
- "Constitution.3.2.2": {
-  "label": "Article III, Section 2, Clause 2",
-  "url": "/constitution/#Constitution.3.2.2"
- },
- "Constitution.3.2.3": {
-  "label": "Article III, Section 2, Clause 3",
-  "url": "/constitution/#Constitution.3.2.3"
- },
- "Constitution.3.3": {
-  "label": "Article III, Section 3",
-  "url": "/constitution/#Constitution.3.3"
- },
- "Constitution.3.3.1": {
-  "label": "Article III, Section 3, Clause 1",
-  "url": "/constitution/#Constitution.3.3.1"
- },
- "Constitution.3.3.2": {
-  "label": "Article III, Section 3, Clause 2",
-  "url": "/constitution/#Constitution.3.3.2"
- },
- "Constitution.4": {
-  "label": "Article IV",
-  "url": "/constitution/#Constitution.4"
- },
- "Constitution.4.1": {
-  "label": "Article IV, Section 1",
-  "url": "/constitution/#Constitution.4.1"
- },
- "Constitution.4.1.1": {
-  "label": "Article IV, Section 1, Clause 1",
-  "url": "/constitution/#Constitution.4.1.1"
- },
- "Constitution.4.2": {
-  "label": "Article IV, Section 2",
-  "url": "/constitution/#Constitution.4.2"
- },
- "Constitution.4.2.1": {
-  "label": "Article IV, Section 2, Clause 1",
-  "url": "/constitution/#Constitution.4.2.1"
- },
- "Constitution.4.2.2": {
-  "label": "Article IV, Section 2, Clause 2",
-  "url": "/constitution/#Constitution.4.2.2"
- },
- "Constitution.4.2.3": {
-  "label": "Article IV, Section 2, Clause 3",
-  "url": "/constitution/#Constitution.4.2.3"
- },
- "Constitution.4.3": {
-  "label": "Article IV, Section 3",
-  "url": "/constitution/#Constitution.4.3"
- },
- "Constitution.4.3.1": {
-  "label": "Article IV, Section 3, Clause 1",
-  "url": "/constitution/#Constitution.4.3.1"
- },
- "Constitution.4.3.2": {
-  "label": "Article IV, Section 3, Clause 2",
-  "url": "/constitution/#Constitution.4.3.2"
- },
- "Constitution.4.4": {
-  "label": "Article IV, Section 4",
-  "url": "/constitution/#Constitution.4.4"
- },
- "Constitution.4.4.1": {
-  "label": "Article IV, Section 4, Clause 1",
-  "url": "/constitution/#Constitution.4.4.1"
- },
- "Constitution.5": {
-  "label": "Article V",
-  "url": "/constitution/#Constitution.5"
- },
- "Constitution.5.1": {
-  "label": "Article V, Clause 1",
-  "url": "/constitution/#Constitution.5.1"
- },
- "Constitution.6": {
-  "label": "Article VI",
-  "url": "/constitution/#Constitution.6"
- },
- "Constitution.6.1": {
-  "label": "Article VI, Clause 1",
-  "url": "/constitution/#Constitution.6.1"
- },
- "Constitution.6.2": {
-  "label": "Article VI, Clause 2",
-  "url": "/constitution/#Constitution.6.2"
- },
- "Constitution.6.3": {
-  "label": "Article VI, Clause 3",
-  "url": "/constitution/#Constitution.6.3"
- },
- "Constitution.7": {
-  "label": "Article VII",
-  "url": "/constitution/#Constitution.7"
- },
- "Constitution.7.1": {
-  "label": "Article VII, Clause 1",
-  "url": "/constitution/#Constitution.7.1"
- },
- "Constitution.Attestation": {
-  "label": "Attestation",
-  "url": "/constitution/#Constitution.Attestation"
- },
- "Constitution.Closing": {
-  "label": "Closing",
-  "url": "/constitution/#Constitution.Closing"
- },
- "Constitution.Interlineations": {
-  "label": "Note on interlineations",
-  "url": "/constitution/#Constitution.Interlineations"
- },
- "Constitution.Preamble": {
-  "label": "Preamble",
-  "url": "/constitution/#Constitution.Preamble"
- },
- "Constitution.Signers": {
-  "label": "Signatures",
-  "url": "/constitution/#Constitution.Signers"
- },
- "Constitution.Signers.Connecticut": {
-  "label": "Signatures: Connecticut",
-  "url": "/constitution/#Constitution.Signers.Connecticut"
- },
- "Constitution.Signers.Delaware": {
-  "label": "Signatures: Delaware",
-  "url": "/constitution/#Constitution.Signers.Delaware"
- },
- "Constitution.Signers.Georgia": {
-  "label": "Signatures: Georgia",
-  "url": "/constitution/#Constitution.Signers.Georgia"
- },
- "Constitution.Signers.Maryland": {
-  "label": "Signatures: Maryland",
-  "url": "/constitution/#Constitution.Signers.Maryland"
- },
- "Constitution.Signers.Massachusetts": {
-  "label": "Signatures: Massachusetts",
-  "url": "/constitution/#Constitution.Signers.Massachusetts"
- },
- "Constitution.Signers.NewHampshire": {
-  "label": "Signatures: New Hampshire",
-  "url": "/constitution/#Constitution.Signers.NewHampshire"
- },
- "Constitution.Signers.NewJersey": {
-  "label": "Signatures: New Jersey",
-  "url": "/constitution/#Constitution.Signers.NewJersey"
- },
- "Constitution.Signers.NewYork": {
-  "label": "Signatures: New York",
-  "url": "/constitution/#Constitution.Signers.NewYork"
- },
- "Constitution.Signers.NorthCarolina": {
-  "label": "Signatures: North Carolina",
-  "url": "/constitution/#Constitution.Signers.NorthCarolina"
- },
- "Constitution.Signers.Pennsylvania": {
-  "label": "Signatures: Pennsylvania",
-  "url": "/constitution/#Constitution.Signers.Pennsylvania"
- },
- "Constitution.Signers.President": {
-  "label": "Signature of the President of the Convention",
-  "url": "/constitution/#Constitution.Signers.President"
- },
- "Constitution.Signers.SouthCarolina": {
-  "label": "Signatures: South Carolina",
-  "url": "/constitution/#Constitution.Signers.SouthCarolina"
- },
- "Constitution.Signers.Virginia": {
-  "label": "Signatures: Virginia",
-  "url": "/constitution/#Constitution.Signers.Virginia"
- },
- "Federalist": {
-  "label": "Federalist",
-  "url": "/federalist/"
- },
- "Federalist.10": {
-  "label": "Federalist No. 10",
-  "url": "/federalist/10/"
- },
- "Federalist.10.1": {
-  "label": "Federalist No. 10, ¶ 1",
-  "url": "/federalist/10/#Federalist.10.1"
- }
+  "Amendment": {
+    "label": "Amendment",
+    "url": "/amendments/"
+  },
+  "Amendment.1": {
+    "label": "Amendment I",
+    "url": "/amendments/#Amendment.1"
+  },
+  "Amendment.1.1": {
+    "label": "Amendment I",
+    "url": "/amendments/#Amendment.1.1"
+  },
+  "Amendment.10": {
+    "label": "Amendment X",
+    "url": "/amendments/#Amendment.10"
+  },
+  "Amendment.10.1": {
+    "label": "Amendment X",
+    "url": "/amendments/#Amendment.10.1"
+  },
+  "Amendment.11": {
+    "label": "Amendment XI",
+    "url": "/amendments/#Amendment.11"
+  },
+  "Amendment.11.1": {
+    "label": "Amendment XI",
+    "url": "/amendments/#Amendment.11.1"
+  },
+  "Amendment.12": {
+    "label": "Amendment XII",
+    "url": "/amendments/#Amendment.12"
+  },
+  "Amendment.12.1": {
+    "label": "Amendment XII",
+    "url": "/amendments/#Amendment.12.1"
+  },
+  "Amendment.13": {
+    "label": "Amendment XIII",
+    "url": "/amendments/#Amendment.13"
+  },
+  "Amendment.13.1": {
+    "label": "Amendment XIII, Section 1",
+    "url": "/amendments/#Amendment.13.1"
+  },
+  "Amendment.13.2": {
+    "label": "Amendment XIII, Section 2",
+    "url": "/amendments/#Amendment.13.2"
+  },
+  "Amendment.14": {
+    "label": "Amendment XIV",
+    "url": "/amendments/#Amendment.14"
+  },
+  "Amendment.14.1": {
+    "label": "Amendment XIV, Section 1",
+    "url": "/amendments/#Amendment.14.1"
+  },
+  "Amendment.14.2": {
+    "label": "Amendment XIV, Section 2",
+    "url": "/amendments/#Amendment.14.2"
+  },
+  "Amendment.14.3": {
+    "label": "Amendment XIV, Section 3",
+    "url": "/amendments/#Amendment.14.3"
+  },
+  "Amendment.14.4": {
+    "label": "Amendment XIV, Section 4",
+    "url": "/amendments/#Amendment.14.4"
+  },
+  "Amendment.14.5": {
+    "label": "Amendment XIV, Section 5",
+    "url": "/amendments/#Amendment.14.5"
+  },
+  "Amendment.15": {
+    "label": "Amendment XV",
+    "url": "/amendments/#Amendment.15"
+  },
+  "Amendment.15.1": {
+    "label": "Amendment XV, Section 1",
+    "url": "/amendments/#Amendment.15.1"
+  },
+  "Amendment.15.2": {
+    "label": "Amendment XV, Section 2",
+    "url": "/amendments/#Amendment.15.2"
+  },
+  "Amendment.16": {
+    "label": "Amendment XVI",
+    "url": "/amendments/#Amendment.16"
+  },
+  "Amendment.16.1": {
+    "label": "Amendment XVI",
+    "url": "/amendments/#Amendment.16.1"
+  },
+  "Amendment.17": {
+    "label": "Amendment XVII",
+    "url": "/amendments/#Amendment.17"
+  },
+  "Amendment.17.1": {
+    "label": "Amendment XVII, Clause 1",
+    "url": "/amendments/#Amendment.17.1"
+  },
+  "Amendment.17.2": {
+    "label": "Amendment XVII, Clause 2",
+    "url": "/amendments/#Amendment.17.2"
+  },
+  "Amendment.17.3": {
+    "label": "Amendment XVII, Clause 3",
+    "url": "/amendments/#Amendment.17.3"
+  },
+  "Amendment.18": {
+    "label": "Amendment XVIII",
+    "url": "/amendments/#Amendment.18"
+  },
+  "Amendment.18.1": {
+    "label": "Amendment XVIII, Section 1",
+    "url": "/amendments/#Amendment.18.1"
+  },
+  "Amendment.18.2": {
+    "label": "Amendment XVIII, Section 2",
+    "url": "/amendments/#Amendment.18.2"
+  },
+  "Amendment.18.3": {
+    "label": "Amendment XVIII, Section 3",
+    "url": "/amendments/#Amendment.18.3"
+  },
+  "Amendment.19": {
+    "label": "Amendment XIX",
+    "url": "/amendments/#Amendment.19"
+  },
+  "Amendment.19.1": {
+    "label": "Amendment XIX, Clause 1",
+    "url": "/amendments/#Amendment.19.1"
+  },
+  "Amendment.19.2": {
+    "label": "Amendment XIX, Clause 2",
+    "url": "/amendments/#Amendment.19.2"
+  },
+  "Amendment.2": {
+    "label": "Amendment II",
+    "url": "/amendments/#Amendment.2"
+  },
+  "Amendment.2.1": {
+    "label": "Amendment II",
+    "url": "/amendments/#Amendment.2.1"
+  },
+  "Amendment.20": {
+    "label": "Amendment XX",
+    "url": "/amendments/#Amendment.20"
+  },
+  "Amendment.20.1": {
+    "label": "Amendment XX, Section 1",
+    "url": "/amendments/#Amendment.20.1"
+  },
+  "Amendment.20.2": {
+    "label": "Amendment XX, Section 2",
+    "url": "/amendments/#Amendment.20.2"
+  },
+  "Amendment.20.3": {
+    "label": "Amendment XX, Section 3",
+    "url": "/amendments/#Amendment.20.3"
+  },
+  "Amendment.20.4": {
+    "label": "Amendment XX, Section 4",
+    "url": "/amendments/#Amendment.20.4"
+  },
+  "Amendment.20.5": {
+    "label": "Amendment XX, Section 5",
+    "url": "/amendments/#Amendment.20.5"
+  },
+  "Amendment.20.6": {
+    "label": "Amendment XX, Section 6",
+    "url": "/amendments/#Amendment.20.6"
+  },
+  "Amendment.21": {
+    "label": "Amendment XXI",
+    "url": "/amendments/#Amendment.21"
+  },
+  "Amendment.21.1": {
+    "label": "Amendment XXI, Section 1",
+    "url": "/amendments/#Amendment.21.1"
+  },
+  "Amendment.21.2": {
+    "label": "Amendment XXI, Section 2",
+    "url": "/amendments/#Amendment.21.2"
+  },
+  "Amendment.21.3": {
+    "label": "Amendment XXI, Section 3",
+    "url": "/amendments/#Amendment.21.3"
+  },
+  "Amendment.22": {
+    "label": "Amendment XXII",
+    "url": "/amendments/#Amendment.22"
+  },
+  "Amendment.22.1": {
+    "label": "Amendment XXII, Section 1",
+    "url": "/amendments/#Amendment.22.1"
+  },
+  "Amendment.22.2": {
+    "label": "Amendment XXII, Section 2",
+    "url": "/amendments/#Amendment.22.2"
+  },
+  "Amendment.23": {
+    "label": "Amendment XXIII",
+    "url": "/amendments/#Amendment.23"
+  },
+  "Amendment.23.1": {
+    "label": "Amendment XXIII, Section 1",
+    "url": "/amendments/#Amendment.23.1"
+  },
+  "Amendment.23.2": {
+    "label": "Amendment XXIII, Section 2",
+    "url": "/amendments/#Amendment.23.2"
+  },
+  "Amendment.24": {
+    "label": "Amendment XXIV",
+    "url": "/amendments/#Amendment.24"
+  },
+  "Amendment.24.1": {
+    "label": "Amendment XXIV, Section 1",
+    "url": "/amendments/#Amendment.24.1"
+  },
+  "Amendment.24.2": {
+    "label": "Amendment XXIV, Section 2",
+    "url": "/amendments/#Amendment.24.2"
+  },
+  "Amendment.25": {
+    "label": "Amendment XXV",
+    "url": "/amendments/#Amendment.25"
+  },
+  "Amendment.25.1": {
+    "label": "Amendment XXV, Section 1",
+    "url": "/amendments/#Amendment.25.1"
+  },
+  "Amendment.25.2": {
+    "label": "Amendment XXV, Section 2",
+    "url": "/amendments/#Amendment.25.2"
+  },
+  "Amendment.25.3": {
+    "label": "Amendment XXV, Section 3",
+    "url": "/amendments/#Amendment.25.3"
+  },
+  "Amendment.25.4": {
+    "label": "Amendment XXV, Section 4",
+    "url": "/amendments/#Amendment.25.4"
+  },
+  "Amendment.26": {
+    "label": "Amendment XXVI",
+    "url": "/amendments/#Amendment.26"
+  },
+  "Amendment.26.1": {
+    "label": "Amendment XXVI, Section 1",
+    "url": "/amendments/#Amendment.26.1"
+  },
+  "Amendment.26.2": {
+    "label": "Amendment XXVI, Section 2",
+    "url": "/amendments/#Amendment.26.2"
+  },
+  "Amendment.27": {
+    "label": "Amendment XXVII",
+    "url": "/amendments/#Amendment.27"
+  },
+  "Amendment.27.1": {
+    "label": "Amendment XXVII",
+    "url": "/amendments/#Amendment.27.1"
+  },
+  "Amendment.3": {
+    "label": "Amendment III",
+    "url": "/amendments/#Amendment.3"
+  },
+  "Amendment.3.1": {
+    "label": "Amendment III",
+    "url": "/amendments/#Amendment.3.1"
+  },
+  "Amendment.4": {
+    "label": "Amendment IV",
+    "url": "/amendments/#Amendment.4"
+  },
+  "Amendment.4.1": {
+    "label": "Amendment IV",
+    "url": "/amendments/#Amendment.4.1"
+  },
+  "Amendment.5": {
+    "label": "Amendment V",
+    "url": "/amendments/#Amendment.5"
+  },
+  "Amendment.5.1": {
+    "label": "Amendment V",
+    "url": "/amendments/#Amendment.5.1"
+  },
+  "Amendment.6": {
+    "label": "Amendment VI",
+    "url": "/amendments/#Amendment.6"
+  },
+  "Amendment.6.1": {
+    "label": "Amendment VI",
+    "url": "/amendments/#Amendment.6.1"
+  },
+  "Amendment.7": {
+    "label": "Amendment VII",
+    "url": "/amendments/#Amendment.7"
+  },
+  "Amendment.7.1": {
+    "label": "Amendment VII",
+    "url": "/amendments/#Amendment.7.1"
+  },
+  "Amendment.8": {
+    "label": "Amendment VIII",
+    "url": "/amendments/#Amendment.8"
+  },
+  "Amendment.8.1": {
+    "label": "Amendment VIII",
+    "url": "/amendments/#Amendment.8.1"
+  },
+  "Amendment.9": {
+    "label": "Amendment IX",
+    "url": "/amendments/#Amendment.9"
+  },
+  "Amendment.9.1": {
+    "label": "Amendment IX",
+    "url": "/amendments/#Amendment.9.1"
+  },
+  "Brutus.1": {
+    "label": "Brutus 1",
+    "url": "/brutus/1/"
+  },
+  "Constitution": {
+    "label": "Constitution",
+    "url": "/constitution/"
+  },
+  "Constitution.1": {
+    "label": "Article I",
+    "url": "/constitution/#Constitution.1"
+  },
+  "Constitution.1.1": {
+    "label": "Article I, Section 1",
+    "url": "/constitution/#Constitution.1.1"
+  },
+  "Constitution.1.1.1": {
+    "label": "Article I, Section 1, Clause 1",
+    "url": "/constitution/#Constitution.1.1.1"
+  },
+  "Constitution.1.10": {
+    "label": "Article I, Section 10",
+    "url": "/constitution/#Constitution.1.10"
+  },
+  "Constitution.1.10.1": {
+    "label": "Article I, Section 10, Clause 1",
+    "url": "/constitution/#Constitution.1.10.1"
+  },
+  "Constitution.1.10.2": {
+    "label": "Article I, Section 10, Clause 2",
+    "url": "/constitution/#Constitution.1.10.2"
+  },
+  "Constitution.1.10.3": {
+    "label": "Article I, Section 10, Clause 3",
+    "url": "/constitution/#Constitution.1.10.3"
+  },
+  "Constitution.1.2": {
+    "label": "Article I, Section 2",
+    "url": "/constitution/#Constitution.1.2"
+  },
+  "Constitution.1.2.1": {
+    "label": "Article I, Section 2, Clause 1",
+    "url": "/constitution/#Constitution.1.2.1"
+  },
+  "Constitution.1.2.2": {
+    "label": "Article I, Section 2, Clause 2",
+    "url": "/constitution/#Constitution.1.2.2"
+  },
+  "Constitution.1.2.3": {
+    "label": "Article I, Section 2, Clause 3",
+    "url": "/constitution/#Constitution.1.2.3"
+  },
+  "Constitution.1.2.4": {
+    "label": "Article I, Section 2, Clause 4",
+    "url": "/constitution/#Constitution.1.2.4"
+  },
+  "Constitution.1.2.5": {
+    "label": "Article I, Section 2, Clause 5",
+    "url": "/constitution/#Constitution.1.2.5"
+  },
+  "Constitution.1.3": {
+    "label": "Article I, Section 3",
+    "url": "/constitution/#Constitution.1.3"
+  },
+  "Constitution.1.3.1": {
+    "label": "Article I, Section 3, Clause 1",
+    "url": "/constitution/#Constitution.1.3.1"
+  },
+  "Constitution.1.3.2": {
+    "label": "Article I, Section 3, Clause 2",
+    "url": "/constitution/#Constitution.1.3.2"
+  },
+  "Constitution.1.3.3": {
+    "label": "Article I, Section 3, Clause 3",
+    "url": "/constitution/#Constitution.1.3.3"
+  },
+  "Constitution.1.3.4": {
+    "label": "Article I, Section 3, Clause 4",
+    "url": "/constitution/#Constitution.1.3.4"
+  },
+  "Constitution.1.3.5": {
+    "label": "Article I, Section 3, Clause 5",
+    "url": "/constitution/#Constitution.1.3.5"
+  },
+  "Constitution.1.3.6": {
+    "label": "Article I, Section 3, Clause 6",
+    "url": "/constitution/#Constitution.1.3.6"
+  },
+  "Constitution.1.3.7": {
+    "label": "Article I, Section 3, Clause 7",
+    "url": "/constitution/#Constitution.1.3.7"
+  },
+  "Constitution.1.4": {
+    "label": "Article I, Section 4",
+    "url": "/constitution/#Constitution.1.4"
+  },
+  "Constitution.1.4.1": {
+    "label": "Article I, Section 4, Clause 1",
+    "url": "/constitution/#Constitution.1.4.1"
+  },
+  "Constitution.1.4.2": {
+    "label": "Article I, Section 4, Clause 2",
+    "url": "/constitution/#Constitution.1.4.2"
+  },
+  "Constitution.1.5": {
+    "label": "Article I, Section 5",
+    "url": "/constitution/#Constitution.1.5"
+  },
+  "Constitution.1.5.1": {
+    "label": "Article I, Section 5, Clause 1",
+    "url": "/constitution/#Constitution.1.5.1"
+  },
+  "Constitution.1.5.2": {
+    "label": "Article I, Section 5, Clause 2",
+    "url": "/constitution/#Constitution.1.5.2"
+  },
+  "Constitution.1.5.3": {
+    "label": "Article I, Section 5, Clause 3",
+    "url": "/constitution/#Constitution.1.5.3"
+  },
+  "Constitution.1.5.4": {
+    "label": "Article I, Section 5, Clause 4",
+    "url": "/constitution/#Constitution.1.5.4"
+  },
+  "Constitution.1.6": {
+    "label": "Article I, Section 6",
+    "url": "/constitution/#Constitution.1.6"
+  },
+  "Constitution.1.6.1": {
+    "label": "Article I, Section 6, Clause 1",
+    "url": "/constitution/#Constitution.1.6.1"
+  },
+  "Constitution.1.6.2": {
+    "label": "Article I, Section 6, Clause 2",
+    "url": "/constitution/#Constitution.1.6.2"
+  },
+  "Constitution.1.7": {
+    "label": "Article I, Section 7",
+    "url": "/constitution/#Constitution.1.7"
+  },
+  "Constitution.1.7.1": {
+    "label": "Article I, Section 7, Clause 1",
+    "url": "/constitution/#Constitution.1.7.1"
+  },
+  "Constitution.1.7.2": {
+    "label": "Article I, Section 7, Clause 2",
+    "url": "/constitution/#Constitution.1.7.2"
+  },
+  "Constitution.1.7.3": {
+    "label": "Article I, Section 7, Clause 3",
+    "url": "/constitution/#Constitution.1.7.3"
+  },
+  "Constitution.1.8": {
+    "label": "Article I, Section 8",
+    "url": "/constitution/#Constitution.1.8"
+  },
+  "Constitution.1.8.1": {
+    "label": "Article I, Section 8, Clause 1",
+    "url": "/constitution/#Constitution.1.8.1"
+  },
+  "Constitution.1.8.10": {
+    "label": "Article I, Section 8, Clause 10",
+    "url": "/constitution/#Constitution.1.8.10"
+  },
+  "Constitution.1.8.11": {
+    "label": "Article I, Section 8, Clause 11",
+    "url": "/constitution/#Constitution.1.8.11"
+  },
+  "Constitution.1.8.12": {
+    "label": "Article I, Section 8, Clause 12",
+    "url": "/constitution/#Constitution.1.8.12"
+  },
+  "Constitution.1.8.13": {
+    "label": "Article I, Section 8, Clause 13",
+    "url": "/constitution/#Constitution.1.8.13"
+  },
+  "Constitution.1.8.14": {
+    "label": "Article I, Section 8, Clause 14",
+    "url": "/constitution/#Constitution.1.8.14"
+  },
+  "Constitution.1.8.15": {
+    "label": "Article I, Section 8, Clause 15",
+    "url": "/constitution/#Constitution.1.8.15"
+  },
+  "Constitution.1.8.16": {
+    "label": "Article I, Section 8, Clause 16",
+    "url": "/constitution/#Constitution.1.8.16"
+  },
+  "Constitution.1.8.17": {
+    "label": "Article I, Section 8, Clause 17",
+    "url": "/constitution/#Constitution.1.8.17"
+  },
+  "Constitution.1.8.18": {
+    "label": "Article I, Section 8, Clause 18",
+    "url": "/constitution/#Constitution.1.8.18"
+  },
+  "Constitution.1.8.2": {
+    "label": "Article I, Section 8, Clause 2",
+    "url": "/constitution/#Constitution.1.8.2"
+  },
+  "Constitution.1.8.3": {
+    "label": "Article I, Section 8, Clause 3",
+    "url": "/constitution/#Constitution.1.8.3"
+  },
+  "Constitution.1.8.4": {
+    "label": "Article I, Section 8, Clause 4",
+    "url": "/constitution/#Constitution.1.8.4"
+  },
+  "Constitution.1.8.5": {
+    "label": "Article I, Section 8, Clause 5",
+    "url": "/constitution/#Constitution.1.8.5"
+  },
+  "Constitution.1.8.6": {
+    "label": "Article I, Section 8, Clause 6",
+    "url": "/constitution/#Constitution.1.8.6"
+  },
+  "Constitution.1.8.7": {
+    "label": "Article I, Section 8, Clause 7",
+    "url": "/constitution/#Constitution.1.8.7"
+  },
+  "Constitution.1.8.8": {
+    "label": "Article I, Section 8, Clause 8",
+    "url": "/constitution/#Constitution.1.8.8"
+  },
+  "Constitution.1.8.9": {
+    "label": "Article I, Section 8, Clause 9",
+    "url": "/constitution/#Constitution.1.8.9"
+  },
+  "Constitution.1.9": {
+    "label": "Article I, Section 9",
+    "url": "/constitution/#Constitution.1.9"
+  },
+  "Constitution.1.9.1": {
+    "label": "Article I, Section 9, Clause 1",
+    "url": "/constitution/#Constitution.1.9.1"
+  },
+  "Constitution.1.9.2": {
+    "label": "Article I, Section 9, Clause 2",
+    "url": "/constitution/#Constitution.1.9.2"
+  },
+  "Constitution.1.9.3": {
+    "label": "Article I, Section 9, Clause 3",
+    "url": "/constitution/#Constitution.1.9.3"
+  },
+  "Constitution.1.9.4": {
+    "label": "Article I, Section 9, Clause 4",
+    "url": "/constitution/#Constitution.1.9.4"
+  },
+  "Constitution.1.9.5": {
+    "label": "Article I, Section 9, Clause 5",
+    "url": "/constitution/#Constitution.1.9.5"
+  },
+  "Constitution.1.9.6": {
+    "label": "Article I, Section 9, Clause 6",
+    "url": "/constitution/#Constitution.1.9.6"
+  },
+  "Constitution.1.9.7": {
+    "label": "Article I, Section 9, Clause 7",
+    "url": "/constitution/#Constitution.1.9.7"
+  },
+  "Constitution.1.9.8": {
+    "label": "Article I, Section 9, Clause 8",
+    "url": "/constitution/#Constitution.1.9.8"
+  },
+  "Constitution.2": {
+    "label": "Article II",
+    "url": "/constitution/#Constitution.2"
+  },
+  "Constitution.2.1": {
+    "label": "Article II, Section 1",
+    "url": "/constitution/#Constitution.2.1"
+  },
+  "Constitution.2.1.1": {
+    "label": "Article II, Section 1, Clause 1",
+    "url": "/constitution/#Constitution.2.1.1"
+  },
+  "Constitution.2.1.2": {
+    "label": "Article II, Section 1, Clause 2",
+    "url": "/constitution/#Constitution.2.1.2"
+  },
+  "Constitution.2.1.3": {
+    "label": "Article II, Section 1, Clause 3",
+    "url": "/constitution/#Constitution.2.1.3"
+  },
+  "Constitution.2.1.4": {
+    "label": "Article II, Section 1, Clause 4",
+    "url": "/constitution/#Constitution.2.1.4"
+  },
+  "Constitution.2.1.5": {
+    "label": "Article II, Section 1, Clause 5",
+    "url": "/constitution/#Constitution.2.1.5"
+  },
+  "Constitution.2.1.6": {
+    "label": "Article II, Section 1, Clause 6",
+    "url": "/constitution/#Constitution.2.1.6"
+  },
+  "Constitution.2.1.7": {
+    "label": "Article II, Section 1, Clause 7",
+    "url": "/constitution/#Constitution.2.1.7"
+  },
+  "Constitution.2.1.8": {
+    "label": "Article II, Section 1, Clause 8",
+    "url": "/constitution/#Constitution.2.1.8"
+  },
+  "Constitution.2.2": {
+    "label": "Article II, Section 2",
+    "url": "/constitution/#Constitution.2.2"
+  },
+  "Constitution.2.2.1": {
+    "label": "Article II, Section 2, Clause 1",
+    "url": "/constitution/#Constitution.2.2.1"
+  },
+  "Constitution.2.2.2": {
+    "label": "Article II, Section 2, Clause 2",
+    "url": "/constitution/#Constitution.2.2.2"
+  },
+  "Constitution.2.2.3": {
+    "label": "Article II, Section 2, Clause 3",
+    "url": "/constitution/#Constitution.2.2.3"
+  },
+  "Constitution.2.3": {
+    "label": "Article II, Section 3",
+    "url": "/constitution/#Constitution.2.3"
+  },
+  "Constitution.2.3.1": {
+    "label": "Article II, Section 3, Clause 1",
+    "url": "/constitution/#Constitution.2.3.1"
+  },
+  "Constitution.2.4": {
+    "label": "Article II, Section 4",
+    "url": "/constitution/#Constitution.2.4"
+  },
+  "Constitution.2.4.1": {
+    "label": "Article II, Section 4, Clause 1",
+    "url": "/constitution/#Constitution.2.4.1"
+  },
+  "Constitution.3": {
+    "label": "Article III",
+    "url": "/constitution/#Constitution.3"
+  },
+  "Constitution.3.1": {
+    "label": "Article III, Section 1",
+    "url": "/constitution/#Constitution.3.1"
+  },
+  "Constitution.3.1.1": {
+    "label": "Article III, Section 1, Clause 1",
+    "url": "/constitution/#Constitution.3.1.1"
+  },
+  "Constitution.3.2": {
+    "label": "Article III, Section 2",
+    "url": "/constitution/#Constitution.3.2"
+  },
+  "Constitution.3.2.1": {
+    "label": "Article III, Section 2, Clause 1",
+    "url": "/constitution/#Constitution.3.2.1"
+  },
+  "Constitution.3.2.2": {
+    "label": "Article III, Section 2, Clause 2",
+    "url": "/constitution/#Constitution.3.2.2"
+  },
+  "Constitution.3.2.3": {
+    "label": "Article III, Section 2, Clause 3",
+    "url": "/constitution/#Constitution.3.2.3"
+  },
+  "Constitution.3.3": {
+    "label": "Article III, Section 3",
+    "url": "/constitution/#Constitution.3.3"
+  },
+  "Constitution.3.3.1": {
+    "label": "Article III, Section 3, Clause 1",
+    "url": "/constitution/#Constitution.3.3.1"
+  },
+  "Constitution.3.3.2": {
+    "label": "Article III, Section 3, Clause 2",
+    "url": "/constitution/#Constitution.3.3.2"
+  },
+  "Constitution.4": {
+    "label": "Article IV",
+    "url": "/constitution/#Constitution.4"
+  },
+  "Constitution.4.1": {
+    "label": "Article IV, Section 1",
+    "url": "/constitution/#Constitution.4.1"
+  },
+  "Constitution.4.1.1": {
+    "label": "Article IV, Section 1, Clause 1",
+    "url": "/constitution/#Constitution.4.1.1"
+  },
+  "Constitution.4.2": {
+    "label": "Article IV, Section 2",
+    "url": "/constitution/#Constitution.4.2"
+  },
+  "Constitution.4.2.1": {
+    "label": "Article IV, Section 2, Clause 1",
+    "url": "/constitution/#Constitution.4.2.1"
+  },
+  "Constitution.4.2.2": {
+    "label": "Article IV, Section 2, Clause 2",
+    "url": "/constitution/#Constitution.4.2.2"
+  },
+  "Constitution.4.2.3": {
+    "label": "Article IV, Section 2, Clause 3",
+    "url": "/constitution/#Constitution.4.2.3"
+  },
+  "Constitution.4.3": {
+    "label": "Article IV, Section 3",
+    "url": "/constitution/#Constitution.4.3"
+  },
+  "Constitution.4.3.1": {
+    "label": "Article IV, Section 3, Clause 1",
+    "url": "/constitution/#Constitution.4.3.1"
+  },
+  "Constitution.4.3.2": {
+    "label": "Article IV, Section 3, Clause 2",
+    "url": "/constitution/#Constitution.4.3.2"
+  },
+  "Constitution.4.4": {
+    "label": "Article IV, Section 4",
+    "url": "/constitution/#Constitution.4.4"
+  },
+  "Constitution.4.4.1": {
+    "label": "Article IV, Section 4, Clause 1",
+    "url": "/constitution/#Constitution.4.4.1"
+  },
+  "Constitution.5": {
+    "label": "Article V",
+    "url": "/constitution/#Constitution.5"
+  },
+  "Constitution.5.1": {
+    "label": "Article V, Clause 1",
+    "url": "/constitution/#Constitution.5.1"
+  },
+  "Constitution.6": {
+    "label": "Article VI",
+    "url": "/constitution/#Constitution.6"
+  },
+  "Constitution.6.1": {
+    "label": "Article VI, Clause 1",
+    "url": "/constitution/#Constitution.6.1"
+  },
+  "Constitution.6.2": {
+    "label": "Article VI, Clause 2",
+    "url": "/constitution/#Constitution.6.2"
+  },
+  "Constitution.6.3": {
+    "label": "Article VI, Clause 3",
+    "url": "/constitution/#Constitution.6.3"
+  },
+  "Constitution.7": {
+    "label": "Article VII",
+    "url": "/constitution/#Constitution.7"
+  },
+  "Constitution.7.1": {
+    "label": "Article VII, Clause 1",
+    "url": "/constitution/#Constitution.7.1"
+  },
+  "Constitution.Attestation": {
+    "label": "Attestation",
+    "url": "/constitution/#Constitution.Attestation"
+  },
+  "Constitution.Closing": {
+    "label": "Closing",
+    "url": "/constitution/#Constitution.Closing"
+  },
+  "Constitution.Interlineations": {
+    "label": "Note on interlineations",
+    "url": "/constitution/#Constitution.Interlineations"
+  },
+  "Constitution.Preamble": {
+    "label": "Preamble",
+    "url": "/constitution/#Constitution.Preamble"
+  },
+  "Constitution.Signers": {
+    "label": "Signatures",
+    "url": "/constitution/#Constitution.Signers"
+  },
+  "Constitution.Signers.Connecticut": {
+    "label": "Signatures: Connecticut",
+    "url": "/constitution/#Constitution.Signers.Connecticut"
+  },
+  "Constitution.Signers.Delaware": {
+    "label": "Signatures: Delaware",
+    "url": "/constitution/#Constitution.Signers.Delaware"
+  },
+  "Constitution.Signers.Georgia": {
+    "label": "Signatures: Georgia",
+    "url": "/constitution/#Constitution.Signers.Georgia"
+  },
+  "Constitution.Signers.Maryland": {
+    "label": "Signatures: Maryland",
+    "url": "/constitution/#Constitution.Signers.Maryland"
+  },
+  "Constitution.Signers.Massachusetts": {
+    "label": "Signatures: Massachusetts",
+    "url": "/constitution/#Constitution.Signers.Massachusetts"
+  },
+  "Constitution.Signers.NewHampshire": {
+    "label": "Signatures: New Hampshire",
+    "url": "/constitution/#Constitution.Signers.NewHampshire"
+  },
+  "Constitution.Signers.NewJersey": {
+    "label": "Signatures: New Jersey",
+    "url": "/constitution/#Constitution.Signers.NewJersey"
+  },
+  "Constitution.Signers.NewYork": {
+    "label": "Signatures: New York",
+    "url": "/constitution/#Constitution.Signers.NewYork"
+  },
+  "Constitution.Signers.NorthCarolina": {
+    "label": "Signatures: North Carolina",
+    "url": "/constitution/#Constitution.Signers.NorthCarolina"
+  },
+  "Constitution.Signers.Pennsylvania": {
+    "label": "Signatures: Pennsylvania",
+    "url": "/constitution/#Constitution.Signers.Pennsylvania"
+  },
+  "Constitution.Signers.President": {
+    "label": "Signature of the President of the Convention",
+    "url": "/constitution/#Constitution.Signers.President"
+  },
+  "Constitution.Signers.SouthCarolina": {
+    "label": "Signatures: South Carolina",
+    "url": "/constitution/#Constitution.Signers.SouthCarolina"
+  },
+  "Constitution.Signers.Virginia": {
+    "label": "Signatures: Virginia",
+    "url": "/constitution/#Constitution.Signers.Virginia"
+  },
+  "Federalist": {
+    "label": "Federalist",
+    "url": "/federalist/"
+  },
+  "Federalist.10": {
+    "label": "Federalist No. 10",
+    "url": "/federalist/10/"
+  },
+  "Federalist.10.1": {
+    "label": "Federalist No. 10, ¶ 1",
+    "url": "/federalist/10/#Federalist.10.1"
+  },
+  "Case.100240": {
+    "label": "Massachusetts v. Mellon (1923)",
+    "url": "/cases/100240/"
+  },
+  "Case.100926": {
+    "label": "Myers v. United States (1926)",
+    "url": "/cases/100926/"
+  },
+  "Case.101320": {
+    "label": "Olmstead v. United States (1928)",
+    "url": "/cases/101320/"
+  },
+  "Case.102167": {
+    "label": "Home Building & Loan Ass’n v. Blaisdell (1934)",
+    "url": "/cases/102167/"
+  },
+  "Case.102404": {
+    "label": "Alaska Packers Ass’n v. Industrial Accident Comm’n (1935)",
+    "url": "/cases/102404/"
+  },
+  "Case.102474": {
+    "label": "A. L. A. Schechter Poultry Corp. v. United States (1935)",
+    "url": "/cases/102474/"
+  },
+  "Case.102515": {
+    "label": "United States v. Constantine (1935)",
+    "url": "/cases/102515/"
+  },
+  "Case.102605": {
+    "label": "Ashwander v. Tennessee Valley Authority (1936)",
+    "url": "/cases/102605/"
+  },
+  "Case.102662": {
+    "label": "Carter v. Carter Coal Co. (1936)",
+    "url": "/cases/102662/"
+  },
+  "Case.102726": {
+    "label": "United States v. Curtiss-Wright Export Corp. (1936)",
+    "url": "/cases/102726/"
+  },
+  "Case.102734": {
+    "label": "New York ex rel. Rogers v. Graves (1937)",
+    "url": "/cases/102734/"
+  },
+  "Case.102804": {
+    "label": "National Labor Relations Board v. Jones & Laughlin Steel Corp. (1937)",
+    "url": "/cases/102804/"
+  },
+  "Case.102874": {
+    "label": "Breedlove v. Suttles (1937)",
+    "url": "/cases/102874/"
+  },
+  "Case.102879": {
+    "label": "Palko v. Connecticut (1937)",
+    "url": "/cases/102879/"
+  },
+  "Case.102986": {
+    "label": "Helvering v. Mountain Producers Corp. (1938)",
+    "url": "/cases/102986/"
+  },
+  "Case.103012": {
+    "label": "Erie Railroad v. Tompkins (1938)",
+    "url": "/cases/103012/"
+  },
+  "Case.103172": {
+    "label": "Graves v. New York ex rel. O’Keefe (1939)",
+    "url": "/cases/103172/"
+  },
+  "Case.103222": {
+    "label": "Coleman v. Miller (1939)",
+    "url": "/cases/103222/"
+  },
+  "Case.103226": {
+    "label": "Hague v. Committee for Industrial Organization (1939)",
+    "url": "/cases/103226/"
+  },
+  "Case.103355": {
+    "label": "Cantwell v. Connecticut (1940)",
+    "url": "/cases/103355/"
+  },
+  "Case.103373": {
+    "label": "Minersville School District v. Gobitis (1940)",
+    "url": "/cases/103373/"
+  },
+  "Case.103442": {
+    "label": "United States v. Darby (1941)",
+    "url": "/cases/103442/"
+  },
+  "Case.103531": {
+    "label": "United States v. Classic (1941)",
+    "url": "/cases/103531/"
+  },
+  "Case.103664": {
+    "label": "Goldman v. United States (1942)",
+    "url": "/cases/103664/"
+  },
+  "Case.103870": {
+    "label": "West Virginia State Board of Education v. Barnette (1943)",
+    "url": "/cases/103870/"
+  },
+  "Case.104009": {
+    "label": "United States v. South-Eastern Underwriters Ass’n (1944)",
+    "url": "/cases/104009/"
+  },
+  "Case.104040": {
+    "label": "Korematsu v. United States (1944)",
+    "url": "/cases/104040/"
+  },
+  "Case.104311": {
+    "label": "Colegrove v. Green (1946)",
+    "url": "/cases/104311/"
+  },
+  "Case.104373": {
+    "label": "Everson v. Board of Education (1947)",
+    "url": "/cases/104373/"
+  },
+  "Case.104455": {
+    "label": "Adamson v. California (1947)",
+    "url": "/cases/104455/"
+  },
+  "Case.104504": {
+    "label": "Johnson v. United States (1948)",
+    "url": "/cases/104504/"
+  },
+  "Case.104521": {
+    "label": "In re Oliver (1948)",
+    "url": "/cases/104521/"
+  },
+  "Case.104709": {
+    "label": "Wolf v. Colorado (1949)",
+    "url": "/cases/104709/"
+  },
+  "Case.104751": {
+    "label": "United States ex rel. Knauff v. Shaughnessy (1950)",
+    "url": "/cases/104751/"
+  },
+  "Case.104779": {
+    "label": "Darr v. Burford (1950)",
+    "url": "/cases/104779/"
+  },
+  "Case.104790": {
+    "label": "American Communications Ass’n v. Douds (1950)",
+    "url": "/cases/104790/"
+  },
+  "Case.104813": {
+    "label": "Johnson v. Eisentrager (1950)",
+    "url": "/cases/104813/"
+  },
+  "Case.104842": {
+    "label": "Niemotko v. Maryland (1951)",
+    "url": "/cases/104842/"
+  },
+  "Case.104974": {
+    "label": "Adler v. Board of Education (1952)",
+    "url": "/cases/104974/"
+  },
+  "Case.105018": {
+    "label": "Youngstown Sheet & Tube Co. v. Sawyer (1952)",
+    "url": "/cases/105018/"
+  },
+  "Case.105074": {
+    "label": "Brown v. Allen (1953)",
+    "url": "/cases/105074/"
+  },
+  "Case.105103": {
+    "label": "Shaughnessy v. United States ex rel. Mezei (1953)",
+    "url": "/cases/105103/"
+  },
+  "Case.105149": {
+    "label": "Stein v. New York (1953)",
+    "url": "/cases/105149/"
+  },
+  "Case.105221": {
+    "label": "Brown v. Board of Education (1954)",
+    "url": "/cases/105221/"
+  },
+  "Case.105312": {
+    "label": "Brown v. Board of Education (1955)",
+    "url": "/cases/105312/"
+  },
+  "Case.105532": {
+    "label": "Watkins v. United States (1957)",
+    "url": "/cases/105532/"
+  },
+  "Case.105658": {
+    "label": "Perez v. Brownell (1958)",
+    "url": "/cases/105658/"
+  },
+  "Case.105659": {
+    "label": "Trop v. Dulles (1958)",
+    "url": "/cases/105659/"
+  },
+  "Case.105745": {
+    "label": "Crooker v. California (1958)",
+    "url": "/cases/105745/"
+  },
+  "Case.105750": {
+    "label": "Cicenia v. Lagay (1958)",
+    "url": "/cases/105750/"
+  },
+  "Case.105766": {
+    "label": "Cooper v. Aaron (1958)",
+    "url": "/cases/105766/"
+  },
+  "Case.105825": {
+    "label": "Romero v. International Terminal Operating Co. (1959)",
+    "url": "/cases/105825/"
+  },
+  "Case.105902": {
+    "label": "Barenblatt v. United States (1959)",
+    "url": "/cases/105902/"
+  },
+  "Case.106022": {
+    "label": "Jones v. United States (1960)",
+    "url": "/cases/106022/"
+  },
+  "Case.106281": {
+    "label": "Torcaso v. Watkins (1961)",
+    "url": "/cases/106281/"
+  },
+  "Case.106285": {
+    "label": "Mapp v. Ohio (1961)",
+    "url": "/cases/106285/"
+  },
+  "Case.106366": {
+    "label": "Baker v. Carr (1962)",
+    "url": "/cases/106366/"
+  },
+  "Case.106544": {
+    "label": "Townsend v. Sain (1963)",
+    "url": "/cases/106544/"
+  },
+  "Case.106548": {
+    "label": "Fay v. Noia (1963)",
+    "url": "/cases/106548/"
+  },
+  "Case.106739": {
+    "label": "Wesberry v. Sanders (1964)",
+    "url": "/cases/106739/"
+  },
+  "Case.106862": {
+    "label": "Malloy v. Hogan (1964)",
+    "url": "/cases/106862/"
+  },
+  "Case.106881": {
+    "label": "Jackson v. Denno (1964)",
+    "url": "/cases/106881/"
+  },
+  "Case.106883": {
+    "label": "Escobedo v. Illinois (1964)",
+    "url": "/cases/106883/"
+  },
+  "Case.106986": {
+    "label": "Crider v. Zurich Insurance Co. (1965)",
+    "url": "/cases/106986/"
+  },
+  "Case.107081": {
+    "label": "United States v. Brown (1965)",
+    "url": "/cases/107081/"
+  },
+  "Case.107082": {
+    "label": "Griswold v. Connecticut (1965)",
+    "url": "/cases/107082/"
+  },
+  "Case.107197": {
+    "label": "Harper v. Virginia Board of Elections (1966)",
+    "url": "/cases/107197/"
+  },
+  "Case.107252": {
+    "label": "Miranda v. Arizona (1966)",
+    "url": "/cases/107252/"
+  },
+  "Case.107343": {
+    "label": "Keyishian v. Board of Regents (1967)",
+    "url": "/cases/107343/"
+  },
+  "Case.107464": {
+    "label": "Afroyim v. Rusk (1967)",
+    "url": "/cases/107464/"
+  },
+  "Case.107465": {
+    "label": "Warden v. Hayden (1967)",
+    "url": "/cases/107465/"
+  },
+  "Case.107564": {
+    "label": "Katz v. United States (1967)",
+    "url": "/cases/107564/"
+  },
+  "Case.107685": {
+    "label": "Duncan v. Louisiana (1968)",
+    "url": "/cases/107685/"
+  },
+  "Case.107729": {
+    "label": "Terry v. Ohio (1968)",
+    "url": "/cases/107729/"
+  },
+  "Case.107731": {
+    "label": "Flast v. Cohen (1968)",
+    "url": "/cases/107731/"
+  },
+  "Case.107748": {
+    "label": "Jones v. Alfred H. Mayer Co. (1968)",
+    "url": "/cases/107748/"
+  },
+  "Case.107901": {
+    "label": "Shapiro v. Thompson (1969)",
+    "url": "/cases/107901/"
+  },
+  "Case.107969": {
+    "label": "Powell v. McCormack (1969)",
+    "url": "/cases/107969/"
+  },
+  "Case.107980": {
+    "label": "Benton v. Maryland (1969)",
+    "url": "/cases/107980/"
+  },
+  "Case.108075": {
+    "label": "Wyman v. Bowens (1970)",
+    "url": "/cases/108075/"
+  },
+  "Case.108135": {
+    "label": "Walz v. Tax Comm’n (1970)",
+    "url": "/cases/108135/"
+  },
+  "Case.108221": {
+    "label": "Oregon v. Mitchell (1970)",
+    "url": "/cases/108221/"
+  },
+  "Case.108307": {
+    "label": "Rogers v. Bellei (1971)",
+    "url": "/cases/108307/"
+  },
+  "Case.108329": {
+    "label": "McGautha v. California (1971)",
+    "url": "/cases/108329/"
+  },
+  "Case.108377": {
+    "label": "Coolidge v. New Hampshire (1971)",
+    "url": "/cases/108377/"
+  },
+  "Case.108380": {
+    "label": "Lemon v. Kurtzman (1971)",
+    "url": "/cases/108380/"
+  },
+  "Case.108485": {
+    "label": "Dunn v. Blumstein (1972)",
+    "url": "/cases/108485/"
+  },
+  "Case.108590": {
+    "label": "Barker v. Wingo (1972)",
+    "url": "/cases/108590/"
+  },
+  "Case.108608": {
+    "label": "Board of Regents v. Roth (1972)",
+    "url": "/cases/108608/"
+  },
+  "Case.108610": {
+    "label": "Gravel v. United States (1972)",
+    "url": "/cases/108610/"
+  },
+  "Case.108713": {
+    "label": "Roe v. Wade (1973)",
+    "url": "/cases/108713/"
+  },
+  "Case.1087737": {
+    "label": "Landon v. Plasencia (1982)",
+    "url": "/cases/1087737/"
+  },
+  "Case.108990": {
+    "label": "Edelman v. Jordan (1974)",
+    "url": "/cases/108990/"
+  },
+  "Case.109087": {
+    "label": "Schlesinger v. Reservists Committee to Stop the War (1974)",
+    "url": "/cases/109087/"
+  },
+  "Case.109101": {
+    "label": "United States v. Nixon (1974)",
+    "url": "/cases/109101/"
+  },
+  "Case.109121": {
+    "label": "Schick v. Reed (1974)",
+    "url": "/cases/109121/"
+  },
+  "Case.109125": {
+    "label": "Jackson v. Metropolitan Edison Co. (1974)",
+    "url": "/cases/109125/"
+  },
+  "Case.109200": {
+    "label": "United States v. Wilson (1975)",
+    "url": "/cases/109200/"
+  },
+  "Case.109201": {
+    "label": "United States v. Jenkins (1975)",
+    "url": "/cases/109201/"
+  },
+  "Case.109251": {
+    "label": "Meek v. Pittenger (1975)",
+    "url": "/cases/109251/"
+  },
+  "Case.109301": {
+    "label": "Warth v. Seldin (1975)",
+    "url": "/cases/109301/"
+  },
+  "Case.109380": {
+    "label": "Buckley v. Valeo (1976)",
+    "url": "/cases/109380/"
+  },
+  "Case.109382": {
+    "label": "Mathews v. Eldridge (1976)",
+    "url": "/cases/109382/"
+  },
+  "Case.109499": {
+    "label": "National League of Cities v. Usery (1976)",
+    "url": "/cases/109499/"
+  },
+  "Case.109532": {
+    "label": "Gregg v. Georgia (1976)",
+    "url": "/cases/109532/"
+  },
+  "Case.109642": {
+    "label": "Fiallo v. Bell (1977)",
+    "url": "/cases/109642/"
+  },
+  "Case.109661": {
+    "label": "Abood v. Detroit Board of Education (1977)",
+    "url": "/cases/109661/"
+  },
+  "Case.109721": {
+    "label": "Shaffer v. Heitner (1977)",
+    "url": "/cases/109721/"
+  },
+  "Case.109722": {
+    "label": "Wolman v. Walter (1977)",
+    "url": "/cases/109722/"
+  },
+  "Case.109729": {
+    "label": "Nixon v. Administrator of General Services (1977)",
+    "url": "/cases/109729/"
+  },
+  "Case.109895": {
+    "label": "United States v. Scott (1978)",
+    "url": "/cases/109895/"
+  },
+  "Case.109924": {
+    "label": "Penn Central Transportation Co. v. City of New York (1978)",
+    "url": "/cases/109924/"
+  },
+  "Case.110324": {
+    "label": "Ohio v. Roberts (1980)",
+    "url": "/cases/110324/"
+  },
+  "Case.110325": {
+    "label": "United States v. Salvucci (1980)",
+    "url": "/cases/110325/"
+  },
+  "Case.110328": {
+    "label": "White Mountain Apache Tribe v. Bracker (1980)",
+    "url": "/cases/110328/"
+  },
+  "Case.110657": {
+    "label": "Logan v. Zimmerman Brush Co. (1982)",
+    "url": "/cases/110657/"
+  },
+  "Case.110768": {
+    "label": "Blum v. Yaretsky (1982)",
+    "url": "/cases/110768/"
+  },
+  "Case.110771": {
+    "label": "Northern Pipeline Construction Co. v. Marathon Pipe Line Co. (1982)",
+    "url": "/cases/110771/"
+  },
+  "Case.110796": {
+    "label": "Ramah Navajo School Board v. Bureau of Revenue of New Mexico (1982)",
+    "url": "/cases/110796/"
+  },
+  "Case.110798": {
+    "label": "National Association for the Advancement of Colored People v. Claiborne Hardware Co. (1982)",
+    "url": "/cases/110798/"
+  },
+  "Case.110938": {
+    "label": "Bob Jones University v. United States (1983)",
+    "url": "/cases/110938/"
+  },
+  "Case.110985": {
+    "label": "Immigration & Naturalization Service v. Chadha (1983)",
+    "url": "/cases/110985/"
+  },
+  "Case.111014": {
+    "label": "Marsh v. Chambers (1983)",
+    "url": "/cases/111014/"
+  },
+  "Case.111170": {
+    "label": "Strickland v. Washington (1984)",
+    "url": "/cases/111170/"
+  },
+  "Case.111258": {
+    "label": "Allen v. Wright (1984)",
+    "url": "/cases/111258/"
+  },
+  "Case.111308": {
+    "label": "Garcia v. San Antonio Metropolitan Transit Authority (1985)",
+    "url": "/cases/111308/"
+  },
+  "Case.111505": {
+    "label": "Grand Rapids School District v. Ball (1985)",
+    "url": "/cases/111505/"
+  },
+  "Case.111506": {
+    "label": "Aguilar v. Felton (1985)",
+    "url": "/cases/111506/"
+  },
+  "Case.111737": {
+    "label": "Davis v. Bandemer (1986)",
+    "url": "/cases/111737/"
+  },
+  "Case.111738": {
+    "label": "Bowers v. Hardwick (1986)",
+    "url": "/cases/111738/"
+  },
+  "Case.111756": {
+    "label": "Bowsher v. Synar (1986)",
+    "url": "/cases/111756/"
+  },
+  "Case.111940": {
+    "label": "Puerto Rico v. Branstad (1987)",
+    "url": "/cases/111940/"
+  },
+  "Case.112040": {
+    "label": "South Carolina v. Baker (1988)",
+    "url": "/cases/112040/"
+  },
+  "Case.112074": {
+    "label": "Wheat v. United States (1988)",
+    "url": "/cases/112074/"
+  },
+  "Case.112139": {
+    "label": "Morrison v. Olson (1988)",
+    "url": "/cases/112139/"
+  },
+  "Case.112173": {
+    "label": "Mistretta v. United States (1989)",
+    "url": "/cases/112173/"
+  },
+  "Case.112325": {
+    "label": "Penry v. Lynaugh (1989)",
+    "url": "/cases/112325/"
+  },
+  "Case.112404": {
+    "label": "Employment Division v. Smith (1990)",
+    "url": "/cases/112404/"
+  },
+  "Case.112485": {
+    "label": "Walton v. Arizona (1990)",
+    "url": "/cases/112485/"
+  },
+  "Case.112616": {
+    "label": "Chambers v. NASCO, Inc. (1991)",
+    "url": "/cases/112616/"
+  },
+  "Case.112640": {
+    "label": "Coleman v. Thompson (1991)",
+    "url": "/cases/112640/"
+  },
+  "Case.112747": {
+    "label": "Lujan v. Defenders of Wildlife (1992)",
+    "url": "/cases/112747/"
+  },
+  "Case.112768": {
+    "label": "New York v. United States (1992)",
+    "url": "/cases/112768/"
+  },
+  "Case.112774": {
+    "label": "R.A.V. v. City of St. Paul (1992)",
+    "url": "/cases/112774/"
+  },
+  "Case.112786": {
+    "label": "Planned Parenthood of Southeastern Pennsylvania v. Casey (1992)",
+    "url": "/cases/112786/"
+  },
+  "Case.117869": {
+    "label": "Turner Broadcasting System, Inc. v. Federal Communications Comm’n (1994)",
+    "url": "/cases/117869/"
+  },
+  "Case.117927": {
+    "label": "United States v. Lopez (1995)",
+    "url": "/cases/117927/"
+  },
+  "Case.117935": {
+    "label": "U.S. Term Limits, Inc. v. Thornton (1995)",
+    "url": "/cases/117935/"
+  },
+  "Case.117967": {
+    "label": "Rosenberger v. Rector & Visitors of the University of Virginia (1995)",
+    "url": "/cases/117967/"
+  },
+  "Case.118033": {
+    "label": "Loving v. United States (1996)",
+    "url": "/cases/118033/"
+  },
+  "Case.118133": {
+    "label": "Agostini v. Felton (1997)",
+    "url": "/cases/118133/"
+  },
+  "Case.118148": {
+    "label": "Printz v. United States (1997)",
+    "url": "/cases/118148/"
+  },
+  "Case.118210": {
+    "label": "Ohio Forestry Ass’n, Inc. v. Sierra Club (1998)",
+    "url": "/cases/118210/"
+  },
+  "Case.118363": {
+    "label": "United States v. Morrison (2000)",
+    "url": "/cases/118363/"
+  },
+  "Case.118386": {
+    "label": "Mitchell v. Helms (2000)",
+    "url": "/cases/118386/"
+  },
+  "Case.121158": {
+    "label": "Atkins v. Virginia (2002)",
+    "url": "/cases/121158/"
+  },
+  "Case.121165": {
+    "label": "Ring v. Arizona (2002)",
+    "url": "/cases/121165/"
+  },
+  "Case.1236300": {
+    "label": "Powell v. Alabama (1932)",
+    "url": "/cases/1236300/"
+  },
+  "Case.1269289": {
+    "label": "Zadvydas v. Davis (2001)",
+    "url": "/cases/1269289/"
+  },
+  "Case.130160": {
+    "label": "Lawrence v. Texas (2003)",
+    "url": "/cases/130160/"
+  },
+  "Case.131149": {
+    "label": "McConnell v. Federal Elections Comm’n (2003)",
+    "url": "/cases/131149/"
+  },
+  "Case.134724": {
+    "label": "Crawford v. Washington (2004)",
+    "url": "/cases/134724/"
+  },
+  "Case.1447641": {
+    "label": "Hodges v. United States (1906)",
+    "url": "/cases/1447641/"
+  },
+  "Case.145743": {
+    "label": "James v. United States (2007)",
+    "url": "/cases/145743/"
+  },
+  "Case.145777": {
+    "label": "District of Columbia v. Heller (2008)",
+    "url": "/cases/145777/"
+  },
+  "Case.145822": {
+    "label": "Medellin v. Texas (2008)",
+    "url": "/cases/145822/"
+  },
+  "Case.149702": {
+    "label": "McDonald v. City of Chicago (2010)",
+    "url": "/cases/149702/"
+  },
+  "Case.1741": {
+    "label": "Citizens United v. Federal Election Comm’n (2010)",
+    "url": "/cases/1741/"
+  },
+  "Case.1746": {
+    "label": "Presley v. Georgia (2010)",
+    "url": "/cases/1746/"
+  },
+  "Case.2676593": {
+    "label": "Bond v. United States (2014)",
+    "url": "/cases/2676593/"
+  },
+  "Case.2801433": {
+    "label": "Comptroller of the Treasury of Maryland v. Wynne (2015)",
+    "url": "/cases/2801433/"
+  },
+  "Case.2808292": {
+    "label": "Kerry v. Din (2015)",
+    "url": "/cases/2808292/"
+  },
+  "Case.2808294": {
+    "label": "Zivotofsky v. Kerry (2015)",
+    "url": "/cases/2808294/"
+  },
+  "Case.2812209": {
+    "label": "Obergefell v. Hodges (2015)",
+    "url": "/cases/2812209/"
+  },
+  "Case.4403811": {
+    "label": "Sessions v. Morales-Santana (2017)",
+    "url": "/cases/4403811/"
+  },
+  "Case.4511149": {
+    "label": "Trump v. Hawaii (2018)",
+    "url": "/cases/4511149/"
+  },
+  "Case.4511640": {
+    "label": "Janus v. American Federation of State, County, & Municipal Employees, Council 31 (2018)",
+    "url": "/cases/4511640/"
+  },
+  "Case.4633469": {
+    "label": "Rucho v. Common Cause (2019)",
+    "url": "/cases/4633469/"
+  },
+  "Case.4764451": {
+    "label": "Seila Law LLC v. Consumer Financial Protection Bureau (2020)",
+    "url": "/cases/4764451/"
+  },
+  "Case.4766665": {
+    "label": "Trump v. Mazars USA, LLP (2020)",
+    "url": "/cases/4766665/"
+  },
+  "Case.4896549": {
+    "label": "Americans for Prosperity Foundation v. Bonta (2021)",
+    "url": "/cases/4896549/"
+  },
+  "Case.6481357": {
+    "label": "Dobbs v. Jackson Women’s Health Organization (2022)",
+    "url": "/cases/6481357/"
+  },
+  "Case.6619004": {
+    "label": "Kennedy v. Bremerton School District (2022)",
+    "url": "/cases/6619004/"
+  },
+  "Case.6726666": {
+    "label": "Sturges v. Crowninshield (1819)",
+    "url": "/cases/6726666/"
+  },
+  "Case.7345363": {
+    "label": "Sykes v. United States (2011)",
+    "url": "/cases/7345363/"
+  },
+  "Case.809122": {
+    "label": "National Federation of Independent Business v. Sebelius (2012)",
+    "url": "/cases/809122/"
+  },
+  "Case.8186832": {
+    "label": "Burnet v. Coronado Oil & Gas Co. (1932)",
+    "url": "/cases/8186832/"
+  },
+  "Case.8403334": {
+    "label": "Ex parte Milligan (1866)",
+    "url": "/cases/8403334/"
+  },
+  "Case.84695": {
+    "label": "Calder v. Bull (1798)",
+    "url": "/cases/84695/"
+  },
+  "Case.84759": {
+    "label": "Marbury v. Madison (1803)",
+    "url": "/cases/84759/"
+  },
+  "Case.84935": {
+    "label": "Fletcher v. Peck (1810)",
+    "url": "/cases/84935/"
+  },
+  "Case.85160": {
+    "label": "Martin v. Hunter’s Lessee (1816)",
+    "url": "/cases/85160/"
+  },
+  "Case.85272": {
+    "label": "McCulloch v. Maryland (1819)",
+    "url": "/cases/85272/"
+  },
+  "Case.85330": {
+    "label": "Cohens v. Virginia (1821)",
+    "url": "/cases/85330/"
+  },
+  "Case.85412": {
+    "label": "Gibbons v. Ogden (1824)",
+    "url": "/cases/85412/"
+  },
+  "Case.85451": {
+    "label": "Osborn v. Bank of the United States (1824)",
+    "url": "/cases/85451/"
+  },
+  "Case.86188": {
+    "label": "Swift v. Tyson (1842)",
+    "url": "/cases/86188/"
+  },
+  "Case.86428": {
+    "label": "Waring v. Clarke (1847)",
+    "url": "/cases/86428/"
+  },
+  "Case.86466": {
+    "label": "Luther v. Borden (1849)",
+    "url": "/cases/86466/"
+  },
+  "Case.87116": {
+    "label": "Dred Scott v. Sandford (1857)",
+    "url": "/cases/87116/"
+  },
+  "Case.87371": {
+    "label": "Kentucky v. Dennison (1861)",
+    "url": "/cases/87371/"
+  },
+  "Case.87541": {
+    "label": "Prize Cases (1863)",
+    "url": "/cases/87541/"
+  },
+  "Case.87778": {
+    "label": "Cummings v. Missouri (1867)",
+    "url": "/cases/87778/"
+  },
+  "Case.87779": {
+    "label": "Ex parte Garland (1867)",
+    "url": "/cases/87779/"
+  },
+  "Case.88079": {
+    "label": "Paul v. Virginia (1869)",
+    "url": "/cases/88079/"
+  },
+  "Case.88308": {
+    "label": "Collector v. Day (1871)",
+    "url": "/cases/88308/"
+  },
+  "Case.88661": {
+    "label": "Slaughter-House Cases (1873)",
+    "url": "/cases/88661/"
+  },
+  "Case.89309": {
+    "label": "United States v. Cruikshank (1876)",
+    "url": "/cases/89309/"
+  },
+  "Case.89656": {
+    "label": "Pennoyer v. Neff (1878)",
+    "url": "/cases/89656/"
+  },
+  "Case.89858": {
+    "label": "Reynolds v. United States (1879)",
+    "url": "/cases/89858/"
+  },
+  "Case.8988675": {
+    "label": "State Department of Health & Rehabilitative Services v. Zarate (1972)",
+    "url": "/cases/8988675/"
+  },
+  "Case.8989511": {
+    "label": "Sterrett v. Mothers’ & Children’s Rights Organization (1972)",
+    "url": "/cases/8989511/"
+  },
+  "Case.8989514": {
+    "label": "Baker v. Nelson (1972)",
+    "url": "/cases/8989514/"
+  },
+  "Case.90897": {
+    "label": "The Civil Rights Cases (1883)",
+    "url": "/cases/90897/"
+  },
+  "Case.91064": {
+    "label": "Ex parte Yarbrough (1884)",
+    "url": "/cases/91064/"
+  },
+  "Case.9108268": {
+    "label": "Touby v. United States (1991)",
+    "url": "/cases/9108268/"
+  },
+  "Case.91704": {
+    "label": "Yick Wo v. Hopkins (1886)",
+    "url": "/cases/91704/"
+  },
+  "Case.92059": {
+    "label": "In re Ayers (1887)",
+    "url": "/cases/92059/"
+  },
+  "Case.93243": {
+    "label": "Nishimura Ekiu v. United States (1892)",
+    "url": "/cases/93243/"
+  },
+  "Case.93290": {
+    "label": "Marshall Field & Co. v. Clark (1892)",
+    "url": "/cases/93290/"
+  },
+  "Case.93576": {
+    "label": "Virginia v. Tennessee (1893)",
+    "url": "/cases/93576/"
+  },
+  "Case.94079": {
+    "label": "United States v. E.C. Knight (1895)",
+    "url": "/cases/94079/"
+  },
+  "Case.94174": {
+    "label": "Pollock v. Farmers’ Loan & Trust Co. (1895)",
+    "url": "/cases/94174/"
+  },
+  "Case.94508": {
+    "label": "Plessy v. Ferguson (1896)",
+    "url": "/cases/94508/"
+  },
+  "Case.945737": {
+    "label": "United States v. Windsor (2013)",
+    "url": "/cases/945737/"
+  },
+  "Case.95204": {
+    "label": "Maxwell v. Dow (1900)",
+    "url": "/cases/95204/"
+  },
+  "Case.95681": {
+    "label": "Hanover National Bank v. Moyses (1902)",
+    "url": "/cases/95681/"
+  },
+  "Case.96276": {
+    "label": "Lochner v. New York (1905)",
+    "url": "/cases/96276/"
+  },
+  "Case.96885": {
+    "label": "Twining v. New Jersey (1908)",
+    "url": "/cases/96885/"
+  },
+  "Case.98094": {
+    "label": "Weeks v. United States (1914)",
+    "url": "/cases/98094/"
+  },
+  "Case.99190": {
+    "label": "Hammer v. Dagenhart (1918)",
+    "url": "/cases/99190/"
+  },
+  "Case.99745": {
+    "label": "Gouled v. United States (1921)",
+    "url": "/cases/99745/"
+  }
 }

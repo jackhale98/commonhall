@@ -135,6 +135,8 @@ export interface CaseAbout {
   opinions?: SeparateOpinion[];
   /** The syllabus lineup: who delivered the opinion, who joined, who wrote separately. */
   lineup?: string;
+  /** The legal provision the Court considered (SCDB lawSupp). */
+  lawSupp?: number;
 }
 
 /** A concurrence or dissent (scotus_cases.separate_opinions). */

@@ -2,7 +2,14 @@
 import { safeUrl } from '@civic/congress-client/safe-url';
 import DiscussionLink from '../../../components/DiscussionLink.astro';
 import Base from '../../../layouts/Base.astro';
-import { loadCaseAbout, loadDiscussionsByTarget, loadScotusCases, loadScotusOutcomeMap } from '../../../lib/build-data';
+import {
+  loadCaseAbout,
+  loadConstitutionIndex,
+  loadDiscussionsByTarget,
+  loadResPublicaCases,
+  loadScotusCases,
+  loadScotusOutcomeMap,
+} from '../../../lib/build-data';
 import {
   DISPOSITION,
   docketUrl,
@@ -15,6 +22,7 @@ import {
 } from '../../../lib/court';
 import { formatDate } from '../../../lib/format';
 import { href } from '../../../lib/paths';
+import { RES_PUBLICA_URL, caseProvision } from '../../../lib/respublica';
 
 export async function getStaticPaths() {
   return (await loadScotusCases()).map((c) => ({ params: { id: String(c.cluster_id) }, props: { c } }));
@@ -31,6 +39,10 @@ const about = (await loadCaseAbout()).get(c.cluster_id);
 const [aboutStart, aboutRest] = about?.summary ? splitSummary(about.summary) : ['', ''];
 const summary = outcome && outcomeSummary(c.case_name, outcome);
 const disposition = outcome?.case_disposition ? DISPOSITION[outcome.case_disposition] : undefined;
+// The clause of the Constitution the case turned on (SCDB), with its text on Res Publica,
+// and Res Publica's own page for the case when it is one of its landmark decisions.
+const provision = caseProvision(about?.lawSupp, await loadConstitutionIndex());
+const landmark = (await loadResPublicaCases())?.[c.cluster_id];
 const author = opinionAuthor(c);
 const counts = opinionCounts(c, about);
 // Named concurrences and dissents when the opinion text has been read; otherwise counts.
@@ -115,6 +127,21 @@ const opinions = [
         </dd>
       </div>
     )}
+    {provision && (
+      <div>
+        <dt>Provision considered</dt>
+        <dd>
+          {provision.link ? (
+            <a href={provision.link.url} rel="noopener">
+              {provision.description}
+            </a>
+          ) : (
+            provision.description
+          )}
+          <span class="small muted"> (Supreme Court Database{provision.link && '; the text on Res Publica'})</span>
+        </dd>
+      </div>
+    )}
     {c.docket_number && (
       <div>
         <dt>Docket</dt>
@@ -162,6 +189,19 @@ const opinions = [
     </a>{' '}
     (Free Law Project). Concurrences and dissents are named from each opinion’s heading in the Court’s text.
   </p>
+  {landmark && (
+    <p class="panel landmark">
+      <strong>A landmark case.</strong>{' '}
+      <a href={landmark.url} rel="noopener">
+        {landmark.label}
+      </a>{' '}
+      is in{' '}
+      <a href={RES_PUBLICA_URL} rel="noopener">
+        Res Publica
+      </a>
+      , CommonHall’s sister library of founding texts and landmark Supreme Court cases.
+    </p>
+  )}
 </Base>
 
 <style>
@@ -191,6 +231,9 @@ const opinions = [
     min-height: 44px;
     display: flex;
     align-items: center;
+  }
+  .landmark {
+    margin: var(--space-4) 0;
   }
   .facts {
     display: grid;
