@@ -87,4 +87,14 @@ describe('constitutional authority statements', () => {
     ]);
     expect([numberOf('14th'), numberOf('twenty-seventh'), numberOf('of')]).toEqual([14, 27, null]);
   });
+
+  it('read the statement as Congress.gov returns it with a bill (recorded October 2026)', () => {
+    const { bill } = JSON.parse(
+      readFileSync(new URL('../../congress-client/test/fixtures/congress/bill-hr482.json', import.meta.url), 'utf8'),
+    ) as { bill: { constitutionalAuthorityStatementText?: string } };
+    // The Record's text in a <pre>, with a link to gpo.gov in its header.
+    expect(bill.constitutionalAuthorityStatementText).toMatch(/^<pre>/);
+    expect(authorityText(bill.constitutionalAuthorityStatementText)).toBe('Article 1, section 8');
+    expect(constitutionRefs(bill.constitutionalAuthorityStatementText)).toEqual(['Constitution.1.8']);
+  });
 });
