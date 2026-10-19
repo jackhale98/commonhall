@@ -2306,3 +2306,13 @@ roll-call loader and "Loading…" when a link to another page on the site is fol
 fades in only after 0.3 seconds, so fast loads never show it. It is built in the browser
 from the footer logo's mark, so pages carry no extra markup, and it is removed when the
 Back button restores a page, or after 20 seconds if a load is stopped.
+
+## 124. CourtListener: back to CommonHall's usual share
+
+Res Publica's import of landmark cases (§121) is done, so CommonHall's CourtListener
+jobs go back to what they had before: up to 110 requests a day (`sync-scotus` 60,
+`sync-state-courts` 50, no more than 45 in an hour), the Supreme Court hourly and the
+state courts every 3 hours (migration 073, which also restores their expected intervals
+in `private.job_schedule`). That leaves about 15 a day of CourtListener's 125 for Res
+Publica's own updates on the shared token. If Res Publica needs more again, lower the
+same two places as §121 did.

@@ -40,14 +40,14 @@ export const HOURLY_LIMITS: Record<string, number> = {
   // api.data.gov personal keys allow 1,000 an hour on OpenFEC.
   fec: 900,
   // CourtListener's default for a token: 5 a minute, 50 an hour, 125 a day (rolling windows).
-  // Res Publica shares the token (CourtListener allows one per person), so CommonHall takes
-  // a small part and leaves it the rest (docs/decisions.md §121).
-  courtlistener: 10,
+  // Res Publica shares the token (CourtListener allows one per person); it needs little now
+  // its import is done (docs/decisions.md §121, §124).
+  courtlistener: 45,
 };
 
 /** Ceilings over the last 24 hours, for APIs with a daily limit. */
 export const DAILY_LIMITS: Record<string, number> = {
-  courtlistener: 20,
+  courtlistener: 110,
 };
 
 /**
@@ -57,7 +57,7 @@ export const DAILY_LIMITS: Record<string, number> = {
  * A job's usage is also charged under `{api}:{job}` (see `shareKey`).
  */
 export const DAILY_SHARES: Record<string, Record<string, number>> = {
-  courtlistener: { scotus: 12, 'state-courts': 8 },
+  courtlistener: { scotus: 60, 'state-courts': 50 },
 };
 
 /** The `api_usage` key that counts one job's share of an API. */
