@@ -194,7 +194,8 @@ new city is a sync plus an entry in `site/src/lib/cities.ts`, no page code
   pages show their votes first. Only the districts and town are kept, never the
   street address.
 - **Follow** any bill, council matter, legislator or discussion and see everything
-  that changed in one **feed**. Sign-in is by emailed link; there are no passwords.
+  that changed in one **feed**. Sign-in is by emailed link, or by a passkey added
+  after the first sign-in; there are no passwords.
 - **Discussions:** structured public conversations (powered by
   [Pol.is](https://pol.is)) on Boston council matters, Massachusetts and federal
   bills, executive orders and Supreme Court decisions, listed local first. You vote

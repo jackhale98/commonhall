@@ -2381,3 +2381,37 @@ rebuilt once a day while parts of them refresh in the browser.
   and governor's orders, and a city's council, 311, zoning and budget sections.
   Individual bills, votes and cases keep their own dates (latest action, decided) and
   get no line, to keep the many prebuilt detail pages small.
+
+## 127. Passkeys beside the email link
+
+The owner asked for passkeys. They are added to the email link, not instead of it:
+Supabase registers a passkey for an account that is already signed in
+(`registerPasskey()` needs a session), so a first sign-in needs the email link, and the
+email link is how someone gets back in after losing the device a passkey was on.
+Passkey-only accounts (an anonymous sign-in, then a passkey) would lose their follows
+and discussions with the device, and need a CAPTCHA against abuse.
+
+- **Signing in.** The sign-in form keeps "Email me a sign-in link" and adds "Sign in
+  with a passkey". Where the browser supports it, the email field also offers the
+  site's passkeys in its autofill (WebAuthn Conditional UI, `autocomplete="email
+  webauthn"`); its challenge expires after five minutes while the autofill waits, so
+  it asks for a new one. Closing the prompt says nothing, and so does an autofill that
+  fails before anyone picks a passkey (offline, blocked); a passkey the server refuses
+  gets a message pointing to the email link.
+- **The account page** has a Passkeys card: add one ("Add a passkey" after the first
+  email sign-in), each listed with the kind of device it was made on ("iPhone", read
+  from the user agent and stored as its name), when it was added and last used, and
+  a way to remove it. Deleting the account deletes its passkeys
+  (`auth.webauthn_credentials` cascades from `auth.users`).
+- **Switched on in the dashboard.** Supabase Auth does the WebAuthn ceremonies; the
+  project enables passkeys and names the relying party (`commonhall.org`) in the
+  dashboard (docs/deployment.md, sign-in step 5), and `supabase/config.toml` does the
+  same locally (`localhost`; passkeys need a domain, not 127.0.0.1). Until they are
+  on, the site shows no passkey controls: it reads `passkeys_enabled` from Auth's
+  public settings once per page.
+- **Privacy.** We store a passkey's public key, its device name and its dates; the
+  private key and any fingerprint or face stay on the device (the privacy page says
+  so). No new service: passkeys are part of Supabase Auth.
+- **Tested** end to end against local Supabase in Chromium with a virtual
+  authenticator: add a passkey after an email sign-in, sign in with it from the button
+  and from the autofill, remove it, and no controls when passkeys are off.

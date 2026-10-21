@@ -111,6 +111,10 @@ page on the new domain, so existing links keep working.
    [Email for sign-in](deployment.md#email-for-sign-in-smtp)) and change the sender
    address under Authentication → Emails → SMTP Settings. Not required: mail keeps
    working from the current sender.
+4. **Passkeys (if on):** set the WebAuthn relying party **ID** to the new domain and
+   its **origins** to `https://<your-domain>` (Authentication → Sign In / Providers →
+   Passkeys). A passkey is tied to the domain it was made on, so existing ones stop
+   working; people sign in by email and add a new one.
 
 Nothing else in Supabase depends on the site's address: the database, scheduled
 jobs, function code and API keys are unchanged.
@@ -132,7 +136,8 @@ through the redirect but should show the real address.
 
 - Old links redirect to the new domain.
 - **Everyone signs in again once.** Browsers keep sign-ins, the theme choice and the
-  anonymous "I asked for a discussion" marker per address. Accounts, follows, saved
+  anonymous "I asked for a discussion" marker per address. Passkeys made on the old
+  domain no longer work; people add new ones after signing in by email. Accounts, follows, saved
   addresses and feeds are in the database and are unaffected.
 - Someone who asked for a discussion while signed out can ask once more on the new
   domain (a small bump in that item's request count).

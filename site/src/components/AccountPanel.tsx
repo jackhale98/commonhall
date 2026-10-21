@@ -1,10 +1,20 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Session } from '@supabase/supabase-js';
 import { followMany, getClient, safeNext, takePendingFollow } from '../lib/auth';
 import { SUPABASE_URL, hasSupabase } from '../lib/config';
+import {
+  autofillSupported,
+  isCancel,
+  isExpired,
+  isRejected,
+  passkeyMessage,
+  passkeysEnabled,
+  passkeysSupported,
+} from '../lib/passkeys';
 import { href } from '../lib/paths';
 import AdminLink from './AdminLink';
 import FindMyReps from './FindMyReps';
+import PasskeyPanel from './PasskeyPanel';
 
 type Phase = 'loading' | 'signed-out' | 'sent' | 'signed-in' | 'deleted' | 'unconfigured';
 
@@ -15,6 +25,8 @@ export default function AccountPanel() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
+  const [canPasskey, setCanPasskey] = useState(false);
+  const autofill = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!hasSupabase) return;
@@ -36,6 +48,51 @@ export default function AccountPanel() {
     });
     return () => unsubscribe?.();
   }, []);
+
+  useEffect(() => {
+    if (passkeysSupported()) passkeysEnabled().then(setCanPasskey);
+  }, []);
+
+  // While the sign-in form is up, the browser may offer this site's passkeys in the email
+  // field's autofill (WebAuthn Conditional UI); choosing one signs in without the button.
+  useEffect(() => {
+    if (phase !== 'signed-out') return;
+    const controller = new AbortController();
+    autofill.current = controller;
+    (async () => {
+      if (!(await autofillSupported())) return;
+      const client = await getClient();
+      for (let attempt = 0; attempt < 3 && !controller.signal.aborted; attempt++) {
+        const { data, error: err } = await client.auth.signInWithPasskey({
+          options: { mediation: 'conditional', signal: controller.signal },
+        });
+        if (data?.session) return settle(data.session);
+        if (!err || isCancel(err) || controller.signal.aborted) return;
+        // The challenge expires after five minutes while the autofill waits: ask for a new one.
+        if (isExpired(err)) continue;
+        // Only a passkey someone chose and the server refused is worth a message here.
+        if (isRejected(err)) setError(passkeyMessage(err, 'sign-in'));
+        return;
+      }
+    })().catch(() => undefined);
+    return () => controller.abort();
+  }, [phase]);
+
+  async function passkeySignIn() {
+    autofill.current?.abort();
+    setError('');
+    setBusy(true);
+    try {
+      const client = await getClient();
+      const { data, error: err } = await client.auth.signInWithPasskey();
+      if (err) throw err;
+      await settle(data?.session ?? null);
+    } catch (err) {
+      if (!isCancel(err)) setError(passkeyMessage(err, 'sign-in'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   /** After sign-in: finish a follow started while signed out, then go back. */
   async function settle(current: Session | null) {
@@ -150,7 +207,10 @@ export default function AccountPanel() {
     return (
       <form class="card stack signin" onSubmit={sendLink}>
         <h2 class="h-small">Sign in or create an account</h2>
-        <p class="muted">We’ll email you a link. No password needed.</p>
+        <p class="muted">
+          We’ll email you a link. No password needed.
+          {canPasskey && ' Added a passkey before? Sign in with it below.'}
+        </p>
         {error && (
           <p class="notice error" role="alert">
             {error}
@@ -161,7 +221,7 @@ export default function AccountPanel() {
           <input
             id="email"
             type="email"
-            autocomplete="email"
+            autocomplete="email webauthn"
             required
             value={email}
             onInput={(e) => setEmail(e.currentTarget.value)}
@@ -170,6 +230,11 @@ export default function AccountPanel() {
         <button type="submit" class="primary" disabled={busy}>
           {busy ? 'Sending…' : 'Email me a sign-in link'}
         </button>
+        {canPasskey && (
+          <button type="button" onClick={passkeySignIn} disabled={busy}>
+            Sign in with a passkey
+          </button>
+        )}
       </form>
     );
   }
@@ -199,6 +264,7 @@ export default function AccountPanel() {
           </button>
         </p>
       </div>
+      <PasskeyPanel />
       <FindMyReps saved />
       <div class="card stack">
         <h2 class="h-small">Delete account</h2>

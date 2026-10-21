@@ -273,6 +273,14 @@ A `401` in `net._http_response` means the Vault `sync_secret` and the function
    `supabase/templates/magic_link.html`.
 4. Authentication → Sign In / Providers: keep **Email** on; password sign-in and
    other providers are not used.
+5. Passkeys (optional, beside the email link): in the same section, turn on
+   **Passkeys** and set the WebAuthn relying party: **ID** your domain without
+   `https://` or a path (`commonhall.org`), **display name** `CommonHall`, and
+   **origins** the site's address (`https://commonhall.org`). Until they are on, the
+   site shows no passkey buttons (it reads `passkeys_enabled` from Auth's public
+   settings). A passkey belongs to its domain: after moving the site to another
+   domain, existing passkeys stop working and people sign in by email and add new
+   ones.
 
 ### Email for sign-in (SMTP)
 

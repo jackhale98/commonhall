@@ -3848,3 +3848,19 @@ span.source-note::before {
 .source-status {
   margin-left: 0.35em;
 }
+
+/* The account page's passkeys (PasskeyPanel). */
+.passkey-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.passkey-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
