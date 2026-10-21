@@ -6,7 +6,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { formatDate, formatDateTime } from '../lib/format';
 import { rpc } from '../lib/rest';
-import { sortStatus, statusLabel, type StatusRow } from '../lib/status';
+import type { CoverageRow } from '../lib/freshness';
+import { coverageLabel, sortStatus, statusLabel, stillLoading, type StatusRow } from '../lib/status';
 
 function Rows({ rows, kind }: { rows: StatusRow[]; kind: StatusRow['kind'] }) {
   return (
@@ -35,8 +36,15 @@ function Rows({ rows, kind }: { rows: StatusRow[]; kind: StatusRow['kind'] }) {
   );
 }
 
-export default function DataStatus({ initial }: { initial: StatusRow[] }) {
+export default function DataStatus({
+  initial,
+  initialCoverage = [],
+}: {
+  initial: StatusRow[];
+  initialCoverage?: CoverageRow[];
+}) {
   const [rows, setRows] = useState(initial);
+  const [coverage, setCoverage] = useState(initialCoverage);
   const [live, setLive] = useState(false);
   useEffect(() => {
     rpc<StatusRow[]>('data_status', {})
@@ -45,7 +53,11 @@ export default function DataStatus({ initial }: { initial: StatusRow[] }) {
         setLive(true);
       })
       .catch(() => undefined);
+    rpc<CoverageRow[]>('data_coverage', {})
+      .then((r) => Array.isArray(r) && setCoverage(r))
+      .catch(() => undefined);
   }, []);
+  const loading = stillLoading(coverage);
   const problems = rows.filter((r) => r.problem).length;
   return (
     <div>
@@ -53,6 +65,31 @@ export default function DataStatus({ initial }: { initial: StatusRow[] }) {
         {problems ? `${problems} item${problems === 1 ? ' needs' : 's need'} attention.` : 'Everything is up to date.'}{' '}
         <span class="muted small">{live ? 'Checked just now.' : 'As of the last site build.'}</span>
       </p>
+      {loading.length > 0 && (
+        <>
+          <h2>Still loading</h2>
+          <p class="muted small">
+            Sources whose records we are still copying, against the total the source reports. Until they finish, lists
+            and counts from them are incomplete.
+          </p>
+          <ul class="status-list">
+            {loading.map((c) => (
+              <li key={c.source} class="status-row">
+                <span class="status-mark" aria-hidden="true">
+                  …
+                </span>
+                <span class="status-what">
+                  <strong>{coverageLabel(c.source)}</strong>
+                  <span class="muted small">
+                    {c.held.toLocaleString('en-US')} of {c.expected.toLocaleString('en-US')} so far
+                  </span>
+                </span>
+                <span class="status-state">{Math.floor((c.held / c.expected) * 100)}%</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       <h2>Datasets</h2>
       <p class="muted small">
         The newest record we hold from each source. Quiet weeks are normal (recesses, summers); a source is flagged only

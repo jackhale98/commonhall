@@ -2,10 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import DataStatus from '../../components/DataStatus';
 import { rpc } from '../../lib/rest';
+import type { CoverageRow } from '../../lib/freshness';
 import type { StatusRow } from '../../lib/status';
 
 // The build's copy; the page refreshes it on load. Empty before migration 050 is live.
 const initial = await rpc<StatusRow[]>('data_status', {}).catch(() => [] as StatusRow[]);
+const initialCoverage = await rpc<CoverageRow[]>('data_coverage', {}).catch(() => [] as CoverageRow[]);
 ---
 
 <Base
@@ -17,7 +19,7 @@ const initial = await rpc<StatusRow[]>('data_status', {}).catch(() => [] as Stat
     Everything here is copied from official sources on a schedule. This page shows when each one last arrived, so you
     can tell how current a page is. Problems are checked daily and fixed by the maintainer.
   </p>
-  <DataStatus client:load initial={initial ?? []} />
+  <DataStatus client:load initial={initial ?? []} initialCoverage={initialCoverage ?? []} />
 </Base>
 
 <style>

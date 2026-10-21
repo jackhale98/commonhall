@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import CommitteeExplorer, { type CommitteeCard } from '../../components/CommitteeExplorer';
 import CommitteeMeetingBars from '../../components/viz/CommitteeMeetingBars.astro';
 import WeeklyMeetings, { type WeekCount } from '../../components/viz/WeeklyMeetings.astro';
@@ -123,6 +125,7 @@ const subsCount = committees.size - parentsCount;
       floor. See what each committee is working on and who sits on it.
     </p>
   </header>
+  <DataFreshness {...SOURCES.committees} />
 
   {committees.size === 0 && <p class="muted">Committees have not loaded yet.</p>}
 

@@ -22,6 +22,9 @@ async function resetFederal() {
   await sql`delete from public.sync_state`;
   await sql`delete from public.sync_lock`;
   await sql`delete from public.api_usage`;
+  // A recent bill total, so the daily count (tested below) makes no request elsewhere.
+  await sql`insert into public.source_totals (source, expected) values ('bills:119', 0)
+            on conflict (source) do update set counted_at = now()`;
 }
 
 beforeEach(resetFederal);
@@ -199,6 +202,24 @@ describe('syncBillsIncremental', () => {
     expect(result.status).toBe('ok');
     expect(result.rowsWritten).toBe(0);
     expect(api.requests).toHaveLength(0);
+  });
+
+  it('counts the Congress’s bills on Congress.gov once a day', async () => {
+    const api = new FakeCongress();
+    api.addBill(syntheticBill(1, '2026-10-01T00:00:00Z'));
+    api.addBill(syntheticBill(2, '2026-10-01T00:00:00Z'));
+    await sql`update public.source_totals set counted_at = now() - interval '21 hours' where source = 'bills:119'`;
+    await run(api);
+    expect(api.requests.map((u) => [u.pathname, u.searchParams.get('limit')])).toEqual([['/v3/bill/119', '1']]);
+    const [total] = await sql`select expected from public.source_totals where source = 'bills:119'`;
+    expect(total!.expected).toBe(2);
+    // Counted again only after 20 hours.
+    await run(api);
+    expect(api.requests).toHaveLength(1);
+    // One bill held of two: data_coverage() says so.
+    await syncBill(sql, api.client(), 119, 'hr', 1);
+    const coverage = await sql`select held, expected from public.data_coverage() where source = 'bills:119'`;
+    expect(coverage).toEqual([{ held: 1, expected: 2 }]);
   });
 
   it('picks up changed bills and then writes zero rows on two quiet runs', async () => {

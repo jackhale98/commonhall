@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import FindMyReps from '../../components/FindMyReps';
 import MemberInsights from '../../components/MemberInsights.astro';
 import YourMembers from '../../components/YourMembers';
@@ -40,6 +42,7 @@ const senate = chamberGroups(all.values(), 'senate');
       <Hemicycle title="Senate" groups={senate} />
     </div>
   </header>
+  <DataFreshness {...SOURCES.members} />
 
   <form class="explorer-search member-search" id="member-filter" aria-label="Find members" role="search">
     <div class="explorer-query">

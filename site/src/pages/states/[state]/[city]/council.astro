@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../../components/DataFreshness.astro';
+import { CITY_JOBS } from '../../../../lib/freshness';
 import CityHeader from '../../../../components/CityHeader.astro';
 import CouncilorFinder from '../../../../components/CouncilorFinder';
 import FindMyReps from '../../../../components/FindMyReps';
@@ -175,6 +177,7 @@ const slugs = new Map(committees.map((c) => [c.name, c.slug]));
       ...(facets.total > 0 ? [{ what: 'Council items', source: city.sources.legislation }] : []),
     ]}
   >
+    {CITY_JOBS[city.key] && <DataFreshness jobs={CITY_JOBS[city.key]!.council} inline />}
     {facets.types.some((t) => HIDDEN_MATTER_TYPES.includes(t.value)) &&
       ' Consent-agenda resolutions (mostly congratulations and commendations) are hidden unless you include them.'}
     {facets.total > 0 &&

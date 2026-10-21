@@ -1,0 +1,62 @@
+---
+/**
+ * How current a section's data is (beside SourceNote, which says where it comes from): "Updated from Congress.gov 12 minutes ago.", a
+ * warning when its update job is behind, and, while a source's records are still being
+ * loaded, how many we hold ("Still loading: 9,512 of 19,716 bills so far."). Written at
+ * build time with the date and time, then refreshed in the browser from
+ * public.data_status and public.data_coverage (see lib/freshness.ts).
+ */
+import { loadDataCoverage, loadDataStatus } from '../lib/build-data';
+import { noteState, noteText } from '../lib/freshness';
+import { href } from '../lib/paths';
+
+interface Props {
+  /** The update jobs behind the section (private.job_schedule names). */
+  jobs: string | string[];
+  /** Where the data comes from: "Congress.gov" (not needed inline). */
+  source?: string;
+  /** A public.data_coverage source ("bills:119", "state-bills:MA") when whole records may still be loading. */
+  coverage?: string;
+  /** What the records are called in the loading line: "bills". */
+  what?: string;
+  /** What the section covers by design: "Decisions from October Term 2020 on." */
+  scope?: string;
+  /**
+   * Inside another source line (SourceNote) that already names the source: a span
+   * saying only "Last updated 12 minutes ago."
+   */
+  inline?: boolean;
+}
+
+const { jobs, coverage, what = 'records', scope, inline = false } = Astro.props;
+const source = inline ? '' : (Astro.props.source ?? '');
+const jobList = Array.isArray(jobs) ? jobs : [jobs];
+const now = new Date();
+const state = noteState(await loadDataStatus(), await loadDataCoverage(), jobList, coverage, now);
+const text = noteText(state, source, what, now, false);
+const Tag = inline ? 'span' : 'p';
+---
+
+<Tag
+  class:list={['source-note', { small: !inline, muted: !inline, 'is-delayed': text.delayed }]}
+  data-jobs={jobList.join(' ')}
+  data-source={source}
+  data-what={what}
+  data-coverage={coverage}
+>
+  <span class="source-loading" hidden={!text.loading}>
+    {text.loading}
+  </span>
+  <span class="source-fresh" title={text.exact ?? undefined}>
+    {text.fresh}
+  </span>
+  {scope && <span class="source-scope">{scope}</span>}
+  <a class="source-status" href={href('status/')} hidden={!text.delayed}>
+    Data status
+  </a>
+</Tag>
+
+<script>
+  import { refreshSourceNotes } from '../lib/source-notes';
+  refreshSourceNotes();
+</script>

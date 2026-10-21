@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../components/DataFreshness.astro';
+import { STATE_BUDGET_SOURCES } from '../../../lib/freshness';
 import StateBudgetExplorer from '../../../components/StateBudgetExplorer';
 import StateHeader from '../../../components/StateHeader.astro';
 import BarList from '../../../components/viz/BarList';
@@ -289,6 +291,7 @@ const cityPages = new Map(CITY_LIST.filter((c) => c.state === code).map((c) => [
           {source.site}
         </a>
         , checked daily{asOfDate ? (monthly ? `; last updated ${asOfDate}` : `; spending through ${asOfDate}`) : ''}.
+        {STATE_BUDGET_SOURCES[code] && <DataFreshness {...STATE_BUDGET_SOURCES[code]} inline />}
       </p>
     </section>
   )}

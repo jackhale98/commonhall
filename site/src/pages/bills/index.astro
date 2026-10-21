@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import BillExplorer, { MOVING } from '../../components/BillExplorer';
 import FollowedItems from '../../components/FollowedItems';
 import BarList from '../../components/viz/BarList';
@@ -62,6 +64,7 @@ const initial: Bill[] = (DEMO ? bills : moving)
       on, follow anything, and see where it stands.
     </p>
   </header>
+  <DataFreshness {...SOURCES.bills} coverage={`bills:${CURRENT_CONGRESS}`} />
   <FollowedItems client:idle kind={{ type: 'bill' }} title="Bills you follow" />
   {bills.length > 0 && (
     <div class="glance" aria-label="Congress at a glance">

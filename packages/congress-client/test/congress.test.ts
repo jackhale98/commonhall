@@ -45,6 +45,23 @@ describe('CongressClient with recorded fixtures', () => {
     expect(Math.max(...(congress.sessions ?? []).map((s) => s.number ?? 0))).toBe(2);
   });
 
+  it('reads how many bills a Congress has from the list’s pagination', async () => {
+    // The recorded /bill/119 list response (its pagination.count).
+    let asked: URL | undefined;
+    const fetch = replayFetch([
+      {
+        match: (u) => u.pathname === '/v3/bill/119',
+        respond: (u) => {
+          asked = u;
+          return json(fixtureJson('congress/bills-list.json'));
+        },
+      },
+    ]);
+    const client = new CongressClient({ apiKey: KEY, fetch });
+    expect(await client.billCount(119)).toBe(19602);
+    expect(asked?.searchParams.get('limit')).toBe('1');
+  });
+
   it('paginates by offset because the live `next` links are malformed', async () => {
     const page = fixtureJson<{ bills: BillListItem[]; pagination: { count: number; next: string } }>(
       'congress/bills-list.json',

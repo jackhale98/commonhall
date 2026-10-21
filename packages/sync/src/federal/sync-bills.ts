@@ -16,6 +16,7 @@
 import { BudgetExhaustedError, HttpError, billId, toApiDateTime, type CongressClient } from '@civic/congress-client';
 import type { JobRun } from '../job.ts';
 import { syncBill, type BillChange } from './bills.ts';
+import { recordBillTotal } from './totals.ts';
 
 export interface BillsCursor extends Record<string, unknown> {
   /** Start of the next window (ISO). Set by the backfill when it finishes. */
@@ -52,6 +53,9 @@ export async function syncBillsIncremental(
   const { client, congress } = options;
   const now = options.now ?? (() => new Date());
   const cursor: BillsCursor = { ...run.cursor };
+
+  // Congress.gov's count of the Congress's bills, daily, so pages can say when ours are still loading.
+  await recordBillTotal(run.sql, client, congress, now(), run.log);
 
   if (!cursor.since && !cursor.window) {
     run.log('no cursor yet: run the backfill first (it sets the starting point)');

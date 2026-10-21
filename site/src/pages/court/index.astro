@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import CaseExplorer from '../../components/CaseExplorer';
 import BarList from '../../components/viz/BarList';
 import CourtOutcomes from '../../components/viz/CourtOutcomes.astro';
@@ -61,6 +63,7 @@ const courtNominations = nominations.filter((n) =>
       own docket a click away.
     </p>
   </header>
+  <DataFreshness {...SOURCES.court} />
 
   <dl class="stat-grid">
     <div class="stat">

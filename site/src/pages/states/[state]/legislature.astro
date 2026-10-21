@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../components/DataFreshness.astro';
+import { SOURCES } from '../../../lib/freshness';
 import StateHeader from '../../../components/StateHeader.astro';
 import StateLegislature from '../../../components/StateLegislature';
 import Base from '../../../layouts/Base.astro';
@@ -29,6 +31,7 @@ const rows = legislatorRows(code, legislators, (c) => chamberLabel(code, c));
   section="states"
 >
   <StateHeader code={code} current="legislature" />
+  <DataFreshness {...SOURCES.legislators} />
   {legislators.length === 0 ? (
     <>
       <h2 class="h-small">State legislators</h2>

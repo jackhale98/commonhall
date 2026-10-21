@@ -24,6 +24,7 @@ import type {
   MemberDetail,
   MemberListItem,
   NominationListItem,
+  Pagination,
   SponsoredItem,
   TextVersion,
 } from './types.ts';
@@ -166,6 +167,15 @@ export class CongressClient {
       limit: options.limit ?? MAX_PAGE_SIZE,
       offset: options.offset,
     });
+  }
+
+  /** How many bills and resolutions Congress.gov holds for a Congress (one request). */
+  async billCount(congress: number): Promise<number> {
+    const body = await this.get<{ pagination?: Pagination }>(`/bill/${congress}`, { limit: 1 });
+    const count = body.pagination?.count;
+    if (typeof count !== 'number' || count < 0)
+      throw new Error(`Congress.gov /bill/${congress} has no pagination.count`);
+    return count;
   }
 
   async getBill(congress: number, type: string, number: string | number): Promise<BillDetail> {

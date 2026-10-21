@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../../components/DataFreshness.astro';
+import { GOVERNOR_SOURCES } from '../../../../lib/freshness';
 import StateHeader from '../../../../components/StateHeader.astro';
 import RecordExplorer from '../../../../components/RecordExplorer';
 import Base from '../../../../layouts/Base.astro';
@@ -72,6 +74,7 @@ const rows = orders.map((o) => ({
     Orders the governor issues to run the executive branch: creating councils and task forces, directing agencies, and
     revoking earlier orders. Open one to read it or ask for a public discussion on it.
   </p>
+  {GOVERNOR_SOURCES[code] && <DataFreshness {...GOVERNOR_SOURCES[code]} />}
   <RecordExplorer
     client:visible
     rows={rows}

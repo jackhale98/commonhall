@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../../components/DataFreshness.astro';
+import { SOURCES } from '../../../../lib/freshness';
 import StateHeader from '../../../../components/StateHeader.astro';
 import RecordExplorer from '../../../../components/RecordExplorer';
 import Base from '../../../../layouts/Base.astro';
@@ -86,6 +88,7 @@ const rows = cases.map((c) => ({
     The state’s highest court: its decisions settle what state law and the state constitution mean. Open one to read it
     or ask for a public discussion on it.
   </p>
+  <DataFreshness {...SOURCES.stateCourts} />
   <RecordExplorer
     client:visible
     rows={rows}

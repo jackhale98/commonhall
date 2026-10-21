@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../../components/DataFreshness.astro';
+import { CITY_JOBS } from '../../../../lib/freshness';
 import CityHeader from '../../../../components/CityHeader.astro';
 import District311 from '../../../../components/District311';
 import ZoningExplorer from '../../../../components/ZoningExplorer';
@@ -144,7 +146,8 @@ const { requests, zoning: zoningSource } = city.sources;
       <>
         311 summaries from <a href={requests.url}>{requests.label}</a>
         {requests.cadence && `, checked ${requests.cadence}`}; where the city runs more than one 311 system, they are
-        counted together.{' '}
+        counted together.
+        {CITY_JOBS[city.key]?.requests && <DataFreshness jobs={CITY_JOBS[city.key]!.requests!} inline />}{' '}
       </>
     )}
     {zoningSource && zoning && (
@@ -152,6 +155,7 @@ const { requests, zoning: zoningSource } = city.sources;
         Zoning cases from <a href={zoningSource.url}>{zoningSource.label}</a>
         {zoningSource.cadence && `, checked ${zoningSource.cadence}`}. Hearing times, documents and how to comment are
         on the <a href={zoningSource.board}>board’s page</a>.
+        {CITY_JOBS[city.key]?.zoning && <DataFreshness jobs={CITY_JOBS[city.key]!.zoning!} inline />}
       </>
     )}
   </p>

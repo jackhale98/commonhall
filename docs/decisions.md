@@ -2344,3 +2344,40 @@ cases:
 - **Reading the index.** `refs.json` is fetched once per build for both the
   Constitution's refs and the cases; each part is checked for shape and a minimum
   count on its own, and the site builds without that part's links if it fails.
+
+## 126. Every data section says how current it is
+
+People couldn't tell how recent a page's data was: `/status/` listed every source, but
+nobody browsing a bill list or a council page would look there, and most pages are
+rebuilt once a day while parts of them refresh in the browser.
+
+- **When a source last updated.** Each data section has a line under its heading
+  (`DataFreshness`): "Updated from Congress.gov 12 minutes ago." It is the time its
+  update job last finished without an error, from `public.data_status` (the same rows
+  as `/status/`); for a section fed by several jobs, the oldest. City pages already had
+  a line naming each source and how often it is checked (`SourceNote`), so there the
+  time is added to that line ("Last updated 5 minutes ago.") instead of a second one.
+  The sections' jobs are listed once in `site/src/lib/freshness.ts`; a database test
+  checks each is in `private.job_schedule`.
+- **When it is behind.** When the health check flags one of a section's jobs (failed,
+  overdue, stopped), the line says "Updates from CourtListener are delayed; last
+  updated on Oct 19." in the warning colour, with a link to `/status/`.
+- **When whole records are missing.** Only missing records are reported, not details
+  still being added to records we already hold (committee referrals, clause
+  references): those are filled in quietly, as the owner asked. Where a source
+  publishes a total, `public.data_coverage()` compares it with what we hold: state bills
+  from Open States' session counts (§88, whose "X of Y on file" line this replaces) and
+  federal bills from Congress.gov's count, which `sync-federal` reads once a day (one
+  request) into `public.source_totals` (migration 075). Below 98% of a total counted in
+  the last week, the section says "Still loading: 1,200 of 4,100 bills in the 2026
+  session so far.", and `/status/` lists it under "Still loading". Above 98% the gap is
+  the day's new records (19,696 of 19,716 bills when this was written), not a load.
+- **Build time and live.** The line is written at build time with the date and time
+  (a page may be read a day after it was built), then a small script updates every note
+  on the page with "minutes ago" from one call to each function, kept for five minutes
+  in the tab so browsing doesn't repeat them. The footer says when the page was built.
+- **Where.** The national list pages (bills, votes, members, committees, budget,
+  executive actions, the Supreme Court), a state's bills, legislators, budget, courts
+  and governor's orders, and a city's council, 311, zoning and budget sections.
+  Individual bills, votes and cases keep their own dates (latest action, decided) and
+  get no line, to keep the many prebuilt detail pages small.

@@ -1,4 +1,5 @@
 ---
+import { formatDateTime } from '../lib/format';
 import { RES_PUBLICA_URL } from '../lib/respublica';
 import '@fontsource-variable/inter/wght.css';
 import '@fontsource-variable/bricolage-grotesque/wght.css';
@@ -77,6 +78,8 @@ const phoneNav = PHONE_NAV.map((section) => ({
   ...section,
   items: section.items.filter((i) => !DEMO || !['feed', 'account'].includes(i.key)),
 }));
+// When this page was built (each section's own note says when its data last updated).
+const BUILT_AT = formatDateTime(new Date().toISOString());
 ---
 
 <!doctype html>
@@ -299,6 +302,7 @@ const phoneNav = PHONE_NAV.map((section) => ({
             Free, nonpartisan and open source. No ads, no tracking. Built so anyone can follow their government and have
             a say.
           </p>
+          <p class="built">This page was built on {BUILT_AT}.</p>
           <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
             <span class="theme-icon" aria-hidden="true"></span>
             <span>Dark mode</span>
@@ -855,6 +859,9 @@ const phoneNav = PHONE_NAV.map((section) => ({
   .brand-egg.is-playing .ch-you,
   .brand-egg.is-playing .ch-ring {
     animation-iteration-count: 1 !important;
+  }
+  .footer-brand .built {
+    font-size: var(--step--1);
   }
   .footer-brand p {
     color: var(--text-muted);

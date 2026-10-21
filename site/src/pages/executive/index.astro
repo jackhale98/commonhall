@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import NominationExplorer from '../../components/NominationExplorer';
 import OrderExplorer from '../../components/OrderExplorer';
 import OrdersPace from '../../components/viz/OrdersPace.astro';
@@ -85,6 +87,7 @@ const agencies = [
       from committee to confirmation vote.
     </p>
   </header>
+  <DataFreshness {...SOURCES.executive} />
 
   <dl class="stat-grid">
     <div class="stat">

@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../../../components/DataFreshness.astro';
+import { CITY_JOBS } from '../../../../lib/freshness';
 import CapitalExplorer from '../../../../components/CapitalExplorer';
 import CityHeader from '../../../../components/CityHeader.astro';
 import BarList from '../../../../components/viz/BarList';
@@ -212,6 +214,7 @@ const about = covers.length > 2 ? `${covers.slice(0, -1).join(', ')}, and ${cove
           (operating.spendingUnit === 'departments'
             ? ' on the city’s open data, checked weekly.'
             : ', read from the printed summary; every group adds up to its printed total.')}
+        {CITY_JOBS[city.key]?.budget && <DataFreshness jobs={CITY_JOBS[city.key]!.budget!} inline />}
       </p>
     </section>
   )}
@@ -324,6 +327,7 @@ const about = covers.length > 2 ? `${covers.slice(0, -1).join(', ')}, and ${cove
         {plan
           ? ', on the city’s open data, checked weekly, with amounts as the city published them. A project’s total budget covers the whole project: money spent in earlier years, what is budgeted for each year of the plan, and outside grants. Many projects are citywide or span several neighborhoods.'
           : ', read from the published PDF; every department’s projects add up to its printed sub-total.'}
+        {CITY_JOBS[city.key]?.budget && <DataFreshness jobs={CITY_JOBS[city.key]!.budget!} inline />}
       </p>
     </section>
   )}

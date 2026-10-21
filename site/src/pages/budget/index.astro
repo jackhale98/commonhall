@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import { safeUrl } from '@civic/congress-client/safe-url';
 import BarList from '../../components/viz/BarList';
 import Base from '../../layouts/Base.astro';
@@ -89,6 +91,7 @@ const jumps = [
       funded while it finishes them. Here is where each one stands, and where the money comes from and goes.
     </p>
   </header>
+  <DataFreshness {...SOURCES.federalBudget} />
 
   {jumps.length > 1 && (
     <nav class="page-jumps" aria-label="On this page">

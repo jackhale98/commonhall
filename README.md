@@ -207,7 +207,10 @@ where bills stand, the most active topics, and how votes split.
 ## Coverage and data sources
 
 All data comes from official or public-domain sources and refreshes
-automatically.
+automatically. Each section says when its source last updated ("Updated from
+Congress.gov 12 minutes ago"), warns when a source is behind, and, while a source's
+records are still being copied, says how many we hold of how many; `/status/` lists
+every source.
 
 | What | Source | Refreshed |
 | --- | --- | --- |
@@ -294,7 +297,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 
 | Scheduled job | Runs | What it does |
 | --- | --- | --- |
-| `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events |
+| `sync-federal` | every 10 minutes | New roll-call votes and changed bills; writes feed events; once a day, Congress.gov's count of the Congress's bills (to tell when ours are still loading) |
 | `sync-members` | daily | Members of Congress |
 | `sync-committees` | hourly | Congressional committee rosters (daily), hearings and markups, and older bills' committee referrals and constitutional authority statements |
 | `sync-finance` | hourly | Campaign finance summaries from OpenFEC for members whose figures are over a week old |

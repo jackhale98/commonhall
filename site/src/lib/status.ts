@@ -3,17 +3,11 @@
  * name cities, courts and states by key; this turns them into readable labels.
  */
 import { CITIES } from './cities';
-import { stateName } from './format';
+import { congressLabel, stateName } from './format';
+import { LOADING_BELOW, type CoverageRow, type StatusRow } from './freshness';
 import { STATE_COURT_NAMES } from './state-tabs';
 
-export interface StatusRow {
-  kind: 'job' | 'data';
-  name: string;
-  label: string;
-  last_ok: string | null;
-  newest: string | null;
-  problem: string | null;
-}
+export type { StatusRow } from './freshness';
 
 /** A readable label: "Boston: council items", "Massachusetts: Supreme Judicial Court decisions". */
 export function statusLabel(row: Pick<StatusRow, 'name' | 'label'>): string {
@@ -34,4 +28,19 @@ export function sortStatus(rows: StatusRow[]): StatusRow[] {
   return [...rows].sort(
     (a, b) => Number(!a.problem) - Number(!b.problem) || statusLabel(a).localeCompare(statusLabel(b)),
   );
+}
+
+/** "Bills in the 119th Congress", "Massachusetts: state bills". */
+export function coverageLabel(source: string): string {
+  const [kind, key = ''] = source.split(':');
+  if (kind === 'bills') return `Bills in the ${congressLabel(Number(key))}`;
+  if (kind === 'state-bills') return `${stateName(key)}: state bills`;
+  return source;
+}
+
+/** Sources whose records are still loading (well short of the upstream total), largest gap first. */
+export function stillLoading(rows: readonly CoverageRow[]): CoverageRow[] {
+  return rows
+    .filter((r) => r.expected > 0 && r.held < r.expected * LOADING_BELOW)
+    .sort((a, b) => b.expected - b.held - (a.expected - a.held));
 }

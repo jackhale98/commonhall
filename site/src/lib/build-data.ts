@@ -80,6 +80,8 @@ import {
   selectWithCount,
   type Params,
 } from './rest';
+import type { CoverageRow } from './freshness';
+import type { StatusRow } from './status';
 import {
   BILL_LIST_COLUMNS,
   BILL_PAGE_COLUMNS,
@@ -1298,4 +1300,34 @@ export const loadDiscussionsByTarget = memo(async () => {
   for (const d of await loadDiscussions())
     if (d.target_type && d.target_id) map.set(`${d.target_type}:${d.target_id}`, d);
   return map;
+});
+
+// ---- Freshness ----------------------------------------------------------------
+
+/** An RPC that may fail for a moment during a long build: three tries, then null. */
+async function rpcWithRetry<T>(fn: string): Promise<T | null> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await rpc<T>(fn, {});
+    } catch (error) {
+      if (attempt === 3) {
+        console.warn(`[build-data] ${fn} unavailable; notes show the source only: ${String(error)}`);
+        return null;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+  return null;
+}
+
+/** Each update job's last clean run and any problem (public.data_status), once per build. */
+export const loadDataStatus = memo(async (): Promise<StatusRow[]> => {
+  if (DEMO) return [];
+  return (await rpcWithRetry<StatusRow[]>('data_status')) ?? [];
+});
+
+/** Record counts against upstream totals (public.data_coverage), once per build; empty before migration 075. */
+export const loadDataCoverage = memo(async (): Promise<CoverageRow[]> => {
+  if (DEMO) return [];
+  return (await rpcWithRetry<CoverageRow[]>('data_coverage')) ?? [];
 });

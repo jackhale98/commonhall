@@ -1,4 +1,6 @@
 ---
+import DataFreshness from '../../components/DataFreshness.astro';
+import { SOURCES } from '../../lib/freshness';
 import VoteExplorer from '../../components/VoteExplorer';
 import StackedBar from '../../components/viz/StackedBar';
 import Base from '../../layouts/Base.astro';
@@ -23,6 +25,7 @@ const initial = votes.slice(0, 10).map(voteRow);
     <h1>Roll-call votes</h1>
     <p class="lede">Every recorded vote in the House and Senate, and exactly how each member voted.</p>
   </header>
+  <DataFreshness {...SOURCES.votes} />
 
   <dl class="stat-grid">
     {chambers.map((c) => (
