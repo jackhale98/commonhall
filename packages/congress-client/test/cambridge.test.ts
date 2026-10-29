@@ -139,6 +139,46 @@ describe('PrimeGov final actions', () => {
     expect(charter?.notes[0]).toMatch(/^CHARTER RIGHT EXERCISED BY COUNCILLOR ZUSY/);
   });
 
+  it('reads a special meeting: date under the heading, items without numbers (recorded October 2026)', () => {
+    // Special meeting of October 28, 2026 (meetingTemplateId 14340), scripts, styles and image data removed.
+    const record = parseCambridgeActions(cambridge('primegov-final-actions-special.html'));
+    expect(record).toMatchObject({ kind: 'final actions', date: '2026-10-28' });
+    expect(record.present).toHaveLength(9);
+    // "Councillor E. Denise Simmons - 3:20 PM" arrived late; the absent list is "None".
+    expect(record.present).toContain('Councillor E. Denise Simmons');
+    expect(record.absent).toEqual([]);
+    // The order of business lists the same citations; only the items below it count.
+    expect(record.items.map((i) => citationLabel(i.citation))).toEqual([
+      'POR 2026-195',
+      'POR 2026-196',
+      'POR 2026-189',
+    ]);
+    const [divest, opinion, kiosk] = record.items;
+    expect(divest!.title).toMatch(/^City Council Divestment from companies/);
+    expect(divest!.notes).toEqual(['Charter Right', 'FINALIZED IN COUNCIL OCTOBER 28, 2026']);
+    expect(divest!.vote).toMatchObject({ result: 'Adopted as Amended by Substitution as Amended', yes: 5, no: 4 });
+    expect(divest!.vote!.nays).toHaveLength(4);
+    expect(opinion!.title).toMatch(/^That the City Manager is requested to direct the City Solicitor/);
+    expect(opinion!.vote).toMatchObject({ result: 'Adoption Failed', yes: 4, no: 5 });
+    expect(kiosk!.vote).toMatchObject({ result: 'Tabled', yes: 8, no: 0 });
+    expect(kiosk!.vote!.absent).toEqual(['Councillor Simmons']);
+
+    // Its agenda, read before the meeting, has the same items (and before this, read as none).
+    const agenda = parseCambridgeActions(cambridge('primegov-agenda-special.html'));
+    expect(agenda).toMatchObject({ kind: 'agenda', date: '2026-10-28' });
+    expect(agenda.items.map((i) => [citationLabel(i.citation), i.vote])).toEqual([
+      ['POR 2026-195', null],
+      ['POR 2026-196', null],
+      ['POR 2026-189', null],
+    ]);
+  });
+
+  it('drops a late arrival’s time from the roll call', () => {
+    expect(parseCambridgeActions(cambridge('primegov-final-actions.html')).present).toContain(
+      'Councillor E. Denise Simmons',
+    );
+  });
+
   it('refuses a page that is not a meeting', () => {
     expect(() => parseCambridgeActions('<html><body><p>Down for maintenance</p></body></html>')).toThrow(ShapeError);
   });

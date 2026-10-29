@@ -257,7 +257,9 @@ export interface CambridgeMeetingRecord {
 /** The text lines of a PrimeGov meeting page: scripts, icons and attachment links dropped. */
 export function primeGovLines(html: string): string[] {
   const text = html
-    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>|<!--[\s\S]*?-->/gi, '')
+    // Images (the city's seal, whose alt text runs over several lines) before the text is split into lines.
+    .replace(/<img\b[^>]*>/gi, '')
     .replace(/<a\b[\s\S]*?<\/a>/gi, '')
     .replace(/<\/p>|<br\s*\/?>|<\/div>|<\/tr>|<\/td>|<\/h\d>|<\/li>/gi, '\n');
   return text
@@ -294,18 +296,20 @@ function parseItemVote(roles: Map<string, string>): CambridgeItemVote | null {
  */
 export function parseCambridgeActions(html: string): CambridgeMeetingRecord {
   const lines = primeGovLines(html);
-  const heading = lines.find((l) => /^(FINAL ACTIONS|AGENDA)\s*●/i.test(l));
-  if (!heading) throw new ShapeError('Cambridge PrimeGov meeting page', ['no "AGENDA ●" or "FINAL ACTIONS ●" heading']);
+  // "FINAL ACTIONS ● OCTOBER 05, 2026" on regular meetings; on special meetings
+  // "FINAL ACTIONS" with the date on the next line.
+  let at = lines.findIndex((l) => /^(FINAL ACTIONS|AGENDA)\s*●/i.test(l));
+  let date: string | null = at >= 0 ? monthDayYear(lines[at]!.replace(/^[^●]*●\s*/, '')) : null;
+  if (at < 0) {
+    at = lines.findIndex((l, n) => /^(FINAL ACTIONS|AGENDA)$/i.test(l) && monthDayYear(lines[n + 1] ?? '') !== null);
+    if (at >= 0) date = monthDayYear(lines[at + 1]!);
+  }
+  if (at < 0) throw new ShapeError('Cambridge PrimeGov meeting page', ['no "AGENDA ●" or "FINAL ACTIONS ●" heading']);
+  const heading = lines[at]!;
   const kind = /^FINAL ACTIONS/i.test(heading) ? 'final actions' : 'agenda';
-  const record: CambridgeMeetingRecord = {
-    kind,
-    date: monthDayYear(heading.replace(/^[^●]*●\s*/, '')),
-    present: [],
-    absent: [],
-    items: [],
-  };
+  const record: CambridgeMeetingRecord = { kind, date, present: [], absent: [], items: [] };
 
-  let i = lines.indexOf(heading) + 1;
+  let i = at + 1;
   // Roll call: "Present:" then names, "Absent:" then names.
   const roll = lines.findIndex((l, n) => n >= i && /^present:$/i.test(l));
   if (roll >= 0 && roll < i + 40) {
@@ -316,8 +320,11 @@ export function parseCambridgeActions(html: string): CambridgeMeetingRecord {
         into = record.absent;
         continue;
       }
-      if (ROMAN_LINE.test(l) || NUMBER_LINE.test(l) || /^[A-Z ]+$/.test(l)) break;
-      if (!/^none$/i.test(l)) into.push(l);
+      if (/^none$/i.test(l)) continue;
+      // Names only: the roll call ends where the meeting's text begins.
+      if (!/^(councill?or|vice mayor|mayor)\b/i.test(l)) break;
+      // "Councillor E. Denise Simmons - 3:20 PM": arrived late.
+      into.push(l.replace(/\s+[-–]\s+\d{1,2}:\d{2}\s*[AP]M$/i, ''));
     }
   }
 
@@ -381,5 +388,57 @@ export function parseCambridgeActions(html: string): CambridgeMeetingRecord {
   }
   if (sawNumbered >= 3 && record.items.length === 0)
     throw new ShapeError('Cambridge PrimeGov meeting page', [`${sawNumbered} numbered items, none with a citation`]);
+  if (sawNumbered === 0) record.items = unnumberedItems(lines, at + 1);
   return record;
+}
+
+/**
+ * Special meetings list their items without numbers or sections, under "AGENDA ITEMS":
+ * the item's text (after any note such as "Charter Right"), its citation, then on final
+ * actions its result and roll call and sometimes "FINALIZED IN COUNCIL …". The citations
+ * in the order of business above are a list of what's coming, not items.
+ */
+function unnumberedItems(lines: string[], from: number): CambridgeAgendaItem[] {
+  const start = lines.findIndex((l, n) => n >= from && /^AGENDA ITEMS$/i.test(l));
+  if (start < 0) return [];
+  const items: CambridgeAgendaItem[] = [];
+  let text: string[] = [];
+  let notes: string[] = [];
+  for (let n = start + 1; n < lines.length; n++) {
+    const l = lines[n]!;
+    if (/^(communications( summary)?|attachments|adjournment)$/i.test(l)) break;
+    if (/^charter right$/i.test(l)) {
+      notes.push(l);
+      continue;
+    }
+    // A note on the item just finished ("FINALIZED IN COUNCIL OCTOBER 28, 2026").
+    if (!/[a-z]/.test(l) && !CITATION_LINE.test(l) && text.length === 0 && items.length > 0) {
+      items.at(-1)!.notes.push(l);
+      continue;
+    }
+    if (!CITATION_LINE.test(l)) {
+      text.push(l);
+      continue;
+    }
+    const roles = new Map<string, string>();
+    for (; n + 1 < lines.length; n++) {
+      const m = ROLE_LINE.exec(lines[n + 1]!);
+      if (!m) break;
+      roles.set(m[1]!.toUpperCase(), m[2]!.trim());
+    }
+    const citation = parseCitation(l);
+    if (citation && text.length > 0)
+      items.push({
+        section: 'AGENDA ITEMS',
+        seq: items.length + 1,
+        citation,
+        title: text.join(' '),
+        sponsors: [],
+        notes,
+        vote: parseItemVote(roles),
+      });
+    text = [];
+    notes = [];
+  }
+  return items;
 }

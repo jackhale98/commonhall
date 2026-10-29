@@ -2415,3 +2415,19 @@ and discussions with the device, and need a CAPTCHA against abuse.
 - **Tested** end to end against local Supabase in Chromium with a virtual
   authenticator: add a passkey after an email sign-in, sign in with it from the button
   and from the autofill, remove it, and no controls when passkeys are off.
+
+## 128. Cambridge special meetings: a second PrimeGov layout
+
+The health check failed on October 29, 2026: `sync-cambridge` stopped with "no AGENDA ●
+or FINAL ACTIONS ● heading" on the final actions of the October 28 special meeting. The
+shape check did its job; the page was a layout the parser didn't know. Special meetings
+put the date on the line under "FINAL ACTIONS" (no "●"), and list their items without
+numbers or sections under "AGENDA ITEMS": the item's text (after a note such as "Charter
+Right"), its citation, then the result and roll call, and sometimes "FINALIZED IN
+COUNCIL …". The order of business above lists the same citations and is skipped.
+`parseCambridgeActions` now reads both layouts (fixtures of the special meeting's agenda
+and final actions, image data and scripts removed). It also found that special-meeting
+agendas, which do have the "●" heading, had been read as having no items; they now have
+them. The roll call stops at the first line that isn't a councillor's name, and an
+arrival time ("– 5:40 PM") is dropped from the name. Final actions that still don't read
+keep failing the job.
