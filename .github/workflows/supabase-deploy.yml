@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Secrets are given only to the steps that use them (CLAUDE.md rule 8).
     steps:
       - name: Check configuration

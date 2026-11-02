@@ -2431,3 +2431,20 @@ agendas, which do have the "●" heading, had been read as having no items; they
 them. The roll call stops at the first line that isn't a councillor's name, and an
 arrival time ("– 5:40 PM") is dropped from the name. Final actions that still don't read
 keep failing the job.
+
+## 129. Runner images pinned; the status call kept under anon's time limit
+
+Two failures on November 2, 2026:
+
+- **Load governor orders** failed before it ran: GitHub moved `ubuntu-latest` to Ubuntu
+  26.04, and the pinned Playwright (1.56.1) can't install Chromium there. CI and the
+  ballot-question loader use Playwright too and would have failed on their next run.
+  Every workflow now runs on `ubuntu-24.04` (the project pins its tools, and the runner
+  image is one of them). Moving to a newer image is a deliberate change: update
+  Playwright and the image together and let CI prove it.
+- **`public.data_status()` timed out now and then** ("canceling statement due to
+  statement timeout"). It finds each source's newest record; for state bills that was
+  `max(updated_at)` over all 74,000 rows, which from a cold cache took over 3 seconds,
+  anon's limit. Since §126 visitors' browsers call it for the freshness notes, so a
+  failure meant notes without times and an empty `/status/`. Migration 076 indexes
+  `state_bills.updated_at`, so that maximum comes from the index alone.
