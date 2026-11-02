@@ -158,7 +158,7 @@ Nothing that starts with `PUBLIC_` may ever hold a secret.
 | Load council districts | manually (once, and after redistricting) | `SUPABASE_DB_URL` |
 | Load Supreme Court Database | monthly (3rd, 07:41 UTC) and manually | `SUPABASE_DB_URL` |
 | Load Middletown agendas | 11:37 UTC daily and manually | `SUPABASE_DB_URL` (installs `pdftotext`) |
-| Sync health | 13:13 UTC daily and manually | `SUPABASE_DB_URL`; optional `HEARTBEAT_URL` |
+| Sync health | every 6 hours (01:13, 07:13, 13:13, 19:13 UTC) and manually | `SUPABASE_DB_URL`; optional `HEARTBEAT_URL` |
 
 **Sync health** is how you hear that something broke. It fails when a job's last run
 failed, or a job is overdue, died mid-run or never ran (`private.sync_health()`;
@@ -173,7 +173,11 @@ without changes.
 
 For a second channel, set the `HEARTBEAT_URL` secret to a dead-man's-switch check
 (for example a healthchecks.io check URL): each run pings it, adding `/fail` when the
-check failed, so you also hear when the checks stop running.
+check failed, so you also hear when the checks stop running. Give the check a
+**period of 6 hours and a grace time of 12 hours**: GitHub starts scheduled runs late
+when it is busy (four to eight hours is common, and a run is sometimes skipped), so a
+tighter grace time reports "down" when nothing is wrong. While something is broken,
+GitHub emails each failed run, up to four a day.
 
 GitHub turns off scheduled workflows in a repository with no activity for 60 days.
 If the nightly rebuild stops, re-enable it from the Actions tab.

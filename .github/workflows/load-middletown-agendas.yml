@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
+      # When this run started, so a failure recorded by the loader itself is kept (see the last step).
+      - run: echo "STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -39,3 +41,19 @@ jobs:
         env:
           FORCE: ${{ inputs.force }}
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      # A run that fails before or outside the loader (installing packages or the browser)
+      # records nothing itself; record it here so the health check reports it the same day.
+      - name: Record the failure for the health check
+        if: failure()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          JOB: load-middletown-agendas
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -v job="$JOB" -v started="$STARTED" <<'SQL'
+          insert into public.sync_state (job, last_error, last_error_at, updated_at)
+          values (:'job', 'The workflow failed outside the loader (see its run in GitHub Actions).', now(), now())
+          on conflict (job) do update
+             set last_error = excluded.last_error, last_error_at = excluded.last_error_at, updated_at = now()
+           where public.sync_state.last_error_at is null
+              or public.sync_state.last_error_at < :'started'::timestamptz;
+          SQL

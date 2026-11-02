@@ -334,7 +334,7 @@ Congress.gov · senate.gov · congress-legislators · Open States · Census · B
 | `trim-past-congresses` | monthly | Database job: deletes past Congresses' action histories, co-sponsors and member-by-member positions (bills and vote totals stay) |
 | `check-database-size` | weekly | Database job: records the database size; the health check flags it above 400 MB |
 | `purge-api-usage`, `purge-archive-cache`, `purge-cron-history`, `purge-discussion-requests-anon`, `purge-feed-events`, `purge-geo-cache`, `purge-rate-limits` | daily | Database jobs: delete old request counts, expired caches, cron history, anonymous discussion requests, feed events and rate-limit rows |
-| Sync health (GitHub Action) | daily | Fails (and GitHub emails the owner) when a job failed or is overdue; a source gone quiet is a warning; pings `HEARTBEAT_URL` if set; the same list is public at `/status/` |
+| Sync health (GitHub Action) | every 6 hours | Fails (and GitHub emails the owner) when a job failed or is overdue; a source gone quiet is a warning; pings `HEARTBEAT_URL` if set; the same list is public at `/status/` |
 
 The reasoning behind the main design choices is recorded in
 [docs/decisions.md](docs/decisions.md).

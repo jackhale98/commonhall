@@ -2448,3 +2448,23 @@ Two failures on November 2, 2026:
   anon's limit. Since §126 visitors' browsers call it for the freshness notes, so a
   failure meant notes without times and an empty `/status/`. Migration 076 indexes
   `state_bills.updated_at`, so that maximum comes from the index alone.
+
+## 130. Sync health every 6 hours
+
+The heartbeat check reported "down" on November 2, 2026 while every job was healthy.
+Sync health was scheduled once a day at 13:13 UTC, but GitHub starts scheduled
+workflows late when it is busy: the four runs before ran between 17:40 and 18:56 UTC,
+and that day's had not started by 21:30. A once-a-day ping that drifts by most of a
+day looks like an outage to a dead-man's switch. The check now runs four times a day
+(01:13, 07:13, 13:13 and 19:13 UTC), so one late or dropped run leaves others to
+ping, and docs/deployment.md gives the heartbeat check's settings: period 6 hours,
+grace 12 hours. The cost is a minute of Actions time per run, and while something is
+broken, up to four failure emails a day instead of one.
+
+The same day showed a gap: Load governor orders failed while installing Chromium,
+before its script ran, so nothing was written to `sync_state` and the health check
+couldn't see it (it would only have called the loader overdue about two weeks later).
+Each loader workflow now notes when it started and ends with a step that runs only on
+failure: it writes an error to the job's `sync_state` row with `psql` (part of the
+runner image, so it works when `npm ci` was what failed), unless the loader already
+recorded its own error during this run, which is kept.

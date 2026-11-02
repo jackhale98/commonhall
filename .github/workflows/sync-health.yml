@@ -1,6 +1,6 @@
 name: Sync health
 
-# Daily: fails when a sync job, loader or database job failed, is overdue or died
+# Every 6 hours: fails when a sync job, loader or database job failed, is overdue or died
 # mid-run (private.sync_health()). A dataset with nothing new for longer than usual
 # is a warning on the run, not a failure. A failed run is how the owner hears about
 # it: GitHub emails a failed scheduled workflow. The same list, without error text,
@@ -8,14 +8,16 @@ name: Sync health
 #
 # A second channel: when the HEARTBEAT_URL secret is set (a dead-man's-switch check,
 # e.g. healthchecks.io), each run pings it, adding /fail when the check failed, so an
-# outside service alerts if the checks fail or stop running at all.
+# outside service alerts if the checks fail or stop running at all. GitHub starts
+# scheduled runs late when it is busy (hours, and sometimes not at all), so the check
+# runs four times a day: one late or dropped run doesn't look like an outage.
 #
 # GitHub turns off scheduled workflows in a repository with no commits for 60 days;
 # re-enable it on the Actions tab if that happens.
 on:
   workflow_dispatch:
   schedule:
-    - cron: '13 13 * * *' # 13:13 UTC daily, after the morning loaders
+    - cron: '13 1,7,13,19 * * *' # every 6 hours (13:13 UTC is after the morning loaders)
 
 permissions:
   contents: read
