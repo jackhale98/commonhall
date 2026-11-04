@@ -1,8 +1,9 @@
 /**
  * Worcester City Council agendas from PrimeGov: the items on each meeting's
  * agenda (orders, resolutions, petitions, City Manager communications, committee
- * reports, hearings), read from the agenda's HTML (meetings before mid-2026) or its
- * PDF as `pdftotext -layout` text (later meetings publish only PDFs).
+ * reports, hearings), read from the agenda's HTML (meetings before mid-2026, in two
+ * layouts: PrimeGov's own, and most of 2025's built from a Word document) or its PDF as
+ * `pdftotext -layout` text (later meetings publish only PDFs).
  *
  * Agendas are numbered sections ("12. ORDERS") of lettered items ("12a. Request
  * City Manager …"), with a line before a run of items saying what the council is
@@ -113,6 +114,61 @@ export function parseAgendaHtml(html: string): AgendaItem[] {
     const text = squash(decode(m[2]!));
     const item = ITEM.exec(text);
     if (item) items.push({ number: item[1]!, section, text: item[2]!.trim(), action: null });
+  }
+  return items.length ? items : parseDocxAgendaHtml(html);
+}
+
+/**
+ * Agendas published from a Word document (most of 2025). Each section heading is a
+ * table with a `data-sectionid` ("8." and "PETITIONS", in one cell or two) and each item
+ * a table with a `data-itemid`, read paragraph by paragraph up to the item's hidden
+ * contents: its number ("8b." on its own, or starting the text), sometimes a line saying
+ * what the council is asked to do with a run of items ("5a – 5c Adopt"), then its text.
+ */
+function parseDocxAgendaHtml(html: string): AgendaItem[] {
+  const items: AgendaItem[] = [];
+  let section = '';
+  let actions: { from: string; to: string; action: string }[] = [];
+  const paragraphs = (fragment: string) =>
+    fragment
+      .split(/<\/p>|<\/td>/i)
+      .map((part) => squash(decode(part)))
+      .filter(Boolean);
+  const re =
+    /<table[^>]*\bdata-sectionid="\d+"[^>]*>([\s\S]*?)<td id="sharebuttons_|<table[^>]*\bdata-itemid="\d+"[^>]*>([\s\S]*?)(?=<div style="display:none;" class="item_contents"|<\/table>)/g;
+  for (const m of html.matchAll(re)) {
+    if (m[1] !== undefined) {
+      const heading = SECTION.exec(paragraphs(m[1]).join(' '));
+      if (heading) {
+        section = squash(heading[2]!);
+        actions = [];
+      }
+      continue;
+    }
+    let lines = paragraphs(m[2]!);
+    // The number in a cell of its own ("5a."), or starting the text ("8b. Councilor …").
+    let number: string | null = null;
+    const alone = new RegExp(String.raw`^(${NUM})\.$`).exec(lines[0] ?? '');
+    if (alone) {
+      number = alone[1]!;
+      lines = lines.slice(1);
+    } else {
+      const lead = ITEM.exec(lines[0] ?? '');
+      if (lead) {
+        number = lead[1]!;
+        lines = [lead[2]!, ...lines.slice(1)];
+      }
+    }
+    if (!number) continue;
+    const act = /^(\S+)\s*[-–]\s*(\S+)\s+([A-Z][a-z].*)$|^(\S+)\s+([A-Z][a-z].*)$/.exec(lines[0] ?? '');
+    if (act && (act[1] ?? act[4]) === number) {
+      actions.push({ from: act[1] ?? act[4]!, to: act[2] ?? act[4]!, action: squash(act[3] ?? act[5]!) });
+      lines = lines.slice(1);
+    }
+    const text = lines.join(' ').trim();
+    if (!text) continue;
+    const action = actions.find((a) => inRange(number!, a.from, a.to));
+    items.push({ number, section, text, action: action?.action ?? null });
   }
   return items;
 }

@@ -195,15 +195,26 @@ describe('Load Worcester agendas', () => {
     ]);
   });
 
-  it('refuses when every agenda reads too short (a changed layout), writing nothing', async () => {
+  it('refuses when every recent agenda reads too short (a changed layout), writing nothing', async () => {
     await seed([JAN_13]);
     const short = HTML_AGENDA.split('\n').slice(0, 8).join('\n');
     const warnings: string[] = [];
-    await expect(load(fakePrimeGov({ 75801: short }), { warn: (message) => warnings.push(message) })).rejects.toThrow(
-      /Every agenda read \(1\) parsed as too short/,
-    );
+    // A week after the meeting, while its agenda is recent.
+    const soon = () => new Date('2026-01-20T12:00:00Z');
+    await expect(
+      load(fakePrimeGov({ 75801: short }), { warn: (message) => warnings.push(message), now: soon }),
+    ).rejects.toThrow(/Every recent agenda read \(1\) parsed as too short/);
     expect(warnings).toEqual([expect.stringMatching(/^2026-01-13: only \d items read from .*; skipped$/)]);
     expect(await count(sql`select count(*)::int as n from public.local_matters where city = ${CITY}`)).toBe(0);
+  });
+
+  it('only warns when the short agendas are old ones (a one-item special meeting), read again each run', async () => {
+    await seed([JAN_13]);
+    const short = HTML_AGENDA.split('\n').slice(0, 8).join('\n');
+    const warnings: string[] = [];
+    // Months later the January agenda is past the revision window: it stays short, nothing new to read.
+    await expect(load(fakePrimeGov({ 75801: short }), { warn: (message) => warnings.push(message) })).resolves.toBe(0);
+    expect(warnings).toEqual([expect.stringMatching(/^2026-01-13: only \d items read from .*; skipped$/)]);
   });
 
   it('fails on an agenda document that is not there', async () => {

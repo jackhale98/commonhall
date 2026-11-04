@@ -243,6 +243,8 @@ export async function loadWorcesterAgendas(sql: Sql, options: WorcesterAgendasOp
 
   let read = 0;
   let skipped = 0;
+  let recentRead = 0;
+  let recentSkipped = 0;
   let written = 0;
   for (const m of meetings) {
     // Oldest first, so a carried item keeps its first matter; what is left waits for the next run.
@@ -257,8 +259,11 @@ export async function loadWorcesterAgendas(sql: Sql, options: WorcesterAgendasOp
     const agenda = await readAgenda(primegov, http, pdfText, m);
     if (!agenda) continue;
     read++;
+    const recent = date >= revisable;
+    if (recent) recentRead++;
     if (agenda.items.length < minItems) {
       skipped++;
+      if (recent) recentSkipped++;
       warn(`${date}: only ${agenda.items.length} items read from ${agenda.url}; skipped`);
       continue;
     }
@@ -266,7 +271,10 @@ export async function loadWorcesterAgendas(sql: Sql, options: WorcesterAgendasOp
     log(`${date}: ${agenda.items.length} items`);
   }
   log(JSON.stringify({ meetings: meetings.length, read, skipped, written }));
-  // Every agenda too short to be real: the layout has changed, not the council.
-  if (read > 0 && skipped === read) throw new Error(`Every agenda read (${read}) parsed as too short`);
+  // Every recent agenda too short to be real: the layout has changed, not the council. Older
+  // ones that stay short (a one-item special meeting) are read again each run and only
+  // warned about: on a week without a new agenda they would be all there is to read.
+  if (recentRead > 0 && recentSkipped === recentRead)
+    throw new Error(`Every recent agenda read (${recentRead}) parsed as too short`);
   return written;
 }

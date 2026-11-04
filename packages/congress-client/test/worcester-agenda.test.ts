@@ -74,3 +74,37 @@ describe('Worcester agendas (HTML)', () => {
     expect(types.filter((t) => t === 'Ordinance')).toHaveLength(7);
   });
 });
+
+describe('agendas published from a Word document (2025)', () => {
+  it('reads items and their sections (March 11, 2025; scripts, icons and attachments removed)', () => {
+    const items = parseAgendaHtml(fixture('agenda-2025-03-11-docx.html'));
+    expect(items).toHaveLength(76);
+    const petitions = items.filter((i) => i.section === 'PETITIONS');
+    expect(petitions.map((i) => i.number)).toContain('8b');
+    expect(items.find((i) => i.number === '8b')).toMatchObject({
+      section: 'PETITIONS',
+      text: 'Councilor Khrystian E. King request Moreland St. be resurfaced.',
+    });
+    expect(items.filter((i) => i.section === "CHAIRMAN'S ORDERS")).toHaveLength(14);
+    expect(items.map(classifyAgendaItem).filter(Boolean).length).toBeGreaterThan(60);
+  });
+
+  it('reads a number in a cell of its own and what the council is asked to do with a run of items (July 15, 2025; the first sections)', () => {
+    const items = parseAgendaHtml(fixture('agenda-2025-07-15-docx.html'));
+    expect(items.map((i) => [i.number, i.section, i.action])).toEqual([
+      ['5a', 'APPROVAL OF THE MINUTES', 'Adopt'],
+      ['5b', 'APPROVAL OF THE MINUTES', 'Adopt'],
+      ['5c', 'APPROVAL OF THE MINUTES', 'Adopt'],
+      ['7a', 'HEARINGS AND ORDERS - 6:30 P.M.', 'Hold Hearings and Adopt'],
+      ['7b', 'HEARINGS AND ORDERS - 6:30 P.M.', 'Hold Hearings and Adopt'],
+      ['7c', 'HEARINGS AND ORDERS - 6:30 P.M.', 'Hold Hearings and Adopt'],
+    ]);
+    expect(items[0]!.text).toMatch(
+      /^Order - That the City Council of the City of Worcester hereby approves the minutes/,
+    );
+  });
+
+  it('still reads the current layout first', () => {
+    expect(parseAgendaHtml(fixture('agenda-2026-01-13.html'))).toHaveLength(141);
+  });
+});

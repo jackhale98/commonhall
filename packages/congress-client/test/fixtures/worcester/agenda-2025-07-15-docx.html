@@ -1,0 +1,251 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="publicMeetingPortalHtml">
+<head>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	
+	<title>Meeting</title>
+	<link href="/bundles/publichtml?v=LavnU_wo1XV4t0sA9P7nOZnXtyKfm4LFfDhW2R_7nBM1" rel="stylesheet"/>
+
+	<link href="/bundles/om/components/asyncmeetingitemcompiler?v=uRbtDtUumhmcezrGcMeixNMQYRDY5UfPSAdJjXZvjeY1" rel="stylesheet"/>
+
+ <link href="/Content/portal/css/toastr.css" rel="stylesheet" />
+ 
+	
+
+	
+	
+ 
+	
+	
+	
+	<link rel="icon" type="image/svg" href="/favicon.svg" sizes="32x32">
+
+	
+ 
+ 
+
+</head>
+<body class="publicMeetingPortalBody">
+<div class="modal fade" id="ItemSubscriptionModal">
+ <div class="modal-dialog" role="document">
+ <div class="modal-content">
+ <div class="modal-body padding-15">
+ <div>
+ <h3>Subscribe</h3>
+ </div>
+ <br />
+ <label for="txtEmailSubscribeItem">Enter your email address below to receive updates related to this item</label>
+ <br />
+ <span id="lblInvalidEmail" class="invalid-email-subscription" style="color: red">Invalid E-mail</span>
+ <input type="email" id="txtEmailSubscribeItem" class="form-control email-subscription" placeholder="Enter email address" required autocomplete="email" />
+ </div>
+ <div class="modal-footer">
+ <button type="button" class="btn btn-pure btnCancelItemSubscription" id="btnCancelItemSubscription" data-dismiss="modal" title="Cancel">Cancel</button>
+ <button type="button" id="btnSubscribeItem" class="btn btn-primary" title="Subscribe">Subscribe</button>
+ </div>
+ </div>
+ </div>
+</div>
+
+<div class="modal fade" id="ItemSubscriptionSuccessModal">
+ <div class="modal-dialog" role="document">
+ <div class="modal-content">
+ <div class="modal-body padding-15">
+ <div>
+ <h3>Success</h3>
+ </div>
+ <br />
+ <p>You will now receive updates related to this item</p>
+ </div>
+ <div class="modal-footer">
+ <button type="button" class="btn btn-primary" data-dismiss="modal" title="Close">Close</button>
+ </div>
+ </div>
+ </div>
+</div>
+
+ <div class="AllContentContainer">
+ <div class="CenteredContainer">
+ <div class="VideoContentContainer" style="height: auto; overflow: hidden;">
+ <div class="VideoContent">
+ <div id="ytplayer" aria-label="Video Player" title="Video Player"></div>
+ </div>
+ <div class="VideoContent">
+ <div id="HideYouTubePlayer">
+ <button onclick="hideYouTubeVideo();" class="ytp-play-button ytp-button ytp-hidevideo" aria-keyshortcuts="cv" data-title-no-tooltip="Hide Video" aria-label="Close Video" title="Hide Video">Hide Video</button>
+ </div>
+ <div id="ShowYouTubePlayer" aria-label="Show Video Player" title="Show Video Player">
+ <button onclick="openYouTubeVideo();" class="showYouTubePlayer" data-title-no-tooltip="Show Video" aria-label="Show Video" title="Show Video">Show Video</button>
+ </div>
+ </div>
+ </div>
+ <div class="MeetingContentContainer">
+ <div class="GoogleTranslate">
+ <div id="GoogleTranslate">
+ <div id="google_translate_element" class="google-translator"></div>
+ </div>
+ </div>
+
+ <div id="meetingSection">
+ <!--Uncomment these and it will allow you to see the width and height of the window while resizing so you can handle the different resolutions accordingly
+ <div style="float: left; display: inline-block; position: absolute;"><input id="screenheight" /></div>
+ <div style="float: left; display: inline-block; position: absolute;"><input style="text-align: right; opacity: .5;" id="screenwidth" /></div>-->
+ <div id="MeetingContents" role="main"><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Style-Type" content="text/css"><meta name="generator" content="Aspose.Words for .NET 25.4.0"><title></title></head><body style="font-family:'Georgia, serif'; font-size:14pt"><div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:125.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td><td style="width:295.2pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:19.5pt"><span style="font-family:Georgia; font-weight:bold">CITY OF WORCESTER</span></p></td><td style="width:98.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Georgia; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td></tr><tr><td style="width:125.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td><td style="width:295.2pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">AGENDA OF THE CITY COUNCIL</span></p></td><td style="width:98.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Georgia; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td></tr><tr><td style="width:125.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td><td style="width:295.2pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">Tuesday, July 15, 2025</span></p></td><td style="width:98.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td></tr><tr><td style="width:125.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td><td style="width:295.2pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">Esther Howland (South) Chamber </span></p></td><td style="width:98.1pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td></tr><tr><td style="width:125.1pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top; -aw-border-bottom:0.5pt single"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td><td style="width:295.2pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top; -aw-border-bottom:0.5pt single"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">6:00 PM</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:14pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p></td><td style="width:98.1pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top; -aw-border-bottom:0.5pt single"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:10pt"><span style="font-family:Calibri; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:'Times New Roman'; display:none; -aw-import:ignore"> </span></p><div style="text-align:center"><table cellspacing="0" cellpadding="0" style="width:545.05pt; margin-right:auto; margin-left:auto; border-collapse:collapse"><tr style="height:160.6pt"><td style="width:196.75pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">AT-LARGE CITY COUNCILORS</span></p><table cellspacing="0" cellpadding="0" style="width:177.8pt; margin-left:22.35pt; border-collapse:collapse"><tr style="height:63.65pt"><td style="width:178.8pt; vertical-align:top"><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Morris A. Bergman</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Donna M. Colorio</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Khrystian E. King</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Thu Nguyen</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Kathleen M. Toomey</span></p></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">CITY CLERK</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Nikolin Vangjeli</span></p></td><td style="width:119.15pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:11pt"><span style="line-height:108%; font-family:Georgia; font-size:9.5pt; font-weight:bold">MAYOR</span><br><span style="line-height:108%; font-family:Georgia; font-size:9.5pt">Joseph M. Petty</span><br><br><img src="data:image/png;base64,AAAA" width="103" height="97" alt="" style="-aw-left-pos:0pt; -aw-rel-hpos:column; -aw-rel-vpos:paragraph; -aw-top-pos:0pt; -aw-wrap-type:inline"><br><a href="http://www.worcesterma.gov" target="_blank" style="text-decoration:none"><span style="line-height:108%; font-family:Georgia; font-size:9.5pt; font-weight:bold; font-style:italic; text-decoration:underline; color:#0000ff">www.worcesterma.gov</span></a></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">CITY MANAGER</span><br><span style="font-family:Georgia">Eric D. Batista</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td><td style="width:196.75pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">DISTRICT CITY COUNCILORS</span></p><table cellspacing="0" cellpadding="0" style="width:177.8pt; margin-left:22.35pt; border-collapse:collapse"><tr style="height:63.65pt"><td style="width:178.8pt; vertical-align:top"><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Jenny Pacillo – District 1</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Candy Mero-Carlson – District 2</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">George J. Russell – District 3</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Luis A. Ojeda – District 4</span></p><p style="margin-top:0pt; margin-right:30.65pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">Etel Haxhiaj – District 5</span></p></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">CITY AUDITOR</span><br><span style="font-family:Georgia">Robert V. Stearns</span><br><br><span style="font-family:Georgia; font-weight:bold; color:#595959; -aw-import:ignore"> </span></p></td></tr><tr><td colspan="3" style="width:534.25pt; border-bottom-style:solid; border-bottom-width:1.5pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:12pt"><span style="font-family:Georgia; background-color:#ffffff">City Hall - 455 Main Street Worcester, Massachusetts</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:12pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p></td></tr><tr><td colspan="3" style="width:534.25pt; border-top-style:solid; border-top-width:1.5pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">Virtual Attendee Call-In Information:</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">City Council Zoom Link: </span><a href="https://worcesterma.zoomgov.com/j/1613631913" target="_blank" style="text-decoration:none"><span style="font-family:Georgia; font-weight:bold; text-decoration:underline; color:#0000ff">https://worcesterma.zoomgov.com/j/1613631913</span></a></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">City Council Zoom Phone Number: +1 646 828 7666</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold">City Council Zoom Access Code: 161 363 1913</span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; text-align:center; line-height:108%; font-size:9.5pt"><span style="font-family:Georgia">To request a reasonable accommodation or interpretation or to submit written comments or questions in advance of the meeting, please contact the City Clerk’s office by email at </span><a href="/cdn-cgi/l/email-protection#0c6f60697e674c7b637e6f697f78697e616d226b637a" target="_blank" style="text-decoration:none"><span style="font-family:Georgia; text-decoration:underline; color:#0000ff"><span class="__cf_email__" data-cfemail="54373831263f14233b2637312720312639357a333b22">[email&#160;protected]</span></span></a><span style="font-family:Georgia">. Please note that interpretation requests must be received no later than 48 hours in advance of the meeting.</span></p></td></tr><tr><td colspan="3" style="width:534.25pt; border-bottom-style:solid; border-bottom-width:1.5pt; padding-right:5.9pt; padding-left:5.9pt; vertical-align:middle"><p style="margin-top:0pt; margin-bottom:0pt; line-height:108%; font-size:11pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p></td></tr></table></div><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49098" data-sectionid="29127" data-hasattachments="False" data-videolocation="6389" style="cursor:pointer;"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">1.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">PLEDGE OF ALLEGIANCE</span></p></td><td id="sharebuttons_49098" class="optionalButtonsCell"> 
+ <div id="miniPacket_49098" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49098">
+ <a href="/meetings/sectionminipacket?id=49098" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49098" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49098">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49099" data-sectionid="29128" data-hasattachments="False" data-videolocation="1803412" style="cursor:pointer;"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">2.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">STAR SPANGLED BANNER</span></p></td><td id="sharebuttons_49099" class="optionalButtonsCell"> 
+ <div id="miniPacket_49099" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49099">
+ <a href="/meetings/sectionminipacket?id=49099" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49099" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49099">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49100" data-sectionid="29129" data-hasattachments="False" data-videolocation="1803414" style="cursor:pointer;"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-weight:bold">3.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">ROLL CALL</span></p></td><td id="sharebuttons_49100" class="optionalButtonsCell"> 
+ <div id="miniPacket_49100" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49100">
+ <a href="/meetings/sectionminipacket?id=49100" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49100" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49100">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49102" data-sectionid="29130" data-hasattachments="False" data-videolocation="1803503" style="cursor:pointer;"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-weight:bold">4.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">PROCLAMATIONS, ACKNOWLEDGMENTS, MOMENTS OF SILENCE</span></p></td><td id="sharebuttons_49102" class="optionalButtonsCell"> 
+ <div id="miniPacket_49102" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49102">
+ <a href="/meetings/sectionminipacket?id=49102" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49102" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49102">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49103" data-sectionid="29131" data-hasattachments="False"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">5.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">APPROVAL OF THE MINUTES</span></p></td><td id="sharebuttons_49103" class="optionalButtonsCell"> 
+ <div id="miniPacket_49103" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49103">
+ <a href="/meetings/sectionminipacket?id=49103" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49103" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49103">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="cursor:pointer;" class="item-table-fromdocx" data-id="35511" data-itemid="35511" data-videolocation="237441"><tr><td class="attachmentCell" id="AgendaItem_35511" class="agenda-item" id="attachment-icon-35511" style=" padding-left:44.1pt"><div><span class="glyphicon glyphicon-paperclip" title="Has Attachments" style="color:#aaa;"></span></div></td><td style="width:38.9pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">5a.</span></p></td><td style="cursor:pointer;cursor:pointer;width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top" class="agenda-item" id="AgendaItem_35511" data-itemid="35511" data-createdfromdocx="True" data-hasattachments="True" data-videolocation="237441"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">5a –</span><span style="font-family:Georgia; font-weight:bold"> </span><span style="font-family:Georgia; font-weight:bold">5c Adopt</span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia">Order - That the City Council of the City of Worcester hereby approves the minutes of the City Council Meeting of May 13, 2025.</span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="-aw-bookmark-end:ItemBookmark_35511"></span><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><div style="display:none;" class="item_contents" id="agenda_item_area_35511">
+ <div id="ConfidentialDocMessage_35511" class="item-confidential-area"></div>
+ </div></td><td class="optionalButtonsCell">
+ <div id="sharebuttons_35511" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35511">
+ <a href="/meetings/ItemWithTemplateType?id=35511&meetingTemplateType=2&compiledMeetingDocumentId=5573" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div id="itemsearch-35511" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35511">
+ <a href="https://worcesterma.primegov.com/search/itemsearch?searchItemId=36327" target="_blank" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="35511" class="flex-parent shareButtons_display pull-right elipsis_35511">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="cursor:pointer;" class="item-table-fromdocx" data-id="35549" data-itemid="35549" data-videolocation="64673"><tr><td class="attachmentCell" id="AgendaItem_35549" class="agenda-item" id="attachment-icon-35549" style=" padding-left:44.1pt"><div><span class="glyphicon glyphicon-paperclip" title="Has Attachments" style="color:#aaa;"></span></div></td><td style="width:38.9pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">5b.</span></p></td><td style="cursor:pointer;cursor:pointer;width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top" class="agenda-item" id="AgendaItem_35549" data-itemid="35549" data-createdfromdocx="True" data-hasattachments="True" data-videolocation="64673"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia">Order - That the City Council of the City of Worcester hereby approves the minutes of the City Council Meeting of June 10, 2025.</span><span style="-aw-bookmark-end:ItemBookmark_35549"></span></p><div style="display:none;" class="item_contents" id="agenda_item_area_35549">
+ <div id="ConfidentialDocMessage_35549" class="item-confidential-area"></div>
+ </div></td><td class="optionalButtonsCell">
+ <div id="sharebuttons_35549" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35549">
+ <a href="/meetings/ItemWithTemplateType?id=35549&meetingTemplateType=2&compiledMeetingDocumentId=5573" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div id="itemsearch-35549" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35549">
+ <a href="https://worcesterma.primegov.com/search/itemsearch?searchItemId=36401" target="_blank" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="35549" class="flex-parent shareButtons_display pull-right elipsis_35549">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="cursor:pointer;" class="item-table-fromdocx" data-id="35550" data-itemid="35550" data-videolocation="64742"><tr><td class="attachmentCell" id="AgendaItem_35550" class="agenda-item" id="attachment-icon-35550" style=" padding-left:44.1pt"><div><span class="glyphicon glyphicon-paperclip" title="Has Attachments" style="color:#aaa;"></span></div></td><td style="width:38.9pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">5c.</span></p></td><td style="cursor:pointer;cursor:pointer;width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top" class="agenda-item" id="AgendaItem_35550" data-itemid="35550" data-createdfromdocx="True" data-hasattachments="True" data-videolocation="64742"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia">Order - That the City Council of the City of Worcester hereby approves the minutes of</span><span style="font-family:Georgia"> </span><span style="font-family:Georgia">the City Council Executive Session Meeting of February 4, 2025 relative to the litigation strategy concerning Natale Cosenza, United States Court of Appeals for the First Circuit No. 23-1123.</span><span style="-aw-bookmark-end:ItemBookmark_35550"></span></p><div style="display:none;" class="item_contents" id="agenda_item_area_35550">
+ <div id="ConfidentialDocMessage_35550" class="item-confidential-area"></div>
+ </div></td><td class="optionalButtonsCell">
+ <div id="sharebuttons_35550" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35550">
+ <a href="/meetings/ItemWithTemplateType?id=35550&meetingTemplateType=2&compiledMeetingDocumentId=5573" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div id="itemsearch-35550" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35550">
+ <a href="https://worcesterma.primegov.com/search/itemsearch?searchItemId=36402" target="_blank" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="35550" class="flex-parent shareButtons_display pull-right elipsis_35550">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49104" data-sectionid="29132" data-hasattachments="False" data-videolocation="0" style="cursor:pointer;"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">6.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">PUBLIC PARTICIPATION - A person may speak for no more than two (2) minutes on any items appearing on the agenda</span></p></td><td id="sharebuttons_49104" class="optionalButtonsCell"> 
+ <div id="miniPacket_49104" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49104">
+ <a href="/meetings/sectionminipacket?id=49104" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49104" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49104">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="" class="item-table-fromdocx" data-id="49161" data-sectionid="29189" data-hasattachments="False"><tr><td class="attachmentCell" style=" padding-left:44.1pt"><div></div></td><td style="width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia">Pursuant to Chapter 20 of the Acts of 2021 and in order to ensure active, public engagement, the City of Worcester currently allows for both in-person and remote participation at all City Council and Standing Committee meetings. To partake in the "Public Participation" section of the meeting, you may attend the meeting in-person within the meeting location, follow the below link to join via Zoom or dial the direct line as indicated. If you join a Zoom meeting by dialing in with a phone number, you can raise your hand by dialing *9.</span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia">City Council Zoom Link: </span><a href="https://worcesterma.zoomgov.com/j/1613631913" style="text-decoration:none"><span style="font-family:Georgia; text-decoration:underline">https://worcesterma.zoomgov.com/j/1613631913</span></a></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia">City Council Zoom Phone Number: +1 646 828 7666</span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia">City Council Zoom Access Code: 161 363 1913</span><span style="-aw-bookmark-end:SectionBookmark_49161"></span></p></td><td id="sharebuttons_49161" class="optionalButtonsCell"> 
+ <div id="miniPacket_49161" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49161">
+ <a href="/meetings/sectionminipacket?id=49161" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49161" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49161">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" class="item-table-fromdocx" data-id="49105" data-sectionid="29133" data-hasattachments="False"><tr><td class="attachmentCell"><div></div></td><td style="width:38.7pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">7.</span></p></td><td style="width:489.6pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia; font-weight:bold">HEARINGS AND ORDERS - 6:30 P.M.</span></p></td><td id="sharebuttons_49105" class="optionalButtonsCell"> 
+ <div id="miniPacket_49105" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_49105">
+ <a href="/meetings/sectionminipacket?id=49105" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="49105" class="flex-parent shareButtons_display pull-right elipsisMenu elipsis_49105">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="cursor:pointer;" class="item-table-fromdocx" data-id="35551" data-itemid="35551" data-videolocation="65083"><tr><td class="attachmentCell" id="AgendaItem_35551" class="agenda-item" id="attachment-icon-35551" style=" padding-left:44.1pt"><div><span class="glyphicon glyphicon-paperclip" title="Has Attachments" style="color:#aaa;"></span></div></td><td style="width:38.9pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">7a.</span></p></td><td style="cursor:pointer;cursor:pointer;width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top" class="agenda-item" id="AgendaItem_35551" data-itemid="35551" data-createdfromdocx="True" data-hasattachments="True" data-videolocation="65083"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">7a –</span><span style="font-family:Georgia; font-weight:bold"> </span><span style="font-family:Georgia; font-weight:bold">7c Hold Hearings and Adopt</span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia">Petition and Hearing: National Grid for a conduit location at Institute Rd.</span><span style="-aw-bookmark-end:ItemBookmark_35551"></span></p><div style="display:none;" class="item_contents" id="agenda_item_area_35551">
+ <div id="ConfidentialDocMessage_35551" class="item-confidential-area"></div>
+ </div></td><td class="optionalButtonsCell">
+ <div id="sharebuttons_35551" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35551">
+ <a href="/meetings/ItemWithTemplateType?id=35551&meetingTemplateType=2&compiledMeetingDocumentId=5573" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div id="itemsearch-35551" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35551">
+ <a href="https://worcesterma.primegov.com/search/itemsearch?searchItemId=36407" target="_blank" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="35551" class="flex-parent shareButtons_display pull-right elipsis_35551">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="cursor:pointer;" class="item-table-fromdocx" data-id="35633" data-itemid="35633" data-videolocation="71278"><tr><td class="attachmentCell" id="AgendaItem_35633" class="agenda-item" id="attachment-icon-35633" style=" padding-left:44.1pt"><div><span class="glyphicon glyphicon-paperclip" title="Has Attachments" style="color:#aaa;"></span></div></td><td style="width:38.9pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">7b.</span></p></td><td style="cursor:pointer;cursor:pointer;width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top" class="agenda-item" id="AgendaItem_35633" data-itemid="35633" data-createdfromdocx="True" data-hasattachments="True" data-videolocation="71278"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia">Petition and Hearing: National Grid for a conduit location at Laurel St.</span><span style="-aw-bookmark-end:ItemBookmark_35633"></span></p><div style="display:none;" class="item_contents" id="agenda_item_area_35633">
+ <div id="ConfidentialDocMessage_35633" class="item-confidential-area"></div>
+ </div></td><td class="optionalButtonsCell">
+ <div id="sharebuttons_35633" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35633">
+ <a href="/meetings/ItemWithTemplateType?id=35633&meetingTemplateType=2&compiledMeetingDocumentId=5573" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div id="itemsearch-35633" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35633">
+ <a href="https://worcesterma.primegov.com/search/itemsearch?searchItemId=36549" target="_blank" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="35633" class="flex-parent shareButtons_display pull-right elipsis_35633">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p><table cellspacing="0" cellpadding="0" style="cursor:pointer;" class="item-table-fromdocx" data-id="35635" data-itemid="35635" data-videolocation="71359"><tr><td class="attachmentCell" id="AgendaItem_35635" class="agenda-item" id="attachment-icon-35635" style=" padding-left:44.1pt"><div><span class="glyphicon glyphicon-paperclip" title="Has Attachments" style="color:#aaa;"></span></div></td><td style="width:38.9pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; font-weight:bold">7c.</span></p></td><td style="cursor:pointer;cursor:pointer;width:430pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top" class="agenda-item" id="AgendaItem_35635" data-itemid="35635" data-createdfromdocx="True" data-hasattachments="True" data-videolocation="71359"><p style="margin-top:0pt; margin-bottom:0pt; font-size:14pt"><span style="font-family:Georgia; -aw-import:ignore"> </span></p><p style="margin-top:0pt; margin-bottom:0pt; font-size:16pt"><span style="font-family:Georgia">Petition and Hearing: National Grid for a conduit location at Madison St.</span><span style="-aw-bookmark-end:ItemBookmark_35635"></span></p><div style="display:none;" class="item_contents" id="agenda_item_area_35635">
+ <div id="ConfidentialDocMessage_35635" class="item-confidential-area"></div>
+ </div></td><td class="optionalButtonsCell">
+ <div id="sharebuttons_35635" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35635">
+ <a href="/meetings/ItemWithTemplateType?id=35635&meetingTemplateType=2&compiledMeetingDocumentId=5573" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div id="itemsearch-35635" data-loaded="Loaded" class="flex-parent shareButtons_display pull-right optionalButtons shareItemBtns_35635">
+ <a href="https://worcesterma.primegov.com/search/itemsearch?searchItemId=36551" target="_blank" onclick="event.stopPropagation();" tabindex="0">
+ 
+ </a>
+ </div>
+ <div data-id="35635" class="flex-parent shareButtons_display pull-right elipsis_35635">
+ 
+ </div></td></tr></table><p style="margin-top:0pt; margin-bottom:0pt; font-size:12pt"><span style="font-family:Georgia; font-weight:bold; -aw-import:ignore"> </span></p>
+</body></html>

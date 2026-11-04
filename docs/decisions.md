@@ -2468,3 +2468,24 @@ Each loader workflow now notes when it started and ends with a step that runs on
 failure: it writes an error to the job's `sync_state` row with `psql` (part of the
 runner image, so it works when `npm ci` was what failed), unless the loader already
 recorded its own error during this run, which is kept.
+
+## 131. Worcester's 2025 agendas, and a too-short check that only looks at new ones
+
+Load Worcester agendas failed on November 4, 2026: "Every agenda read (5) parsed as too
+short". The loader reads again every council agenda it has never loaded, and five had
+always come out short; until then each run also read a recent agenda that parsed, so
+the check (fail when every agenda read is short, which is what a layout change looks
+like) never fired. With no new agenda that week (Election Day), only the five were read.
+
+- **Three were real gaps.** March 11, July 15 and August 19, 2025 were published from a
+  Word document, a second PrimeGov layout the parser didn't know: section headings are
+  tables marked `data-sectionid`, items tables marked `data-itemid`, and an item's number
+  is either the start of its text or a cell of its own, sometimes followed by what the
+  council is asked to do with a run of items ("5a – 5c Adopt"). `parseAgendaHtml` falls
+  back to that layout when the usual one finds nothing (76, 201 and 200 items; recorded
+  fixtures of March and the start of July).
+- **Two are really short:** June 24, 2025 and June 30, 2026 are one-item meetings (the
+  City Manager's evaluation). They are still read again each run and warned about.
+- **The check** now fails only when every *recent* agenda read (within the 14 days an
+  agenda can still be revised) is too short: a changed layout shows on new agendas,
+  while old short ones would otherwise be all there is to read in a quiet week.
